@@ -1,6 +1,0 @@
-<job id="9.Child" xmlns="http://batch.jsr352/jsl">
- 	<step id="MyStep" parent="9.Parent">
- 		<properties merge="false"><property name="childProp" value="val"/></properties>
- 		<listeners merge="false"><listener ref="childRef"/></listeners>
- 	</step>
-</job>

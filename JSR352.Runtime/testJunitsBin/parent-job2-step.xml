@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<step id="stepParent" abstract="true" xmlns="http://batch.jsr352/jsl">
-	<chunk writer="MyItemWriter" />
-</step>

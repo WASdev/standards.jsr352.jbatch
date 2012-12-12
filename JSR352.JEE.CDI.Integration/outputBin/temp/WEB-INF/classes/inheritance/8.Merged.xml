@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<job id="8.Child" xmlns="http://batch.jsr352/jsl">
-	<properties>
-		<property name="childProp1" value="1"/>
-	</properties>
-	<listeners>
-		<listener ref="childRef"/>
-	</listeners>
-</job>

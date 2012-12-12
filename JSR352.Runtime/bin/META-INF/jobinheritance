@@ -1,3 +1,0 @@
-# job inheritance index file
-parent-job1=/parent-job1.xml
-stepParent=/parent-job2-step.xml
