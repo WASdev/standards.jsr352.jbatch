@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<job id="6.Child" xmlns="http://batch.jsr352/jsl">
+	<step id="MyStep">
+		<properties><property name="prop" value="val"/></properties>
+		<listeners><listener ref="ref"/></listeners>
+		<chunk reader="r" processor="p" writer="w" buffer-size="1"/>
+		<next on="a" to="b"/>
+	</step>
+</job>

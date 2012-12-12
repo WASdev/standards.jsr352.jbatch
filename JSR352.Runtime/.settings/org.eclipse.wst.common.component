@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="JSR352.Runtime">
+        <wb-resource deploy-path="/" source-path="/src"/>
+        <wb-resource deploy-path="/" source-path="/resources"/>
+        <wb-resource deploy-path="/" source-path="/testResources"/>
+        <wb-resource deploy-path="/" source-path="/testJunits"/>
+        <wb-resource deploy-path="/" source-path="/testArtifacts"/>
+    </wb-module>
+</project-modules>

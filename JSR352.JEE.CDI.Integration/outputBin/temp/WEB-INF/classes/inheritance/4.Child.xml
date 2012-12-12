@@ -1,0 +1,8 @@
+<job id="4.Child" parent="4.Parent" xmlns="http://batch.jsr352/jsl">
+	<properties merge="true">
+		<property name="childProp1" value="1"/>
+	</properties>
+	<listeners merge="true">
+		<listener ref="childRef"/>
+	</listeners>
+</job>

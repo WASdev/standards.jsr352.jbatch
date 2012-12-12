@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Annotations
+Bundle-SymbolicName: JSR352.Annotations
+Bundle-Version: 1.0.0.qualifier
+Export-Package: javax.batch.annotation

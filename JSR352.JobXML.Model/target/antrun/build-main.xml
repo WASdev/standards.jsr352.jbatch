@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <mkdir dir="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model/target/generated-sources"/>
+  <property value="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model/target/generated-sources" name="generate.dir"/>
+  <property value="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model" name="proj.dir"/>
+  <ant target="generate" antfile="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model/ant/build.xml"/>
+</target>
+</project>

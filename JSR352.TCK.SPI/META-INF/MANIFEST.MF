@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SPI
+Bundle-SymbolicName: JSR352.TCK.SPI
+Bundle-Version: 1.0.0.qualifier
+Import-Package: javax.batch.operations,
+ javax.batch.runtime,
+ javax.batch.operations.exception
+Export-Package: com.ibm.batch.tck.spi

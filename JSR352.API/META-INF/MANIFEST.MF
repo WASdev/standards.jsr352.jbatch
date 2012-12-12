@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: API
+Bundle-SymbolicName: JSR352.API
+Bundle-Version: 1.0.0.qualifier
+Export-Package: javax.batch.api.parameters,
+ javax.batch.operations,
+ javax.batch.operations.exception,
+ javax.batch.runtime,
+ javax.batch.runtime.context,
+ javax.batch.runtime.spi

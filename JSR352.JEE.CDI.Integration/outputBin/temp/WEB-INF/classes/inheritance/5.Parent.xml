@@ -1,0 +1,15 @@
+<job id="5.Parent" xmlns="http://batch.jsr352/jsl">
+	<properties>
+		<property name="parentProp1" value="true"/>
+		<property name="parentProp2" value="false"/>
+		<property name="sharedProp" value="overridden"/>
+	</properties>
+	<listeners>
+		<listener ref="parentRef"/>
+		<listener ref="sharedRef">
+			<properties>
+				<property name="sharedRefProp" value="overridden"/>
+			</properties>
+		</listener>
+	</listeners>
+</job>

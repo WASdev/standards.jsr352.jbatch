@@ -1,0 +1,5 @@
+<step id="11.Parent" xmlns="http://batch.jsr352/jsl">
+	<chunk reader="expected" writer="expected">
+		<properties><property name="p" value="v"/></properties>
+	</chunk>
+</step>

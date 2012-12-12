@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="parent-job1" xmlns="http://batch.jsr352/jsl">
+	<properties>
+		<property name="parentProp1" value="true"/>
+		<property name="parentProp2" value="false"/>
+	</properties>
+	
+	<listeners>
+		<listener ref="MyJobListenerBIG"/>
+	</listeners>
+</job>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <ant target="compileTCK" antfile="/home/hendrix/workspace/jsr-352/JSR352.Tests.TCK/ant/build.xml"/>
+</target>
+</project>

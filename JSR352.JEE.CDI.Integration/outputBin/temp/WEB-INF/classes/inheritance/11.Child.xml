@@ -1,0 +1,5 @@
+<job id="11.Child" xmlns="http://batch.jsr352/jsl">
+ 	<step id="MyStep" parent="11.Parent">
+ 		<chunk processor="expected" buffer-size="expected"/>
+ 	</step>
+</job>

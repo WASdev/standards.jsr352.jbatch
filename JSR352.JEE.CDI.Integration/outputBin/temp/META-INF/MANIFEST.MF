@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: TCK
+Bundle-SymbolicName: JSR352.Tests.TCK
+Bundle-Version: 1.0.0.qualifier
+Import-Package: com.ibm.batch.tck.spi,
+ javax.batch.annotation,
+ javax.batch.operations,
+ javax.batch.operations.exception,
+ javax.batch.runtime,
+ javax.batch.runtime.context,
+ jsr352.batch.jsl
+Require-Bundle: JSR352.API

@@ -1,0 +1,5 @@
+<job id="1.Child" parent="1.Parent" xmlns="http://batch.jsr352/jsl">
+	<listeners>
+		<listener ref="MyRef"/>
+	</listeners>
+</job>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2012 International Business Machines Corp.
+
+  See the NOTICE file distributed with this work for additional information
+  regarding copyright ownership. Licensed under the Apache License,
+  Version 2.0 (the "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+	targetNamespace="http://batch.jsr352/jsl" xmlns:jsl="http://batch.jsr352/jsl" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	jaxb:version="2.0">
+
+	<xs:simpleType name="artifactRef">
+		<xs:restriction base="xs:string" />
+	</xs:simpleType>
+
+	<xs:complexType name="Job">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+			<xs:element name="listeners" type="jsl:Listeners" minOccurs="0" maxOccurs="1" />
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="decision" type="jsl:Decision" />
+				<xs:element name="flow" type="jsl:Flow" />
+				<xs:element name="split" type="jsl:Split" />
+				<xs:element name="step" type="jsl:Step" />
+			</xs:choice>
+		</xs:sequence>
+		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="parent" use="optional" type="xs:string" />
+		<xs:attribute name="abstract" use="optional" type="xs:string" />
+		<xs:attribute name="restartable" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:element name="job" type="jsl:Job" />
+	<!-- step, flow, split are valid top level elements for inheritance snippets -->
+	<xs:element name="flow" type="jsl:Flow" />
+	<xs:element name="split" type="jsl:Split" />
+	<xs:element name="step" type="jsl:Step" />
+	
+	<xs:complexType name="Listener">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+	</xs:complexType>
+
+	<xs:complexType name="Split">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+			<xs:element name="listeners" type="jsl:Listeners" minOccurs="0" maxOccurs="1" />
+			<xs:element name="flow" type="jsl:Flow" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="next" use="optional" type="xs:string" />
+		<xs:attribute name="abstract" use="optional" type="xs:string" />
+		<xs:attribute name="parent" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="Flow">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+			<xs:element name="listeners" type="jsl:Listeners" minOccurs="0" maxOccurs="1" />
+			<xs:choice minOccurs="0" maxOccurs="unbounded">
+				<xs:element name="decision" type="jsl:Decision" />
+				<xs:element name="step" type="jsl:Step" />
+			</xs:choice>
+			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="next" use="optional" type="xs:string" />
+		<xs:attribute name="abstract" use="optional" type="xs:string" />
+		<xs:attribute name="parent" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:group name="ControlElements">
+		<!-- I guess no point being strict if you don't want to group like elements. -->
+		<xs:choice>
+			<xs:element name="end" type="jsl:End" />
+			<xs:element name="fail" type="jsl:Fail" />
+			<xs:element name="next" type="jsl:Next" />
+			<xs:element name="stop" type="jsl:Stop" />
+		</xs:choice>
+	</xs:group>
+
+	<xs:complexType name="Decision">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+	</xs:complexType>
+
+	<xs:attributeGroup name="TerminatingAttributes">
+		<xs:attribute name="on" use="required" type="xs:string" />
+		<xs:attribute name="exit-status" use="optional" type="xs:string" />
+	</xs:attributeGroup>
+
+	<xs:complexType name="Fail">
+		<xs:attributeGroup ref="jsl:TerminatingAttributes" />
+	</xs:complexType>
+
+	<xs:complexType name="End">
+		<xs:attributeGroup ref="jsl:TerminatingAttributes" />
+	</xs:complexType>
+
+	<xs:complexType name="Stop">
+		<xs:attributeGroup ref="jsl:TerminatingAttributes" />
+		<xs:attribute name="restart" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="Next">
+		<xs:attribute name="on" use="required" type="xs:string" />
+		<xs:attribute name="to" use="required" type="xs:string" />
+	</xs:complexType>
+	
+	<xs:complexType name="CheckpointAlgorithm">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="ref" use="optional" type="jsl:artifactRef" />
+	</xs:complexType>
+	
+	<xs:complexType name="ExceptionClassFilter">
+		<xs:sequence>
+			<xs:element name="include" minOccurs="0" maxOccurs="1">
+			  <xs:complexType>
+			    <xs:sequence/>
+		 	    <xs:attribute name="class" use="required" type="xs:string"/>
+			  </xs:complexType>
+  		    </xs:element>
+			<xs:element name="exclude" minOccurs="0" maxOccurs="1">
+			  <xs:complexType>
+			    <xs:sequence/>
+		 	    <xs:attribute name="class" use="required" type="xs:string"/>
+			  </xs:complexType>
+  		    </xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="Step">
+		<xs:sequence>
+			<xs:element name="partition" type="jsl:Partition" minOccurs="0" maxOccurs="1" />
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+			<xs:element name="listeners" type="jsl:Listeners" minOccurs="0" maxOccurs="1" />
+			<xs:choice minOccurs="0" maxOccurs="1"> <!--  TODO validate a merged Step has at least one -->
+				<xs:element name="batchlet" type="jsl:Batchlet" />
+				<xs:element name="chunk" type="jsl:Chunk" />
+			</xs:choice>
+			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="start-limit" use="optional" type="xs:string" />
+		<xs:attribute name="allow-start-if-complete" use="optional" type="xs:string" />
+		<xs:attribute name="next" use="optional" type="xs:string" />
+		<xs:attribute name="abstract" use="optional" type="xs:string" />
+		<xs:attribute name="parent" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="Batchlet">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+	</xs:complexType>
+
+	<!--  required attributes were made optional to allow validated snippets to be loaded for inheritance -->
+	<xs:complexType name="Chunk"> <!--  TODO validate a merged Chunk has reader, processor, writer, chunk size -->
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+			<xs:element name="checkpoint-algorithm" type="jsl:CheckpointAlgorithm" minOccurs="0" maxOccurs="1" />
+			<xs:element name="skippable-exception-classes" type="jsl:ExceptionClassFilter" minOccurs="0" maxOccurs="1" />
+			<xs:element name="retryable-exception-classes" type="jsl:ExceptionClassFilter" minOccurs="0" maxOccurs="1" />
+			<xs:element name="no-rollback-exception-classes" type="jsl:ExceptionClassFilter" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="reader" use="optional" type="xs:string" />
+		<xs:attribute name="processor" use="optional" type="xs:string" />
+		<xs:attribute name="writer" use="optional" type="xs:string" />
+		<xs:attribute name="checkpoint-policy" use="optional" type="xs:string" default="item" />
+		<xs:attribute name="commit-interval" use="optional" type="xs:string" default="10" />
+		<xs:attribute name="buffer-size" use="optional" type="xs:string" />
+		<xs:attribute name="skip-limit" use="optional" type="xs:string" />
+		<xs:attribute name="retry-limit" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="Property">
+		<xs:attribute name="name" type="xs:string" use="required" />
+		<xs:attribute name="value" type="xs:string" use="required" />
+		<xs:attribute name="target" type="xs:string" use="optional" />
+	</xs:complexType>
+
+	<xs:complexType name="Properties">
+		<xs:sequence>
+		    <!--  We could have a useful "empty" list case when a child wants to "unset" parent properties by doing merge="false" with an
+		          empty list.  -->
+			<xs:element name="property" type="jsl:Property" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute name="merge" use="optional" type="xs:string" />
+		<xs:attribute name="partition" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="Listeners">
+		<xs:sequence>
+		    <!--  We could have a useful "empty" list case when a child wants to "unset" parent listeners by doing merge="false" with an
+		          empty list.  -->
+			<xs:element name="listener" type="jsl:Listener" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute name="merge" use="optional" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="Partition">
+		<xs:sequence>
+		    <xs:element name="partition-mapper" type="jsl:PartitionMapper" minOccurs="0" maxOccurs="1" />
+		    <xs:element name="partition-plan" type="jsl:PartitionPlan" minOccurs="0" maxOccurs="1" />
+			<xs:element name="collector" type="jsl:Collector" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="analyzer" type="jsl:Analyzer" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="PartitionReducer" type="jsl:PartitionReducer" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="PartitionPlan">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="instances" use="optional" type="xs:string" />
+		<xs:attribute name="threads" use="optional" type="xs:string" />
+	</xs:complexType>
+	
+	<xs:complexType name="PartitionMapper">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+	</xs:complexType>
+	
+	<xs:complexType name="Collector">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+	</xs:complexType>
+
+	<xs:complexType name="Analyzer">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+	</xs:complexType>
+
+	<xs:complexType name="PartitionReducer">
+		<xs:sequence>
+			<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+	</xs:complexType>
+
+</xs:schema>

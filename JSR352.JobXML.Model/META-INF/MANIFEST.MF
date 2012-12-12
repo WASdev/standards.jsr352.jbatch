@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Model
+Bundle-SymbolicName: JSR352.JobXML.Model
+Bundle-Version: 1.0.0.qualifier
+Import-Package: javax.batch.runtime.context
+Export-Package: com.ibm.batch.container.modelresolver,
+ com.ibm.batch.container.xjcl,
+ com.ibm.batch.container.xjcl.impl,
+ com.ibm.batch.xjcl,
+ jsr352.batch.jsl

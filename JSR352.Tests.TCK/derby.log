@@ -1,0 +1,18 @@
+Wed Dec 12 07:16:45 EST 2012 : Apache Derby Network Server - 10.8.3.0 - (1405108) started and ready to accept connections on port 1621
+----------------------------------------------------------------
+Wed Dec 12 07:19:54 EST 2012:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.3.0 - (1405108): instance a816c00e-013b-8f0b-adc9-000000112e88 
+on database directory /home/hendrix/workspace/jsr-352/JSR352.Tests.TCK/tckdb  with class loader sun.misc.Launcher$AppClassLoader@34b034b0 
+Loaded from file:/home/hendrix/workspace/jsr-352/JSR352.Binary.Dependencies/shippedToOpenSource/derby/lib/derby.jar
+java.vendor=IBM Corporation
+java.runtime.version=pxi3260sr10fp1-20120321_01 (SR10 FP1)
+java.fullversion=JRE 1.6.0 IBM J9 2.4 Linux x86-32 jvmxi3260sr10fp1-20120202_101568 (JIT enabled, AOT enabled)
+J9VM - 20120202_101568
+JIT  - r9_20111107_21307ifx1
+GC   - 20120202_AA
+user.dir=/home/hendrix/workspace/jsr-352/JSR352.Tests.TCK
+os.name=Linux
+os.arch=x86
+os.version=3.0.0-23-generic-pae
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

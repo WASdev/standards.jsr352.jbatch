@@ -1,0 +1,20 @@
+<project name="jsr352.tck" default="cleanAndCompileTCK">
+	
+	<dirname property="jsr352.tck.basedir" file="${ant.file.jsr352.tck}"/>
+	<property file="${imported.basedir}/imported.properties"/>
+	<property name="workspace.home.dir" value="${jsr352.tck.basedir}/../.."/>
+	
+	<target name="cleanTCK">
+		<delete dir="${jsr352.tck.basedir}/../testArtifactsBin"/>			
+	</target>
+	
+	<target name="compileTCK">
+		<mkdir dir="${jsr352.tck.basedir}/../testArtifactsBin"/>
+		<javac classpath="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar;${workspace.home.dir}/JSR352.Annotations/bin;${workspace.home.dir}/JSR352.API/bin;${workspace.home.dir}/JSR352.Processors/bin;" 
+			debug="true" debuglevel="lines,vars,source"
+			srcdir="${jsr352.tck.basedir}/../testArtifacts" destdir="${jsr352.tck.basedir}/../testArtifactsBin"/>
+	</target>
+	
+	<target name="cleanAndCompileTCK" depends="cleanTCK, compileTCK"/>
+
+</project>

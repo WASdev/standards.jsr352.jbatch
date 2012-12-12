@@ -1,0 +1,125 @@
+<?xml version="1.0"?>
+<project name="gen.xjcl.model" default="generate">
+		
+  <property name="prereq.dir" value="prereqs"/>
+  <property name="proj.dir" value="${basedir}/.."/>
+  <property name="generate.dir" value = "${proj.dir}/jaxbgen"/>
+  <property name="generate.pkg.dir" value = "${generate.dir}/jsr352/batch/jsl"/>
+  <property name="work.dir" value = "${proj.dir}/work"/>
+  <property name="stubs.dir" value = "${proj.dir}/toStringStubs"/>
+	
+  <target name="generateJAXB">
+		<taskdef name="xjc" classname="com.ibm.jtc.jax.tools.xjc.XJC2Task">
+			<classpath>
+				<fileset dir="${prereq.dir}">
+					<include name="com.ibm.jaxb.tools.jar"/>
+				</fileset>
+			</classpath>
+		</taskdef>
+		<mkdir dir=""/>
+		<xjc destdir="${generate.dir}">
+			<arg value="-mark-generated"/>
+			<binding dir="${proj.dir}/src/main/resources">
+			 	<include name="**/*.xjb"/>
+			</binding>
+			<schema dir="${proj.dir}/src/main/resources">
+			 	<include name="**/*.xsd"/>
+			</schema>
+			<!-- Uncomment if we want to switch to only doing codegen when XSD or XJC has changed. 
+            <depends dir="${proj.dir}/src/main/resources" includes="**/*"/>
+            <produces dir="${generate.dir}" includes="**/*.java"/>
+            --> 
+		</xjc>
+	</target>
+	
+	<!-- 
+	     The goal here is to have a set of JAXBs implement a common interface (the one that the property from the 
+	     containing Job specifies:  com.ibm.batch.container.xjcl.ExecutionElement.
+	     Though it seems like there is a way to do this   
+	       http://confluence.highsource.org/display/J2B/Inheritance+plugin
+	     I'm not sure if the IBM JDK version of the JAXB RI is extensible in this way, and don't want to create a 
+	     headache if/when this code is pulled into a WAS build.
+	     
+	     (Even so, there's no requirement to gen during build time, but still...)
+	     
+	     So we'll fix up by hand.-->  
+	     
+	<!--
+	replace="/\*\*\\n\*\n Modified post-XJC-gen by custom build logic in order to deal with the\n\* fact that JAXB does not make it easy to generate\\n* elements implementing a common interface.\n\*/	public class \1 implements com.ibm.batch.container.xjcl.ExecutionElement \{">
+	-->
+	<target name="AddExecutionElement.Intf.ToJAXBs">
+		<replaceregexp 
+		  match="public class (.*) \{"
+		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* since we can't seem to get JAXB's XJC to generate ${line.separator} \* elements implementing a common interface. ${line.separator} \*${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.batch.container.xjcl.ExecutionElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.batch.container.xjcl.ExecutionElement \{">  
+		               
+			<fileset dir="${generate.dir}">
+				<include name="**/Decision.java"/>
+				<include name="**/Flow.java"/>
+				<include name="**/Split.java"/>
+				<include name="**/Step.java"/>				
+			</fileset>
+		</replaceregexp>
+		
+	</target>
+	
+	<!-- 
+	     The goal here is to have a set of JAXBs implement a common interface (the one that the property from the 
+	     containing Job specifies:  com.ibm.batch.container.xjcl.ControlElement.
+	     Though it seems like there is a way to do this   
+	       http://confluence.highsource.org/display/J2B/Inheritance+plugin
+	     I'm not sure if the IBM JDK version of the JAXB RI is extensible in this way, and don't want to create a 
+	     headache if/when this code is pulled into a WAS build.
+	     
+	     (Even so, there's no requirement to gen during build time, but still...)
+	     
+	     So we'll fix up by hand.-->  
+	     
+	<!--
+	replace="/\*\*\\n\*\n Modified post-XJC-gen by custom build logic in order to deal with the\n\* fact that JAXB does not make it easy to generate\\n* elements implementing a common interface.\n\*/	public class \1 implements com.ibm.batch.container.xjcl.ControlElement \{">
+	-->
+	<target name="AddControlElement.Intf.ToJAXBs">
+		<replaceregexp 
+		  match="public class (.*) \{"
+		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* since we can't seem to get JAXB's XJC to generate ${line.separator} \* elements implementing a common interface. ${line.separator} \*${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.batch.container.xjcl.ControlElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.batch.container.xjcl.ControlElement \{">  
+		               
+			<fileset dir="${generate.dir}">
+				<include name="**/End.java"/>
+				<include name="**/Fail.java"/>
+				<include name="**/Next.java"/>
+				<include name="**/Stop.java"/>				
+			</fileset>
+		</replaceregexp>
+		
+	</target>
+
+	<target name="addInterfaces" depends="AddExecutionElement.Intf.ToJAXBs, AddControlElement.Intf.ToJAXBs"/>
+	<target name="generate" depends="generateJAXB, addInterfaces, addToStrings"/>
+	
+	<macrodef name="appendToString">
+	  <attribute name="class"/>
+	  <sequential>
+		 <concat destfile="${generate.dir}/@{class}.java.tmp" force="no">
+		 	<path path="${generate.pkg.dir}/@{class}.java"/>
+		 	<filterchain>
+		 		<!-- Strip off last line -->
+		 		<tailfilter lines="-1" skip="1"/>
+		 	</filterchain>
+ 		</concat>
+		<concat destfile="${generate.pkg.dir}/@{class}.java" force="no">
+		 	<path path="${generate.dir}/@{class}.java.tmp"/>
+		 	<path path="${stubs.dir}/@{class}ToString.java"/>
+		 	<footer filtering="no">
+}</footer> <!-- No, I don't know how to do the whitespace/newline any better .-->
+ 		</concat>
+ 		<delete file="${generate.dir}/@{class}.java.tmp"/>
+	  </sequential>
+	</macrodef>
+	
+	<target name="addToStrings">
+		<appendToString class="Batchlet"/>
+		<appendToString class="Chunk"/>
+		<appendToString class="JSLJob"/>
+		<appendToString class="Step"/>
+	</target>
+	
+</project>
