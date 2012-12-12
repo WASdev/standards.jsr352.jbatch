@@ -12,7 +12,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>batch-annotation</artifactId>
+			<artifactId>javax.batch-annotation</artifactId>
 			<version>0.2</version>
 		</dependency>
 	</dependencies>
