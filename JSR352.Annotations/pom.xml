@@ -6,7 +6,7 @@
         <version>0.2</version>
     </parent>
     <groupId>javax.batch</groupId>
-    <artifactId>batch-annotation</artifactId>
+    <artifactId>javax.batch-annotation</artifactId>
     <packaging>jar</packaging>
 	<version>0.2</version>
     <build>

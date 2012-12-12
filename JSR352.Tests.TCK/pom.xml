@@ -5,7 +5,7 @@
         <artifactId>jbatch</artifactId>
         <version>0.2</version>
     </parent>
-    <groupId>javax.batch</groupId>
+    <groupId>com.ibm.batch</groupId>
     <artifactId>batch-tck</artifactId>
     <packaging>jar</packaging>
     <version>0.2</version>
@@ -17,37 +17,37 @@
             <scope>test</scope>
         </dependency>
 		<dependency>
-			<groupId>javax.batch</groupId>
+			<groupId>com.ibm.batch</groupId>
 			<artifactId>batch-tck-spi</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>batch-annotation</artifactId>
+			<artifactId>javax.batch-annotation</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.batch</groupId>
+			<groupId>com.ibm.batch</groupId>
 			<artifactId>batch-model</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>batch-api</artifactId>
+			<artifactId>javax.batch-api</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.batch</groupId>
-			<artifactId>batch-processors</artifactId>
+			<groupId>com.ibm.batch</groupId>
+			<artifactId>batch-annotation-processors</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.batch</groupId>
+			<groupId>com.ibm.batch</groupId>
 			<artifactId>batch-runtime</artifactId>
 			<version>0.2</version>
 		</dependency>
@@ -136,7 +136,7 @@
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
-			<!--
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -176,8 +176,7 @@
                         </configuration>
                     </execution>
                 </executions>
-			</plugin>
-			-->
+            </plugin>
 		</plugins>
     </build>
 </project>

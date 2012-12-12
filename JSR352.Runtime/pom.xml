@@ -5,7 +5,7 @@
         <artifactId>jbatch</artifactId>
         <version>0.2</version>
     </parent>
-    <groupId>javax.batch</groupId>
+    <groupId>com.ibm.batch</groupId>
     <artifactId>batch-runtime</artifactId>
     <packaging>jar</packaging>
     <version>0.2</version>
@@ -18,24 +18,24 @@
         </dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>batch-annotation</artifactId>
+			<artifactId>javax.batch-annotation</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.batch</groupId>
+			<groupId>com.ibm.batch</groupId>
 			<artifactId>batch-model</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>batch-api</artifactId>
+			<artifactId>javax.batch-api</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.batch</groupId>
+			<groupId>com.ibm.batch</groupId>
 			<artifactId>batch-tck-spi</artifactId>
 			<version>0.2</version>
 			<scope>compile</scope>
@@ -64,15 +64,6 @@
 			<version>1.1.1</version>
 			<scope>provided</scope>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>com.ibm.websphere</groupId>
-			<artifactId>was</artifactId>
-			<version>8.00</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/../JSR352.Binary.Dependencies/was_public.jar</systemPath>
-		</dependency>
-		-->
 	</dependencies>
     <build>
 		<resources>
@@ -123,67 +114,26 @@
                     </archive>
                 </configuration>
             </plugin>
-			<!--
-     <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-jar-plugin</artifactId>
-       <version>2.2</version>
-       <executions>
-         <execution>
-           <goals>
-             <goal>test-jar</goal>
-           </goals>
-         </execution>
-       </executions>
-     </plugin>
-<plugin>
-  <artifactId>maven-compiler-plugin</artifactId>
-  <executions>
-    <execution>
-      <id>test-compile</id>
-      <phase>process-test-sources</phase>
-      <goals>
-        <goal>testCompile</goal>
-      </goals>
-      <configuration>
-        <source>1.6</source>
-        <target>1.6</target>
-      </configuration>
-    </execution>
-  </executions>
-</plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.4</version>
-        <configuration>
-          <additionalClasspathElements>
-			  <additionalClasspathElement>../JSR352.TCK.SPI/target/batch-tck-spi.jar</additionalClasspathElement>
-          </additionalClasspathElements>
-        </configuration>
-      </plugin>
--->
-     <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.5</version>
-        <executions>
-          <execution>
-            <id>add-test-source</id>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-				  <source>testJunits/test</source>
-				  <source>testArtifacts</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+			 <plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+				  <execution>
+					<id>add-test-source</id>
+					<phase>generate-test-sources</phase>
+					<goals>
+					  <goal>add-test-source</goal>
+					</goals>
+					<configuration>
+					  <sources>
+						  <source>testJunits/test</source>
+						  <source>testArtifacts</source>
+					  </sources>
+					</configuration>
+				  </execution>
+				</executions>
+			  </plugin>
         </plugins>
     </build>
 </project>

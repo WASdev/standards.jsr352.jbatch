@@ -5,14 +5,14 @@
         <artifactId>jbatch</artifactId>
         <version>0.2</version>
     </parent>
-    <groupId>javax.batch</groupId>
+    <groupId>com.ibm.batch</groupId>
     <artifactId>batch-tck-spi</artifactId>
     <packaging>jar</packaging>
     <version>0.2</version>
 	<dependencies>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>batch-api</artifactId>
+			<artifactId>javax.batch-api</artifactId>
 			<version>0.2</version>
 		</dependency>
 	</dependencies>
