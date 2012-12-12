@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite skipped="1" tests="4" failures="0" errors="0" name="test.JobModelTest" time="1.03">
+<testsuite skipped="1" tests="4" failures="0" errors="0" name="test.JobModelTest" time="0.931">
   <properties>
     <property value="IBM Corporation" name="java.vendor"/>
     <property value="/home/hendrix/.m2/repository" name="localRepository"/>
@@ -36,7 +36,7 @@ J9VM - 20120202_101568
 JIT  - r9_20111107_21307ifx1
 GC   - 20120202_AA" name="java.vm.info"/>
     <property value="3.0.0-23-generic-pae" name="os.version"/>
-    <property value="/tmp/surefirebooter7396796143400583550.jar" name="surefire.real.class.path"/>
+    <property value="/tmp/surefirebooter1053941928703624353.jar" name="surefire.real.class.path"/>
     <property value="" name="java.awt.fonts"/>
     <property value=":" name="path.separator"/>
     <property value="2.4" name="java.vm.version"/>
@@ -58,13 +58,13 @@ J9VM - 20120202_101568
 JIT  - r9_20111107_21307ifx1
 GC   - 20120202_AA" name="java.fullversion"/>
     <property value="Java(TM) SE Runtime Environment" name="java.runtime.name"/>
-    <property value="/tmp/surefirebooter7396796143400583550.jar /tmp/surefire5919577058064220902tmp /tmp/surefire2199493608493881715tmp" name="sun.java.command"/>
-    <property value="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model/target/test-classes:/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model/target/classes:/home/hendrix/.m2/repository/junit/junit/4.10/junit-4.10.jar:/home/hendrix/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:" name="java.class.path"/>
+    <property value="/tmp/surefirebooter1053941928703624353.jar /tmp/surefire8152302902715162425tmp /tmp/surefire6562973190267386443tmp" name="sun.java.command"/>
+    <property value="/home/hendrix/workspace/git-jsr352/JSR352.JobXML.Model/target/test-classes:/home/hendrix/workspace/git-jsr352/JSR352.JobXML.Model/target/classes:/home/hendrix/.m2/repository/junit/junit/4.10/junit-4.10.jar:/home/hendrix/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:" name="java.class.path"/>
     <property value="Java Virtual Machine Specification" name="java.vm.specification.name"/>
-    <property value="30451" name="sun.java.launcher.pid"/>
+    <property value="3575" name="sun.java.launcher.pid"/>
     <property value="1.0" name="java.vm.specification.version"/>
     <property value="little" name="sun.cpu.endian"/>
-    <property value="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model/target/test-classes:/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model/target/classes:/home/hendrix/.m2/repository/junit/junit/4.10/junit-4.10.jar:/home/hendrix/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:" name="surefire.test.class.path"/>
+    <property value="/home/hendrix/workspace/git-jsr352/JSR352.JobXML.Model/target/test-classes:/home/hendrix/workspace/git-jsr352/JSR352.JobXML.Model/target/classes:/home/hendrix/.m2/repository/junit/junit/4.10/junit-4.10.jar:/home/hendrix/.m2/repository/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar:" name="surefire.test.class.path"/>
     <property value="/tmp" name="java.io.tmpdir"/>
     <property value="20120320_01" name="java.jcl.version"/>
     <property value="UTF-8" name="ibm.system.encoding"/>
@@ -72,23 +72,23 @@ GC   - 20120202_AA" name="java.fullversion"/>
     <property value="sun.awt.X11GraphicsEnvironment" name="java.awt.graphicsenv"/>
     <property value="false" name="ibm.signalhandling.rs"/>
     <property value="/usr/lib/j2sdk1.6-ibm/jre/lib/ext" name="java.ext.dirs"/>
-    <property value="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model" name="user.dir"/>
+    <property value="/home/hendrix/workspace/git-jsr352/JSR352.JobXML.Model" name="user.dir"/>
     <property value="
 " name="line.separator"/>
     <property value="IBM J9 VM" name="java.vm.name"/>
     <property value="false" name="com.ibm.oti.shared.enabled"/>
     <property value="32" name="com.ibm.vm.bitmode"/>
-    <property value="/home/hendrix/workspace/jsr-352/JSR352.JobXML.Model" name="basedir"/>
+    <property value="/home/hendrix/workspace/git-jsr352/JSR352.JobXML.Model" name="basedir"/>
     <property value="15" name="jxe.lowest.romimage.version"/>
     <property value="UTF-8" name="file.encoding"/>
     <property value="scar" name="com.ibm.oti.configuration"/>
     <property value="1.6" name="java.specification.version"/>
     <property value="20111101_1053" name="com.ibm.oti.jcl.build"/>
   </properties>
-  <testcase classname="test.JobModelTest" name="testModelNoValidate" time="0.654"/>
-  <testcase classname="test.JobModelTest" name="testModelValidate" time="0.205"/>
-  <testcase classname="test.JobModelTest" name="testValidateInvalid" time="0.129"/>
-  <testcase classname="test.JobModelTest" name="testValidateInvalidEmptyString" time="0.13">
+  <testcase classname="test.JobModelTest" name="testModelNoValidate" time="0.451"/>
+  <testcase classname="test.JobModelTest" name="testModelValidate" time="0.276"/>
+  <testcase classname="test.JobModelTest" name="testValidateInvalid" time="0.174"/>
+  <testcase classname="test.JobModelTest" name="testValidateInvalidEmptyString" time="0.175">
     <skipped/>
   </testcase>
 </testsuite>

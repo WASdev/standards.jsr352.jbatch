@@ -27,9 +27,15 @@
 		</license>
 	</licenses>
 	<scm>
-		<url>http://java.net/projects/jbatch/sources/jsr-352-git-repository/show</url>
-		<connection>http://java.net/projects/jbatch/sources/jsr-352-git-repository/show</connection>
+		<url>git://java.net/jbatch~jsr-352-git-repository</url>
+		<connection>scm:git://java.net/jbatch~jsr-352-git-repository</connection>
+		<developerConnection>scm:git://java.net/jbatch~jsr-352-git-repository</developerConnection>
 	</scm>
+	<parent>
+		<groupId>net.java</groupId>
+		<artifactId>jvnet-parent</artifactId>
+		<version>1</version>
+	</parent>
 	<developers>
 		<developer>
 			<id>scottkurz</id>
@@ -63,16 +69,11 @@
 		</developer>
 	</developers>
 
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<parent-path>${user.dir}/</parent-path>
     </properties>
-    <distributionManagement>
-        <site>
-            <id>java.net</id>
-            <url>git://java.net/jbatch~jsr-352-git-repository</url>
-        </site>
-    </distributionManagement>
     <modules>
         <module>JSR352.Annotations</module>
         <module>JSR352.API</module>
