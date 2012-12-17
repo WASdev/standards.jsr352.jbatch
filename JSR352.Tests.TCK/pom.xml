@@ -3,12 +3,12 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>0.2</version>
+        <version>1.0-b02</version>
     </parent>
     <groupId>com.ibm.batch</groupId>
-    <artifactId>batch-tck</artifactId>
+    <artifactId>com.ibm.batch-tck</artifactId>
     <packaging>jar</packaging>
-    <version>0.2</version>
+    <version>1.0-b02</version>
 	<dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -18,38 +18,38 @@
         </dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
-			<artifactId>batch-tck-spi</artifactId>
-			<version>0.2</version>
+			<artifactId>com.ibm.batch-tck-spi</artifactId>
+			<version>1.0-b02</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-annotation</artifactId>
-			<version>0.2</version>
+			<version>1.0-b02</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
-			<artifactId>batch-model</artifactId>
-			<version>0.2</version>
+			<artifactId>com.ibm.batch-model</artifactId>
+			<version>1.0-b02</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-api</artifactId>
-			<version>0.2</version>
+			<version>1.0-b02</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
-			<artifactId>batch-annotation-processors</artifactId>
-			<version>0.2</version>
+			<artifactId>com.ibm.batch-annotation-processors</artifactId>
+			<version>1.0-b02</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
-			<artifactId>batch-runtime</artifactId>
-			<version>0.2</version>
+			<artifactId>com.ibm.batch-runtime</artifactId>
+			<version>1.0-b02</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.inject</groupId>

@@ -3,17 +3,17 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>0.2</version>
+        <version>1.0-b02</version>
     </parent>
     <groupId>com.ibm.batch</groupId>
-    <artifactId>batch-annotation-processors</artifactId>
+    <artifactId>com.ibm.batch-annotation-processors</artifactId>
     <packaging>jar</packaging>
-	<version>0.2</version>
+	<version>1.0-b02</version>
 	<dependencies>
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-annotation</artifactId>
-			<version>0.2</version>
+			<version>1.0-b02</version>
 		</dependency>
 	</dependencies>
     <build>
