@@ -21,7 +21,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.status.JobStatus;

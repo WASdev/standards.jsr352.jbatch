@@ -19,7 +19,7 @@ package com.ibm.batch.container.services.impl;
 import java.io.Serializable;
 import java.util.List;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.exception.PersistenceException;
 import com.ibm.batch.container.services.IPersistenceDataKey;

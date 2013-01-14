@@ -29,7 +29,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.IBatchArtifactFactory;

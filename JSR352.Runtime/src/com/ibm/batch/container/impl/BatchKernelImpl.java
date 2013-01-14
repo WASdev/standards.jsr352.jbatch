@@ -31,8 +31,8 @@ import javax.batch.runtime.StepExecution;
 
 import jsr352.batch.jsl.JSLJob;
 
-import com.ibm.batch.container.IBatchConfig;
 import com.ibm.batch.container.artifact.proxy.PartitionAnalyzerProxy;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.jobinstance.JobExecutionHelper;
 import com.ibm.batch.container.jobinstance.ParallelJobExecution;
@@ -70,7 +70,7 @@ public class BatchKernelImpl implements IBatchKernelService {
     public BatchKernelImpl() {
         // get the JobId service
         _jobIdManagementService = (IJobIdManagementService) servicesManager.getService(ServiceType.JOB_ID_MANAGEMENT_SERVICE);
-        executorService = ServicesManager.getInstance().getThreadpoolService(null, THREAD_POOL_SIZE);
+        executorService = (IBatchThreadPoolService)servicesManager.getService(ServiceType.BATCH_THREADPOOL_SERVICE);
         callbackService = (IJobEndCallbackService) servicesManager.getService(ServiceType.CALLBACK_SERVICE);
     }
 

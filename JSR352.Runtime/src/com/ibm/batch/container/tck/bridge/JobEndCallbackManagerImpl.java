@@ -21,7 +21,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.tck.spi.JobEndCallback;
 

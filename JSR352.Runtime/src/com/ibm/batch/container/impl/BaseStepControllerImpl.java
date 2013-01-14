@@ -113,7 +113,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		stepContext.addMetric(MetricImpl.Counter.valueOf("PROCESS_SKIP_COUNT"), 0);
 		stepContext.addMetric(MetricImpl.Counter.valueOf("WRITE_SKIP_COUNT"), 0);
 		
-		ITransactionManagementService transMgr = (ITransactionManagementService) ServicesManager.getInstance().getService(ServiceType.TRANSACTION_MANAGEMENT_SERVICE);
+		ITransactionManagementService transMgr = (ITransactionManagementService) ServicesManager.getInstance().getService(ServiceType.TRANSACTION_SERVICE);
 		transactionManager = transMgr.getTransactionManager(stepContext);
     	
     }

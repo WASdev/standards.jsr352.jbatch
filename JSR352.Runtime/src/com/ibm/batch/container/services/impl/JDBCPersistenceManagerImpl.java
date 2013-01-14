@@ -42,7 +42,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.exception.PersistenceException;
 import com.ibm.batch.container.jobinstance.StepExecutionImpl;
@@ -125,7 +125,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl i
 		logger.entering(CLASSNAME, "init", batchConfig);
 		
 		if (!batchConfig.isJ2seMode()) {
-			jndiName = batchConfig.getJndiName();
+			jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
 			
 			logger.log(Level.FINE, "JNDI name is {0}", jndiName);
 			
@@ -138,14 +138,16 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl i
 				dataSource = (DataSource) ctx.lookup(jndiName);
 				
 			} catch (NamingException e) {
+				logger.severe("Lookup failed for JNDI name: " + jndiName + 
+						".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
 				throw new BatchContainerServiceException(e);
 			}
 			
 		} else {
-			driver = batchConfig.getJdbcDriver();
-			url = batchConfig.getJdbcUrl();
-			userId = batchConfig.getDbUser();
-			pwd = batchConfig.getDbPassword();
+			driver = batchConfig.getDatabaseConfigurationBean().getJdbcDriver();
+			url = batchConfig.getDatabaseConfigurationBean().getJdbcUrl();
+			userId = batchConfig.getDatabaseConfigurationBean().getDbUser();
+			pwd = batchConfig.getDatabaseConfigurationBean().getDbPassword();
 			
 			logger.log(Level.FINE, "driver: {0}, url: {1}", new Object[]{driver, url});
 		}

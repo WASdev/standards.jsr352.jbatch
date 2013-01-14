@@ -5,6 +5,7 @@ Bundle-SymbolicName: JSR352.Runtime
 Bundle-Version: 1.0.0.qualifier
 Export-Package: com.ibm.batch.container,
  com.ibm.batch.container.artifact.proxy,
+ com.ibm.batch.container.config,
  com.ibm.batch.container.exception,
  com.ibm.batch.container.jobinstance,
  com.ibm.batch.container.services,

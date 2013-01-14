@@ -28,15 +28,7 @@ import com.ibm.batch.container.util.BatchWorkUnit;
 */
 public interface IBatchThreadPoolService extends IBatchServiceBase {
 
-	/**
-     * (Optional) Plugin implementors not using a thread pool can ignore this method
-	 * Sets the thread pool size
-	 * @param i
-	 */
 
-	public void setPoolSize(int i);
-	
-	
 	/**
 	 * (Required) Runs the given task. A task is usually short lived
 	 * @param work The task to execute
@@ -46,16 +38,9 @@ public interface IBatchThreadPoolService extends IBatchServiceBase {
 	 */
 
 	public void executeTask(BatchWorkUnit work, Object config);
+
 	
 	/**
-	 * (Required) Runs the given Job object. A job is usually long running.
-	 * @param job
-	 */
-
-	public void executeJob(BatchWorkUnit job);
-	
-	
-	   /**
      * Runs the given task. A task is usually short lived
      * @param work The task to execute
      * @param config Optional configuration to customize the execution.

@@ -16,32 +16,19 @@
 */
 package com.ibm.batch.container.impl;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.DatabaseConfigurationBean;
+import com.ibm.batch.container.config.IBatchConfig;
+import com.ibm.batch.container.config.GlassfishThreadPoolConfigurationBean;
 
 public class BatchConfigImpl implements IBatchConfig {
 	
 	protected String batchContainerHome = "";
 	protected boolean j2seMode = false;
-	protected String jndiName = "";
-	protected String jdbcDriver = "";
-	protected String dbUser = "";
-	protected String dbPassword = "";
-	protected String jdbcUrl = "";
 	protected String workManagerJndiName = null;
+
+	protected GlassfishThreadPoolConfigurationBean glassfishThreadPoolConfigBean;
+	protected DatabaseConfigurationBean databaseConfigBean;
 	
-	
-	public String getJdbcUrl() {
-		return jdbcUrl;
-	}
-
-	public void setJdbcUrl(String jdbcUrl) {
-		this.jdbcUrl = jdbcUrl;
-	}
-
-	public void setDbPassword(String dbPassword) {
-		this.dbPassword = dbPassword;
-	}
-
 	public boolean isJ2seMode() {
 		return j2seMode;
 	}
@@ -49,49 +36,16 @@ public class BatchConfigImpl implements IBatchConfig {
 	public void setJ2seMode(boolean j2seMode) {
 		this.j2seMode = j2seMode;
 	}
-
-	public void setJdbcDriver(String jdbcDriver) {
-		this.jdbcDriver = jdbcDriver;
-	}
-
-	public void setDbUser(String dbUser) {
-		this.dbUser = dbUser;
+	
+	@Override
+	public String getBatchContainerHome() {
+		return this.batchContainerHome;
 	}
 	
 	public void setBatchContainerHome(String batchContainerHome) {
 		this.batchContainerHome = batchContainerHome;
 	}
 	
-	public void setJndiName(String jndiName) {
-		this.jndiName = jndiName;
-	}
-	
-
-	@Override
-	public String getBatchContainerHome() {
-		return this.batchContainerHome;
-	}
-	
-	@Override
-	public String getJndiName() {
-		return this.jndiName;
-	}
-
-	@Override
-	public String getJdbcDriver() {
-		return this.jdbcDriver;
-	}
-
-	@Override
-	public String getDbUser() {
-		return this.dbUser;
-	}
-
-	@Override
-	public String getDbPassword() {
-		return this.dbPassword;
-	}
-
 	public String getWorkManagerJndiName() {
 		return workManagerJndiName;
 	}
@@ -100,4 +54,23 @@ public class BatchConfigImpl implements IBatchConfig {
 		this.workManagerJndiName = workManagerJndiName;
 	}
 
+	@Override
+	public GlassfishThreadPoolConfigurationBean getGlassfishThreadPoolConfigurationBean() {
+		return glassfishThreadPoolConfigBean;
+	}
+
+	@Override
+	public void setGlassfishThreadPoolConfigurationBean(GlassfishThreadPoolConfigurationBean threadPoolConfigBean) {
+		this.glassfishThreadPoolConfigBean = threadPoolConfigBean;
+	}
+	
+	@Override
+	public DatabaseConfigurationBean getDatabaseConfigurationBean() {
+		return databaseConfigBean;
+	}
+
+	@Override
+	public void setDatabaseConfigurationBean(DatabaseConfigurationBean databaseConfigBean) {
+		this.databaseConfigBean = databaseConfigBean;
+	}
 }

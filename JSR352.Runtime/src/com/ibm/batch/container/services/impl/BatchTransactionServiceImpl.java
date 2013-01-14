@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 import javax.batch.runtime.context.StepContext;
 import javax.batch.runtime.spi.TransactionManagerSPI;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.exception.TransactionManagementException;
 import com.ibm.batch.container.services.ITransactionManagementService;

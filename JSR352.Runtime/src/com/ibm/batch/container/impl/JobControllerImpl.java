@@ -129,11 +129,8 @@ public class JobControllerImpl implements IController {
         }
 
         try {
-
-            updateJobBatchStatus(BatchStatus.STARTING);
-
             // Periodic check for stopping job
-            if (jobContext.getBatchStatus().equals(ExecutionStatus.getStringValue(BatchStatus.STOPPING))) {
+            if (ExecutionStatus.getStringValue(BatchStatus.STOPPING).equals(jobContext.getBatchStatus())) {
                 updateJobBatchStatus(BatchStatus.STOPPED);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " Exiting as job has been stopped");
@@ -141,8 +138,7 @@ public class JobControllerImpl implements IController {
                 return;
             }
 
-            //AJM: jobExecution.setJobContext(jobContext);  // move this up to be the first thing we do in this method          
-
+            updateJobBatchStatus(BatchStatus.STARTING);
 
             // Periodic check for stopping job
             if (jobContext.getBatchStatus().equals(ExecutionStatus.getStringValue(BatchStatus.STOPPING))) {
@@ -539,8 +535,8 @@ public class JobControllerImpl implements IController {
     private void updateJobBatchStatus(BatchStatus batchStatus) {
         String methodName = "updateJobBatchStatus";
 
-        if (logger.isLoggable(Level.INFO)) {
-            logger.info(methodName + " Setting job batch status to: " + ExecutionStatus.getStringValue(batchStatus));
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(methodName + " Setting job batch status to: " + ExecutionStatus.getStringValue(batchStatus));
         }
 
         jobContext.setBatchStatus(ExecutionStatus.getStringValue(batchStatus));

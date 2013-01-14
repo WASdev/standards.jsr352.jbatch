@@ -16,6 +16,23 @@
 */
 package com.ibm.batch.container.util;
 
-public class BatchContainerConstants {
+public interface BatchContainerConstants {
 
+	public static final String BATCH_ADMIN_CONFIG_FILE = "batch-config.properties";
+	public static final String BATCH_INTEGRATOR_CONFIG_FILE = "batch-services.properties";
+	
+	public static final String J2SE_MODE = "J2SE_MODE";
+	public static final String JNDI_NAME = "JNDI_NAME";
+	public static final String WORK_MANAGER_JNDI_NAME = "WORK_MANAGER_JNDI_NAME";
+		
+	public static final String GLASSFISH_THREADPOOL_MAX_QUEUE_SIZE = "GLASSFISH_THREADPOOL_MAX_QUEUE_SIZE";
+	public static final String GLASSFISH_THREADPOOL_MAX_POOL_SIZE = "GLASSFISH_THREADPOOL_MAX_POOL_SIZE";
+	public static final String GLASSFISH_THREADPOOL_MIN_POOL_SIZE = "GLASSFISH_THREADPOOL_MIN_POOL_SIZE";
+	public static final String GLASSFISH_THREADPOOL_IDLE_THREAD_TIMEOUT = "GLASSFISH_THREADPOOL_IDLE_THREAD_TIMEOUT";	
+
+	public static final String JDBC_DRIVER = "JDBC_DRIVER";
+	public static final String JDBC_URL = "JDBC_URL";
+	public static final String DB_USER = "DB_USER";
+	public static final String DB_PASSWORD = "DB_PWD";
+	public static final String DEFAULT_JDBC_JNDI_NAME = "jdbc/batch";
 }

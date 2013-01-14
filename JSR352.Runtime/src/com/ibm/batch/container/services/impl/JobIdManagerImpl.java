@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.IJobIdManagementService;
 

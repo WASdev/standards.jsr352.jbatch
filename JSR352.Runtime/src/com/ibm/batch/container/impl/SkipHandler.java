@@ -258,7 +258,8 @@ public class SkipHandler {
 	    for ( Iterator it = skipList.iterator(); it.hasNext(); ) {
 	        String exClassName = (String) it.next();   
 	        try {
-	        	if (retVal = Class.forName(exClassName).isInstance(e))
+	            ClassLoader tccl = Thread.currentThread().getContextClassLoader();	            
+	        	if (retVal = tccl.loadClass(exClassName).isInstance(e))
 	        		break;
 	        } catch (ClassNotFoundException cnf) {
 	        	logger.logp(Level.FINE, className, mName, cnf.getLocalizedMessage());

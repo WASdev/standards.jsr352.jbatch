@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 
 import javax.batch.runtime.JobInstance;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.IJobStatusManagerService;
 import com.ibm.batch.container.services.IPersistenceManagerService;

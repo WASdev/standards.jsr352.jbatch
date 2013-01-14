@@ -33,84 +33,87 @@ import com.ibm.batch.container.services.IBatchKernelService;
  */
 public class BatchWorkUnit implements Runnable {
 
-    private String CLASSNAME = BatchWorkUnit.class.getName();
-    private Logger logger = Logger.getLogger(BatchWorkUnit.class.getPackage().getName());
+	private String CLASSNAME = BatchWorkUnit.class.getName();
+	private Logger logger = Logger.getLogger(BatchWorkUnit.class.getPackage().getName());
 
-    private RuntimeJobExecutionImpl jobExecutionImpl = null;
-    private IBatchKernelService batchKernel = null;
-    private final JobControllerImpl controller;
-    
-    private PartitionAnalyzerProxy analyzerProxy;
-    private boolean notifyCallbackWhenDone;
+	private RuntimeJobExecutionImpl jobExecutionImpl = null;
+	private IBatchKernelService batchKernel = null;
+	private final JobControllerImpl controller;
 
-    public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionImpl jobExecutionImpl) {
-        this(batchKernel, jobExecutionImpl, null, true);
-    }
-    
-    public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionImpl jobExecutionImpl, PartitionAnalyzerProxy analyzerProxy, boolean notifyCallbackWhenDone) {
-        this.setBatchKernel(batchKernel);
-        this.setJobExecutionImpl(jobExecutionImpl);
-        this.analyzerProxy = analyzerProxy;
-        this.setNotifyCallbackWhenDone(notifyCallbackWhenDone);
-        
-        controller = new JobControllerImpl(this.getJobExecutionImpl());
-        controller.setAnalyzerProxy(this.analyzerProxy);
-        
-    }
+	private PartitionAnalyzerProxy analyzerProxy;
+	private boolean notifyCallbackWhenDone;
 
-    public JobControllerImpl getController() {
-        return this.controller;
-    }
+	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionImpl jobExecutionImpl) {
+		this(batchKernel, jobExecutionImpl, null, true);
+	}
 
-    @Override
-    public void run() {
-        String method = "run";
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(CLASSNAME, method);
-        }
+	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionImpl jobExecutionImpl, PartitionAnalyzerProxy analyzerProxy, boolean notifyCallbackWhenDone) {
+		this.setBatchKernel(batchKernel);
+		this.setJobExecutionImpl(jobExecutionImpl);
+		this.analyzerProxy = analyzerProxy;
+		this.setNotifyCallbackWhenDone(notifyCallbackWhenDone);
 
-        if (logger.isLoggable(Level.INFO)) {
-            logger.info("==========================================================");
-            logger.info("Invoking executeJob on JobController; " + "JobInstance id=" + getJobExecutionImpl().getInstanceId()
-                    + ", executionId=" + getJobExecutionImpl().getExecutionId());
-            logger.info("==========================================================");
-        }
+		controller = new JobControllerImpl(this.getJobExecutionImpl());
+		controller.setAnalyzerProxy(this.analyzerProxy);
 
-        try {
-            controller.executeJob();
-        } catch (Exception e) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Exception when invoking executeJob on JobController; " + "JobInstance id="
-                        + getJobExecutionImpl().getInstanceId() + ", executionId=" + getJobExecutionImpl().getExecutionId());
-                logger.fine("Job Batch Status = " + getBatchStatus() + ";  Job Exit Status = "
-                        + getExitStatus());
-            }
+	}
 
-            
-            if (isNotifyCallbackWhenDone()) {
-            	getBatchKernel().jobExecutionDone(getJobExecutionImpl());
-            }
+	public JobControllerImpl getController() {
+		return this.controller;
+	}
 
-            throw new BatchContainerRuntimeException("This job failed unexpectedly.", e);
+	@Override
+	public void run() {
+		String method = "run";
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(CLASSNAME, method);
+		}
 
-        }
-        if (logger.isLoggable(Level.INFO)) {
-            logger.info("==========================================================");
-            logger.info("Done invoking executeJob on JobController; " + "JobInstance id=" + getJobExecutionImpl().getInstanceId()
-                    + ", executionId=" + getJobExecutionImpl().getExecutionId());
-            logger.info("Job Batch Status = " + getBatchStatus() + ";  Job Exit Status = "
-                    + getExitStatus());
-            logger.info("==========================================================");
-        }
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("==========================================================");
+			logger.fine("Invoking executeJob on JobController; " + "JobInstance id=" + getJobExecutionImpl().getInstanceId()
+					+ ", executionId=" + getJobExecutionImpl().getExecutionId());
+			logger.fine("==========================================================");
+		}
 
-        if (isNotifyCallbackWhenDone()) {
-        	getBatchKernel().jobExecutionDone(getJobExecutionImpl());
-        }
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(CLASSNAME, method);
-        }
-    }
+
+
+		try {
+			controller.executeJob();
+		} catch (Exception e) {
+			if (logger.isLoggable(Level.FINE)) {
+				logger.fine("Exception when invoking executeJob on JobController; " + "JobInstance id="
+						+ getJobExecutionImpl().getInstanceId() + ", executionId=" + getJobExecutionImpl().getExecutionId());
+				logger.fine("Job Batch Status = " + getBatchStatus() + ";  Job Exit Status = "
+						+ getExitStatus());
+			}
+
+
+			if (isNotifyCallbackWhenDone()) {
+				getBatchKernel().jobExecutionDone(getJobExecutionImpl());
+			}
+
+			throw new BatchContainerRuntimeException("This job failed unexpectedly.", e);
+
+		}
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("==========================================================");
+			logger.fine("Done invoking executeJob on JobController; " + "JobInstance id=" + getJobExecutionImpl().getInstanceId()
+					+ ", executionId=" + getJobExecutionImpl().getExecutionId());
+			logger.fine("Job Batch Status = " + getBatchStatus() + ";  Job Exit Status = "
+					+ getExitStatus());
+			logger.fine("==========================================================");
+		}
+
+		if (isNotifyCallbackWhenDone()) {
+			getBatchKernel().jobExecutionDone(getJobExecutionImpl());
+		}
+
+		if (logger.isLoggable(Level.FINER)) {
+			logger.exiting(CLASSNAME, method);
+		}
+	}
 
 	public void setAnalyzerProxy(PartitionAnalyzerProxy analyzerProxy) {
 		this.analyzerProxy = analyzerProxy;
@@ -119,11 +122,11 @@ public class BatchWorkUnit implements Runnable {
 	public PartitionAnalyzerProxy getAnalyzerProxy() {
 		return analyzerProxy;
 	}
-	
+
 	private String getBatchStatus() {
 		return jobExecutionImpl.getJobContext().getBatchStatus();
 	}
-	
+
 	private String getExitStatus() {
 		return jobExecutionImpl.getJobContext().getExitStatus();
 	}

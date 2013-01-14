@@ -16,7 +16,7 @@
 */
 package com.ibm.batch.container.services;
 
-import com.ibm.batch.container.IBatchConfig;
+import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 
 public interface IBatchServiceBase {

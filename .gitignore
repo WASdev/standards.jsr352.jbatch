@@ -1,8 +1,12 @@
 **/bin
 **/outputBin
+**/testArtifactsBin
+**/testJunitsBin
+**/bitBucketBin
 **/target
 **/.settings
 **/.classpath
 **/.jazzignore
 **/.project
 **/dependency-reduced-pom.xml
+**/*.swp
