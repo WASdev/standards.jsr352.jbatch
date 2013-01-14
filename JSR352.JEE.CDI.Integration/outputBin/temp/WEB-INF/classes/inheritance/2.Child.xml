@@ -1,0 +1,6 @@
+<job id="2.Child" parent="2.Parent" xmlns="http://batch.jsr352/jsl">
+	<properties>
+		<property name="parentProp1" value="true"/>
+		<property name="parentProp2" value="false"/>
+	</properties>
+</job>

@@ -1,0 +1,3 @@
+<job id="6.Child" xmlns="http://batch.jsr352/jsl">
+ 	<step id="MyStep" parent="6.Parent"/>
+</job>

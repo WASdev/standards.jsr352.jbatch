@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<job id="9.Child" xmlns="http://batch.jsr352/jsl">
+	<step id="MyStep">
+		<properties>
+			<property name="childProp" value="val"/>
+		</properties>
+		<listeners>
+			<listener ref="childRef"/>
+		</listeners>
+	</step>
+</job>

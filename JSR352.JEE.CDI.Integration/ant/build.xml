@@ -1,0 +1,143 @@
+<project default="cleanAndbuildAll">
+
+	<import file="${basedir}/../../JSR352.Tests.TCK/ant/build.xml" />
+
+	<!--This is the default output location. We can override this from the build.properties file or command line. -->
+	<property name="output.zip.loc" value="${basedir}/../outputBin" />
+
+	<!--Runtime projects to create plugins from -->
+	<property name="JSR352.Plugin.Project.1" value="JSR352.Annotations" />
+	<property name="JSR352.Plugin.Project.2" value="JSR352.JobXML.Model" />
+	<property name="JSR352.Plugin.Project.3" value="JSR352.Runtime" />
+
+	<!-- Test War Projects -->
+	<property name="JSR352.War.Project.1" value="JSR352.Tests.TCK" />
+
+	<target name="clean">
+		<delete dir="${output.zip.loc}" />
+	</target>
+
+
+	<target name="cleanAndbuildAll">
+		<antcall target="cleanAndCompileTCK" />
+		<antcall target="clean" />
+		<antcall target="buildWars" />
+		<antcall target="buildPlugins" />
+	</target>
+
+
+
+	<target name="buildWars">
+		<mkdir dir="${output.zip.loc}/testWars/" />
+
+		<buildTestAppWar jsr352.project="JSR352.Tests.TCK" />
+
+		<buildGlassFishWar jsr352.project="JSR352.Tests.TCK" />
+	</target>
+
+
+	<target name="buildPlugins">
+
+		<mkdir dir="${output.zip.loc}/plugins/" />
+
+		<buildpluginjar JSR352.Project="JSR352.Annotations" />
+		<buildpluginjar JSR352.Project="JSR352.JobXML.Model" />
+		<buildpluginjar JSR352.Project="JSR352.Runtime" />
+		<buildpluginjar JSR352.Project="JSR352.API" />
+		<buildpluginjar JSR352.Project="JSR352.TCK.SPI" />
+
+		<buildRuntimePluginJar JSR352.Project1="JSR352.Runtime" JSR352.Project2="JSR352.JobXML.Model" JSR352.Project3="JSR352.TCK.SPI" />
+		<buildAPIPluginJar JSR352.Project1="JSR352.API" JSR352.Project2="JSR352.Annotations"/>
+	</target>
+
+	<macrodef name="buildTestAppWar">
+		<attribute name="JSR352.Project" />
+		<sequential>
+			<zip destfile="${output.zip.loc}/testWars/@{JSR352.Project}.war">
+				<fileset dir="${basedir}/../../@{JSR352.Project}/" casesensitive="yes">
+					<include name="META-INF/**" />
+				</fileset>
+				<fileset dir="${basedir}/../">
+					<include name="WEB-INF/**" />
+				</fileset>
+				<fileset dir="${basedir}/../bin/" includes="**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project}/testArtifactsBin/" includes="**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project}/bin/" includes="**/*" />
+				<!--Need to add some stuff to pick up junit jar and hamcrest-->
+			</zip>
+		</sequential>
+	</macrodef>
+
+
+	<macrodef name="buildGlassFishWar">
+		<attribute name="JSR352.Project" />
+		<sequential>
+			<mkdir dir="${output.zip.loc}/temp" />
+
+			<mkdir dir="${output.zip.loc}/temp/WEB-INF/classes" />
+			<mkdir dir="${output.zip.loc}/temp/WEB-INF/lib" />
+			<mkdir dir="${output.zip.loc}/temp/META-INF" />
+
+			<!--Copy Junit libraries -->
+			<copy todir="${output.zip.loc}/temp/WEB-INF/">
+				<fileset dir="${basedir}/../WEB-INF/" />
+			</copy>
+
+			<!--Copy test artifact classes -->
+			<copy todir="${output.zip.loc}/temp/WEB-INF/classes">
+				<fileset dir="${basedir}/../bin/" includes="**/*" excludes="**/JobOperatorImplDelegate.class" />
+				<fileset dir="${basedir}/../../@{JSR352.Project}/testArtifactsBin/" includes="**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project}/bin/" includes="**/*" />
+			</copy>
+
+
+			<copy todir="${output.zip.loc}/temp/">
+				<fileset dir="${basedir}/../../@{JSR352.Project}/" casesensitive="yes">
+					<include name="META-INF/**" />
+				</fileset>
+			</copy>
+
+			<zip destfile="${output.zip.loc}/testWars/@{JSR352.Project}_GlassFish.war">
+				<fileset dir="${output.zip.loc}/temp" includes="**/*" />
+			</zip>
+			<!--<delete dir="${output.zip.loc}/temp"/>-->
+		</sequential>
+	</macrodef>
+
+	<macrodef name="buildpluginjar">
+		<attribute name="JSR352.Project" />
+		<sequential>
+			<zip destfile="${output.zip.loc}/plugins/@{JSR352.Project}.jar">
+				<fileset dir="${basedir}/../../@{JSR352.Project}/" includes="META-INF/**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project}/bin" includes="**/*" />
+
+			</zip>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="buildRuntimePluginJar">
+		<attribute name="JSR352.Project1" />
+		<attribute name="JSR352.Project2" />
+		<attribute name="JSR352.Project3" />
+		<sequential>
+			<zip destfile="${output.zip.loc}/plugins/JSR352.Runtime.Combined.jar">
+				<fileset dir="${basedir}/../bin/" includes="com/ibm/batch/**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project1}/bin" includes="**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project2}/bin" includes="**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project3}/bin" includes="**/*" />
+			</zip>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="buildAPIPluginJar">
+		<attribute name="JSR352.Project1" />
+		<attribute name="JSR352.Project2" />
+		<sequential>
+			<zip destfile="${output.zip.loc}/plugins/JSR352.API.Combined.jar">
+				<fileset dir="${basedir}/../../@{JSR352.Project1}/bin" includes="**/*" />
+				<fileset dir="${basedir}/../../@{JSR352.Project2}/bin" includes="**/*" />
+			</zip>
+		</sequential>
+	</macrodef>
+
+</project>
