@@ -4,7 +4,9 @@ Bundle-Name: Runtime
 Bundle-SymbolicName: JSR352.Runtime
 Bundle-Version: 1.0.0.qualifier
 Export-Package: com.ibm.batch.tck.spi,
- jsr352.batch.jsl
+ jsr352.batch.jsl,
+ com.ibm.batch.container.services,
+ com.ibm.batch.container.config
 Import-Package: com.ibm.websphere.asynchbeans;resolution:=optional,
  javax.batch.annotation,
  javax.batch.api.parameters,

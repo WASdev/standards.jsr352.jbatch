@@ -3,10 +3,12 @@
 **/testArtifactsBin
 **/testJunitsBin
 **/bitBucketBin
-**/target
+**/target/
+**/**/target/
 **/.settings
 **/.classpath
 **/.jazzignore
 **/.project
 **/dependency-reduced-pom.xml
 **/*.swp
+*.swp
