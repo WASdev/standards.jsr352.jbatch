@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><launchConfiguration type="org.eclipse.jdt.junit.launchconfig">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.junit.launchconfig">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/JSR352.Tests.TCK"/>
 </listAttribute>
@@ -18,5 +19,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value=""/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="JSR352.Tests.TCK"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc}/JSR352.Tests.TCK/logging.properties -Djunit.jobOperator.sleep.time=900000 -Dderby.system.home=/home/hendrix/workspace/jsr-352/jsrdb"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc}/JSR352.Tests.TCK/logging.properties -Djunit.jobOperator.sleep.time=900000"/>
 </launchConfiguration>

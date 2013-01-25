@@ -16,8 +16,6 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URL;
 import java.util.Properties;
 
@@ -28,13 +26,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import jsr352.tck.utils.JobOperatorBridge;
 import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
+
 
 public class PropertyJunit {
  
     private static JobOperatorBridge jobOp;
 
+    
+    public static void setup(String[] args, Properties props) throws Exception {        
+        jobOp = new JobOperatorBridge();        
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {        
         jobOp = new JobOperatorBridge();        
@@ -46,11 +50,16 @@ public class PropertyJunit {
 
 
     @After
-    public void cleanUp() throws Exception {
+    public void cleanup() throws Exception {
         //Clear this property for next test
         System.clearProperty("property.junit.result");
     }
 
+    /*
+   	 * @testName: testBatchletPropertyInjection
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testBatchletPropertyInjection() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -60,9 +69,14 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
         String result = System.getProperty("property.junit.result");        
-        assertEquals("value1", result);
+        assert("value1" == result);
     }
 
+    /*
+   	 * @testName: testInitializedPropertyIsOverwritten
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInitializedPropertyIsOverwritten() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -72,9 +86,14 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
         String result = System.getProperty("property.junit.result");
-        assertEquals("value2", result);
+        assert("value2" == result);
     }
 
+    /*
+   	 * @testName: testPropertyWithJobParameter
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testPropertyWithJobParameter() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -88,10 +107,14 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters);
         
         String result = System.getProperty("property.junit.result");
-        assertEquals(expectedResult, result);
+        assert(expectedResult == result);
     }
 
-
+    /*
+   	 * @testName: testPropertyPrecedenceSystemProp
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testPropertyPrecedenceSystemProp() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -107,9 +130,14 @@ public class PropertyJunit {
         //Clear this property for next test
         System.clearProperty("mySystemProp");
 
-        assertEquals("mySystemPropValue", result);
+        assert("mySystemPropValue" == result);
     }
 
+    /*
+   	 * @testName: testPropertyInjectionNoPropertyOnElement
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testPropertyInjectionNoPropertyOnElement() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -119,9 +147,14 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
         String result = System.getProperty("property.junit.result");
-        assertEquals("null", result);
+        assert("null" == result);
     }
 
+    /*
+   	 * @testName: testDefaultPropertyName
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testDefaultPropertyName() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -131,9 +164,14 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
         String result = System.getProperty("property.junit.result");
-        assertEquals("value4", result);
+        assert("value4" == result);
     }
 
+    /*
+   	 * @testName: testGivenPropertyName
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testGivenPropertyName() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -143,9 +181,14 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
         String result = System.getProperty("property.junit.result");
-        assertEquals("value4", result);
+        assert("value4" == result);
     }
 
+    /*
+   	 * @testName: testPropertyInnerScopePrecedence
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testPropertyInnerScopePrecedence() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -155,10 +198,14 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
         String result = System.getProperty("property.junit.result");
-        assertEquals("batchletPropValue", result);
+        assert("batchletPropValue" == result);
     }
 
-
+    /*
+   	 * @testName: testPropertyWithConcatenation
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testPropertyWithConcatenation() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -171,10 +218,15 @@ public class PropertyJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters);
         
         String result = System.getProperty("property.junit.result");
-        assertEquals("testfile1.txt", result);
+        assert("testfile1.txt" == result);
     }
 
     //FIXME This test should work. Will be debugging this shortly
+    /*
+   	 * @testName: testJavaSystemProperty
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test 
     public void testJavaSystemProperty() throws Exception {
         URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
@@ -189,7 +241,7 @@ public class PropertyJunit {
 
         String pathSep = System.getProperty("file.separator");
 
-        assertEquals(pathSep + "test" + pathSep + "testfile2.txt", result);
+        assert(pathSep + "test" + pathSep + "testfile2.txt" == result);
 
     }
 

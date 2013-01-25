@@ -16,11 +16,10 @@
 */
 package com.ibm.batch.tck.spi;
 
-import javax.batch.operations.JobOperator;
 
 public interface BatchContainerServiceProvider {
 	
-    public JobOperator getJobOperator();
+    //public JobOperator getJobOperator();
     
     public JSLInheritanceMerger getJSLInheritanceMerger();  
     

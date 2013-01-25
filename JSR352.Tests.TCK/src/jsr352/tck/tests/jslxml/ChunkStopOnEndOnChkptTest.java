@@ -16,8 +16,6 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URL;
 import java.util.Properties;
 
@@ -25,22 +23,35 @@ import javax.batch.runtime.JobExecution;
 
 import jsr352.tck.specialized.MetricsStepListener;
 import jsr352.tck.specialized.MySkipListener;
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
+
+import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 public class ChunkStopOnEndOnChkptTest {
     
     private static JobOperatorBridge jobOp = null;
         
+    
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
     }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
+	}
     
     /*
      * Obviously would be nicer to have more granular tests for some of this function,
@@ -49,6 +60,11 @@ public class ChunkStopOnEndOnChkptTest {
      * in one longer restart scenario.
      */
     
+    /*
+	 * @testName: testChunkRestart
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test
     public void testChunkRestart() throws Exception {
         
@@ -63,8 +79,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
          long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -79,13 +95,18 @@ public class ChunkStopOnEndOnChkptTest {
             jobParams.put("app.commitinterval", "10");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
 
     }
     
+    /*
+	 * @testName: testChunkRestartInterval5commit20
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test
     public void testChunkRestartInterval5commit20() throws Exception {
         
@@ -99,8 +120,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
          long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -114,13 +135,18 @@ public class ChunkStopOnEndOnChkptTest {
             jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
 
     }
     
+    /*
+   	 * @testName: testChunkRestartChunk5commit3
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkRestartChunk5commit3() throws Exception {
         
@@ -134,8 +160,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
          long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -149,13 +175,18 @@ public class ChunkStopOnEndOnChkptTest {
             jobParametersOverride.put("app.writepoints", "9,12,15,18,21,24,27,30");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
 
     }
     
+    /*
+   	 * @testName: testChunkRestartChunk5commit8
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkRestartChunk5commit8() throws Exception {
         
@@ -170,8 +201,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
          long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -186,13 +217,18 @@ public class ChunkStopOnEndOnChkptTest {
             jobParams.put("app.commitinterval", "8");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
 
     }
     
+    /*
+   	 * @testName: testChunkRestartChunk5commit5
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkRestartChunk5commit5() throws Exception {
         
@@ -207,8 +243,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
          long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -223,13 +259,18 @@ public class ChunkStopOnEndOnChkptTest {
        
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
 
     }
     
+    /*
+   	 * @testName: testChunkRestartCustomCheckpoint
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkRestartCustomCheckpoint() throws Exception {
         
@@ -243,8 +284,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
          long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -258,13 +299,18 @@ public class ChunkStopOnEndOnChkptTest {
             jobParametersOverride.put("app.writepoints", "9,13,15,20,22,27,30");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
 
     }
     
+    /*
+   	 * @testName: testChunkTimeBasedDefaultCheckpoint
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkTimeBasedDefaultCheckpoint() throws Exception {
                
@@ -277,11 +323,15 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
     }
         
-    
+    /*
+   	 * @testName: testChunkRestartTimeBasedCheckpoint
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkRestartTimeBasedCheckpoint() throws Exception {
         
@@ -294,8 +344,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
         
          long jobInstanceId = execution1.getInstanceId();
@@ -309,14 +359,19 @@ public class ChunkStopOnEndOnChkptTest {
             jobParametersOverride.put("app.arraysize", "30");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
         
 
     }
     
+    /*
+   	 * @testName: testChunkRestartTimeBasedDefaultCheckpoint
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkRestartTimeBasedDefaultCheckpoint() throws Exception {
         
@@ -329,8 +384,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
         
          long jobInstanceId = execution1.getInstanceId();
@@ -344,14 +399,19 @@ public class ChunkStopOnEndOnChkptTest {
             jobParametersOverride.put("app.arraysize", "30");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #2", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
         
 
     }
     
+    /*
+   	 * @testName: testItemTimeCustomCheckpoint
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testItemTimeCustomCheckpoint() throws Exception {
         
@@ -364,11 +424,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkSkipRead
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkSkipRead() throws Exception {
         
@@ -381,12 +446,17 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", MySkipListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
-        //assertEquals("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", MySkipListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
+        //assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkSkipProcess
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkSkipProcess() throws Exception {
         
@@ -399,11 +469,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkSkipWrite
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkSkipWrite() throws Exception {
         
@@ -416,11 +491,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkSkipReadExceedSkip
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkSkipReadExceedSkip() throws Exception {
         
@@ -433,11 +513,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", MySkipListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", MySkipListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkSkipProcessExceedSkip
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkSkipProcessExceedSkip() throws Exception {
         
@@ -450,11 +535,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkSkipWriteExceedSkip
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkSkipWriteExceedSkip() throws Exception {
         
@@ -467,11 +557,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", "FAILED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkSkipReadNoSkipChildEx
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkSkipReadNoSkipChildEx() throws Exception {
         
@@ -484,11 +579,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "FAILED", execution1.getStatus());
-        assertEquals("Testing execution #1", MySkipListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "FAILED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", MySkipListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testChunkRetryRead
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testChunkRetryRead() throws Exception {
         
@@ -501,11 +601,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testMetrics
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testMetrics() throws Exception {
         
@@ -523,11 +628,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-       	assertEquals("Testing metrics", MetricsStepListener.GOOD_EXIT_STATUS_READ, execution1.getExitStatus());
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing metrics", MetricsStepListener.GOOD_EXIT_STATUS_READ, execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
         
     }
     
+    /*
+   	 * @testName: testMetricsInApp
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testMetricsInApp() throws Exception {
         
@@ -544,11 +654,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing metrics", MetricsStepListener.GOOD_EXIT_STATUS_READ, execution1.getExitStatus());
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing metrics", MetricsStepListener.GOOD_EXIT_STATUS_READ, execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
     }
     
+    /*
+   	 * @testName: testMetricsSkipRead
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testMetricsSkipRead() throws Exception {
         
@@ -564,11 +679,16 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", MetricsStepListener.GOOD_EXIT_STATUS_READ, execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", MetricsStepListener.GOOD_EXIT_STATUS_READ, execution1.getExitStatus());
         
     }
     
+    /*
+   	 * @testName: testMetricsSkipProcess
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Ignore
     public void testMetricsSkipProcess() throws Exception {
 
@@ -583,8 +703,8 @@ public class ChunkStopOnEndOnChkptTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing execution #1", MetricsStepListener.GOOD_EXIT_STATUS_PROCESS, execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", MetricsStepListener.GOOD_EXIT_STATUS_PROCESS, execution1.getExitStatus());
         
     }
 }

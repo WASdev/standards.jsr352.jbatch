@@ -16,29 +16,45 @@
 */
 package jsr352.tck.tests.jslgen;
 
-import static org.junit.Assert.assertEquals;
-
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.runtime.JobExecution;
 
 import jsr352.tck.specialized.BatchletUsingStepContextImpl;
-import jsr352.tck.utils.JSLBuilder;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import jsr352.tck.utils.JSLBuilder;
+import jsr352.tck.utils.JobOperatorBridge;
 
 public class ExecuteTests {
 	
     private final static Logger logger = Logger.getLogger(ExecuteTests.class.getName());
     private static JobOperatorBridge jobOp = null;
     
+    
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
     }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
+	}
 
+    /*
+	 * @testName: testMyStepContextBatchlet
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test
     public void testMyStepContextBatchlet() throws Exception { 
     	JSLBuilder builder = new JSLBuilder();
@@ -46,8 +62,8 @@ public class ExecuteTests {
 
         JobExecution jobExec = jobOp.startJobAndWaitForResult(builder.getJSL()); 
 
-        assertEquals(BatchletUsingStepContextImpl.GOOD_JOB_EXIT_STATUS, jobExec.getExitStatus());
-        assertEquals("COMPLETED", jobExec.getStatus());
+        assert(BatchletUsingStepContextImpl.GOOD_JOB_EXIT_STATUS == jobExec.getExitStatus());
+        assert("COMPLETED" == jobExec.getStatus());
 
     }
     

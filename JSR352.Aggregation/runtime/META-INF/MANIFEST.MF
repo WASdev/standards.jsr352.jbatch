@@ -8,6 +8,7 @@ Export-Package: com.ibm.batch.tck.spi,
  com.ibm.batch.container.services,
  com.ibm.batch.container.config
 Import-Package: com.ibm.websphere.asynchbeans;resolution:=optional,
+ javax.naming,
  javax.batch.annotation,
  javax.batch.api.parameters,
  javax.batch.operations,

@@ -16,8 +16,6 @@
 */
 package jsr352.tck.tests.jslgen;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -33,20 +31,32 @@ import jsr352.batch.jsl.Stop;
 import jsr352.tck.common.StatusConstants;
 import jsr352.tck.specialized.DeciderTestsBatchlet;
 import jsr352.tck.specialized.DeciderTestsDecider;
-import jsr352.tck.utils.JSLBuilder;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import jsr352.tck.utils.JSLBuilder;
+import jsr352.tck.utils.JobOperatorBridge;
 
 public class DeciderTests implements StatusConstants {
     private final static Logger logger = Logger.getLogger(DeciderTests.class.getName());
     private static JobOperatorBridge jobOp = null;
     
+    
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();                              
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();                              
     }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
+	}
 
    
     /* 
@@ -98,6 +108,11 @@ public class DeciderTests implements StatusConstants {
     	return builder.getJSL();
     }
 
+    /*
+	 * @testName: testDeciderEndNormal
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test
     public void testDeciderEndNormal() throws Exception {
 
@@ -116,11 +131,15 @@ public class DeciderTests implements StatusConstants {
         
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
 
-        assertEquals("EndNormal", jobExec.getExitStatus());
-        assertEquals("COMPLETED", jobExec.getStatus());
+        assert("EndNormal" == jobExec.getExitStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
     
-    
+    /*
+	 * @testName: testDeciderEndSpecial
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test
     public void testDeciderEndSpecial() throws Exception {
 
@@ -134,11 +153,16 @@ public class DeciderTests implements StatusConstants {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
 
         // 2. And the job exit status differs accordingly.
-        assertEquals("EndSpecial", jobExec.getExitStatus());
-        assertEquals("COMPLETED", jobExec.getStatus());
+        assert("EndSpecial" == jobExec.getExitStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
 
     // See the first two test methods for an explanation of parameter values.
+    /*
+   	 * @testName: testDeciderStopNormal
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testDeciderStopNormal() throws Exception {
     	String jobXML = buildCommonJSL("StopSpecial");
@@ -149,11 +173,17 @@ public class DeciderTests implements StatusConstants {
         
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
 
-        assertEquals("StopNormal", jobExec.getExitStatus());
-        assertEquals("STOPPED", jobExec.getStatus());
+        assert("StopNormal" == jobExec.getExitStatus());
+        assert("STOPPED" == jobExec.getStatus());
+        
     }
 
     // See the first two test methods for an explanation of parameter values.
+    /*
+   	 * @testName: testDeciderStopSpecial
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testDeciderStopSpecial() throws Exception {
     	String jobXML = buildCommonJSL("StopSpecial");
@@ -164,11 +194,16 @@ public class DeciderTests implements StatusConstants {
         
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
 
-        assertEquals("StopSpecial", jobExec.getExitStatus());
-        assertEquals("STOPPED", jobExec.getStatus());
+        assert("StopSpecial" == jobExec.getExitStatus());
+        assert("STOPPED" == jobExec.getStatus());
     }
 
     // See the first two test methods for an explanation of parameter values.
+    /*
+   	 * @testName: testDeciderFailNormal
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testDeciderFailNormal() throws Exception {
     	String jobXML = buildCommonJSL("FailSpecial");
@@ -179,11 +214,16 @@ public class DeciderTests implements StatusConstants {
         
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
 
-        assertEquals("FailNormal", jobExec.getExitStatus());
-        assertEquals("FAILED", jobExec.getStatus());
+        assert("FailNormal" == jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
     }
     
     // See the first two test methods for an explanation of parameter values.
+    /*
+   	 * @testName: testDeciderFailSpecial
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testDeciderFailSpecial() throws Exception {
     	String jobXML = buildCommonJSL("FailSpecial");
@@ -194,10 +234,15 @@ public class DeciderTests implements StatusConstants {
         
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
 
-        assertEquals("FailSpecial", jobExec.getExitStatus());
-        assertEquals("FAILED", jobExec.getStatus());
+        assert("FailSpecial" == jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
     }
     
+    /*
+   	 * @testName: testDeciderNextNormal
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testDeciderNextNormal() throws Exception {
     	JSLBuilder builder = commonBuilder("NextSpecial");
@@ -210,10 +255,15 @@ public class DeciderTests implements StatusConstants {
         String jobXML = builder.getJSL();
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
     	
-        assertEquals(GOOD_JOB_EXIT_STATUS, jobExec.getExitStatus());
-        assertEquals("COMPLETED", jobExec.getStatus());
+        assert(GOOD_JOB_EXIT_STATUS == jobExec.getExitStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
     
+    /*
+   	 * @testName: testDeciderNextSpecial
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testDeciderNextSpecial() throws Exception {
     	JSLBuilder builder = commonBuilder("NextSpecial");
@@ -227,8 +277,8 @@ public class DeciderTests implements StatusConstants {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML, jobParameters); 
     	
         // This actually exits with the exact same status as the "...NextNormal" test.
-        assertEquals(GOOD_JOB_EXIT_STATUS, jobExec.getExitStatus());
-        assertEquals("COMPLETED", jobExec.getStatus());
+        assert(GOOD_JOB_EXIT_STATUS == jobExec.getExitStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }   
 
 }

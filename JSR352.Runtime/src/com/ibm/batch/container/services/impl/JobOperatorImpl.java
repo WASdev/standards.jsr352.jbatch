@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator;
 import javax.batch.operations.exception.JobExecutionIsRunningException;
 import javax.batch.operations.exception.JobExecutionNotRunningException;
 import javax.batch.operations.exception.JobInstanceAlreadyCompleteException;
@@ -33,16 +34,13 @@ import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.batch.container.config.IBatchConfig;
-import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.IBatchKernelService;
-import com.ibm.batch.container.services.IJobOperatorService;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.services.ServicesManager;
 import com.ibm.batch.container.services.ServicesManager.ServiceType;
 import com.ibm.batch.container.tck.bridge.IJobEndCallbackService;
 
-public class JobOperatorImpl implements IJobOperatorService {
+public class JobOperatorImpl implements JobOperator {
 
     private final static String sourceClass = JobOperatorImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
@@ -53,9 +51,7 @@ public class JobOperatorImpl implements IJobOperatorService {
     private IJobEndCallbackService callbackService = null;
     private IPersistenceManagerService persistenceService = null;
 
-    @Override
-    public void init(IBatchConfig batchConfig) throws BatchContainerServiceException { 
-
+    public JobOperatorImpl() {
         servicesManager = ServicesManager.getInstance();
         batchKernel = (IBatchKernelService) servicesManager.getService(ServiceType.BATCH_KERNEL_SERVICE);
         callbackService = (IJobEndCallbackService) servicesManager.getService(ServiceType.CALLBACK_SERVICE);
@@ -143,16 +139,10 @@ public class JobOperatorImpl implements IJobOperatorService {
     }
 
     @Override
-    public void shutdown() throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public JobExecution getJobExecution(long executionId) {
         // TODO Auto-generated method stub
         return batchKernel.getJobExecution(executionId);
-    	// go to perisitence, get the stuff for a new BatchJobExecutionImpl
+    	// go to persistence, get the stuff for a new BatchJobExecutionImpl
     	// add setters to BatchJobExecutionImpl, set all the fields and return
     	
     	/*

@@ -16,21 +16,20 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.runtime.JobExecution;
 
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
 
 
 @Ignore("Only run in JEE environment.")
@@ -40,22 +39,31 @@ public class TransactionJunit {
 
     private static JobOperatorBridge jobOp;
 
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
     }
 
     @AfterClass
-    public static void tearDown() throws Exception {
+    public static void cleanup() throws Exception {
     }
 
     private void begin(String str) {
         logger.fine("Begin test method: " + str);
     }
     
+    /*
+	 * @testName: testGlobalTranNoExceptions
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test  
     public void testGlobalTranNoExceptions() throws Exception {
-    	String METHOD = "testLocalTransactionModeAutoCommitDefault";
+    	String METHOD = "testGlobalTranNoExceptions";
         begin(METHOD);
     	
         Integer initInventory = 99;
@@ -83,15 +91,16 @@ public class TransactionJunit {
 
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML,jobParams);
 
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null, jobExec.getExitStatus());
-        assertEquals("COMPLETED", jobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + null == jobExec.getExitStatus());
+        assert("COMPLETED" == jobExec.getStatus());
         
     }
 
+   
     @Ignore
     @Test  
     public void testGlobalTranForcedExceptionWithRollback() throws Exception {
-    	String METHOD = "testLocalTransactionModeAutoCommitDefault";
+    	String METHOD = "testGlobalTranForcedExceptionWithRollback";
         begin(METHOD);
     	
         Integer initInventory = 99;
@@ -118,12 +127,16 @@ public class TransactionJunit {
 
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML,jobParams);
 
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=null", jobExec.getExitStatus());
-        assertEquals("FAILED", jobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=null" == jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
         
     }
     
-    
+    /*
+   	 * @testName: testGlobalTranForcedExceptionCheckpointRestart
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test  
     public void testGlobalTranForcedExceptionCheckpointRestart() throws Exception {
     	String METHOD = "testGlobalTranForcedExceptionCheckpointRestart";
@@ -154,8 +167,8 @@ public class TransactionJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML,jobParams);
         long jobInstanceId = jobExec.getInstanceId();
         
-        assertEquals("FAILED", jobExec.getStatus());
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null, jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + null == jobExec.getExitStatus());
         
         forcedFailCount = 0;
         jobParams.put("forced.fail.count", forcedFailCount.toString());
@@ -165,14 +178,19 @@ public class TransactionJunit {
         
         JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParams);
         
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp, restartedJobExec.getExitStatus());
-        assertEquals("COMPLETED", restartedJobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp == restartedJobExec.getExitStatus());
+        assert("COMPLETED" == restartedJobExec.getStatus());
         
     }
     
+    /*
+   	 * @testName: testNoTranForcedExceptionCheckpointRestart
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testNoTranForcedExceptionCheckpointRestart() throws Exception {
-    	String METHOD = "testGlobalTranForcedExceptionCheckpointRestart";
+    	String METHOD = "testNoTranForcedExceptionCheckpointRestart";
         begin(METHOD);
     	
         Integer initInventory = 99;
@@ -200,8 +218,8 @@ public class TransactionJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML,jobParams);
         long jobInstanceId = jobExec.getInstanceId();
         
-        assertEquals("FAILED", jobExec.getStatus());
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null, jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + null == jobExec.getExitStatus());
         
         forcedFailCount = 0;
         jobParams.put("forced.fail.count", forcedFailCount.toString());
@@ -211,13 +229,17 @@ public class TransactionJunit {
         
         JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParams);
         
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp, restartedJobExec.getExitStatus());
-        assertEquals("COMPLETED", restartedJobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp == restartedJobExec.getExitStatus());
+        assert("COMPLETED" == restartedJobExec.getStatus());
         
     }
     
 
-        
+    /*
+   	 * @testName: testGlobalTranForcedTimeoutCheckpointRestart
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */    
     @Test  
     public void testGlobalTranForcedTimeoutCheckpointRestart() throws Exception {
     	String METHOD = "testGlobalTranForcedTimeoutCheckpointRestart";
@@ -248,8 +270,8 @@ public class TransactionJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML,jobParams);
         long jobInstanceId = jobExec.getInstanceId();
         
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null, jobExec.getExitStatus());
-        assertEquals("FAILED", jobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + null == jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
         
         
         forcedFailCount = 0;
@@ -262,11 +284,16 @@ public class TransactionJunit {
         
         JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParams);
         
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp, restartedJobExec.getExitStatus());
-        assertEquals("COMPLETED", restartedJobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp == restartedJobExec.getExitStatus());
+        assert("COMPLETED" == restartedJobExec.getStatus());
         
     } 
 
+    /*
+   	 * @testName: testLocalTransactionModeAutoCommitDefault
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */  
     @Test  
     public void testLocalTransactionModeAutoCommitDefault() throws Exception {
     	String METHOD = "testLocalTransactionModeAutoCommitDefault";
@@ -297,9 +324,9 @@ public class TransactionJunit {
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML,jobParams);
         long jobInstanceId = jobExec.getInstanceId();
         
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null, jobExec.getExitStatus());
-        assertEquals("FAILED", jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + null == jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
         
         
         forcedFailCount = 0;
@@ -309,12 +336,12 @@ public class TransactionJunit {
                 
         JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParams);
         
-        assertEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp, restartedJobExec.getExitStatus());
-        assertEquals("COMPLETED", restartedJobExec.getStatus());
+        assert("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedInitChkp == restartedJobExec.getExitStatus());
+        assert("COMPLETED" == restartedJobExec.getStatus());
     }
 
     /** still working on tests below **/
-    
+  
     @Ignore
     @Test  
     public void testLocalTransactionModeNoAutoCommitDefault() throws Exception {
@@ -325,20 +352,21 @@ public class TransactionJunit {
 
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
 
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
+    
     
     @Ignore
     @Test  
     public void testGlobalTransactionModeWithRestart() throws Exception {
-        String METHOD = "testLocalTransactionModeAutoCommitDefault";
+        String METHOD = "testGlobalTransactionModeWithRestart";
         begin(METHOD);
         URL jobXMLURL = TransactionJunit.class.getResource("/job_batchlet_1step.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
 
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
     
 	private static int calculateGlobalTranExpectedResult(int initInventory, int forcedFailCount, int commitInterval) {

@@ -16,9 +16,7 @@
  */
 package jsr352.tck.tests.xmlinheritance;
 
-import static org.junit.Assert.assertTrue;
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.ServiceGateway;
+import java.util.Properties;
 
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.ElementNameAndAttributeQualifier;
@@ -27,11 +25,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.ibm.batch.tck.spi.JSLInheritanceMerger;
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.ServiceGateway;
+
+import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 public class InheritanceMergeTest {
 	
 	private static JSLInheritanceMerger merger;
 	
+    
+    public static void setup(String[] args, Properties props) throws Exception {
+        merger = ServiceGateway.getServices().getJSLInheritanceMerger();
+        XMLUnit.setIgnoreAttributeOrder(true);
+        XMLUnit.setIgnoreComments(true);
+        XMLUnit.setIgnoreWhitespace(true);
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         merger = ServiceGateway.getServices().getJSLInheritanceMerger();
@@ -39,33 +49,105 @@ public class InheritanceMergeTest {
         XMLUnit.setIgnoreComments(true);
         XMLUnit.setIgnoreWhitespace(true);
     }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
+	}
        
     /*
      * See the X.Child/Parent/Merged.xml assets for the actual test cases.
      */
+    /*
+	 * @testName: testCase1
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase1() throws Exception { testI(1, false); }
+	
+	/*
+	 * @testName: testCase2
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase2() throws Exception { testI(2, false); }
+	
+	/*
+	 * @testName: testCase3
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase3() throws Exception { testI(3, false); }
+	
+	/*
+	 * @testName: testCase4
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase4() throws Exception { testI(4, false); }
+	
+	/*
+	 * @testName: testCase5
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase5() throws Exception { testI(5, false); }
+	
+	/*
+	 * @testName: testCase6
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase6() throws Exception { testI(6, true); }
+	
+	/*
+	 * @testName: testCase7
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase7() throws Exception { testI(7, true); }
+	
+	/*
+	 * @testName: testCase8
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase8() throws Exception { testI(8, false); }
+	
+	/*
+	 * @testName: testCase9
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase9() throws Exception { testI(9, true); }
+	
+	/*
+	 * @testName:  testCase10
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase10() throws Exception { testI(10, true); }
+	
+	/*
+	 * @testName: testCase11
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
 	@Test
 	public void testCase11() throws Exception { testI(11, true); }
 
+	
 	public void testI(int i, boolean jobFromStep) throws Exception {
 		Class clazz = InheritanceMergeTest.class;
 		String target = String.valueOf(i);
@@ -90,7 +172,7 @@ public class InheritanceMergeTest {
 		diff.overrideElementQualifier(new ElementNameAndAttributeQualifier());
 		
 		//TODO: we want to continue
-		assertTrue("merged XML case "+target+" not similar to expected: " + diff, diff.similar());
+		assertWithMessage("merged XML case "+target+" not similar to expected: " + diff, diff.similar());
 		System.out.println(target+" PASS: XML similar");
 
 	}

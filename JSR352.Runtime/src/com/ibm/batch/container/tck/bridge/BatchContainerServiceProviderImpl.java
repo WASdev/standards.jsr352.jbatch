@@ -16,18 +16,17 @@
 */
 package com.ibm.batch.container.tck.bridge;
 
-import javax.batch.operations.JobOperator;
-
 import com.ibm.batch.container.services.ServicesManager;
 import com.ibm.batch.container.services.ServicesManager.ServiceType;
 import com.ibm.batch.tck.spi.BatchContainerServiceProvider;
-import com.ibm.batch.tck.spi.JobEndCallbackManager;
 import com.ibm.batch.tck.spi.JSLInheritanceMerger;
+import com.ibm.batch.tck.spi.JobEndCallbackManager;
 
 public class BatchContainerServiceProviderImpl implements BatchContainerServiceProvider {
 
     private ServicesManager servicesManager = ServicesManager.getInstance();
     
+    /*
     @Override
     public JobOperator getJobOperator() {
         
@@ -35,6 +34,7 @@ public class BatchContainerServiceProviderImpl implements BatchContainerServiceP
         
         return jobOp;
     }
+    */
 
 	@Override
 	public JSLInheritanceMerger getJSLInheritanceMerger() {

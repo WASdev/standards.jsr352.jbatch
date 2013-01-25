@@ -16,19 +16,20 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.runtime.JobExecution;
 
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
 
 
 public class ExecutionJunit {
@@ -37,131 +38,192 @@ public class ExecutionJunit {
 
     private static JobOperatorBridge jobOp;
 
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
     }
 
     @AfterClass
-    public static void tearDown() throws Exception {
+    public static void cleanup() throws Exception {
     }
 
     private void begin(String str) {
         logger.fine("Begin test method: " + str);
     }
     
+    /*
+	 * @testName: testInvokeJobWithOneBatchletStep
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test  
     public void testInvokeJobWithOneBatchletStep() throws Exception {
         String METHOD = "testInvokeJobWithOneBatchletStep";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_1step.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_1step.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
 
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
 
+    /*
+   	 * @testName: testInvokeJobWithTwoStepSequenceOfBatchlets
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobWithTwoStepSequenceOfBatchlets() throws Exception {
         String METHOD = "testInvokeJobWithTwoStepSequenceOfBatchlets";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_2steps.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_2steps.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
 
+    /*
+   	 * @testName: testInvokeJobWithFourStepSequenceOfBatchlets
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobWithFourStepSequenceOfBatchlets() throws Exception {
         String METHOD = "testInvokeJobWithFourStepSequenceOfBatchlets";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_4steps.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_4steps.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
 
-
+    /*
+   	 * @testName: testInvokeJobWithNextElement
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test  
     public void testInvokeJobWithNextElement() throws Exception {
         String METHOD = "testInvokeJobWithNextElement";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_nextElement.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_nextElement.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
+    
+    /*
+   	 * @testName: testInvokeJobWithFailElement
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test  
     public void testInvokeJobWithFailElement() throws Exception {
         String METHOD = "testInvokeJobWithFailElement";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_failElement.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_failElement.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
-        assertEquals("TEST_FAIL", jobExec.getExitStatus());
-        assertEquals("FAILED", jobExec.getStatus());
+        assert("TEST_FAIL" == jobExec.getExitStatus());
+        assert("FAILED" == jobExec.getStatus());
     }
+    
+    /*
+   	 * @testName: testInvokeJobWithStopElement
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test  
     public void testInvokeJobWithStopElement() throws Exception {
         String METHOD = "testInvokeJobWithStopElement";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_stopElement.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_stopElement.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
-        assertEquals(new String ("STOPPED"), jobExec.getStatus());
+        assert("STOPPED" == jobExec.getStatus());
     }
+    
+    /*
+   	 * @testName: testInvokeJobWithEndElement
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test  
     public void testInvokeJobWithEndElement() throws Exception {
         String METHOD = "testInvokeJobWithEndElement";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_endElement.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_endElement.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
-        assertEquals("TEST_ENDED", jobExec.getExitStatus());
-        assertEquals("COMPLETED", jobExec.getStatus());
+        assert("TEST_ENDED" == jobExec.getExitStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
     
+    /*
+   	 * @testName: testInvokeJobSimpleChunk
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobSimpleChunk() throws Exception {
     	URL jobXMLURL = ExecutionJunit.class.getResource("/job_chunk_simple.xml");
     	String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());    	
     	JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
     	
-    	assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+    	assert("COMPLETED" == jobExec.getStatus());
     }
     
+    /*
+   	 * @testName: testInvokeJobChunkWithFullAttributes
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobChunkWithFullAttributes() throws Exception {
-    	URL jobXMLURL = ExecutionJunit.class.getResource("/job_chunk_full_attributes.xml");
+    	URL jobXMLURL = this.getClass().getResource("/job_chunk_full_attributes.xml");
     	String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
     	JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
     	
-    	assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+    	assert("COMPLETED" == jobExec.getStatus());
     }
 
+    /*
+   	 * @testName: testCheckpoint
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testCheckpoint() throws Exception {
-    	URL jobXMLURL = ExecutionJunit.class.getResource("/job_chunk_checkpoint.xml");
+    	URL jobXMLURL = this.getClass().getResource("/job_chunk_checkpoint.xml");
     	String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
     	JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
     	
-    	assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+    	assert("COMPLETED" == jobExec.getStatus());
     }
     
+    /*
+   	 * @testName: testSimpleFlow
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testSimpleFlow() throws Exception {
-    	URL jobXMLURL = ExecutionJunit.class.getResource("/job_flow_batchlet_4steps.xml");
+    	URL jobXMLURL = this.getClass().getResource("/job_flow_batchlet_4steps.xml");
     	String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
     	JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
     	
-    	assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+    	assert("COMPLETED" == jobExec.getStatus());
     	
     }
 

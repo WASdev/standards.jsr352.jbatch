@@ -16,30 +16,42 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
+import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.net.URL;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.runtime.JobExecution;
 
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
 
 public class ContextAndListenerTests {
 
     private final static Logger logger = Logger.getLogger(ContextAndListenerTests.class.getName());
     private static JobOperatorBridge jobOp = null;
 
+    
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
     }
 
+    /*
+	 * @testName: testOneArtifactIsJobAndStepListener
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test 
     public void testOneArtifactIsJobAndStepListener() throws Exception {
 
@@ -52,12 +64,12 @@ public class ContextAndListenerTests {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, null);
-        assertEquals("Testing batch status", "COMPLETED", execution1.getStatus());
-        assertEquals("Testing exit status", expectedStr, execution1.getExitStatus());
+        assertWithMessage("Testing batch status", "COMPLETED", execution1.getStatus());
+        assertWithMessage("Testing exit status", expectedStr, execution1.getExitStatus());
     }
 
     @AfterClass
-    public static void destroy() throws Exception {
+    public static void cleanup() throws Exception {
         jobOp.destroy();
     }
 }

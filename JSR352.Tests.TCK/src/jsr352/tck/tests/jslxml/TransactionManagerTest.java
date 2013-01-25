@@ -16,64 +16,73 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.operations.exception.JobStartException;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
+
 public class TransactionManagerTest {
 	
-	private final static Logger logger = Logger.getLogger(ExecutionJunit.class.getName());
+	private final static Logger logger = Logger.getLogger(TransactionManagerTest.class.getName());
 	
     private static JobOperatorBridge jobOp;
 
+    public static void setup(String[] args, Properties props) throws Exception {
+    	jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
     	jobOp = new JobOperatorBridge();
     }
 	
     @AfterClass
-    public static void tearDown() throws Exception {
+    public static void cleanup() throws Exception {
     }
     
     private void begin(String str) {
         logger.fine("Begin test method: " + str);
     }
     
+    /*
+   	 * @testName: testGlobalTransTrue
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testGlobalTransTrue() throws FileNotFoundException, IOException, JobStartException {
         String METHOD = "testGlobalTransTrue";
         begin(METHOD);
-        URL jobXMLURL = ExecutionJunit.class.getResource("/simple_global_tran_step.xml");
+        URL jobXMLURL = this.getClass().getResource("/simple_global_tran_step.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
         
         List<StepExecution> steps = jobOp.getJobSteps(jobExec.getExecutionId());
         
-        assertEquals(1, steps.size());
+        assert(1 == steps.size());
         
 		for (StepExecution step : steps) {
 			// make sure all steps finish successfully
 			showStepState(step);
-			assertEquals(new String("COMPLETED"), step.getStatus());
+			assert("COMPLETED" == step.getStatus());
 		}
 
-        assertEquals(new String ("COMPLETED"), jobExec.getStatus());
+        assert("COMPLETED" == jobExec.getStatus());
     }
         
     private void showStepState(StepExecution step) {

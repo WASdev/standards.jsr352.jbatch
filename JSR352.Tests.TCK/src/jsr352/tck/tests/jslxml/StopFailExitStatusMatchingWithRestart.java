@@ -16,7 +16,7 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
+import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.net.URL;
 import java.util.HashSet;
@@ -26,11 +26,12 @@ import java.util.logging.Logger;
 
 import javax.batch.runtime.JobExecution;
 
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.JobOperatorBridge;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
 
 public class StopFailExitStatusMatchingWithRestart {
 
@@ -46,17 +47,29 @@ public class StopFailExitStatusMatchingWithRestart {
         logger.fine("Begin test method: " + str);
     }
 
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
     }
+    
+    public static void cleanup() throws Exception {
+    }
 
+    /*
+	 * @testName: testUserStopResultsInStoppingStatus
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test
     public void testUserStopResultsInStoppingStatus() throws Exception {
         String METHOD = "testUserStopResultsInStoppingStatus";
         begin(METHOD);
 
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_longrunning.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_longrunning.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         Properties overrideJobParams = new Properties();
@@ -69,22 +82,27 @@ public class StopFailExitStatusMatchingWithRestart {
 
         Thread.sleep(threadWaitTime); 
 
-        assertEquals("Hopefully job isn't finished already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
+        assertWithMessage("Hopefully job isn't finished already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
                 "STARTED", execution.getStatus());
 
         jobOp.stopJobWithoutWaitingForResult(execution.getInstanceId());                                      
 
-        assertEquals("Hopefully job isn't stopped already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
+        assertWithMessage("Hopefully job isn't stopped already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
                 "STOPPING", execution.getStatus());
     }
     
+    /*
+   	 * @testName: testInvokeJobWithUserStopAndRestart
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobWithUserStopAndRestart() throws Exception {
 
         String METHOD = "testInvokeJobWithUserStopAndRestart";
         begin(METHOD);
 
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_longrunning.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_longrunning.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         Properties overrideJobParams = new Properties();
@@ -98,34 +116,39 @@ public class StopFailExitStatusMatchingWithRestart {
 
         Thread.sleep(threadWaitTime); 
 
-        assertEquals("Hopefully job isn't finished already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
+        assertWithMessage("Hopefully job isn't finished already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
                 "STARTED", execution1.getStatus());
 
         jobOp.stopJobAndWaitForResult(execution1);
     
-        assertEquals("The stop should have taken effect by now, even though the batchlet artifact had control at the time of the stop, it should have returned control by now.", 
+        assertWithMessage("The stop should have taken effect by now, even though the batchlet artifact had control at the time of the stop, it should have returned control by now.", 
                 "STOPPED", execution1.getStatus());  
         
-        assertEquals("BATCHLET CANCELED BEFORE COMPLETION", execution1.getExitStatus());
+        assert("BATCHLET CANCELED BEFORE COMPLETION" == execution1.getExitStatus());
 
         overrideJobParams.setProperty("run.indefinitely" , "false");
         
         JobExecution execution2 = jobOp.restartJobAndWaitForResult(jobInstanceId, overrideJobParams);
                         
-        assertEquals("If the restarted job hasn't completed yet then try increasing the sleep time.", 
+        assertWithMessage("If the restarted job hasn't completed yet then try increasing the sleep time.", 
                 "COMPLETED", execution2.getStatus());
 
-        assertEquals("If this fails, the reason could be that step 1 didn't run the second time," + 
+        assertWithMessage("If this fails, the reason could be that step 1 didn't run the second time," + 
                 "though it should since it won't have completed successfully the first time.", 
                 "GOOD.STEP.GOOD.STEP", execution2.getExitStatus());
     }
 
+    /*
+   	 * @testName: testInvokeJobWithUncaughtExceptionFailAndRestart
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobWithUncaughtExceptionFailAndRestart() throws Exception {
         String METHOD = "testInvokeJobWithUncaughtExceptionFailAndRestart";
         begin(METHOD);
 
-        URL jobXMLURL = ExecutionJunit.class.getResource("/job_batchlet_longrunning.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_longrunning.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         Properties jobParameters = new Properties();
@@ -137,8 +160,8 @@ public class StopFailExitStatusMatchingWithRestart {
         		
         logger.fine("Started job with execId=" + firstJobExecution.getExecutionId());       
 
-        assertEquals("If the job hasn't failed yet then try increasing the sleep time.", "FAILED", firstJobExecution.getStatus());              
-        assertEquals("FAILED", firstJobExecution.getExitStatus());
+        assertWithMessage("If the job hasn't failed yet then try increasing the sleep time.", "FAILED", firstJobExecution.getStatus());              
+        assert("FAILED" == firstJobExecution.getExitStatus());
 
         Properties overrideJobParams = new Properties();
         overrideJobParams.setProperty("throw.exc.on.number.3" , "false");
@@ -146,10 +169,10 @@ public class StopFailExitStatusMatchingWithRestart {
 
         JobExecution secondJobExecution = jobOp.restartJobAndWaitForResult(jobInstanceId, overrideJobParams);
         
-        assertEquals("If the restarted job hasn't completed yet then try increasing the sleep time.", 
+        assertWithMessage("If the restarted job hasn't completed yet then try increasing the sleep time.", 
                 "COMPLETED", secondJobExecution.getStatus());
 
-        assertEquals("If this fails with only \"GOOD.STEP\", the reason could be that step 1 didn't run the second time," + 
+        assertWithMessage("If this fails with only \"GOOD.STEP\", the reason could be that step 1 didn't run the second time," + 
                 "though it should since it won't have completed successfully the first time.", 
                 "GOOD.STEP.GOOD.STEP", secondJobExecution.getExitStatus());
     }
@@ -160,7 +183,11 @@ public class StopFailExitStatusMatchingWithRestart {
      * restart it will have some complexity, so let's test a few different functions
      * in one longer restart scenario.
      */
-    
+    /*
+   	 * @testName: testStopOnEndOn
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testStopOnEndOn() throws Exception {
         
@@ -175,8 +202,8 @@ public class StopFailExitStatusMatchingWithRestart {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "STOPPED", execution1.getStatus());
-        assertEquals("Testing execution #1", "STOPPED", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "STOPPED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "STOPPED", execution1.getExitStatus());
         
         long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -190,9 +217,9 @@ public class StopFailExitStatusMatchingWithRestart {
             jobParametersOverride.setProperty("step1.next", "ES.STEP1");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #2", "FAILED", exec.getStatus());
-            assertEquals("Testing execution #2", "SUCCESS", exec.getExitStatus());
-            assertEquals("Testing execution #2", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #2", "FAILED", exec.getStatus());
+            assertWithMessage("Testing execution #2", "SUCCESS", exec.getExitStatus());
+            assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
         }
 
         {
@@ -204,9 +231,9 @@ public class StopFailExitStatusMatchingWithRestart {
             jobParametersOverride.setProperty("step2.next", "ES.STEP2");
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #3", "COMPLETED", exec.getStatus());
-            assertEquals("Testing execution #3", "COMPLETED", exec.getExitStatus());
-            assertEquals("Testing execution #3", jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #3", "COMPLETED", exec.getStatus());
+            assertWithMessage("Testing execution #3", "COMPLETED", exec.getExitStatus());
+            assertWithMessage("Testing execution #3", jobInstanceId, exec.getInstanceId());  
         }
 
     }

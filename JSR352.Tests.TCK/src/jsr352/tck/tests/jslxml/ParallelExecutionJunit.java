@@ -16,16 +16,15 @@
 */
 package jsr352.tck.tests.jslxml;
 
-import static org.junit.Assert.assertEquals;
+
 
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.runtime.BatchRuntime;
 
-import jsr352.tck.utils.IOHelper;
-import jsr352.tck.utils.ServiceGateway;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -33,6 +32,8 @@ import org.junit.Test;
 
 import com.ibm.batch.tck.spi.JobEndCallback;
 import com.ibm.batch.tck.spi.JobEndCallbackManager;
+import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.ServiceGateway;
 
 public class ParallelExecutionJunit {
     
@@ -40,7 +41,7 @@ public class ParallelExecutionJunit {
     
     private static final int WAIT_TIME = 15000; 
 
-    private static JobOperator jobOp = ServiceGateway.getServices().getJobOperator();
+    private static JobOperator jobOp = BatchRuntime.getJobOperator();
     private JobEndCallbackManager callbackMgr = ServiceGateway.getServices().getCallbackManager();
 
     class ParallelJobEndCallbackImpl implements JobEndCallback{
@@ -63,13 +64,18 @@ public class ParallelExecutionJunit {
     }
     
 
+   
+    public static void setup(String[] args, Properties props) throws Exception {
+ 
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
- 
+    	 
     }
 
     @AfterClass
-    public static void tearDown() throws Exception {
+    public static void cleanup() throws Exception {
     }
 
 
@@ -77,11 +83,16 @@ public class ParallelExecutionJunit {
         logger.fine("Begin test method: " + str);
     }
     
+    /*
+   	 * @testName: testInvokeJobWithOnePartitionedStep
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobWithOnePartitionedStep() throws Exception {
         String METHOD = "testInvokeJobWithOnePartitionedStep";
         begin(METHOD);
-        URL jobXMLURL = ParallelExecutionJunit.class.getResource("/job_partitioned_1step.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_partitioned_1step.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         Object waitObj = new Object();
@@ -92,19 +103,23 @@ public class ParallelExecutionJunit {
         	waitObj.wait(WAIT_TIME);
 		}
 
-        assertEquals("COMPLETED", jobOp.getJobExecution(executionId).getStatus());
+        assert("COMPLETED" == jobOp.getJobExecution(executionId).getStatus());
         callbackMgr.deregisterJobEndCallback(callback);
     }
 
     
  
     
-    
+    /*
+   	 * @testName: testStopRunningPartitionedStep
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testStopRunningPartitionedStep() throws Exception {
         String METHOD = "testStopRunningPartitionedStep";
         begin(METHOD);
-        URL jobXMLURL = ParallelExecutionJunit.class.getResource("/job_batchlet_longrunning_partitioned.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_batchlet_longrunning_partitioned.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         Object waitObj = new Object();
@@ -125,16 +140,20 @@ public class ParallelExecutionJunit {
         	waitObj.wait(WAIT_TIME);
 		}
 
-        assertEquals("STOPPED", jobOp.getJobExecution(executionId).getStatus());
+        assert("STOPPED" == jobOp.getJobExecution(executionId).getStatus());
         callbackMgr.deregisterJobEndCallback(callback);
     }
 
-    
+    /*
+   	 * @testName: testInvokeJobSimpleSplit
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testInvokeJobSimpleSplit() throws Exception {
-        String METHOD = "testInvokeJobWithOnePartitionedStep";
+        String METHOD = "testInvokeJobSimpleSplit";
         begin(METHOD);
-    	URL jobXMLURL = ExecutionJunit.class.getResource("/job_split_batchlet_4steps.xml");
+    	URL jobXMLURL = this.getClass().getResource("/job_split_batchlet_4steps.xml");
     	String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         Object waitObj = new Object();
@@ -146,15 +165,20 @@ public class ParallelExecutionJunit {
         	waitObj.wait(WAIT_TIME);
 		}
 
-        assertEquals("COMPLETED", jobOp.getJobExecution(executionId).getStatus());
+        assert("COMPLETED" == jobOp.getJobExecution(executionId).getStatus());
         callbackMgr.deregisterJobEndCallback(callback);
     }
     
+    /*
+   	 * @testName: testPartitionedPlanCollectorAnalyzer
+   	 * @assertion: FIXME
+   	 * @test_Strategy: FIXME
+   	 */
     @Test
     public void testPartitionedPlanCollectorAnalyzer() throws Exception {
-        String METHOD = "testPartitionedPlan";
+        String METHOD = "testPartitionedPlanCollectorAnalyzer";
         begin(METHOD);
-        URL jobXMLURL = ParallelExecutionJunit.class.getResource("/job_partitioned_artifacts.xml");
+        URL jobXMLURL = this.getClass().getResource("/job_partitioned_artifacts.xml");
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
 
         Object waitObj = new Object();
@@ -172,9 +196,9 @@ public class ParallelExecutionJunit {
         	waitObj.wait(WAIT_TIME);
 		}
 
-        assertEquals("COMPLETED", jobOp.getJobExecution(executionId).getStatus());
+        assert("COMPLETED" == jobOp.getJobExecution(executionId).getStatus());
         
-        assertEquals("CACACA", jobOp.getJobExecution(executionId).getExitStatus());
+        assert("CACACA" == jobOp.getJobExecution(executionId).getExitStatus());
         callbackMgr.deregisterJobEndCallback(callback);
     }
     

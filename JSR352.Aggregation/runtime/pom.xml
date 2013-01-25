@@ -8,7 +8,7 @@
     <groupId>com.ibm.batch</groupId>
     <artifactId>com.ibm.batch-runtime-all</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b04</version>
+    <version>1.0-b05</version>
 	<dependencies>
         <dependency>
             <groupId>junit</groupId>

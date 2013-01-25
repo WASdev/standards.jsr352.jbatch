@@ -33,6 +33,7 @@ import jsr352.tck.chunktypes.InventoryCheckpointData;
 import jsr352.tck.chunktypes.InventoryRecord;
 
 @ItemReader("InventoryInitReader")
+@javax.inject.Named("InventoryInitReader")
 public class InventoryInitReader {
 
 	protected DataSource dataSource = null;

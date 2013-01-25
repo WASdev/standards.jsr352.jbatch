@@ -19,22 +19,24 @@ package jsr352.tck.tests.xmlinheritance;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.exception.JobStartException;
+import javax.batch.runtime.BatchRuntime;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import jsr352.tck.utils.IOHelper;
 
 import com.ibm.batch.tck.spi.BatchContainerServiceProvider;
 import com.ibm.batch.tck.spi.JobEndCallback;
 import com.ibm.batch.tck.spi.JobEndCallbackManager;
+import jsr352.tck.utils.IOHelper;
 
 @Ignore("Pending discussion of Bug 4393, let's ignore this for now.")
 public class JobInheritanceTests {
@@ -43,13 +45,25 @@ public class JobInheritanceTests {
 	private JobOperator jobOp = null;
     private final static Logger logger = Logger.getLogger(JobInheritanceTests.class.getName());
     
-	@Before
-	public void initialize() {
+	
+	public void setup(String[] args, Properties props) {
 		
-		jobOp = getServices().getJobOperator();
+		jobOp = BatchRuntime.getJobOperator();
+	}
+	
+	@Before
+	public void setUp() {
+		
+		jobOp = BatchRuntime.getJobOperator();
+	}
+	
+	/* cleanup */
+	public void  cleanup()
+	{		
 	
 	}
 	
+	/** Pending discussion of Bug 4393, let's ignore this for now **/
 	@Test
 	public void testAll() throws FileNotFoundException, IOException, JobStartException {
 		
@@ -72,7 +86,7 @@ public class JobInheritanceTests {
 			public void done(long jobExecutionId) {
 	            synchronized(this) {
 	            	System.out.println("done");
-//	            	assertEquals(new String ("COMPLETED"), jobExecution.getBatchStatus());
+//	            	assert("COMPLETED" == jobExecution.getBatchStatus());
 	                this.notify();
 	            }
 			}

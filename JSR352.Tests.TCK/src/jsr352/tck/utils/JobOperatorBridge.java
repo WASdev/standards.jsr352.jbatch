@@ -28,6 +28,7 @@ import javax.batch.operations.exception.JobRestartException;
 import javax.batch.operations.exception.JobStartException;
 import javax.batch.operations.exception.NoSuchJobException;
 import javax.batch.operations.exception.NoSuchJobExecutionException;
+import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
@@ -36,7 +37,8 @@ import com.ibm.batch.tck.spi.JobEndCallbackManager;
 
 public class JobOperatorBridge {
 
-    private JobOperator jobOp = ServiceGateway.getServices().getJobOperator();
+    //private JobOperator jobOp = ServiceGateway.getServices().getJobOperator();
+    private JobOperator jobOp = BatchRuntime.getJobOperator();
     private JobEndCallbackManager callbackMgr = ServiceGateway.getServices().getCallbackManager();
 
     private Set<Long> completedExecutions = new HashSet<Long>();

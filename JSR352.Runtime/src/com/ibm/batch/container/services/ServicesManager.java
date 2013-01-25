@@ -53,7 +53,6 @@ public class ServicesManager implements BatchContainerConstants {
 	private static final String DEFAULT_BATCH_KERNEL_SERVICE = "com.ibm.batch.container.impl.BatchKernelImpl";
 	private static final String DEFAULT_JOBSTATUS_MGR_SERVICE = "com.ibm.batch.container.services.impl.JobStatusManagerImpl";
 	private static final String DEFAULT_JOBID_MGR_SERVICE = "com.ibm.batch.container.services.impl.JobIdManagerImpl";
-	private static final String DEFAULT_JOB_OP_SERVICE = "com.ibm.batch.container.services.impl.JobOperatorImpl";
 	private static final String DEFAULT_CALLBACK_SERVICE = "com.ibm.batch.container.tck.bridge.JobEndCallbackManagerImpl";
 	private static final String DEFAULT_TRANSACTION_SERVICE = "com.ibm.batch.container.services.impl.BatchTransactionServiceImpl";
 	
@@ -69,7 +68,6 @@ public class ServicesManager implements BatchContainerConstants {
 		CONTAINER_ARTIFACT_FACTORY_SERVICE,
 		BATCH_KERNEL_SERVICE,
 		JOB_ID_MANAGEMENT_SERVICE,
-		JOB_OP_SERVICE,
 		CALLBACK_SERVICE,
 		JAVA_EDITION_IS_SE_DUMMY_SERVICE}; 
 
@@ -91,7 +89,6 @@ public class ServicesManager implements BatchContainerConstants {
 		public static final String CONTAINER_ARTIFACT_FACTORY_SERVICE = "CONTAINER_ARTIFACT_FACTORY_SERVICE";
 		public static final String BATCH_KERNEL_SERVICE = "BATCH_KERNEL_SERVICE";
 		public static final String JOB_ID_MANAGEMENT_SERVICE = "JOB_ID_MANAGEMENT_SERVICE";
-		public static final String JOB_OP_SERVICE = "JOB_OP_SERVICE";
 		public static final String CALLBACK_SERVICE = "CALLBACK_SERVICE";
 		public static final String TRANSACTION_SERVICE = "TRANSACTION_SERVICE";
 		public static final String J2SE_MODE = "J2SE_MODE"; // Trying to preserve this since value since e already shared it.
@@ -116,8 +113,6 @@ public class ServicesManager implements BatchContainerConstants {
 					propertyNameTable.put(BATCH_KERNEL_SERVICE, s);
 				} else if (s.equals(ServiceType.JOB_ID_MANAGEMENT_SERVICE)) {
 					propertyNameTable.put(JOB_ID_MANAGEMENT_SERVICE, s);
-				} else if (s.equals(ServiceType.JOB_OP_SERVICE)) {
-					propertyNameTable.put(JOB_OP_SERVICE, s);
 				} else if (s.equals(ServiceType.CALLBACK_SERVICE)) {
 					propertyNameTable.put(CALLBACK_SERVICE, s);
 				} else if (s.equals(ServiceType.JAVA_EDITION_IS_SE_DUMMY_SERVICE)) {
@@ -150,8 +145,6 @@ public class ServicesManager implements BatchContainerConstants {
 					serviceImplClassNames.put(s, DEFAULT_BATCH_KERNEL_SERVICE);
 				} else if (s.equals(ServiceType.JOB_ID_MANAGEMENT_SERVICE)) {
 					serviceImplClassNames.put(s, DEFAULT_JOBID_MGR_SERVICE);
-				} else if (s.equals(ServiceType.JOB_OP_SERVICE)) {
-					serviceImplClassNames.put(s, DEFAULT_JOB_OP_SERVICE);
 				} else if (s.equals(ServiceType.CALLBACK_SERVICE)) {
 					serviceImplClassNames.put(s, DEFAULT_CALLBACK_SERVICE);
 				} else if (s.equals(ServiceType.JAVA_EDITION_IS_SE_DUMMY_SERVICE)) {

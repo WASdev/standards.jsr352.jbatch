@@ -25,20 +25,29 @@ import javax.batch.runtime.JobExecution;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import jsr352.tck.utils.JobOperatorBridge;
 import jsr352.tck.utils.IOHelper;
+import jsr352.tck.utils.JobOperatorBridge;
 
-import static org.junit.Assert.*;
-
+import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 public class BatchletRestartStateMachineTest {
     
     private static JobOperatorBridge jobOp = null;
         
+    public static void setup(String[] args, Properties props) throws Exception {
+        jobOp = new JobOperatorBridge();
+    }
+    
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
     }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
+	}
     
     /*
      * Obviously would be nicer to have more granular tests for some of this function,
@@ -46,7 +55,11 @@ public class BatchletRestartStateMachineTest {
      * restart it will have some complexity, so let's test a few different functions
      * in one longer restart scenario.
      */
-    
+    /*
+	 * @testName: testMultiPartRestart
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
     @Test
     public void testMultiPartRestart() throws Exception {
         
@@ -57,8 +70,8 @@ public class BatchletRestartStateMachineTest {
         String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
         
         JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, jobParams);
-        assertEquals("Testing execution #1", "STOPPED", execution1.getStatus());
-        assertEquals("Testing execution #1", "EXECUTION.1", execution1.getExitStatus());
+        assertWithMessage("Testing execution #1", "STOPPED", execution1.getStatus());
+        assertWithMessage("Testing execution #1", "EXECUTION.1", execution1.getExitStatus());
         
         long jobInstanceId = execution1.getInstanceId();
         //TODO - we think this will change so we restart by instanceId, for now the draft spec
@@ -71,18 +84,18 @@ public class BatchletRestartStateMachineTest {
             jobParametersOverride.put("execution.number", execString);
             JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
             lastExecutionId = exec.getExecutionId();
-            assertEquals("Testing execution #" + i, "STOPPED", exec.getStatus());
-            assertEquals("Testing execution #" + i, "EXECUTION." + execString, exec.getExitStatus());
-            assertEquals("Testing execution #" + i, jobInstanceId, exec.getInstanceId());  
+            assertWithMessage("Testing execution #" + i, "STOPPED", exec.getStatus());
+            assertWithMessage("Testing execution #" + i, "EXECUTION." + execString, exec.getExitStatus());
+            assertWithMessage("Testing execution #" + i, jobInstanceId, exec.getInstanceId());  
         }
         
         // Last execution should succeed
         Properties jobParametersOverride = new Properties();
         jobParametersOverride.put("execution.number", "6");
         JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId, jobParametersOverride);
-        assertEquals("Testing execution #6", "COMPLETED", exec.getStatus());
-        assertEquals("Testing execution #6", "EXECUTION.6", exec.getExitStatus());
-        assertEquals(jobInstanceId, exec.getInstanceId());  
+        assertWithMessage("Testing execution #6", "COMPLETED", exec.getStatus());
+        assertWithMessage("Testing execution #6", "EXECUTION.6", exec.getExitStatus());
+        assert(jobInstanceId == exec.getInstanceId());  
 
     }
     
