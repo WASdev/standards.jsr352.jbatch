@@ -3,6 +3,7 @@
 **/testArtifactsBin
 **/testJunitsBin
 **/bitBucketBin
+target/
 **/target/
 **/**/target/
 **/.settings
