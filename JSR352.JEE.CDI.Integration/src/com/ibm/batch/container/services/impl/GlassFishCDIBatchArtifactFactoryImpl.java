@@ -63,8 +63,11 @@ public class GlassFishCDIBatchArtifactFactoryImpl implements IBatchArtifactFacto
 		 try {
 			 InitialContext initialContext = new InitialContext();
 			 BeanManager bm = (BeanManager) initialContext.lookup("java:comp/BeanManager");	 
-			 Bean bean = bm.getBeans(id).iterator().next();		
-			 artifactInstance = bm.getReference(bean, bean.getClass(), bm.createCreationalContext(bean));
+			 Bean bean = bm.getBeans(id).iterator().next();
+			 
+			 Class clazz = bean.getBeanClass();
+			 
+			 artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
 		 } catch (Exception e) {			 
 			 throw new BatchContainerRuntimeException("Tried but failed to load artifact with id: " + id, e);
 		 }
