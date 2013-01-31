@@ -8,7 +8,7 @@
     <groupId>com.ibm.batch</groupId>
     <artifactId>com.ibm.batch-cdi-integration</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b03</version>
+    <version>1.0-b04</version>
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.weld.se</groupId>
