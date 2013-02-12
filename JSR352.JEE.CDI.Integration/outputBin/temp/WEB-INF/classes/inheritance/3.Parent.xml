@@ -1,7 +1,0 @@
-<job id="3.Parent" xmlns="http://batch.jsr352/jsl">
-	<flow id="ignoredFlow"></flow>
-	<split id="ignoredSplit"></split>
-	<step id="ignoredStep">
-		<batchlet ref="Mybatchlet"/>
-	</step>
-</job>

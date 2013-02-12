@@ -1,4 +1,0 @@
-<step id="10.Parent" xmlns="http://batch.jsr352/jsl">
-	<properties><property name="parentProp" value="value"/></properties>
-	<listeners><listener ref="parentRef"/></listeners>
-</step>

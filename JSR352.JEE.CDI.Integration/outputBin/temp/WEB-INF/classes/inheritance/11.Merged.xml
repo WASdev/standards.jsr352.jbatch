@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<job id="11.Child" xmlns="http://batch.jsr352/jsl">
-	<step id="MyStep">
- 		<chunk reader="expected" writer="expected" processor="expected" buffer-size="expected">
-			<properties><property name="p" value="v"/></properties>
-		</chunk>
-	</step>
-</job>
