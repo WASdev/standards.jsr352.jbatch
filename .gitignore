@@ -13,3 +13,13 @@ target/
 **/dependency-reduced-pom.xml
 **/*.swp
 *.swp
+header.txt
+~/
+test-output/
+oldJUnits/
+c:/
+derby.log
+RUNTIMEDB
+JSR352.Tests.TCK/readme.txt
+JSR352.Tests.TCK/jsr352-tck.properties
+JSR352.Runtime/resources/jsr352-derby.ddl_DO_NOT_EDIT
