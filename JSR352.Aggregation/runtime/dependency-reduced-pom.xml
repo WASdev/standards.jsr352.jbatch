@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.batch</groupId>
   <artifactId>com.ibm.batch-runtime-all</artifactId>
-  <version>1.0-b08</version>
+  <version>1.0-b09</version>
   <build>
     <resources>
       <resource>
@@ -27,6 +27,12 @@
             </goals>
             <configuration>
               <artifactSet>
+                <includes>
+                  <include>com.ibm.batch:com.ibm.batch-model:jar:*</include>
+                  <include>com.ibm.batch:com.ibm.batch-tck-spi:jar:*</include>
+                  <include>com.ibm.batch:com.ibm.batch-cdi-integration:jar:*</include>
+                  <include>com.ibm.batch:com.ibm.batch-runtime:jar:*</include>
+                </includes>
                 <excludes>
                   <exclude>javax.batch:javax.batch-api</exclude>
                   <exclude>javax.batch:javax.batch-annotation</exclude>

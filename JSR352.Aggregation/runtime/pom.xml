@@ -8,7 +8,7 @@
     <groupId>com.ibm.batch</groupId>
     <artifactId>com.ibm.batch-runtime-all</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b08</version>
+    <version>1.0-b09</version>
 	<dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -24,13 +24,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
-			<artifactId>com.ibm.batch-tck-spi</artifactId>
-			<version>1.0-b04</version>
+			<artifactId>com.ibm.batch-runtime</artifactId>
+			<version>1.0-b05</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
-			<artifactId>com.ibm.batch-cdi-integration</artifactId>
+			<artifactId>com.ibm.batch-tck-spi</artifactId>
 			<version>1.0-b04</version>
 			<scope>compile</scope>
 		</dependency>
@@ -86,28 +86,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--
-<plugin> 
-                <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-javadoc-plugin</artifactId> 
-  <version>2.7</version> 
-    <executions> 
-      <execution> 
-        <phase>package</phase> 
-        <goals> 
-            <goal>jar</goal> 
-        </goals> 
-        <configuration> 
-          <includeDependencySources>true</includeDependencySources> 
-          <dependencySourceIncludes> 
-            <dependencySourceInclude>com.ibm.batch.*</dependencySourceInclude> 
-          </dependencySourceIncludes> 
-		  <excludePackageNames>org.*:javax.*</excludePackageNames>
-        </configuration> 
-      </execution> 
-    </executions> 
-</plugin> 
--->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -136,43 +114,6 @@
                     </archive>
                 </configuration>
             </plugin>
-			<!--
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals><goal>add-source</goal></goals>
-						<configuration>
-							<sources>
-								<source>src</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			 <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.5</version>
-				<executions>
-				  <execution>
-					<id>add-test-source</id>
-					<phase>generate-test-sources</phase>
-					<goals>
-					  <goal>add-test-source</goal>
-					</goals>
-					<configuration>
-					  <sources>
-						  <source>testJunits/test</source>
-						  <source>testArtifacts</source>
-					  </sources>
-					</configuration>
-				  </execution>
-				</executions>
-			  </plugin>
-			  -->
         </plugins>
     </build>
 </project>

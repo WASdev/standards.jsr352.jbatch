@@ -163,6 +163,7 @@
 					</includes>
 				</configuration>
 				<executions>
+					<!--
 					<execution>
 						<id>check-headers</id>
 						<phase>verify</phase>
@@ -170,6 +171,7 @@
 							<goal>check</goal>
 						</goals>
 					</execution>
+					-->
 				</executions>
 			</plugin>
 		</plugins>

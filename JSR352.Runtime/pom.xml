@@ -8,7 +8,7 @@
     <groupId>com.ibm.batch</groupId>
     <artifactId>com.ibm.batch-runtime</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b04</version>
+    <version>1.0-b05</version>
 	<dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -114,28 +114,23 @@
                     </archive>
                 </configuration>
             </plugin>
-			<!--
-			 <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.5</version>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
-				  <execution>
-					<id>add-test-source</id>
-					<phase>generate-test-sources</phase>
-					<goals>
-					  <goal>add-test-source</goal>
-					</goals>
-					<configuration>
-					  <sources>
-						  <source>testJunits/test</source>
-						  <source>testArtifacts</source>
-					  </sources>
-					</configuration>
-				  </execution>
+					<execution>
+						<phase>validate</phase>
+						<configuration>
+							<tasks>
+								<copy overwrite="true" file="jee-properties/batch-config.properties" tofile="resources/META-INF/services/batch-config.properties"/>
+								<copy overwrite="true" file="jee-properties/batch-services.properties" tofile="resources/META-INF/services/batch-services.properties"/>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
 				</executions>
-			  </plugin>
-			  -->
+			</plugin>
         </plugins>
     </build>
 </project>
