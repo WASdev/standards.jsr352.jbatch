@@ -8,6 +8,5 @@ Import-Package: com.ibm.batch.tck.spi,
  javax.batch.operations,
  javax.batch.operations.exception,
  javax.batch.runtime,
- javax.batch.runtime.context,
- jsr352.batch.jsl
+ javax.batch.runtime.context
 Require-Bundle: JSR352.API

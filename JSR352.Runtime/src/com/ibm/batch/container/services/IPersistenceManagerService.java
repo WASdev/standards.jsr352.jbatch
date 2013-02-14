@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
+import com.ibm.batch.container.context.impl.StepContextImpl;
 import com.ibm.batch.container.exception.PersistenceException;
 
 public interface IPersistenceManagerService extends IBatchServiceBase {
@@ -123,11 +125,25 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts);
 	
-	public void stepExecutionCreateStepExecutionData(String stepExecutionKey, long jobExecutionID, long stepExecutionID);
+	public void stepExecutionCreateStepExecutionData(String stepExecutionKey, long jobExecutionID, StepContextImpl stepContext);
 	
-	public long stepExecutionQueryID(String key, String idtype);
+	//public long stepExecutionQueryID(String key);
 	
-	public List<StepExecution> stepExecutionQueryIDList(long key, String idtype);
+	public List<StepExecution> getStepExecutionIDListQueryByJobID(long execid);
 	
-		
+	public void jobOperatorUpdateBatchStatusWithUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
+	
+	public void jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
+	
+	public JobExecution jobOperatorGetJobExecution(long jobExecutionId);
+
+	public List<JobExecution> jobOperatorGetJobExecutionsByJobInstanceID(long jobInstanceID);
+
+	public Properties getParameters(long instanceId);
+
+	public List<JobExecution> jobOperatorGetJobExecutions(long jobInstanceId);
+
+	public StepExecution getStepExecutionObjQueryByStepID(long stepexecutionId);
+
+	public Set<Long> jobOperatorGetRunningInstances(String jobName);	
 }

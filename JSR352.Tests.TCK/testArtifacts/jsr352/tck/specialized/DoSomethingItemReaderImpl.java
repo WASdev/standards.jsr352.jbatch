@@ -16,24 +16,25 @@
 */
 package jsr352.tck.specialized;
 
-import javax.batch.annotation.*;
+import java.io.Externalizable;
+
+import javax.batch.api.AbstractItemReader;
 
 import jsr352.tck.chunktypes.CheckpointData;
 import jsr352.tck.chunktypes.ReadRecord;
 
 
-@ItemReader("DoSomethingItemReader")
-@javax.inject.Named("DoSomethingItemReader")
-public class DoSomethingItemReaderImpl {
+@javax.inject.Named("doSomethingItemReaderImpl")
+public class DoSomethingItemReaderImpl extends AbstractItemReader<ReadRecord> {
 		private int count = 0;
 		
-		@Open
-		public void openMe(CheckpointData cpd) {
+		@Override
+		public void open(Externalizable cpd) {
 			System.out.println("DoSomethingItemReaderImpl.openMe, count should be 0, actual value = " + count);
 		}
 		
-		@ReadItem
-		public ReadRecord readIt() {
+		@Override
+		public ReadRecord readItem() {
 			count = count + 1;
 			if (count == 10) {
 				return null;
@@ -41,8 +42,8 @@ public class DoSomethingItemReaderImpl {
 		    return new ReadRecord(count);
 		}
 		
-		@CheckpointInfo
-		public CheckpointData getCPD() {
+		@Override
+		public CheckpointData checkpointInfo() {
 		    return new CheckpointData();
 		}
 

@@ -16,19 +16,18 @@
 */
 package jsr352.tck.specialized;
 
-import javax.batch.annotation.ItemProcessor;
-import javax.batch.annotation.ProcessItem;
+
+
+import javax.batch.api.ItemProcessor;
 
 import jsr352.tck.chunktypes.ReadRecord;
 
-
-@ItemProcessor("DoSomethingItemProcessor")
-@javax.inject.Named("DoSomethingItemProcessor")
-public class DoSomethingItemProcessorImpl {
+@javax.inject.Named("doSomethingItemProcessorImpl")
+public class DoSomethingItemProcessorImpl implements ItemProcessor<ReadRecord, ReadRecord> {
 	private int update = 10;
 	
-	@ProcessItem
-	public ReadRecord processData(ReadRecord record) throws Exception {
+	@Override
+	public ReadRecord processItem(ReadRecord record) throws Exception {
 		
 		ReadRecord processedRecord = record;
 		processedRecord.setRecord(update);

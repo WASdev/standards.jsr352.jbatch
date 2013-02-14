@@ -13,139 +13,137 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package jsr352.tck.specialized;
 
+import java.io.Externalizable;
+
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.ItemReader;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.ReadItem;
+import javax.batch.api.AbstractItemReader;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ArrayIndexCheckpointData;
 import jsr352.tck.chunktypes.ReadRecord;
 import jsr352.tck.reusable.MyChildException;
 import jsr352.tck.reusable.MyParentException;
 
+@javax.inject.Named("skipReader")
+public class SkipReader extends AbstractItemReader<ReadRecord> {
 
-@ItemReader("SkipReader")
-@javax.inject.Named("SkipReader")
-public class SkipReader {
-	
-	private int count = 0;
-	private int[] readerDataArray;
-	private int idx;
-	private boolean threwSkipException = false;
-	boolean throwChildEx = false;
-	ArrayIndexCheckpointData _cpd = new ArrayIndexCheckpointData();
-	
-	@BatchProperty(name="readrecord.fail")
+    private int count = 0;
+    private int[] readerDataArray;
+    private int idx;
+    private boolean threwSkipException = false;
+    boolean throwChildEx = false;
+    ArrayIndexCheckpointData _cpd = new ArrayIndexCheckpointData();
+
+    @Inject    
+    @BatchProperty(name = "readrecord.fail")
     String readrecordfailNumberString = null;
-	
-	@BatchProperty(name="execution.number")
-    String executionNumberString;
-	
-	@BatchProperty(name="app.arraysize")
-    String appArraySizeString;
-		
-	int[] failnum;
-	int execnum;
-	int arraysize;
-	
-	public SkipReader(){
-			
-	}
-		
-		@Open
-		public void openMe(ArrayIndexCheckpointData cpd) {
-			
-			if (!readrecordfailNumberString.equals("null")) {
-				String[] readFailPointsStrArr = readrecordfailNumberString.split(",");
-				failnum = new int[readFailPointsStrArr.length];
-				for (int i = 0; i < readFailPointsStrArr.length; i++) {
-					failnum[i] = Integer.parseInt(readFailPointsStrArr[i]);
-				}
-			}
-			else {
-				failnum = new int[1];
-				failnum[0] = -1;
-			}
-			
-            execnum = Integer.parseInt(executionNumberString);
-            
-    		arraysize = Integer.parseInt(appArraySizeString);
-    		readerDataArray =  new int[arraysize];
-    		
-    		for (int i = 0; i<arraysize; i++){
-    			// init the data array
-    			readerDataArray[i] = i;
-    		}
-    	
-			if (cpd == null){
-				//position at the beginning
-				idx = 0;
-			}
-			else {
-				// position at index held in the cpd
-				idx = cpd.getCurrentIndex() + 1; 
-			}
-			System.out.println("READ: starting at index: " + idx);
-		}
-		
-		@ReadItem
-		public ReadRecord readIt() throws Exception {
-		
-			
-			if (threwSkipException){
-				count++;
-				idx++;
-				threwSkipException = false;
-				throwChildEx= true;
-			}
-			
-			int i = idx;
-			
-			if (i == arraysize) {
-				return null;
-			}
-			if (execnum == 2){
-				failnum[0] = -1;
-			}
-						
-			if (isFailnum(idx)){
-				System.out.println("READ: got the fail num..." + failnum);
-				threwSkipException = true;
-				if (!throwChildEx){
-					throw new MyParentException("fail on purpose with MyParentException");
-				}
-				else {
-					throwChildEx = false;
-					throw new MyChildException("fail on purpose with MyChildException");
-				}
-			}
-			count = count + 1;
-			idx = idx+1;
-			_cpd.setCurrentIndex(i);
-		    return new ReadRecord(readerDataArray[i]);
-		}
-		
-		@CheckpointInfo
-		public ArrayIndexCheckpointData getCPD() {
-			
-			System.out.println("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
-			System.out.println("READ: in getCPD idx : " + idx);
-			
-		    return _cpd;   
-		}
 
-		private boolean isFailnum(int idxIn) {
-		
-			boolean ans = false;
-			for (int i = 0; i < failnum.length; i++) {
-				if (idxIn == failnum[i]){
-					ans = true;
-				}
-			}
-			return ans;
-		}
+    @Inject    
+    @BatchProperty(name = "execution.number")
+    String executionNumberString;
+
+    @Inject    
+    @BatchProperty(name = "app.arraysize")
+    String appArraySizeString;
+
+    int[] failnum;
+    int execnum;
+    int arraysize;
+
+    public SkipReader() {
+
+    }
+
+
+    @Override
+    public void open(Externalizable cpd) {
+
+        if (!readrecordfailNumberString.equals("null")) {
+            String[] readFailPointsStrArr = readrecordfailNumberString.split(",");
+            failnum = new int[readFailPointsStrArr.length];
+            for (int i = 0; i < readFailPointsStrArr.length; i++) {
+                failnum[i] = Integer.parseInt(readFailPointsStrArr[i]);
+            }
+        } else {
+            failnum = new int[1];
+            failnum[0] = -1;
+        }
+
+        execnum = Integer.parseInt(executionNumberString);
+
+        arraysize = Integer.parseInt(appArraySizeString);
+        readerDataArray = new int[arraysize];
+
+        for (int i = 0; i < arraysize; i++) {
+            // init the data array
+            readerDataArray[i] = i;
+        }
+
+        if (cpd == null) {
+            // position at the beginning
+            idx = 0;
+        } else {
+            // position at index held in the cpd
+            idx = ((ArrayIndexCheckpointData)cpd).getCurrentIndex() + 1;
+        }
+        System.out.println("READ: starting at index: " + idx);
+    }
+
+    @Override
+    public ReadRecord readItem() throws Exception {
+
+        if (threwSkipException) {
+            count++;
+            idx++;
+            threwSkipException = false;
+            throwChildEx = true;
+        }
+
+        int i = idx;
+
+        if (i == arraysize) {
+            return null;
+        }
+        if (execnum == 2) {
+            failnum[0] = -1;
+        }
+
+        if (isFailnum(idx)) {
+            System.out.println("READ: got the fail num..." + failnum);
+            threwSkipException = true;
+            if (!throwChildEx) {
+                throw new MyParentException("fail on purpose with MyParentException");
+            } else {
+                throwChildEx = false;
+                throw new MyChildException("fail on purpose with MyChildException");
+            }
+        }
+        count = count + 1;
+        idx = idx + 1;
+        _cpd.setCurrentIndex(i);
+        return new ReadRecord(readerDataArray[i]);
+    }
+
+    @Override
+    public ArrayIndexCheckpointData checkpointInfo() {
+
+        System.out.println("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
+        System.out.println("READ: in getCPD idx : " + idx);
+
+        return _cpd;
+    }
+
+    private boolean isFailnum(int idxIn) {
+
+        boolean ans = false;
+        for (int i = 0; i < failnum.length; i++) {
+            if (idxIn == failnum[i]) {
+                ans = true;
+            }
+        }
+        return ans;
+    }
 }

@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-@javax.inject.Named("CheckpointData")
+@javax.inject.Named("checkpointData")
 public class CheckpointData implements Externalizable {
 
     private final static long serialVersionUID = 1L;

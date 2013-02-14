@@ -20,31 +20,39 @@ package jsr352.tck.specialized;
 import java.io.Externalizable;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.*;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractChunkListener;
+import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 
 
-@CheckpointListener("MyCustomCheckpointListener")
-@javax.inject.Named("MyCustomCheckpointListener")
-public class MyCustomCheckpointListener {
+@javax.inject.Named("myCustomCheckpointListener")
+public class MyCustomCheckpointListener extends AbstractChunkListener {
     
     private final static String sourceClass = MyCustomCheckpointListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
     
-    @BatchContext
+    @Inject 
+    JobContext jobCtx;
+    
+    @Inject
     StepContext<Integer, Externalizable> stepCtx;
 
-    @BeforeCheckpoint
-    public void before() {
+    @Override
+    public void beforeChunk() {
     	System.out.println("CUSTOMCHKPTLISTENER: beforeCheckpoint");
     }
     
-    @AfterCheckpoint
-    public void after() {
+    @Override
+    public void afterChunk() {
     	System.out.println("CUSTOMCHKPTLISTENER: afterCheckpoint");
     }
     
-
+    @Override
+    public void onError() {
+    	System.out.println("CUSTOMCHKPTLISTENER: onError");
+    }
 }
 

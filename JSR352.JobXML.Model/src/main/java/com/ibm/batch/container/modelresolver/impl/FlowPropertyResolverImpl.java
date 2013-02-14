@@ -29,14 +29,16 @@ import com.ibm.batch.container.xjcl.ExecutionElement;
 public class FlowPropertyResolverImpl extends AbstractPropertyResolver<Flow>  {
 
 
-    @Override
+    public FlowPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public Flow substituteProperties(final Flow flow, final Properties submittedProps, final Properties parentProps) {
 
         // resolve all the properties used in attributes and update the JAXB model
     	flow.setId(this.replaceAllProperties(flow.getId(), submittedProps, parentProps));
     	flow.setNextFromAttribute(this.replaceAllProperties(flow.getNextFromAttribute(), submittedProps, parentProps));
-    	flow.setAbstract(this.replaceAllProperties(flow.getAbstract(), submittedProps, parentProps));
-    	flow.setParent(this.replaceAllProperties(flow.getParent(), submittedProps, parentProps));
     	
         // Resolve all the properties defined for this step
         Properties currentProps = null;
@@ -47,15 +49,15 @@ public class FlowPropertyResolverImpl extends AbstractPropertyResolver<Flow>  {
         // Resolve Listener properties, this is list of listeners List<Listener>
         if (flow.getListeners() != null) {
             for (final Listener listener : flow.getListeners().getListenerList()) {
-                PropertyResolverFactory.createListenerPropertyResolver().substituteProperties(listener, submittedProps, currentProps);
+                PropertyResolverFactory.createListenerPropertyResolver(this.isPartitionedStep).substituteProperties(listener, submittedProps, currentProps);
             }
         }
         
         for (final ExecutionElement next : flow.getExecutionElements()) {
             if (next instanceof Step) {
-                PropertyResolverFactory.createStepPropertyResolver().substituteProperties((Step)next, submittedProps, currentProps);
+                PropertyResolverFactory.createStepPropertyResolver(this.isPartitionedStep).substituteProperties((Step)next, submittedProps, currentProps);
             } else if (next instanceof Decision) {
-                PropertyResolverFactory.createDecisionPropertyResolver().substituteProperties((Decision)next, submittedProps, currentProps);
+                PropertyResolverFactory.createDecisionPropertyResolver(this.isPartitionedStep).substituteProperties((Decision)next, submittedProps, currentProps);
             } 
         }
     	

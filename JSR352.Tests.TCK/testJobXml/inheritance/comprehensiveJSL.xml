@@ -23,7 +23,7 @@
 	</properties>
 
 	<listeners merge="true">
-		<listener ref="MyUniversalJobListener"/>
+		<listener ref="MyUniversalListener"/>
 	</listeners>
 
 	<!--decision>
@@ -86,10 +86,10 @@
 			<property name="stepProperty" value="parent"/>
 		</properties>
 		<listeners>
-			<listener ref="MyUniversalStepListener"/>
+			<listener ref="MyUniversalListener"/>
 		</listeners>
 
-		<batchlet ref="MyBatchlet">
+		<batchlet ref="myBatchletImpl">
 			<properties>
 				<property name="batchletProperty" value="parent"/>
 			</properties>

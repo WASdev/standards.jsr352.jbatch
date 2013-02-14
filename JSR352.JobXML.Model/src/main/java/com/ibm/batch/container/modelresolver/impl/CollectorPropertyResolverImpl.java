@@ -20,10 +20,11 @@ import java.util.Properties;
 
 import jsr352.batch.jsl.Collector;
 
-import com.ibm.batch.container.modelresolver.PropertyResolver;
+public class CollectorPropertyResolverImpl extends AbstractPropertyResolver<Collector> {
 
-public class CollectorPropertyResolverImpl implements
-		PropertyResolver<Collector> {
+	public CollectorPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
 
 	@Override
 	public Collector substituteProperties(Collector b) {

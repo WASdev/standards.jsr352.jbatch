@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>javax.batch</groupId>
     <artifactId>jbatch</artifactId>
-    <version>1.0-b03</version>
+    <version>1.0-b04</version>
     <packaging>pom</packaging>
 	<name>JSR-352 RI</name>
 	<description>
@@ -62,13 +62,7 @@
 			<name>Andrew Mauer</name>
 			<email>ajmauer@us.ibm.com</email>
 		</developer>
-		<developer>
-			<id>ctedlock</id>
-			<name>Collin Tedlock</name>
-			<email>ctedloc@us.ibm.com</email>
-		</developer>
 	</developers>
-
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -78,8 +72,6 @@
         <module>JSR352.Annotations</module>
         <module>JSR352.API</module>
         <module>JSR352.JobXML.Model</module>
-        <module>JSR352.Processors</module>
-		<module>JSR352.JEE.CDI.Integration</module>
 		<module>JSR352.Runtime</module>
 		<module>JSR352.TCK.SPI</module>
 		<module>JSR352.Tests.TCK</module>
@@ -113,7 +105,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -139,7 +130,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			-->
 			<plugin>
 				<groupId>com.mycila.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>
@@ -167,14 +157,12 @@
 						<include>JSR352.Annotations</include>
 						<include>JSR352.API</include>
 						<include>JSR352.JobXML.Model</include>
-						<include>JSR352.Processors</include>
 						<include>JSR352.Runtime</include>
 						<include>JSR352.TCK.SPI</include>
 						<include>JSR352.Tests.TCK</include>
 					</includes>
 				</configuration>
 				<executions>
-					<!--
 					<execution>
 						<id>check-headers</id>
 						<phase>verify</phase>
@@ -182,7 +170,6 @@
 							<goal>check</goal>
 						</goals>
 					</execution>
-					-->
 				</executions>
 			</plugin>
 		</plugins>

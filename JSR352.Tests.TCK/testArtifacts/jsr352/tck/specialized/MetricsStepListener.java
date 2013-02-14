@@ -18,32 +18,31 @@ package jsr352.tck.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.AfterStep;
-import javax.batch.annotation.BatchContext;
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.BeforeStep;
-import javax.batch.annotation.StepListener;
+import javax.batch.api.AbstractStepListener;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
-@StepListener("MetricsStepListener")
-@javax.inject.Named("MetricsStepListener")
-public class MetricsStepListener {
+@javax.inject.Named("metricsStepListener")
+public class MetricsStepListener extends AbstractStepListener {
 
-	@BatchContext
+    @Inject
 	StepContext stepCtx;
 	
-	@BatchContext
+    @Inject
 	JobContext JobCtx;
 	
-	@BatchProperty(name="numberOfSkips")
+    @Inject    
+    @BatchProperty(name="numberOfSkips")
     String skipNumberString;
 	
-	@BatchProperty(name="ReadProcessWrite")
+    @Inject    
+    @BatchProperty(name="ReadProcessWrite")
     String RPWString;
 		
-    private final static String sourceClass = MySkipAndStepListener.class.getName();
+    private final static String sourceClass = MetricsStepListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
     
     public static final String GOOD_EXIT_STATUS_READ = "GOOD READ METRICS RESULT";
@@ -55,14 +54,14 @@ public class MetricsStepListener {
 	
 	int skipNum;
 
-    @BeforeStep
-    public void before() {
+    @Override
+    public void beforeStep() {
         logger.finer("In before()");
         skipNum = Integer.parseInt(skipNumberString);
     }
     
-    @AfterStep
-	public void after() {
+    @Override
+	public void afterStep() {
 		logger.finer("In after()");
 
 		Metric[] metrics = stepCtx.getMetrics();
@@ -77,8 +76,8 @@ public class MetricsStepListener {
 					}
 				}
 			} else if (RPWString.equals("READ_SKIP")) {
-					if (metrics[i].getName().equals("readCount")) {
-						if (metrics[i].getValue() == 30-skipNum) {
+					if (metrics[i].getName().equals("readSkipCount")) {
+						if (metrics[i].getValue() == skipNum) {
 
 							JobCtx.setExitStatus(GOOD_EXIT_STATUS_READ);
 						} else {
@@ -103,7 +102,17 @@ public class MetricsStepListener {
 						JobCtx.setExitStatus(BAD_EXIT_STATUS);
 					}
 				}
+			
+		} else if (RPWString.equals("WRITE_SKIP")) {
+			if (metrics[i].getName().equals("writeSkipCount")) {
+				if (metrics[i].getValue() == skipNum) {
+
+					JobCtx.setExitStatus(GOOD_EXIT_STATUS);
+				} else {
+					JobCtx.setExitStatus(BAD_EXIT_STATUS);
+				}
 			}
+		}
 		}
 	}
 }

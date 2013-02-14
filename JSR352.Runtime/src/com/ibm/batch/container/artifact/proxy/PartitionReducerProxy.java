@@ -16,93 +16,57 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.AfterJob;
-import javax.batch.annotation.AfterStep;
-import javax.batch.annotation.BeforeJob;
-import javax.batch.annotation.BeforeStep;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.PartitionReducer;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class PartitionReducerProxy extends AbstractProxy {
+public class PartitionReducerProxy extends AbstractProxy<PartitionReducer> implements PartitionReducer {
 
-    private Method partitionReducerBeginMethod = null;
-    private Method partitionReducerBeforeCompletionMethod = null;
-    private Method partitionReducerRollbackMethod = null;
-    private Method partitionReducerAfterCompletionMethod = null;
+    PartitionReducerProxy(PartitionReducer delegate) { 
+        super(delegate);
 
-    PartitionReducerProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
+    }
 
-        //find annotations: beforeJob, afterJob
-        for (Method method: delegate.getClass().getDeclaredMethods()) { 
-            Annotation afterJob= method.getAnnotation(AfterJob.class);
-            if ( afterJob != null ) { 
-                partitionReducerBeginMethod = method;
-            }
-        	
-        	Annotation beforeJob= method.getAnnotation(BeforeJob.class);
-            if ( beforeJob != null ) { 
-                partitionReducerBeforeCompletionMethod= method;
-            }
-
-            Annotation afterStep= method.getAnnotation(AfterStep.class);
-            if ( afterStep != null ) { 
-                partitionReducerRollbackMethod = method;
-            }
-
-            Annotation beforeStep= method.getAnnotation(BeforeStep.class);
-            if ( beforeStep != null ) { 
-                partitionReducerAfterCompletionMethod = method;
-            }
-        }
+    @Override
+    public void afterPartitionedStepCompletion(PartitionStatus status) {
         
-    }
-
-    public void partitionReducerBegin() {
-        if ( partitionReducerBeginMethod != null ) {
-            try {
-                partitionReducerBeginMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
-    
-    public void partitionReducerBeforeCompletion() {
-        if ( partitionReducerBeforeCompletionMethod != null ) {
-            try {
-                partitionReducerBeforeCompletionMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+        try {
+            this.delegate.afterPartitionedStepCompletion(status);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void partitionReducerRollback() {
-        if ( partitionReducerRollbackMethod != null ) {
-            try {
-                partitionReducerRollbackMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+    @Override
+    public void beforePartitionedStepCompletion() {
+        
+        try {
+            this.delegate.beforePartitionedStepCompletion();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
-    
-    public void partitionReducerAfterCompletion(String status) {
-        if ( partitionReducerAfterCompletionMethod != null ) {
-            try {
-                partitionReducerAfterCompletionMethod.invoke(delegate, status);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+
+    @Override
+    public void beginPartitionedStep() {
+
+        try {
+            this.delegate.beginPartitionedStep();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
+
+    @Override
+    public void rollbackPartitionedStep() {
+        
+        try {
+            this.delegate.rollbackPartitionedStep();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
+
 }
 
 

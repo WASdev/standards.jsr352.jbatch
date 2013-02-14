@@ -16,70 +16,44 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.AfterRead;
-import javax.batch.annotation.BeforeRead;
-import javax.batch.annotation.OnReadError;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.ItemReadListener;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class ItemReadListenerProxy extends AbstractProxy {
+public class ItemReadListenerProxy extends AbstractProxy<ItemReadListener> implements ItemReadListener{
 
-    private Method beforeReadMethod = null;
-    private Method afterReadMethod = null;
-    private Method onReadErrorMethod = null;
+    ItemReadListenerProxy(ItemReadListener delegate) { 
+        super(delegate);
+    }
 
-    ItemReadListenerProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
-
-        for (Method method : this.delegate.getClass().getDeclaredMethods()) {
-            Annotation beforeRead = method.getAnnotation(BeforeRead.class);
-            if (beforeRead != null) {
-                beforeReadMethod = method;
-            }
-
-            Annotation afterRead = method.getAnnotation(AfterRead.class);
-            if (afterRead != null) {
-                afterReadMethod = method;
-            }
-
-            Annotation onReadError = method.getAnnotation(OnReadError.class);
-            if (onReadError != null) {
-                onReadErrorMethod = method;
-            }
+    @Override
+    public void afterRead(Object item) {
+        
+        try {
+            this.delegate.afterRead(item);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
+    @Override
     public void beforeRead() {
-        if (beforeReadMethod != null) {
-            try {
-                beforeReadMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+     
+        try {
+            this.delegate.beforeRead();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void afterRead() {
-        if (afterReadMethod != null) {
-            try {
-                afterReadMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-    }}
+    @Override
+    public void onReadError(Exception ex) {
+        
+        try {
+            this.delegate.onReadError(ex);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
 
-    public void onReadError() {
-        if (onReadErrorMethod != null) {
-            try {
-                onReadErrorMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-    }}
 }

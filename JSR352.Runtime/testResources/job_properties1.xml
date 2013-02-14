@@ -21,9 +21,9 @@
         <property name="myprop2" value="#{jobProperties['myprop1']}"/>
     </properties>
     <step id="step1" next="#{jobProperties['myprop1']}">
-        <batchlet ref="MyBatchlet"/>
+        <batchlet ref="myBatchletImpl"/>
     </step>
     <step id="step2" >
-	    <batchlet ref="MyBatchlet"/>
+	    <batchlet ref="myBatchletImpl"/>
     </step>
 </job>

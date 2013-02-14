@@ -13,52 +13,37 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.Decide;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.Decider;
+import javax.batch.runtime.StepExecution;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class DeciderProxy extends AbstractProxy {
-  
-    private Method decideMethod = null;
+public class DeciderProxy extends AbstractProxy<Decider> implements Decider {
 
-    DeciderProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
-        
-        // find annotations
-        for (Method method : delegate.getClass().getDeclaredMethods()) {
-            Annotation decide = method.getAnnotation(Decide.class);
-            if (decide != null) {
-                decideMethod = method;
-            }
+    DeciderProxy(Decider delegate) {
+        super(delegate);
 
-        }
     }
 
-    public String decide() {
-        String result = null;
-        if (decideMethod != null) {
-            try {
-                result = (String)decideMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-        
-        return result;
-    }
-
-	public Method getDecideMethod() {
-		return decideMethod;
+	@Override
+	public String decide(StepExecution stepExecution) throws Exception {
+		try {
+			return delegate.decide(stepExecution);
+		} catch (Exception e) {
+			throw new BatchContainerRuntimeException(e);
+		}
 	}
 
+	@Override
+	public String decide(StepExecution[] stepExecutions) throws Exception {
+		try {
+			return delegate.decide(stepExecutions);
+		} catch (Exception e) {
+			throw new BatchContainerRuntimeException(e);
+		}
+	}
 
 }

@@ -26,40 +26,60 @@ public class ChunkPropertyResolverImpl extends AbstractPropertyResolver<Chunk> {
 
 
 
-    @Override
+    public ChunkPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public Chunk substituteProperties(final Chunk chunk, final Properties submittedProps, final Properties parentProps) {
         /*
-        <xs:attribute name="reader" use="required" type="xs:string"/>
-        <xs:attribute name="processor" use="required" type="xs:string"/>
-        <xs:attribute name="writer" use="required" type="xs:string"/>
-        <xs:attribute name="checkpoint-policy" use="optional" type="xs:string" default="item" />
-        <xs:attribute name="commit-interval" use="optional" type="xs:string" default="10"/>
-        <xs:attribute name="buffer-reads" use="optional" type="xs:string" default="true"/>
-        <xs:attribute name="chunk-size" use="required" type="xs:string" />
-        <xs:attribute name="skip-limit" use="optional" type="xs:string"/>
-        <xs:attribute name="retry-limit" use="optional" type="xs:string"/>
+		<xs:complexType name="Chunk"> <!--  TODO validate a merged Chunk has reader, processor, writer, chunk size -->
+			<xs:sequence>
+			    <xs:element name="reader" type="jsl:BatchReader" minOccurs="0" maxOccurs="1" />
+				<xs:element name="processor" type="jsl:BatchProcessor" minOccurs="0" maxOccurs="1" />
+				<xs:element name="writer" type="jsl:BatchWriter" minOccurs="0" maxOccurs="1" />
+				<xs:element name="checkpoint-algorithm" type="jsl:CheckpointAlgorithm" minOccurs="0" maxOccurs="1" />
+				<xs:element name="skippable-exception-classes" type="jsl:ExceptionClassFilter" minOccurs="0" maxOccurs="1" />
+				<xs:element name="retryable-exception-classes" type="jsl:ExceptionClassFilter" minOccurs="0" maxOccurs="1" />
+				<xs:element name="no-rollback-exception-classes" type="jsl:ExceptionClassFilter" minOccurs="0" maxOccurs="1" />
+			</xs:sequence>
+			<xs:attribute name="checkpoint-policy" use="optional" type="xs:string" default="item" />
+			<xs:attribute name="commit-interval" use="optional" type="xs:string" default="10" />
+			<xs:attribute name="buffer-size" use="optional" type="xs:string" />
+			<xs:attribute name="skip-limit" use="optional" type="xs:string" />
+			<xs:attribute name="retry-limit" use="optional" type="xs:string" />
+		</xs:complexType>
         */
         
         //resolve all the properties used in attributes and update the JAXB model
-        chunk.setReader(this.replaceAllProperties(chunk.getReader(), submittedProps, parentProps));
-        chunk.setProcessor(this.replaceAllProperties(chunk.getProcessor(), submittedProps, parentProps));
-        chunk.setWriter(this.replaceAllProperties(chunk.getWriter(), submittedProps, parentProps));
         chunk.setCheckpointPolicy(this.replaceAllProperties(chunk.getCheckpointPolicy(), submittedProps, parentProps));
-        chunk.setCommitInterval(this.replaceAllProperties(chunk.getCommitInterval(), submittedProps, parentProps));
-        chunk.setBufferSize(this.replaceAllProperties(chunk.getBufferSize(), submittedProps, parentProps));
+        chunk.setItemCount(this.replaceAllProperties(chunk.getItemCount(), submittedProps, parentProps));
+        chunk.setTimeLimit(this.replaceAllProperties(chunk.getTimeLimit(), submittedProps, parentProps));
         chunk.setSkipLimit(this.replaceAllProperties(chunk.getSkipLimit(), submittedProps, parentProps));
         chunk.setRetryLimit(this.replaceAllProperties(chunk.getRetryLimit(), submittedProps, parentProps));
 
-        // Resolve all the properties defined for this chunk
-        if (chunk.getProperties() != null) {
-            this.resolveElementProperties(chunk.getProperties().getPropertyList(), submittedProps, parentProps);
+        // Resolve Reader properties
+        if (chunk.getReader() != null) {
+            PropertyResolverFactory.createReaderPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getReader(), submittedProps, parentProps);
+        }
+        
+        // Resolve Reader properties
+        if (chunk.getProcessor() != null) {
+            PropertyResolverFactory.createProcessorPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getProcessor(), submittedProps, parentProps);
+        }
+        
+        // Resolve Reader properties
+        if (chunk.getWriter() != null) {
+            PropertyResolverFactory.createWriterPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getWriter(), submittedProps, parentProps);
         }
         
         // Resolve CheckpointAlgorithm properties
         if (chunk.getCheckpointAlgorithm() != null) {
-            PropertyResolverFactory.createCheckpointAlgorithmPropertyResolver().substituteProperties(chunk.getCheckpointAlgorithm(), submittedProps, parentProps);
+            PropertyResolverFactory.createCheckpointAlgorithmPropertyResolver(this.isPartitionedStep).substituteProperties(chunk.getCheckpointAlgorithm(), submittedProps, parentProps);
         }
 
+        //FIXME There are more properties to add in here for the rest of the chunk elements
+        
         return chunk;
 
     }

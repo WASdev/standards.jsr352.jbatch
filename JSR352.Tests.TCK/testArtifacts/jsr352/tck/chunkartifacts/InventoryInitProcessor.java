@@ -17,22 +17,22 @@
 package jsr352.tck.chunkartifacts;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.ItemProcessor;
-import javax.batch.annotation.ProcessItem;
+import javax.batch.api.ItemProcessor;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.InventoryRecord;
 
 
-@ItemProcessor("InventoryInitProcessor")
-@javax.inject.Named("InventoryInitProcessor")
-public class InventoryInitProcessor {
+@javax.inject.Named("inventoryInitProcessor")
+public class InventoryInitProcessor implements ItemProcessor<InventoryRecord, InventoryRecord> {
 
 	
-	@BatchProperty(name="init.inventory.quantity")
+    @Inject    
+    @BatchProperty(name="init.inventory.quantity")
 	String quantityProp = null;
 	
-	@ProcessItem
-	public InventoryRecord processData(InventoryRecord record) throws Exception {
+	@Override
+	public InventoryRecord processItem(InventoryRecord record) throws Exception {
 		
 		//we don't care what quantity is in the db, we just want to reset it 
 

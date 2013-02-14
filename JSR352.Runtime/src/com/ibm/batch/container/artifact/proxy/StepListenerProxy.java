@@ -13,57 +13,38 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.AfterStep;
-import javax.batch.annotation.BeforeStep;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.StepListener;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class StepListenerProxy extends AbstractProxy {
+public class StepListenerProxy extends AbstractProxy<StepListener> implements StepListener {
 
-    private Method beforeStepMethod = null;
-    private Method afterStepMethod = null;
-
-    StepListenerProxy(Object delegate, List<Property> props) {
-        super(delegate, props);
-
-        for (Method method : delegate.getClass().getDeclaredMethods()) {
-            Annotation beforeStep = method.getAnnotation(BeforeStep.class);
-            if (beforeStep != null) {
-            	beforeStepMethod = method;
-            }
-            Annotation afterStep = method.getAnnotation(AfterStep.class);
-            if (afterStep != null) {
-            	afterStepMethod = method;
-            }
-        }
+    StepListenerProxy(StepListener delegate) {
+        super(delegate);
     }
 
-    public void beforeStep() {
-        if (beforeStepMethod != null) {
-            try {
-            	beforeStepMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
-
+    @Override
     public void afterStep() {
-        if (afterStepMethod != null) {
-            try {
-            	afterStepMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+
+        try {
+            this.delegate.afterStep();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
+
+    }
+
+    @Override
+    public void beforeStep() {
+
+        try {
+            this.delegate.beforeStep();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+
     }
 }

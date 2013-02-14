@@ -22,15 +22,16 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import jsr352.tck.utils.IOHelper;
 import jsr352.tck.utils.JobOperatorBridge;
+
+import org.junit.BeforeClass;
+import org.testng.Reporter;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 public class ContextAndListenerTests {
 
@@ -39,9 +40,17 @@ public class ContextAndListenerTests {
 
     
     public static void setup(String[] args, Properties props) throws Exception {
-        jobOp = new JobOperatorBridge();
+    	
+    	String METHOD = "setup";
+    	
+    	try {
+    		jobOp = new JobOperatorBridge();
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
     }
     
+    @BeforeMethod
     @BeforeClass
     public static void setUp() throws Exception {
         jobOp = new JobOperatorBridge();
@@ -52,24 +61,49 @@ public class ContextAndListenerTests {
 	 * @assertion: FIXME
 	 * @test_Strategy: FIXME
 	 */
-    @Test 
+    @Test
+    @org.junit.Test 
     public void testOneArtifactIsJobAndStepListener() throws Exception {
 
-        String expectedStr = "BeforeJob" + 
-                                 "BeforeStep" + "AfterStep" +
-                                 "BeforeStep" + "BeforeStep" + 
-                                 "AfterStep" + "AfterStep" +
-                             "AfterJob";
-        URL jobXMLURL = this.getClass().getResource("/oneArtifactIsJobAndStepListener.xml");
-        String jobXML = IOHelper.readJobXML(jobXMLURL.getFile());
+    	String METHOD = "testOneArtifactIsJobAndStepListener";
+    	
+    	try {
+	        String expectedStr = "BeforeJob" + 
+	                                 "BeforeStep" + "AfterStep" +
+	                                 "BeforeStep" + "AfterStep" + 
+	                             "AfterJob";
+	        
+	        Reporter.log("Locate job XML file: oneArtifactIsJobAndStepListener.xml<p>");
+	        URL jobXMLURL = this.getClass().getResource("/oneArtifactIsJobAndStepListener.xml");
 
-        JobExecution execution1 = jobOp.startJobAndWaitForResult(jobXML, null);
-        assertWithMessage("Testing batch status", "COMPLETED", execution1.getStatus());
-        assertWithMessage("Testing exit status", expectedStr, execution1.getExitStatus());
+	
+	        Reporter.log("Create job parameters for execution #1:<p>");
+	        Properties jobParams = new Properties();
+	        Reporter.log("app.timeinterval=10<p>");
+	        jobParams.put("app.timeinterval", "10");
+	        
+	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+	        JobExecution execution1 = jobOp.startJobAndWaitForResult("oneArtifactIsJobAndStepListener", jobParams);
+	        
+	        Reporter.log("EXPECTED JobExecution getBatchStatus()=COMPLETED<p>");
+	        Reporter.log("ACTUAL JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+	        Reporter.log("EXPECTED JobExecution getExitStatus()="+expectedStr+"<p>");
+	        Reporter.log("ACTUAL JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+	        assertWithMessage("Testing batch status", BatchStatus.COMPLETED, execution1.getBatchStatus());
+	        assertWithMessage("Testing exit status", expectedStr, execution1.getExitStatus());
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
     }
 
     @AfterClass
     public static void cleanup() throws Exception {
         jobOp.destroy();
     }
+    
+    private static void handleException(String methodName, Exception e) throws Exception {
+  		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+  		Reporter.log(methodName + " failed<p>");
+  		throw e;
+  	}
 }

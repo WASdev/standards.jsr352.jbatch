@@ -16,21 +16,20 @@
 */
 package jsr352.tck.specialized;
 
-import java.util.ArrayList;
+import java.io.Externalizable;
+import java.util.List;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.Close;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.ItemWriter;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.WriteItems;
+import javax.batch.api.AbstractItemWriter;
+import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ArrayIndexCheckpointData;
 import jsr352.tck.chunktypes.ReadRecord;
+import jsr352.tck.reusable.MyPersistentRestartUserData;
 
-@ItemWriter("ItemTimeWriter")
-@javax.inject.Named("ItemTimeWriter")
-public class ItemTimeWriter {
+@javax.inject.Named("itemTimeWriter")
+public class ItemTimeWriter extends AbstractItemWriter<ReadRecord> {
 
 	private int[] writerDataArray = new int[30];
 	//private int[] checkArray;
@@ -38,27 +37,31 @@ public class ItemTimeWriter {
 	private int chkArraySize;
 	int chunkWriteIteration = 0;
 	
-	@BatchProperty(name="app.arraysize")
+    @Inject    
+    @BatchProperty(name="app.arraysize")
     String appArraySizeString;
+	
+	     @Inject 
+	 private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null; 
 	
 	int arraysize;
 	
-	@Open
-	public void openWriter(ArrayIndexCheckpointData checkpointData) throws Exception {
+	@Override
+	public void open(Externalizable cpd) throws Exception {
 		System.out.println("openWriter");
+		
+	    MyPersistentRestartUserData myData = null;
+        if ((myData = stepCtx.getPersistentUserData()) != null) {        	
+        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
+        	System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+        } else {        
+        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
+        }
+		
+		ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
 		
 		arraysize = Integer.parseInt(appArraySizeString);
 		
-		//String[] writePointsStrArr = writePointsString.split(",");
-		//writePoints = new int[writePointsString.length()];
-		
-		//System.out.println("AJM: writePointsStrArr.length() = " + writePointsStrArr.length);
-		
-		//for (int i = 0; i<writePointsStrArr.length; i++){
-		//	System.out.println("AJM: writePointsStrArr[" + i + "] = " + writePointsStrArr[i]);
-		//	writePoints[i] = Integer.parseInt(writePointsStrArr[i]);
-		//	System.out.println("AJM: writePoints[" + i + "] = " + writePoints[i]);
-		//}
 
 		if (checkpointData == null){
 			//position at the beginning
@@ -68,38 +71,27 @@ public class ItemTimeWriter {
 		else {
 			// position at index held in the cpd
 			idx = checkpointData.getCurrentIndex();
-			//for (int i = 0; i<writePoints.length; i++){
-			//	if (idx <= writePoints[i]){
-			//		chunkWriteIteration++;
-			//	}
-			//}
 			
 			System.out.println("WRITE: chkpt data was valid, so idx = " + idx);
 			System.out.println("WRITE: chunkWriteIteration = " + chunkWriteIteration);
 		}
-		//for (int n=0; n<chkArraySize;n++){
-		//	System.out.println("WRITE: chunk write point[" + n + " ]: " + checkArray[n]);
-		//}
-		
 		
 		for (int i = 0; i<arraysize; i++) {
 			writerDataArray[i] = 0;
 		}
-		//idx = checkpointData.getCurrentIndex();
-		//System.out.println("WRITE: chkpt data was valid, so idx = " + idx);
 	}
 	
 	
-	@Close
-	public void closeWriter() throws Exception {
+	@Override
+	public void close() throws Exception {
 		//System.out.println("closeWriter - writerDataArray:\n");
 		for (int i = 0; i < arraysize; i++){
 			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
 	}
 	
-	@WriteItems
-	public void writeMyData(ArrayList<ReadRecord> myData) throws Exception {
+	@Override
+	public void writeItems(List<ReadRecord> myData) throws Exception {
 		
 		System.out.println("writeMyData receives chunk size=" + myData.size());
 		int i;
@@ -127,11 +119,18 @@ public class ItemTimeWriter {
 		//System.out.println("WRITE: size of writePoints->" + writePoints.length);
 	}
 	
-	@CheckpointInfo
-	public ArrayIndexCheckpointData getCPD() throws Exception {
+	@Override
+	public ArrayIndexCheckpointData checkpointInfo() throws Exception {
 			ArrayIndexCheckpointData _chkptData = new ArrayIndexCheckpointData();
 			_chkptData.setCurrentIndex(idx);
 		return _chkptData;
 	}
+	
+	   private class MyTransient {
+	        int data = 0;
+	        MyTransient(int x) {
+	            data = x;
+	        }   
+	    }
 }
 

@@ -6,9 +6,9 @@
 	</properties>
 	
 	<step id="step1" next="step2">
-		<batchlet ref="MyBatchlet" />
+		<batchlet ref="myBatchletImpl" />
 	</step>
 	<step id="step2" >
-		<batchlet ref="MyBatchlet" />
+		<batchlet ref="myBatchletImpl" />
 	</step>
 </job>

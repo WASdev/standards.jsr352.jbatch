@@ -25,20 +25,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator;
-import javax.batch.operations.exception.JobStartException;
 import javax.batch.runtime.BatchRuntime;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import jsr352.tck.utils.IOHelper;
 
+import org.junit.Before;
+import org.testng.Reporter;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import com.ibm.batch.tck.spi.BatchContainerServiceProvider;
 import com.ibm.batch.tck.spi.JobEndCallback;
 import com.ibm.batch.tck.spi.JobEndCallbackManager;
-import jsr352.tck.utils.IOHelper;
 
-@Ignore("Pending discussion of Bug 4393, let's ignore this for now.")
 public class JobInheritanceTests {
 
 	private int sleepTime = Integer.parseInt(System.getProperty("junit.jobOperator.sleep.time", "900000"));
@@ -51,7 +50,8 @@ public class JobInheritanceTests {
 		jobOp = BatchRuntime.getJobOperator();
 	}
 	
-	@Before
+    @BeforeMethod
+    @Before
 	public void setUp() {
 		
 		jobOp = BatchRuntime.getJobOperator();
@@ -64,38 +64,52 @@ public class JobInheritanceTests {
 	}
 	
 	/** Pending discussion of Bug 4393, let's ignore this for now **/
-	@Test
-	public void testAll() throws FileNotFoundException, IOException, JobStartException {
+	@Test(enabled=false) @org.junit.Test @org.junit.Ignore
+	public void testAll() throws Exception {
 		
 		// Jobs inheriting jobs
+		Reporter.log("Test job inheriting jobs<p>");
 		executeJob("job1.xml");
 		
 		// steps inheriting steps
+		Reporter.log("Test teps inheriting steps<p>");
 		executeJob("job2-step.xml");
 		
 	}
 	
-	public void executeJob(String jobXmlFile) throws FileNotFoundException, IOException, JobStartException {
+	public void executeJob(String jobXmlFile) throws Exception {
 		
+		String METHOD = "executeJob";
+		JobEndCallback callback = null;
+		
+		try {
+		Reporter.log("Get job XML file: " + jobXmlFile +"<p>");
 		String jobXml = getJobXml(jobXmlFile);
+		
+		Reporter.log("Get JobEndCallbackManager instance<p>");
 		JobEndCallbackManager callbackManager = getServices().getCallbackManager();
 		
-		JobEndCallback callback = new JobEndCallback() {
+		callback = new JobEndCallback() {
 
 			@Override
 			public void done(long jobExecutionId) {
 	            synchronized(this) {
-	            	System.out.println("done");
-//	            	assert("COMPLETED" == jobExecution.getBatchStatus());
+//	            	assert(BatchStatus.COMPLETED == jobExecution.getBatchStatus());
 	                this.notify();
 	            }
 			}
 		};
 		
+		Reporter.log("Register job end callback<p>");
 		callbackManager.registerJobEndCallback(callback);
+		
+		Reporter.log("Invoke JobOperator.start for jobXml " + jobXml + "<p>");
 		Long executionId = jobOp.start(jobXml, null);
 		
-		System.out.println(jobOp.getJobExecution(executionId).getInstanceId());
+		Reporter.log(Long.toString(jobOp.getJobExecution(executionId).getInstanceId()) + "<p>");
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
 		
 		synchronized (callback) {
 			
@@ -103,7 +117,7 @@ public class JobInheritanceTests {
 				callback.wait(sleepTime);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				handleException(METHOD, e);
 			}
 		}
 	}
@@ -135,4 +149,9 @@ public class JobInheritanceTests {
 		return IOHelper.readJobXML(jobXMLURL.getFile());
 	}
 
+	private static void handleException(String methodName, Exception e) throws Exception {
+		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+		Reporter.log(methodName + " failed<p>");
+		throw e;
+	}
 }

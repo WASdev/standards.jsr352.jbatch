@@ -18,43 +18,56 @@ package jsr352.tck.specialized;
 
 import java.io.Externalizable;
 
-import javax.batch.annotation.AnalyzeCollectorData;
-import javax.batch.annotation.AnalyzeExitStatus;
-import javax.batch.annotation.BatchContext;
-import javax.batch.annotation.PartitionAnalyzer;
+import javax.batch.api.AbstractPartitionAnalyzer;
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import jsr352.tck.reusable.ExternalizableString;
 
-@PartitionAnalyzer
 @javax.inject.Named
-public class MyPartitionAnalyzer {
+public class MyPartitionAnalyzer extends AbstractPartitionAnalyzer {
 
-	private String analyzedData = "";
+	private volatile String analyzedData = "";
 	
-	private String analyzedExits = "";
+	private volatile String analyzedExits = "";
 	
-	@BatchContext
+	private volatile String analyzedStatus = "";
+	
+    @Inject
 	JobContext jobCtx;
 		
-	@BatchContext
-	StepContext ctx;
+    @Inject
+	StepContext stepCtx;
 	
-	@AnalyzeCollectorData 
+	@Override 
 	public void analyzeCollectorData(Externalizable data) throws Exception {
 		
 		analyzedData = analyzedData  + ((ExternalizableString)data).getString() + "A";
 		 
 	}
 	
-	@AnalyzeExitStatus 
-	public void analyze(String exitStatus)throws Exception {
-		//analyzedExits = analyzedExits + exitStatus + "S";
-		//ctx.setExitStatus(analyzedExits);
+	@Override 
+	public void analyzeStatus(BatchStatus batchStatus, String exitStatus)throws Exception {
+	    analyzedStatus = analyzedStatus  + "S";
+	    
+	    //If this method is called the partition is complete. So we should expect analyzedData to 
+	    //have a 'CA' for each completed partition. 
+	    
+	    String expectedString = "";
+	    
+	    for (int i = 0; i < analyzedStatus.length(); i++){
+	        expectedString = expectedString + "CA";
+	    }
+	    
+	    if (!!!analyzedData.startsWith(expectedString)) {
+	        throw new Exception("analyzeStatus was called at an unexpected time. Expected String to have at least=" +expectedString + " ActualData=" + analyzedData);
+	    }
+	    
+	    
+		stepCtx.setExitStatus(analyzedData);
 		
-		ctx.setExitStatus(analyzedData);
-		jobCtx.setExitStatus(ctx.getExitStatus());
 	}
 
 }

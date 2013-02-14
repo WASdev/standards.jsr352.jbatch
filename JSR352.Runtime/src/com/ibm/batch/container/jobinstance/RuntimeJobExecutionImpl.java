@@ -16,11 +16,15 @@
 */
 package com.ibm.batch.container.jobinstance;
 
+import java.sql.Timestamp;
+import java.util.Properties;
+
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 
 import jsr352.batch.jsl.JSLJob;
-
+import jsr352.batch.jsl.JSLProperties;
 import com.ibm.batch.container.artifact.proxy.ListenerFactory;
 import com.ibm.batch.container.context.impl.JobContextImpl;
 import com.ibm.batch.container.xjcl.Navigator;
@@ -34,16 +38,22 @@ public class RuntimeJobExecutionImpl {
     private JobContextImpl<?> jobContext = null;
     private ListenerFactory listenerFactory;
     
-    private JobExecution operatorJobExecution = null;
+    private JobOperatorJobExecutionImpl operatorJobExecution = null;
     
     
     RuntimeJobExecutionImpl(Navigator jobNavigator, JobInstance jobInstance, long executionId) {
         this.jobNavigator = jobNavigator;
         this.jobInstance = jobInstance;
         this.executionId = executionId;
-        jobContext = new JobContextImpl(jobNavigator.getId());
+        
+        JSLProperties jslProperties = new JSLProperties();
+        if(jobNavigator.getJSL() != null && jobNavigator.getJSL() instanceof JSLJob) {
+        	jslProperties = ((JSLJob)jobNavigator.getJSL()).getProperties();
+        }
+        jobContext = new JobContextImpl(jobNavigator.getId(), jslProperties);
+        
         this.operatorJobExecution = 
-        		new JobOperatorJobExecutionImpl(jobInstance.getInstanceId(), executionId, jobContext);
+        		new JobOperatorJobExecutionImpl(executionId, jobInstance.getInstanceId(), jobContext);
     }
     
     RuntimeJobExecutionImpl(Navigator jobNavigator, JobInstance jobInstance, long executionId, String restartOn) {
@@ -106,7 +116,43 @@ public class RuntimeJobExecutionImpl {
     	return operatorJobExecution;
     }
     
-    public String getStatus() {
+    public BatchStatus getBatchStatus() {
     	return this.jobContext.getBatchStatus();
     }
+    
+	public void setBatchStatus(String status) {
+		operatorJobExecution.setBatchStatus(status);
+	}
+
+	public void setCreateTime(Timestamp ts) {
+		operatorJobExecution.setCreateTime(ts);
+	}
+
+	public void setEndTime(Timestamp ts) {
+		operatorJobExecution.setEndTime(ts);
+	}
+
+	public void setExitStatus(String status) {
+		//exitStatus = status;
+		operatorJobExecution.setExitStatus(status);
+	
+	}
+
+	// do we need this?
+	//public void setInstanceId(long id) {
+	//	instanceID = id;
+	//}
+
+	public void setLastUpdateTime(Timestamp ts) {
+		operatorJobExecution.setLastUpdateTime(ts);
+	}
+
+	public void setStartTime(Timestamp ts) {
+		operatorJobExecution.setStartTime(ts);
+	}
+	
+	public void setJobProperties(Properties jProps){
+		operatorJobExecution.setJobProperties(jProps);
+	}
+
 }

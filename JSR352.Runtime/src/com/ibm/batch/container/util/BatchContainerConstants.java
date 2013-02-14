@@ -34,5 +34,10 @@ public interface BatchContainerConstants {
 	public static final String JDBC_URL = "JDBC_URL";
 	public static final String DB_USER = "DB_USER";
 	public static final String DB_PASSWORD = "DB_PWD";
+	public static final String DB_SCHEMA = "DB_SCHEMA";
+	
 	public static final String DEFAULT_JDBC_JNDI_NAME = "jdbc/batch";
+	public static final String DEFAULT_JDBC_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
+	public static final String DEFAULT_JDBC_URL = "jdbc:derby:RUNTIMEDB;create=true";
+	public static final String DEFAULT_DB_SCHEMA = "JBATCH";
 }

@@ -17,106 +17,62 @@
 package com.ibm.batch.container.artifact.proxy;
 
 import java.io.Externalizable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 
-import javax.batch.annotation.Close;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.WriteItems;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.ItemWriter;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class ItemWriterProxy extends AbstractProxy {
+public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWriter {
 
-    private Method openMethod = null;
-    private Method closeMethod = null;
-    private Method writeItemsMethod = null;
-    private Method checkpointInfoMethod= null;
 
-    ItemWriterProxy(Object delegate, List<Property> props) {     	
-        super(delegate, props);
-     
-        for (Method method : this.delegate.getClass().getDeclaredMethods()) {
-            Annotation openWriter = method.getAnnotation(Open.class);
-            if (openWriter != null) {
-                openMethod = method;
-            }
-            Annotation closeWriter = method.getAnnotation(Close.class);
-            if (closeWriter != null) {
-                closeMethod = method;
-            }
-            Annotation writeItemsWriter= method.getAnnotation(WriteItems.class);
-            if ( writeItemsWriter != null ) { 
-                writeItemsMethod = method;
-            }
-            Annotation checkpointInfoWriter= method.getAnnotation(CheckpointInfo.class);
-            if ( checkpointInfoWriter != null ) { 
-                checkpointInfoMethod = method;
-            }
-        }
-    }
 
-    public void openWriter(Object checkpoint) {
-        if (openMethod != null) {
-			try {
-				openMethod.invoke(delegate, checkpoint);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
+    ItemWriterProxy(ItemWriter delegate) {     	
+        super(delegate);
+   }
 
-    public void closeWriter() {
-        if (closeMethod != null) {
-			try {
-				closeMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
-    
-    public void writeItems(List<Object> items) throws Throwable {
-        if ( writeItemsMethod != null ) {
-			try {
-				writeItemsMethod.invoke(delegate, items);
-			} catch (InvocationTargetException e) {
-                throw e.getCause();
-            }
-        }        
-    }
-
+    @Override
     public Externalizable checkpointInfo() {
-        Externalizable chkpoint = null;
-        if ( checkpointInfoMethod != null ) {
-			try {
-				chkpoint  = (Externalizable) checkpointInfoMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }                        
+        
+        try {
+            return this.delegate.checkpointInfo();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
-        return chkpoint;
     }
 
-    public Method getOpenMethod() {
-        return openMethod;
+    @Override
+    public void close() {
+        
+        try {
+            this.delegate.close();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
     }
 
-    public Method getCloseMethod() {
-        return closeMethod;
+    @Override
+    public void open(Externalizable checkpoint) {
+        
+        try {
+            this.delegate.open(checkpoint);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
     }
 
-    public Method getWriteItemsMethod() {
-        return writeItemsMethod;
+    
+    /*
+     * In order to provide skip/retry logic, these exceptions
+     * are thrown as-is rather than beeing wrapped.
+     * @see javax.batch.api.ItemReader#readItem()
+     */
+    @Override
+    public void writeItems(List items) throws Exception{
+        
+            this.delegate.writeItems(items);
+      
     }
 
-    public Method getCheckpointInfoMethod() {
-        return checkpointInfoMethod;
-    }
 
 }

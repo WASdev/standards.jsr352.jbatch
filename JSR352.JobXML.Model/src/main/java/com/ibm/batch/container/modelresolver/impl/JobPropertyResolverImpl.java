@@ -31,7 +31,11 @@ import jsr352.batch.jsl.Step;
 
 public class JobPropertyResolverImpl extends AbstractPropertyResolver<JSLJob> {
 
-    /**
+    public JobPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	/**
      * 
      * @param job
      *            This method will modify the given job. If you need to hold on
@@ -64,19 +68,19 @@ public class JobPropertyResolverImpl extends AbstractPropertyResolver<JSLJob> {
         // Resolve Listener properties, this is list of listeners List<Listener>
         if (job.getListeners() != null) {
             for (final Listener listener : job.getListeners().getListenerList()) {
-                PropertyResolverFactory.createListenerPropertyResolver().substituteProperties(listener, submittedProps, currentProps);
+                PropertyResolverFactory.createListenerPropertyResolver(this.isPartitionedStep).substituteProperties(listener, submittedProps, currentProps);
             }
         }
         
         for (final ExecutionElement next : job.getExecutionElements()) {
             if (next instanceof Step) {
-                PropertyResolverFactory.createStepPropertyResolver().substituteProperties((Step)next, submittedProps, currentProps);
+                PropertyResolverFactory.createStepPropertyResolver(this.isPartitionedStep).substituteProperties((Step)next, submittedProps, currentProps);
             } else if (next instanceof Decision) {
-                PropertyResolverFactory.createDecisionPropertyResolver().substituteProperties((Decision)next, submittedProps, currentProps);
+                PropertyResolverFactory.createDecisionPropertyResolver(this.isPartitionedStep).substituteProperties((Decision)next, submittedProps, currentProps);
             } else if (next instanceof Split) {
-                PropertyResolverFactory.createSplitPropertyResolver().substituteProperties((Split)next, submittedProps, currentProps);
+                PropertyResolverFactory.createSplitPropertyResolver(this.isPartitionedStep).substituteProperties((Split)next, submittedProps, currentProps);
             } else if (next instanceof Flow) {
-                PropertyResolverFactory.createFlowPropertyResolver().substituteProperties((Flow)next, submittedProps, currentProps);
+                PropertyResolverFactory.createFlowPropertyResolver(this.isPartitionedStep).substituteProperties((Flow)next, submittedProps, currentProps);
             }
         }
         

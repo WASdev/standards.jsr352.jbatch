@@ -1,5 +1,16 @@
 package jsr352.tck.specialized;
 
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractCheckpointAlgorithm;
+import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
+
+import jsr352.tck.reusable.MyPersistentRestartUserData;
+
 /*
 * Copyright 2012 International Business Machines Corp.
 * 
@@ -16,17 +27,11 @@ package jsr352.tck.specialized;
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.CheckpointAlgorithm;
-import javax.batch.annotation.IsReadyToCheckpoint;
 
-@CheckpointAlgorithm("MyCustomCheckpointAlgorithm")
-@javax.inject.Named("MyCustomCheckpointAlgorithm")
-public class MyCustomCheckpointAlgorithm {
+
+@javax.inject.Named("myCustomCheckpointAlgorithm")
+public class MyCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {
 
 	private static final String className = MyCustomCheckpointAlgorithm.class.getName();
 	private static Logger logger  = Logger.getLogger(MyCustomCheckpointAlgorithm.class.getPackage().getName());
@@ -38,14 +43,32 @@ public class MyCustomCheckpointAlgorithm {
    long timeStarted = 0;
    int requests;
    
-   @BatchProperty(name="writepoints")
+       @Inject 
+   private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null; 
+   
+       @Inject    
+    @BatchProperty(name="writepoints")
    String writePointsString;
+   
+       @Inject    
+    @BatchProperty(name="next.writepoints")
+   String nextWritePointsString;
 	
    int [] writePoints;
    
    boolean init = false;
    
    public void init(){
+	   
+	    MyPersistentRestartUserData myData = null;
+        if ((myData = stepCtx.getPersistentUserData()) != null) {        	
+        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
+        	System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+        	writePointsString = stepCtx.getPersistentUserData().getNextWritePoints();
+        } else {        
+        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, nextWritePointsString));
+        }
+        
 	   String[] writePointsStrArr = writePointsString.split(",");
 	   writePoints = new int[writePointsString.length()];
 	   
@@ -60,12 +83,17 @@ public class MyCustomCheckpointAlgorithm {
 		init = true;
    }
    
-	@IsReadyToCheckpoint
+	@Override
 	public boolean isReadyToCheckpoint() throws Exception {
       	String method = "isReadyToCheckpoint";
       	if(logger.isLoggable(Level.FINER)) { logger.entering(className, method); }
 
       	if (!init){
+      		
+          	if (stepCtx.getPersistentUserData().getExecutionNumber() == 2){
+          		writePointsString = stepCtx.getPersistentUserData().getNextWritePoints();
+          	}
+      		
      	   String[] writePointsStrArr = writePointsString.split(",");
     	   writePoints = new int[writePointsString.length()];
     	   
@@ -102,5 +130,12 @@ public class MyCustomCheckpointAlgorithm {
        
        return ready;
 	}
+
+	   private class MyTransient {
+	        int data = 0;
+	        MyTransient(int x) {
+	            data = x;
+	        }   
+	    }
 
 }

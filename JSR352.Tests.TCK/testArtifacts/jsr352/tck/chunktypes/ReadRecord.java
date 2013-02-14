@@ -16,7 +16,7 @@
 */
 package jsr352.tck.chunktypes;
 
-@javax.inject.Named("ReadRecord")
+@javax.inject.Named("readRecord")
 public class ReadRecord {
 	private int count = 0;
 	

@@ -27,7 +27,11 @@ import com.ibm.batch.container.xjcl.ControlElement;
 
 public class ControlElementPropertyResolverImpl extends AbstractPropertyResolver<ControlElement> {
 
-    @Override
+    public ControlElementPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public ControlElement substituteProperties(final ControlElement controlElement, final Properties submittedProps,
             final Properties parentProps) {
 

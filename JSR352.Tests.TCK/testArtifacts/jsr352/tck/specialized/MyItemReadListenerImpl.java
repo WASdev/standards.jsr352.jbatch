@@ -16,35 +16,56 @@
 */
 package jsr352.tck.specialized;
 
-import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.AfterRead;
-import javax.batch.annotation.BeforeRead;
-import javax.batch.annotation.ItemReadListener;
-import javax.batch.annotation.OnReadError;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractItemReadListener;
+import javax.batch.runtime.context.JobContext;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ReadRecord;
 
-@ItemReadListener("MyItemReadListener")
-@javax.inject.Named("MyItemReadListener")
-public class MyItemReadListenerImpl {
+@javax.inject.Named("myItemReadListenerImpl")
+public class MyItemReadListenerImpl extends AbstractItemReadListener<ReadRecord> {
 
 	private final static String sourceClass = MyItemReadListenerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
+	
+	int beforecounter = 1;
+	int aftercounter = 1;
+	
+	public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
+	public static final String BAD_EXIT_STATUS = "BAD STATUS";
+	
+    @Inject 
+    JobContext jobCtx; 
+	
+    @Inject    
+    @BatchProperty(name="app.listenertest")
+    String applistenerTest;
 
-	@BeforeRead
+	@Override
 	public void beforeRead(){
 		logger.finer("In beforeRead()");
+		beforecounter++;
 	}
 	
-	@AfterRead
+    @Override
 	public void afterRead(ReadRecord item) throws Exception {
-		logger.finer("In afterRead(), item = " + item.getCount());
+		
+		if (item != null && applistenerTest.equals("READ")){
+			logger.finer("In afterRead(), item = " + item.getCount());
+			aftercounter++;
+
+			if (beforecounter == aftercounter) {
+				jobCtx.setExitStatus(GOOD_EXIT_STATUS);
+			} else
+				jobCtx.setExitStatus(BAD_EXIT_STATUS);
+		}
 	}
 	
-	@OnReadError
-	public void onReadRerror (SQLException e) throws Exception {
+	@Override
+	public void onReadError(Exception e) throws Exception {
 		logger.finer("In onReadRerror() " + e);
 	}
 }

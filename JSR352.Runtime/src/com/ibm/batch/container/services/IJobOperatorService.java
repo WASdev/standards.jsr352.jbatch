@@ -23,5 +23,5 @@ import javax.batch.operations.exception.JobStartException;
 
 public interface IJobOperatorService extends IBatchServiceBase, JobOperator {
 
-		Long start(String jobXML, Properties submittedProps) throws JobStartException;
+		long start(String jobXML, Properties submittedProps) throws JobStartException;
 }

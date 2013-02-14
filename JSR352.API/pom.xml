@@ -3,12 +3,12 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b03</version>
+        <version>1.0-b04</version>
     </parent>
     <groupId>javax.batch</groupId>
     <artifactId>javax.batch-api</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b03</version>
+    <version>1.0-b04</version>
     <build>
         <plugins>
             <plugin>

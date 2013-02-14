@@ -27,7 +27,7 @@ import javax.batch.runtime.context.StepContext;
 @Decider
 public class MYSTEPDeciderImpl {
 
-    @BatchContext
+    @Inject
     private JobContext jobCtx;
 
     private StepContext stepCtx;

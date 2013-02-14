@@ -19,11 +19,10 @@ package com.ibm.ws.batch.container.checkpoint;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BeginCheckpoint;
-import javax.batch.annotation.EndCheckpoint;
+import javax.batch.api.CheckpointAlgorithm;
 
 
-public class TimeCheckpointAlgorithm implements CheckpointAlgorithm {
+public final class TimeCheckpointAlgorithm implements CheckpointAlgorithm {
 
 	private static Logger logger  = Logger.getLogger(TimeCheckpointAlgorithm.class.getPackage().getName());;
 	private static final String className = TimeCheckpointAlgorithm.class.getName();
@@ -43,7 +42,6 @@ public class TimeCheckpointAlgorithm implements CheckpointAlgorithm {
 
     }
     
-	@BeginCheckpoint
 	public void beginCheckpoint() throws Exception {
 		String method = "startCheckpoint";
     	if(logger.isLoggable(Level.FINER)) { logger.entering(className, method); }
@@ -59,7 +57,6 @@ public class TimeCheckpointAlgorithm implements CheckpointAlgorithm {
     	if(logger.isLoggable(Level.FINER)) { logger.exiting(className, method); }
 	}
 
-	@EndCheckpoint
 	public void endCheckpoint() throws Exception {
 
 		String method = "stopCheckpoint";
@@ -96,7 +93,11 @@ public class TimeCheckpointAlgorithm implements CheckpointAlgorithm {
         if (diff >= interval) {
         	
             ready = true;
-            if(logger.isLoggable(Level.FINER)) { logger.fine("Num of requests="+numTimes+" at a rate="+numTimes/diff+" req/sec");}
+            System.out.println("Ready to checkpoint. interval set to: " + interval + "seconds. Time since last checkpoint: " + diff + " seconds.");
+            if(logger.isLoggable(Level.FINER)) {
+            	logger.fine("Ready to checkpoint. interval set to: " + interval + "seconds. Time since last checkpoint: " + diff + " seconds.");	
+            	logger.fine("Num of requests="+numTimes+" at a rate="+numTimes/diff+" req/sec");
+            }
          
             numTimes = 0;
             
@@ -111,16 +112,24 @@ public class TimeCheckpointAlgorithm implements CheckpointAlgorithm {
         return ready;
 	}
 
-	@Override
+	//@Override
 	public void setThreshold(int INthreshHold) {
 		// TODO Auto-generated method stub
 		interval = INthreshHold;
 		
 	}
 
-	@Override
+	//@Override
 	public void setThresholds(int itemthreshold, int timethreshold) {
 		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int checkpointTimeout(int timeout) throws Exception {
+		
+		this.timeout = timeout;
+		return this.timeout;
 		
 	}
 

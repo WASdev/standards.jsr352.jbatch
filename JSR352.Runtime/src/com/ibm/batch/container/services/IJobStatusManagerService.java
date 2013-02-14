@@ -18,12 +18,12 @@ package com.ibm.batch.container.services;
 
 import java.util.List;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.status.JobStatus;
 import com.ibm.batch.container.status.StepStatus;
-import com.ibm.batch.container.util.ExecutionStatus.BatchStatus;
 
 public interface IJobStatusManagerService extends IBatchServiceBase {
 

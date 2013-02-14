@@ -17,33 +17,38 @@
 package jsr352.tck.specialized;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.Batchlet;
-import javax.batch.annotation.Process;
-import javax.batch.annotation.Stop;
+import javax.batch.api.AbstractBatchlet;
+import javax.inject.Inject;
 
-@Batchlet("MyPartitionedBatchlet")
-@javax.inject.Named("MyPartitionedBatchlet")
-public class MyPartitionedBatchletImpl {
+@javax.inject.Named("myPartitionedBatchletImpl")
+public class MyPartitionedBatchletImpl extends AbstractBatchlet {
 
     private static int count = 1;
 
-    @BatchProperty
+    @Inject    
+    @BatchProperty(name="good.partition.status")
     private String good_partition_status;
 
+    @Inject    
+    @BatchProperty(name="fail.this.partition")
+    private String fail_this_partition;
+    
 
-    @Process
+    @Override
     public String process() throws Exception {
 
+        if ("true".equals(fail_this_partition)){
+            throw new Exception("Fail this partition on purpose in MyPartitionedBatchlet.process()");
+        }
+        
         return this.good_partition_status;
             
     }
 
-    
-    @Stop
-    public void cancel() throws Exception {
+    @Override
+    public void stop() throws Exception {
         System.out.println("MyPartitionedBatchletImpl() - @Cancel #" + count);
     }
-
 
 
 }

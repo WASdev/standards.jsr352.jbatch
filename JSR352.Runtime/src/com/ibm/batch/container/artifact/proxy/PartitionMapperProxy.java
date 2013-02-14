@@ -16,48 +16,27 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.CalculatePartitions;
+import javax.batch.api.PartitionMapper;
 import javax.batch.api.parameters.PartitionPlan;
-
-import jsr352.batch.jsl.Property;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class PartitionMapperProxy extends AbstractProxy {
+public class PartitionMapperProxy extends AbstractProxy<PartitionMapper> implements PartitionMapper {
 
-    private Method calculatePartitions = null;
 
-    PartitionMapperProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
+    PartitionMapperProxy(PartitionMapper delegate) { 
+        super(delegate);
 
-        for (Method method : this.delegate.getClass().getDeclaredMethods()) {
-            Annotation onSkipInRead = method.getAnnotation(CalculatePartitions.class);
-            if (onSkipInRead != null) {
-                calculatePartitions = method;
-            }
+    }
 
+    @Override
+    public PartitionPlan mapPartitions() {
+        
+        try {
+            return this.delegate.mapPartitions();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-
-    public PartitionPlan calculatePartitions() {
-        
-        PartitionPlan partitionPlan = null;
-        
-        if (calculatePartitions != null) {
-             try {
-                partitionPlan = (PartitionPlan)calculatePartitions.invoke(delegate);
-             } catch (Exception e) {
-                 throw new BatchContainerRuntimeException(e);
-             }
-        }
-    
-        return partitionPlan;
-    }
-    
-    
 }

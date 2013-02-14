@@ -16,73 +16,41 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.Process;
-import javax.batch.annotation.Stop;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.Batchlet;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class BatchletProxy extends AbstractProxy {
+public class BatchletProxy extends AbstractProxy<Batchlet> implements Batchlet {
 
-    private Method processMethod = null;
-    private Method stopMethod = null;
+    BatchletProxy(Batchlet delegate) {
+        super(delegate);
 
-    BatchletProxy(Object delegate, List<Property> props) {
-        super(delegate, props);
-
-        // find method level annotations
-        for (Method method : delegate.getClass().getDeclaredMethods()) {
-            Annotation process = method.getAnnotation(Process.class);
-            if (process != null) {
-                processMethod = method;
-            }
-
-            Annotation stop = method.getAnnotation(Stop.class);
-            if (stop != null) {
-                stopMethod = method;
-            }
-
-        }
     }
 
+    @Override
     public String process() {
-        String retVal = null;
-        if (processMethod != null) {
-            try {
-                retVal = (String) processMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+        try {
+            return this.delegate.process();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
-        return retVal;
+        
+
     }
 
+    @Override
     public void stop() {
-        if (stopMethod != null) {
-            try {
-                stopMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+        try {
+            this.delegate.stop();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
-    }
-
-    public Object getDelegate() {
-        return delegate;
+     
     }
 
 
-    public Method getProcessMethod() {
-        return processMethod;
-    }
 
-    public Method getStopMethod() {
-        return stopMethod;
-    }
+
+
 
 }

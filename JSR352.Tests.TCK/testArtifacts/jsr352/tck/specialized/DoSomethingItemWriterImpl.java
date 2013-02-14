@@ -16,42 +16,38 @@
 */
 package jsr352.tck.specialized;
 
-import java.util.ArrayList;
+import java.io.Externalizable;
+import java.util.List;
 
-import javax.batch.annotation.Close;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.ItemWriter;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.WriteItems;
+import javax.batch.api.AbstractItemWriter;
 
 import jsr352.tck.chunktypes.CheckpointData;
 import jsr352.tck.chunktypes.ReadRecord;
 
 
-@ItemWriter("DoSomethingItemWriter")
-@javax.inject.Named("DoSomethingItemWriter")
-public class DoSomethingItemWriterImpl {
+@javax.inject.Named("doSomethingItemWriterImpl")
+public class DoSomethingItemWriterImpl extends AbstractItemWriter<ReadRecord> {
 
-	@Open
-	public void openWriter(CheckpointData checkpointData) throws Exception {
+	@Override
+	public void open(Externalizable checkpointData) throws Exception {
 		System.out.println("openWriter");
 	}
 	
-	@Close
-	public void closeWriter() throws Exception {
+	@Override
+	public void close() throws Exception {
 		System.out.println("closeWriter");
 	}
 	
-	@WriteItems
-	public void writeMyData(ArrayList<ReadRecord> myData) throws Exception {
+	@Override
+	public void writeItems(List<ReadRecord> myData) throws Exception {
 		System.out.println("writeMyData receives chunk size=" + myData.size());
 		for  (int i = 0; i< myData.size(); i++) {
 			System.out.println("myData=" + myData.get(i).getCount());
 		}
 	}
 	
-	@CheckpointInfo
-	public CheckpointData getCPD() throws Exception {
+	@Override
+	public CheckpointData checkpointInfo() throws Exception {
 		return new CheckpointData();
 	}
 }

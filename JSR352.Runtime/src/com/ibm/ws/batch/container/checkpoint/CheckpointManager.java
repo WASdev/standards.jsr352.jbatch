@@ -21,8 +21,11 @@ import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.api.CheckpointAlgorithm;
+
 import com.ibm.batch.container.artifact.proxy.ItemReaderProxy;
 import com.ibm.batch.container.artifact.proxy.ItemWriterProxy;
+import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.services.ServicesManager;
@@ -43,67 +46,39 @@ public class CheckpointManager {
 	private long executionId = 0;
 	private String stepId = null;
 	private long jobInstanceID = 0;
+	
 
-
-	//TODO - need revise
 	public CheckpointManager(ItemReaderProxy reader, ItemWriterProxy writer,CheckpointAlgorithm chkptAlg,
-			int commitInterval, long executionId, long jobInstanceID, String  stepId) {
+			long executionId, long jobInstanceID, String  stepId) {
 		this.readerProxy = reader;
 		this.writerProxy = writer;
 		this.checkpointAlgorithm = chkptAlg;
-		this.commitInterval = commitInterval;
 		this.executionId = executionId;
 		this.stepId = stepId;
 		this.jobInstanceID = jobInstanceID;
 		
 		_persistenceManagerService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
 	}
-	//	  private ITransaction _userTran = null;
-	//	  private ITransactionManagementService _transactionManagementService = null;
 
 	public void beginCheckpoint(int timeoutVal)
 	{
 		String method = "startCheckpoint";
 		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method);}
 
-		//this._userTran.setTransactionTimeout(timeoutVal);
-        //checkpointProxy.beginCheckpoint();
-        //this._userTran.begin(); // Tran # 3
-        //if(logger.isLoggable(Level.FINE)) { logger.fine("jobInstanceId=" + ijobInstanceId + "  userTran.begin()    issued by CheckpointMgr.startCheckpoint()" );}
         ckptStarted = true;
 
-		if(logger.isLoggable(Level.FINER)) {
-			//logger.exiting(sourceClass, method, " [executionId " + executionId + "] [name " + checkpointProxy.getCheckpointAlgorithmClassName() + "] [timeout "
-			//		+ timeoutVal+ "]");
-		}
 	}
 
 	public void beginCheckpoint()
 	{
 		String method = "beginCheckpoint";
 		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method);}
-		//	      itimeout = algorithm.getRecommendedTimeOutValue();
-        //	      this._userTran.setTransactionTimeout(itimeout);
-        //checkpointProxy.beginCheckpoint();
-        //	      this._userTran.begin(); // Tran # 3
         if(logger.isLoggable(Level.FINE)) { logger.fine("executionId=" + executionId );}
         ckptStarted = true;
 
-		if(logger.isLoggable(Level.FINER)) {
-			//logger.exiting(sourceClass, method, " [executionId " + executionId + "] [name " + checkpointAlgorithm.getCheckpointAlgorithmClassName() + "]");
-		}
+
 	}
 
-	public void endCheckpoint() {
-		String method = "endCheckpoint";
-		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method);}
-
-		//checkpointProxy.endCheckpoint();
-
-		if(logger.isLoggable(Level.FINER)) {
-			//logger.exiting(sourceClass, method, " [executionId " + executionId + "] [name " + checkpointProxy.getCheckpointAlgorithmClassName() + "]");
-		}
-	}
 
 	public boolean ApplyCheckPointPolicy(/*boolean forceCheckpoint*/)
 	{
@@ -115,28 +90,17 @@ public class CheckpointManager {
 		try {
 			checkpoint = checkpointAlgorithm.isReadyToCheckpoint();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    throw new BatchContainerRuntimeException("Checkpoint algorithm failed", e);
 		}
-
-		if (checkpoint) {
-			if (logger.isLoggable(Level.FINE) && checkpoint)
-				logger.fine("ApplyCheckPointPolicy - going to checkpoint");
-			
-			//checkpoint();	      
-			
-			if (logger.isLoggable(Level.FINE) && checkpoint)
-				logger.fine("ApplyCheckPointPolicy - back from checkpoint");
-
-		}    
 
 		if (logger.isLoggable(Level.FINE) && checkpoint)
 			logger.fine("ApplyCheckPointPolicy - " + checkpoint);
 
 		if(logger.isLoggable(Level.FINER)) { logger.exiting(sourceClass, method);}
+		
 		return checkpoint;
 	}
-
+	
 	public boolean isStarted()
 	{
 		return ckptStarted;
@@ -161,8 +125,8 @@ public class CheckpointManager {
 			CheckpointData readerChkptData  = new CheckpointData(jobInstanceID, stepId, "READER");
 			readerChkptData.setRestartToken(readerChkptBA.toByteArray());
 			readerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, "READER");
-			_persistenceManagerService.deleteData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK);
-			_persistenceManagerService.createData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK, readerChkptData);
+			
+			_persistenceManagerService.updateData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK, readerChkptData);
 			
 			writerOOS = new ObjectOutputStream(writerChkptBA);
 			writerOOS.writeObject(writerProxy.checkpointInfo());
@@ -170,8 +134,9 @@ public class CheckpointManager {
 			CheckpointData writerChkptData = new CheckpointData(jobInstanceID, stepId, "WRITER");
 			writerChkptData.setRestartToken(writerChkptBA.toByteArray());
 			writerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, "WRITER");
-			_persistenceManagerService.deleteData(IPersistenceManagerService.CHECKPOINT_STORE_ID, writerChkptDK);
-			_persistenceManagerService.createData(IPersistenceManagerService.CHECKPOINT_STORE_ID, writerChkptDK, writerChkptData);	
+
+			_persistenceManagerService.updateData(IPersistenceManagerService.CHECKPOINT_STORE_ID, writerChkptDK, writerChkptData);
+			
 		}
 		catch (Exception ex){
 			// is this what I should be throwing here?
@@ -180,6 +145,19 @@ public class CheckpointManager {
 
 		if(logger.isLoggable(Level.FINER)) { logger.exiting(sourceClass, method, " [executionId " + executionId + "] ");}
 
+	}
+	
+	public int checkpointTimeout(int timeout) {
+		
+		int returnTimeout = 0; 
+
+        try {
+            returnTimeout = this.checkpointAlgorithm.checkpointTimeout(timeout);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException("Checkpoint algorithm checkpointTimeout() failed", e);
+        }
+
+        return returnTimeout;
 	}
 
 }

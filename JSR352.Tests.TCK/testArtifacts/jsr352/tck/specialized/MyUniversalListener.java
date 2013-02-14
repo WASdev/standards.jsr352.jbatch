@@ -16,36 +16,56 @@
 */
 package jsr352.tck.specialized;
 
-import javax.batch.annotation.*;
-import javax.batch.runtime.context.JobContext;
 
-@JobListener("MyUniversalListener")
-@StepListener("MyUniversalListener")
-@javax.inject.Named("MyUniversalListener")
-public class MyUniversalListener {
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.JobListener;
+import javax.batch.api.StepListener;
+import javax.batch.runtime.context.JobContext;
+import javax.inject.Inject;
+
+@javax.inject.Named("myUniversalListener")
+public class MyUniversalListener implements JobListener, StepListener {
     
-    @BatchContext 
+    @Inject 
     private JobContext jobCtx = null; 
+
     
-    @BeforeJob public void beforeJob() {
+    @Inject    
+    @BatchProperty(name="app.timeinterval")
+    String timeintervalString;
+    
+    int timeinterval = 0;
+    
+    @Override 
+    public void beforeJob() {
+    	timeinterval = Integer.parseInt(timeintervalString);
+    	
         String cur = jobCtx.getExitStatus();
         String status = (cur == null ? "BeforeJob" : cur + "BeforeJob");
         jobCtx.setExitStatus(status);
     }
     
-    @AfterJob public void afterJob() {
+    @Override 
+    public void afterJob() {
         String cur = jobCtx.getExitStatus();
         jobCtx.setExitStatus(cur + "AfterJob");
     }
     
-    @BeforeStep public void beforeStep() {
+    @Override 
+    public void beforeStep() {
         String cur = jobCtx.getExitStatus();
         jobCtx.setExitStatus(cur + "BeforeStep");
     }
     
-    @AfterStep public void afterStep() {
+    @Override
+    public void afterStep() {
+    	System.out.println("AJM: gonna sleep for " + timeinterval);
+    	try {
+    		Thread.sleep(timeinterval);
+    	} catch (Exception e){
+    		e.printStackTrace();
+    	}
         String cur = jobCtx.getExitStatus();
         jobCtx.setExitStatus(cur + "AfterStep");
     }
-    
 }

@@ -19,7 +19,8 @@ package com.ibm.batch.container.status;
 import java.io.Externalizable;
 import java.io.Serializable;
 
-import com.ibm.batch.container.util.ExecutionStatus.BatchStatus;
+import javax.batch.api.parameters.PartitionPlan;
+import javax.batch.operations.JobOperator.BatchStatus;
 
 public class StepStatus implements Serializable {
 
@@ -33,6 +34,7 @@ public class StepStatus implements Serializable {
     private String exitStatus;
     private int startCount;    
     private Externalizable persistentUserData;
+    private PartitionPlan plan;
     
     public StepStatus(String stepId) {
         this.startCount = 1;
@@ -84,5 +86,13 @@ public class StepStatus implements Serializable {
     public Externalizable getPersistentUserData() {
         return persistentUserData;
     }
+
+	public void setPlan(PartitionPlan plan) {
+		this.plan = plan;
+	}
+
+	public PartitionPlan getPlan() {
+		return plan;
+	}
 
 }

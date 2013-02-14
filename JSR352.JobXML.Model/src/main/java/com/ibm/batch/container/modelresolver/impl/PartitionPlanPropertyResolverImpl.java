@@ -16,18 +16,55 @@
  */
 package com.ibm.batch.container.modelresolver.impl;
 
+import java.util.List;
 import java.util.Properties;
 
+import jsr352.batch.jsl.JSLProperties;
 import jsr352.batch.jsl.PartitionPlan;
 
 public class PartitionPlanPropertyResolverImpl extends
 		AbstractPropertyResolver<PartitionPlan> {
 
+	public PartitionPlanPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
 	@Override
-	public PartitionPlan substituteProperties(PartitionPlan b,
+	public PartitionPlan substituteProperties(PartitionPlan partitionPlan,
 			Properties submittedProps, Properties parentProps) {
-		// TODO Auto-generated method stub
-		return null;
+    
+		/*
+		<xs:complexType name="PartitionPlan">
+			<xs:sequence>
+				<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="unbounded" />
+			</xs:sequence>
+			<xs:attribute name="instances" use="optional" type="xs:string" />
+			<xs:attribute name="threads" use="optional" type="xs:string" />
+		</xs:complexType>
+		*/
+		
+		partitionPlan.setPartitions(this.replaceAllProperties(partitionPlan.getPartitions(), submittedProps, parentProps));
+		partitionPlan.setThreads(this.replaceAllProperties(partitionPlan.getThreads(), submittedProps, parentProps));
+		
+        // Resolve all the properties defined for this step
+        Properties currentProps = null;
+        if (partitionPlan.getProperties() != null) {
+        	
+        	List<JSLProperties> jslProps = partitionPlan.getProperties();
+        	
+        	if (jslProps != null) {
+        		for (JSLProperties jslProp : jslProps) {
+                    currentProps = this.resolveElementProperties(jslProp.getPropertyList(), submittedProps, parentProps);            		
+            	}	
+        	}
+        	
+        	
+
+        }
+		
+		return partitionPlan;
+		
+
 	}
 
 }

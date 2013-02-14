@@ -128,10 +128,9 @@ public class UnmarshalledJSLComparator {
 		if(chunk1 == null && chunk2 == null) return true;
 		if(chunk1 == null || chunk2 == null) return false;
 		
-		return equals(chunk1.getProperties(), chunk2.getProperties()) &&
-				nullSafeEquals(chunk1.getCheckpointPolicy(), chunk2.getCheckpointPolicy()) &&
-				nullSafeEquals(chunk1.getBufferSize(), chunk2.getBufferSize()) &&
-				nullSafeEquals(chunk1.getCommitInterval(), chunk2.getCommitInterval()) &&
+		return 	nullSafeEquals(chunk1.getCheckpointPolicy(), chunk2.getCheckpointPolicy()) &&
+				nullSafeEquals(chunk1.getItemCount(), chunk2.getItemCount()) &&
+				nullSafeEquals(chunk1.getTimeLimit(), chunk2.getTimeLimit()) &&
 				nullSafeEquals(chunk1.getProcessor(), chunk2.getProcessor()) &&
 				nullSafeEquals(chunk1.getReader(), chunk2.getReader()) &&
 				nullSafeEquals(chunk1.getRetryLimit(), chunk2.getRetryLimit()) &&

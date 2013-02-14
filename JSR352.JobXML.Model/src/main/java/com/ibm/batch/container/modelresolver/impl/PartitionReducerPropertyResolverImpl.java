@@ -23,6 +23,10 @@ import jsr352.batch.jsl.PartitionReducer;
 public class PartitionReducerPropertyResolverImpl extends
 		AbstractPropertyResolver<PartitionReducer> {
 
+	public PartitionReducerPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
 	@Override
 	public PartitionReducer substituteProperties(PartitionReducer b,
 			Properties submittedProps, Properties parentProps) {

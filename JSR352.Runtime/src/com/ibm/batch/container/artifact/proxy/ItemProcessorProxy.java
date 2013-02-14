@@ -16,49 +16,27 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
+import javax.batch.api.ItemProcessor;
 
-import javax.batch.annotation.ProcessItem;
+public class ItemProcessorProxy  extends AbstractProxy<ItemProcessor> implements ItemProcessor {
 
-import jsr352.batch.jsl.Property;
 
-public class ItemProcessorProxy  extends AbstractProxy {
-
-    private Method processItemMethod = null;
-
-    ItemProcessorProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
+    ItemProcessorProxy(ItemProcessor delegate) { 
+        super(delegate);
         
-        for (Method method : this.delegate.getClass().getDeclaredMethods()) {
-            Annotation processItem = method.getAnnotation(ProcessItem.class);
-            if (processItem != null) {
-                processItemMethod = method;
-            }
-        }
     }
 
-    public Object processItem(Object inputItem) throws Throwable {
-        
-        Object[] itemParam = {inputItem};
-        
-        Object outputItem = null;
-                
-        if (processItemMethod != null) {
-            try {
-                outputItem = processItemMethod.invoke(delegate, itemParam);
-            } catch (InvocationTargetException e) {
-                throw e.getCause();
-            }
-        }
-        
-        return outputItem;
-    }
+    
+    /*
+     * In order to provide skip/retry logic, these exceptions
+     * are thrown as-is rather than beeing wrapped.
+     * @see javax.batch.api.ItemReader#readItem()
+     */
+    @Override
+    public Object processItem(Object item) throws Exception {
+     
+            return this.delegate.processItem(item);
 
-    public Method getProcessItemMethod() {
-        return processItemMethod;
     }
 
 }

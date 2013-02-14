@@ -19,7 +19,6 @@ package com.ibm.batch.container.modelresolver.impl;
 import java.util.List;
 import java.util.Properties;
 
-import jsr352.batch.jsl.JSLProperties;
 import jsr352.batch.jsl.Property;
 
 import com.ibm.batch.container.modelresolver.PropertyResolver;
@@ -27,13 +26,13 @@ import com.ibm.batch.container.modelresolver.PropertyResolver;
 public abstract class AbstractPropertyResolver<B> implements
 		PropertyResolver<B> {
 
-	// FIXME maybe make this class stateful
-	/*
-	 * protected Properties submittedProps;
-	 * 
-	 * protected AbstractPropertyResolver(Properties props) {
-	 * this.submittedProps = props; }
-	 */
+	protected boolean isPartitionedStep = false;
+	
+	public static final String UNRESOLVED_PROP_VALUE = "null";	
+	public AbstractPropertyResolver(boolean isPartitionStep){
+		this.isPartitionedStep = isPartitionStep;
+	}
+	
 
 	/*
 	 * Convenience method that is the same as calling substituteProperties(job,
@@ -53,10 +52,13 @@ public abstract class AbstractPropertyResolver<B> implements
 		return this.substituteProperties(b, submittedProps, null);
 
 	}
+	
+	
 
 	private enum PROPERTY_TYPE {
-		JOB_PARAMETERS, SYSTEM_PROPERTIES, JOB_PROPERTIES
+		JOB_PARAMETERS, SYSTEM_PROPERTIES, JOB_PROPERTIES, PARTITION_PROPERTIES
 	}
+	
 
 	/**
 	 * 
@@ -118,8 +120,15 @@ public abstract class AbstractPropertyResolver<B> implements
 			startIndex = nextProp.endIndex;
 
 			// resolve the property
-			final String nextPropValue = this.resolvePropertyValue(nextProp.propName, nextProp.propType,
-					submittedProps, xmlProperties);
+			String nextPropValue = this.resolvePropertyValue(nextProp.propName, nextProp.propType, submittedProps, xmlProperties);
+			
+			//if the property didn't resolve use the default value if it exists
+			if (nextPropValue.equals(UNRESOLVED_PROP_VALUE)){
+			    if (nextProp.defaultValueExpression != null) { 
+			        nextPropValue = this.replaceAllProperties(nextProp.defaultValueExpression, submittedProps, xmlProperties);
+			    }
+			}
+			
 
 			// After we get this value the lenght of the string might change so
 			// we need to reset the start index
@@ -129,18 +138,23 @@ public abstract class AbstractPropertyResolver<B> implements
 				case JOB_PARAMETERS:
 					lengthDifference = nextPropValue.length() - (nextProp.propName.length() + "#{jobParameters['']}".length()); // this can be a negative value
 					startIndex = startIndex + lengthDifference; // move start index for next property
-					str = str.replace("#{jobParameters['" + nextProp.propName + "']}", nextPropValue);
+					str = str.replace("#{jobParameters['" + nextProp.propName + "']}" + nextProp.getDefaultValExprWithDelimitersIfExists(), nextPropValue);
 					break;
 				case JOB_PROPERTIES:
 					lengthDifference = nextPropValue.length() - (nextProp.propName.length() + "#{jobProperties['']}".length()); // this can be a negative value
 					startIndex = startIndex + lengthDifference; // move start index for next property
-					str = str.replace("#{jobProperties['" + nextProp.propName + "']}", nextPropValue);
+					str = str.replace("#{jobProperties['" + nextProp.propName + "']}" + nextProp.getDefaultValExprWithDelimitersIfExists(), nextPropValue);
 					break;
 				case SYSTEM_PROPERTIES:
 					lengthDifference = nextPropValue.length() - (nextProp.propName.length() + "#{systemProperties['']}".length()); // this can be a negative value
 					startIndex = startIndex + lengthDifference; // move start index for next property
-					str = str.replace("#{systemProperties['" + nextProp.propName + "']}", nextPropValue);
+					str = str.replace("#{systemProperties['" + nextProp.propName + "']}" + nextProp.getDefaultValExprWithDelimitersIfExists(), nextPropValue);
 					break;
+				case PARTITION_PROPERTIES:
+					lengthDifference = nextPropValue.length() - (nextProp.propName.length() + "#{partitionPlan['']}".length()); // this can be a negative value
+					startIndex = startIndex + lengthDifference; // move start index for next property
+					str = str.replace("#{partitionPlan['" + nextProp.propName + "']}" + nextProp.getDefaultValExprWithDelimitersIfExists(), nextPropValue);
+					break;					
 
 			}
 
@@ -163,6 +177,8 @@ public abstract class AbstractPropertyResolver<B> implements
 	private String resolvePropertyValue(final String name, PROPERTY_TYPE propType,
 			final Properties submittedProperties, final Properties xmlProperties) {
 
+
+		
 		String value = null;
 
 		switch(propType) {
@@ -189,10 +205,18 @@ public abstract class AbstractPropertyResolver<B> implements
 					return value;
 				}
 				break;
+			case PARTITION_PROPERTIES: //We are reusing the submitted props to carry the partition props
+				if (submittedProperties != null) {
+					value = submittedProperties.getProperty(name);
+				}
+				if (value != null) {
+					return value;
+				}
+				break;
 		}
 		
 		
-		return "null";
+		return UNRESOLVED_PROP_VALUE;
 
 	}
 
@@ -301,6 +325,8 @@ public abstract class AbstractPropertyResolver<B> implements
         	type = PROPERTY_TYPE.SYSTEM_PROPERTIES;
         } else if (str.startsWith("#{jobProperties['", startPropIndex)) {
         	type = PROPERTY_TYPE.JOB_PROPERTIES;
+        } else if (isPartitionedStep && str.startsWith("#{partitionPlan['", startPropIndex)) {
+        	type = PROPERTY_TYPE.PARTITION_PROPERTIES;
         }
         
         if (type == null) {
@@ -309,25 +335,43 @@ public abstract class AbstractPropertyResolver<B> implements
 
 
         final int endPropIndex = str.indexOf("']}");
+        
+        
         // This check allows something like this "Some filename is ${jobParameters['']}"
         // Maybe we should require "${f}" ???
         
         String propName = null;
+        String defaultPropExpression = null;
         if (endPropIndex > startPropIndex) {
         	
+            //look for the ?:<default-value-expression>; syntax after the property to see if it has a default value
+            if (str.startsWith( "?:", endPropIndex + "']}".length())) {
+                //find the end of the defaulting string
+                int tempEndPropIndex = str.indexOf(";", endPropIndex + "']}?:".length());
+                if (tempEndPropIndex == -1) {
+                    throw new IllegalArgumentException("The default property expression is not properly terminated with ';'");
+                }
+                //this string does not include the ?: and ; It only contains the content in between
+                defaultPropExpression = str.substring(endPropIndex + "]}?:".length() + 1, tempEndPropIndex);
+            }
+            
         	if (type.equals(PROPERTY_TYPE.JOB_PARAMETERS)) {
-        		propName = str.substring(startPropIndex + 17, endPropIndex);
+        		propName = str.substring(startPropIndex + "#{jobParameters['".length(), endPropIndex);
         	}
         	
         	if (type.equals(PROPERTY_TYPE.JOB_PROPERTIES)) {
-        		propName = str.substring(startPropIndex + 17, endPropIndex);
+        		propName = str.substring(startPropIndex + "#{jobProperties['".length(), endPropIndex);
         	}
         	
         	if (type.equals(PROPERTY_TYPE.SYSTEM_PROPERTIES)) {
-        		propName = str.substring(startPropIndex + 20, endPropIndex);
+        		propName = str.substring(startPropIndex + "#{systemProperties['".length(), endPropIndex);
         	}
         	
-        	return new NextProperty(propName, type, startPropIndex, endPropIndex ) ;
+        	if (type.equals(PROPERTY_TYPE.PARTITION_PROPERTIES)) {
+        		propName = str.substring(startPropIndex + "#{partitionPlan['".length(), endPropIndex);
+        	}
+        	
+        	return new NextProperty(propName, type, startPropIndex, endPropIndex, defaultPropExpression ) ;
         			
         }
 
@@ -335,51 +379,29 @@ public abstract class AbstractPropertyResolver<B> implements
         return null;
     }
 
-	/**
-	 * private String replaceProperty(final String input, final String propName,
-	 * final String propValue) {
-	 * 
-	 * final String propertyStr = new
-	 * StringBuilder("${").append(propName).append("}").toString();
-	 * 
-	 * return input.replace(propertyStr, propValue);
-	 * 
-	 * }
-	 */
-
-	/**
-	 * Creates a java.util.Properties map from a jsr352.batch.jsl.Properties
-	 * object.
-	 * 
-	 * @param xmlProperties
-	 * @return
-	 */
-	private Properties xmlPropertiesToJavaProperties(
-			final JSLProperties xmlProperties) {
-
-		final Properties props = new Properties();
-
-		for (final Property prop : xmlProperties.getPropertyList()) {
-			props.setProperty(prop.getName(), prop.getValue());
-		}
-
-		return props;
-
-	}
-	
-	
 	class NextProperty {
 		
 		final String propName;
 		final PROPERTY_TYPE propType;
 		final int startIndex;
 		final int endIndex;
+		final String defaultValueExpression;
 		
-		NextProperty(String propName, PROPERTY_TYPE propType, int startIndex, int endIndex){
+		
+		NextProperty(String propName, PROPERTY_TYPE propType, int startIndex, int endIndex, String defaultValueExpression){
 			this.propName = propName;
 			this.propType = propType;
 			this.startIndex = startIndex;
 			this.endIndex = endIndex;
+			this.defaultValueExpression = defaultValueExpression;
+		}
+		
+		String getDefaultValExprWithDelimitersIfExists() {
+		    if (this.defaultValueExpression != null) {
+		        return "?:" + this.defaultValueExpression + ";";
+		    }
+		    
+		    return "";
 		}
 		
 	}

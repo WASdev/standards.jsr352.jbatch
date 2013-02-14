@@ -13,61 +13,41 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.artifact.proxy;
 
 import java.io.Externalizable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
 
-import javax.batch.annotation.AnalyzeCollectorData;
-import javax.batch.annotation.AnalyzeExitStatus;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.PartitionAnalyzer;
+import javax.batch.operations.JobOperator.BatchStatus;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class PartitionAnalyzerProxy extends AbstractProxy {
-	
-	private Method analyzeCollectorDataMethod= null;
-	private Method analyzeExitStatusMethod= null;
+public class PartitionAnalyzerProxy extends AbstractProxy<PartitionAnalyzer> implements PartitionAnalyzer {
 
-	PartitionAnalyzerProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
-	    
-	    //find annotations
-		for (Method method: delegate.getClass().getDeclaredMethods()) { 
-			Annotation beforeJob= method.getAnnotation(AnalyzeCollectorData.class);
-			if ( beforeJob != null ) { 
-				analyzeExitStatusMethod= method;
-			}
-			Annotation afterJob= method.getAnnotation(AnalyzeExitStatus.class);
-			if ( afterJob != null ) { 
-				analyzeCollectorDataMethod= method;
-			}
-		}
-	}
-	
-	public synchronized void analyzeCollectorData(Externalizable data) {
-		if ( analyzeExitStatusMethod != null ) {
-            try {
-                analyzeExitStatusMethod.invoke(delegate, data);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-		}
-	}
-	
-	public synchronized void analyzeExitStatus(String exitStatus) {
-		if ( analyzeCollectorDataMethod != null ) {
-            try {
-                analyzeCollectorDataMethod.invoke(delegate, exitStatus);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-		}	
-	}	
+    PartitionAnalyzerProxy(PartitionAnalyzer delegate) {
+        super(delegate);
+
+    }
+
+    @Override
+    public synchronized void analyzeCollectorData(Externalizable data) {
+        
+        try {
+            this.delegate.analyzeCollectorData(data);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
+
+    @Override
+    public synchronized void analyzeStatus(BatchStatus batchStatus, String exitStatus) {
+        
+        try {
+            this.delegate.analyzeStatus(batchStatus, exitStatus);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
+
 }
-
-

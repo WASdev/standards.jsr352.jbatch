@@ -16,26 +16,23 @@
  */
 package jsr352.tck.chunkartifacts;
 
-import javax.batch.annotation.ItemProcessor;
-import javax.batch.annotation.ProcessItem;
-
 import jsr352.tck.chunktypes.InventoryRecord;
 
 
-@ItemProcessor("InventoryProcessor")
-@javax.inject.Named("InventoryProcessor")
-public class InventoryProcessor {
+@javax.inject.Named("inventoryProcessor")
+public class InventoryProcessor implements javax.batch.api.ItemProcessor<InventoryRecord, InventoryRecord>{
 
-	private int update = 10;
 	
-	@ProcessItem
-	public InventoryRecord processData(InventoryRecord record) throws Exception {
+	@Override
+	public InventoryRecord processItem(InventoryRecord record) throws Exception {
 		
 
+	    //The processor doesn't really do anything in this test. It just passes along 
+	    //the item item and the quantity to the item writer to create and order in the 
+	    //order table.
+	    
 		int itemID = record.getItemID();
 		int quantity = record.getQuantity();
-		
-		quantity--; //order is placed 
 		
 		return new InventoryRecord(itemID, quantity);
 	}

@@ -16,18 +16,46 @@
 */
 package jsr352.tck.specialized;
 
-import javax.batch.annotation.ItemProcessor;
-import javax.batch.annotation.ProcessItem;
+
+
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.ItemProcessor;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ReadRecord;
 
-@ItemProcessor("DoSomethingArrayItemProcessor")
-@javax.inject.Named("DoSomethingArrayItemProcessor")
-public class DoSomethingArrayItemProcessorImpl {
+@javax.inject.Named("doSomethingArrayItemProcessorImpl")
+public class DoSomethingArrayItemProcessorImpl implements ItemProcessor<ReadRecord, ReadRecord> {
+	
+    @Inject    
+    @BatchProperty(name="app.processFilterItem")
+    String appProcessFilterItem;
+	
+	int filterNumber;
+	boolean initSkipNumber = false;
+	int count = 1;
+	
 	private int update = 100;
 	
-	@ProcessItem
-	public ReadRecord processData(ReadRecord record) throws Exception {
+	@Override
+	public ReadRecord processItem(ReadRecord record) throws Exception {
+		
+		if (appProcessFilterItem != null) {
+			if (!initSkipNumber) {
+				filterNumber = Integer.parseInt(appProcessFilterItem);
+				initSkipNumber = true;
+			}
+		}
+		
+		if (initSkipNumber) {
+			if (filterNumber == count) {
+				System.out.println("AJM: filtering out #" + filterNumber);
+				count++;
+				return null; // filter
+			}
+		}
+		
+		count++;
 		
 		ReadRecord processedRecord = record;
 		int currData = processedRecord.getCount();

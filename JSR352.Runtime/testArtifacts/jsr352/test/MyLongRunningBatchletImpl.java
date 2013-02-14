@@ -30,7 +30,7 @@ import javax.batch.runtime.context.JobContext;
 @Batchlet("MyLongRunningBatchlet")
 public class MyLongRunningBatchletImpl {
 
-    @BatchContext
+    @Inject
     JobContext<?> jobCtx;
 
     @BatchProperty(name="run.indefinitely")

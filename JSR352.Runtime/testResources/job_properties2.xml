@@ -39,6 +39,6 @@
 		</batchlet>
 	</step>
 	<step id="step2">
-		<batchlet ref="MyBatchlet" />
+		<batchlet ref="myBatchletImpl" />
 	</step>
 </job>

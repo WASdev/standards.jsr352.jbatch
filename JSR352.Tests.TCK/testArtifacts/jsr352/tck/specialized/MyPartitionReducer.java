@@ -16,49 +16,57 @@
  */
 package jsr352.tck.specialized;
 
-import java.io.Externalizable;
-
-import javax.batch.annotation.AfterCompletion;
-import javax.batch.annotation.BatchContext;
-import javax.batch.annotation.BeforeCompletion;
-import javax.batch.annotation.Begin;
-import javax.batch.annotation.PartitionReducer;
-import javax.batch.annotation.Rollback;
+import javax.batch.api.PartitionReducer;
+import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
-import jsr352.tck.reusable.ExternalizableString;
+@javax.inject.Named("myPartitionReducer")
+public class MyPartitionReducer implements PartitionReducer {
 
-@PartitionReducer
-@javax.inject.Named("MyPartitionReducer")
-public class MyPartitionReducer {
-
-	@BatchContext
-	StepContext ctx;
+    
+    String history;
+    
+    @Inject
+	StepContext stepCtx;
+    
+    @Inject
+    JobContext jobCtx;
 	
-    @Begin
-	public Externalizable txBegin() throws Exception {
+    @Override
+	public void beginPartitionedStep() throws Exception {
 		
-		ExternalizableString eString = new ExternalizableString("C");
-		
-		return eString; 
-		
+        String exitStatus = stepCtx.getExitStatus();
+        
+        history = exitStatus + "Begin";
+				
 	}
-    
-    
-    @BeforeCompletion
-    public void txBeforeCompletion() {
-    	
+
+    @Override
+    public void beforePartitionedStepCompletion() throws Exception {
+        String exitStatus = stepCtx.getExitStatus();
+        
+        stepCtx.setExitStatus(history + exitStatus + "Before");
+        
     }
-    
-    @Rollback
-    public void txRollback() {
-    	
+
+    @Override
+    public void rollbackPartitionedStep() throws Exception {
+        String exitStatus = stepCtx.getExitStatus();
+        
+        stepCtx.setExitStatus(history + exitStatus + "Rollback");
+        
     }
-    
-    @AfterCompletion
-    public void txAfterCompletion(String status) {
-    	
-    	
+
+    @Override
+    public void afterPartitionedStepCompletion(PartitionStatus status) throws Exception {
+        String exitStatus = stepCtx.getExitStatus();
+        
+        stepCtx.setExitStatus(exitStatus + "After");
+        
+        jobCtx.setExitStatus(stepCtx.getExitStatus());
+        
     }
+
 
 }

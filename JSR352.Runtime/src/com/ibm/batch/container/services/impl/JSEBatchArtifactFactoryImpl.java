@@ -41,7 +41,7 @@ public class JSEBatchArtifactFactoryImpl implements IBatchArtifactFactory, XMLSt
 
 	// TODO - surface constants
 	private final static String BATCH_XML = "META-INF/batch.xml";
-	private final static QName BATCH_ROOT_ELEM = new QName("batch-artifacts");
+	private final static QName BATCH_ROOT_ELEM = new QName("http://jcp.org.batch/jsl", "batch-artifacts");
 
 	// TODO - synchronize appropriately once we learn more about usage
 	private boolean loaded = false;
@@ -127,7 +127,7 @@ public class JSEBatchArtifactFactoryImpl implements IBatchArtifactFactory, XMLSt
 			// line
 			// E.g.:
 			// <batch-artifacts>
-			//   <item-processor id=MyItemProcessor class=jsr352/sample/MyItemProcessorImpl/>
+			//   <ref id="myItemProcessor" class="jsr352/sample/MyItemProcessorImpl" />
 			//   ..
 			// </batch-artifacts>
 			//

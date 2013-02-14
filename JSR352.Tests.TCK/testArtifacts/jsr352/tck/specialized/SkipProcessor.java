@@ -17,21 +17,22 @@
 package jsr352.tck.specialized;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.ItemProcessor;
-import javax.batch.annotation.ProcessItem;
+import javax.batch.api.ItemProcessor;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ReadRecord;
 import jsr352.tck.reusable.MyParentException;
 
 
-@ItemProcessor("SkipProcessor")
-@javax.inject.Named("SkipProcessor")
-public class SkipProcessor {
+@javax.inject.Named("skipProcessor")
+public class SkipProcessor implements ItemProcessor<ReadRecord, ReadRecord> {
 	
-	@BatchProperty(name="execution.number")
+    @Inject    
+    @BatchProperty(name="execution.number")
     String executionNumberString;
 	
-	@BatchProperty(name="processrecord.fail")
+    @Inject    
+    @BatchProperty(name="processrecord.fail")
     String processrecordfailNumberString = null;
 	
 	boolean init = true;
@@ -43,8 +44,8 @@ public class SkipProcessor {
 	boolean inited = false;
 	int processIteration = 0;
 	
-	@ProcessItem
-	public ReadRecord processData(ReadRecord record) throws Exception {
+	@Override
+	public ReadRecord processItem(ReadRecord record) throws Exception {
 			
 		if (!inited){
 			if (!processrecordfailNumberString.equals("null")) {

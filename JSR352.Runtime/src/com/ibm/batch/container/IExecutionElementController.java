@@ -16,10 +16,10 @@
 */
 package com.ibm.batch.container;
 
-import com.ibm.batch.container.artifact.proxy.PartitionAnalyzerProxy;
-import com.ibm.batch.container.context.impl.FlowContextImpl;
-import com.ibm.batch.container.context.impl.SplitContextImpl;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import com.ibm.batch.container.context.impl.StepContextImpl;
+import com.ibm.batch.container.util.PartitionDataWrapper;
 
 public interface IExecutionElementController extends IController {
 
@@ -28,13 +28,9 @@ public interface IExecutionElementController extends IController {
     /*
      * @return exitStatus
      */
-    public String execute() throws AbortedBeforeStartException;
+    public String execute() throws AbortedBeforeStartException, Exception;
     
     public void setStepContext(StepContextImpl<?, ?> stepContext);
-    
-    public void setFlowContext(FlowContextImpl flowContext);
-    
-    public void setSplitContext(SplitContextImpl splitContext);
     
     //TODO implement these in the controllers
     //public void registerListeners(List<Listener> listeners);
@@ -43,7 +39,6 @@ public interface IExecutionElementController extends IController {
     
     //public void registerAnalyzers(List<Collector> collectors);
     
-    public void setAnalyzerProxy(PartitionAnalyzerProxy analyzerProxy);
-    
-    
+    public void setAnalyzerQueue(LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue);
+        
 }

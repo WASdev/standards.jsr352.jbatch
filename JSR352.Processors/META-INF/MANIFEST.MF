@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Processors
-Bundle-SymbolicName: JSR352.Processors
-Bundle-Version: 1.0.0.qualifier
-Export-Package: com.ibm.batch.annotation.processor
-Import-Package: javax.batch.annotation

@@ -15,6 +15,9 @@
  * limitations under the License.
 */
 package com.ibm.batch.container.services.impl;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -22,7 +25,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.operations.exception.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.exception.JobExecutionIsRunningException;
+import javax.batch.operations.exception.JobExecutionNotMostRecentException;
 import javax.batch.operations.exception.JobExecutionNotRunningException;
 import javax.batch.operations.exception.JobInstanceAlreadyCompleteException;
 import javax.batch.operations.exception.JobRestartException;
@@ -35,10 +40,12 @@ import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.batch.container.services.IBatchKernelService;
+import com.ibm.batch.container.services.IJobXMLLoaderService;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.services.ServicesManager;
 import com.ibm.batch.container.services.ServicesManager.ServiceType;
 import com.ibm.batch.container.tck.bridge.IJobEndCallbackService;
+
 
 public class JobOperatorImpl implements JobOperator {
 
@@ -47,26 +54,129 @@ public class JobOperatorImpl implements JobOperator {
     
     private ServicesManager servicesManager = null; 
     private IBatchKernelService batchKernel = null;
-    
     private IJobEndCallbackService callbackService = null;
     private IPersistenceManagerService persistenceService = null;
-
+    private IJobXMLLoaderService jobXMLLoaderService = null;
+	
     public JobOperatorImpl() {
         servicesManager = ServicesManager.getInstance();
         batchKernel = (IBatchKernelService) servicesManager.getService(ServiceType.BATCH_KERNEL_SERVICE);
         callbackService = (IJobEndCallbackService) servicesManager.getService(ServiceType.CALLBACK_SERVICE);
         persistenceService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        jobXMLLoaderService = (IJobXMLLoaderService) servicesManager.getService(ServiceType.JOBXML_LOADER_SERVICE);
     }
-
-    @Override
-    public List<Long> getExecutions(long instanceId) throws NoSuchJobInstanceException {
+    
+	@Override
+	public long start(String jobXMLName, Properties submittedProps)	throws JobStartException {
+	    
+	    String jobXML = jobXMLLoaderService.loadJob(jobXMLName);
+	    
+		long executionId = 0;
         
-    	return batchKernel.getExecutionIds(instanceId);
-    }
-
-    @Override
-    public int getJobInstanceCount(String jobName) throws NoSuchJobException {
+        if (logger.isLoggable(Level.FINE)) {            
+            int concatLen = jobXML.length() > 200 ? 200 : jobXML.length();
+            logger.fine("Starting job: " + jobXML.substring(0, concatLen) + "... truncated ...");
+        }
         
+        JobExecution execution = batchKernel.startJob(jobXML, submittedProps);
+        executionId = execution.getExecutionId();
+        
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("JobOperator start received executionId: " + executionId);
+        }
+
+        return executionId;
+	}
+
+
+	@Override
+	public void abandon(JobExecution jobExecution)
+			throws NoSuchJobExecutionException, JobExecutionIsRunningException {
+		// TODO Auto-generated method stub
+		
+		boolean abandoned = false;
+		long executionId = jobExecution.getExecutionId();
+		
+		// get the job executions associated with the job instance
+		//List<JobExecution> jobExecutions = persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instanceId);
+		
+		JobExecution jobEx = persistenceService.jobOperatorGetJobExecution(executionId);
+		
+		// if there are none found, throw exception saying so
+		if (jobEx == null){
+			throw new NoSuchJobInstanceException(null, "Job Execution: " + executionId + " not found");
+		}
+		
+		// for every job execution associated with the job
+		// if it is not in STARTED state, mark it as ABANDONED
+		//for (JobExecution jobEx : jobExecutions){
+			if (!jobEx.getBatchStatus().equals(BatchStatus.STARTED) || !jobEx.getBatchStatus().equals(BatchStatus.STARTING)){
+				// update table to reflect ABANDONED state
+		        long time = System.currentTimeMillis();
+		    	Timestamp timestamp = new Timestamp(time);
+				persistenceService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(jobEx.getExecutionId(), "batchstatus", BatchStatus.ABANDONED.name(), timestamp);
+			}
+			else {
+				// If one of the JobExecutions is still running, throw an exception
+				throw new JobExecutionIsRunningException(null, "Job Execution: " + executionId + " is still running");
+			}
+		//}
+		
+	}
+
+	@Override
+	public List<JobExecution> getExecutions(JobInstance instance)
+			throws NoSuchJobInstanceException {
+		
+		List<JobExecution> executions = persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instance.getInstanceId());
+		if (executions.size() == 0){
+			throw new NoSuchJobInstanceException(null, "Job: " + instance.getJobName() + " has no executions");
+		}
+		else{
+			return persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instance.getInstanceId());
+		}
+	}
+
+	@Override
+	public JobExecution getJobExecution(long executionId)
+			throws NoSuchJobExecutionException {
+		
+		JobExecution execution = persistenceService.jobOperatorGetJobExecution(executionId);
+		
+		if (execution == null){
+			throw new NoSuchJobExecutionException(null, "No job execution exists for job execution id: " + executionId);
+		}
+		else {
+			return batchKernel.getJobExecution(executionId);
+		}
+	}
+
+	@Override
+	public List<JobExecution> getJobExecutions(JobInstance instance)
+			throws NoSuchJobInstanceException {
+		
+		List<JobExecution> executions = persistenceService.jobOperatorGetJobExecutions(instance.getInstanceId());
+		
+		if (executions.size() == 0 ){
+			throw new NoSuchJobInstanceException(null, "Job: " + instance.getJobName() + " does not exist");
+		}
+		else {
+			return persistenceService.jobOperatorGetJobExecutions(instance.getInstanceId());
+		}
+	}
+
+	@Override
+	public JobInstance getJobInstance(long executionId)
+			throws NoSuchJobExecutionException {
+		// will have to look at t he persistence layer - 
+		// this used to take in an instanceid, now takes 
+		// in an executionId. Will have to adapt to that fact
+		return this.batchKernel.getJobInstance(executionId);
+	}
+
+	@Override
+	public int getJobInstanceCount(String jobName) throws NoSuchJobException {
+		
     	int jobInstanceCount = 0;
     	
     	jobInstanceCount = persistenceService.jobOperatorGetJobInstanceCount(jobName);
@@ -75,22 +185,100 @@ public class JobOperatorImpl implements JobOperator {
     		return jobInstanceCount;
     	}
     	else throw new NoSuchJobException(null, "Job " + jobName + " not found");
-    }
+	}
 
+	@Override
+	public List<JobInstance> getJobInstances(String jobName, int start,
+			int count) throws NoSuchJobException {
+		
+		List<JobInstance> jobInstances = new ArrayList<JobInstance>();
+		
+		// get the jobinstance ids associated with this job name
+		List<Long> instanceIds = persistenceService.jobOperatorgetJobInstanceIds(jobName, start, count);
+		
+		if (instanceIds.size() > 0){
+			// for every job instance id
+			for (long id : instanceIds){
+				// get the job instance obj, add it to the list
+				jobInstances.add(batchKernel.getJobInstance(id));
+			}
+			// send the list of objs back to caller
+			return jobInstances;
+		}
+		else throw new NoSuchJobException(null, "Job Name " + jobName + " not found");
+	}
+
+	@Override
+	public Set<String> getJobNames() {
+		return persistenceService.jobOperatorgetJobNames();
+	}
+
+	@Override
+	public Properties getParameters(JobInstance instance)
+			throws NoSuchJobExecutionException {
+		
+		Properties props = persistenceService.getParameters(instance.getInstanceId());
+		
+		if (props == null){
+			throw new NoSuchJobExecutionException(null, "");
+		}
+		else {
+			return persistenceService.getParameters(instance.getInstanceId());
+		}
+	}
+
+	@Override
+	public List<JobInstance> getRunningInstances(String jobName)
+			throws NoSuchJobException {
+		
+		List<JobInstance> jobInstances = new ArrayList<JobInstance>();
+		
+		// get the jobinstance ids associated with this job name
+		Set<Long> instanceIds = persistenceService.jobOperatorGetRunningInstances(jobName);
+		
+		if (instanceIds.size() > 0){
+			// for every job instance id
+			for (long id : instanceIds){
+				// get the job instance obj, add it to the list
+				jobInstances.add(batchKernel.getJobInstance(id));
+			}
+			// send the list of objs back to caller
+			return jobInstances;
+		}
+		else throw new NoSuchJobException(null, "Job Name " + jobName + " not found");
+	}
+
+	@Override
+	public List<StepExecution> getStepExecutions(long executionId)
+			throws NoSuchJobExecutionException {
+		
+		// now need to return a set of StepExecution Objs - 
+		return persistenceService.getStepExecutionIDListQueryByJobID(executionId);
+	}
+
+	@Override
+	public long restart(long executionId)
+			throws JobExecutionAlreadyCompleteException,
+			NoSuchJobExecutionException, JobExecutionNotMostRecentException,
+			JobRestartException {
+		
+        if (logger.isLoggable(Level.FINE)) {            
+            logger.fine("Restarting job with instanceID: " + executionId);
+        }
+        
+        JobExecution execution = batchKernel.restartJob(executionId);
+        
+        long newExecutionId = execution.getExecutionId();
+        
+        if (logger.isLoggable(Level.FINE)) {            
+            logger.fine("Restarted job with instanceID: " + executionId + ", and new executionID: " + newExecutionId);
+        }
+        
+        return newExecutionId;
+	}
+	
     @Override
-    public Set<String> getJobNames() {
-    	return persistenceService.jobOperatorgetJobNames();
-    }
-
-    @Override
-    public Properties getParameters(long executionId) throws NoSuchJobExecutionException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    @Override
-    public Long restart(long instanceId, Properties jobParameters) throws JobInstanceAlreadyCompleteException,
+    public long restart(long instanceId, Properties jobParameters) throws JobInstanceAlreadyCompleteException,
             NoSuchJobExecutionException, NoSuchJobException, JobRestartException {
 
         if (logger.isLoggable(Level.FINE)) {            
@@ -107,119 +295,12 @@ public class JobOperatorImpl implements JobOperator {
         
         return newExecutionId;
     }
-
-    /*
-     * Call into JobInstanceController to start job This call will return
-     * immediate and the execution will on on java executor thread.
-     * 
-     * return executionId
-     */
-    public Long start(String jobXML, Properties jobParameters) throws JobStartException {
-
-        Long retExecID = null;
-        
-        if (logger.isLoggable(Level.FINE)) {            
-            int concatLen = jobXML.length() > 200 ? 200 : jobXML.length();
-            logger.fine("Starting job: " + jobXML.substring(0, concatLen) + "... truncated ...");
-        }
-        
-        JobExecution execution = batchKernel.startJob(jobXML, jobParameters);
-        retExecID = execution.getExecutionId();
-        
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JobOperator start received executionId: " + retExecID);
-        }
-
-        return retExecID;
-    }
-
-    @Override
-    public void stop(long instanceId) throws NoSuchJobExecutionException, JobExecutionNotRunningException {
-        batchKernel.stopJob(instanceId);
-    }
-
-    @Override
-    public JobExecution getJobExecution(long executionId) {
-        // TODO Auto-generated method stub
-        return batchKernel.getJobExecution(executionId);
-    	// go to persistence, get the stuff for a new BatchJobExecutionImpl
-    	// add setters to BatchJobExecutionImpl, set all the fields and return
-    	
-    	/*
-    	BatchJobExecutionImpl jobExImpl = new BatchJobExecutionImpl();
-    	
-    	// get from db all components of a JobExecutionImpl instance based on executionID
-    	// set into new BatchJobExecutionImpl obj:
-    	if (persistenceService instanceof JDBCPersistenceManagerImpl){
-    		JobInformationKey jobinfoKey = new JobInformationKey(executionId);
-			jobExImpl.setBatchStatus(((JDBCPersistenceManagerImpl)persistenceService).jobOperatorQueryJobExecutionStatus(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS));
-			jobExImpl.setExitStatus(((JDBCPersistenceManagerImpl)persistenceService).jobOperatorQueryJobExecutionStatus(executionId, JDBCPersistenceManagerImpl.EXIT_STATUS));
-			jobExImpl.setCreateTime(((JDBCPersistenceManagerImpl)persistenceService).jobOperatorQueryJobExecutionTimestamp(executionId, JDBCPersistenceManagerImpl.CREATE_TIME));
-			jobExImpl.setStartTime(((JDBCPersistenceManagerImpl)persistenceService).jobOperatorQueryJobExecutionTimestamp(executionId, JDBCPersistenceManagerImpl.START_TIME));
-			jobExImpl.setEndTime(((JDBCPersistenceManagerImpl)persistenceService).jobOperatorQueryJobExecutionTimestamp(executionId, JDBCPersistenceManagerImpl.END_TIME));
-			jobExImpl.setLastUpdateTime(((JDBCPersistenceManagerImpl)persistenceService).jobOperatorQueryJobExecutionTimestamp(executionId, JDBCPersistenceManagerImpl.UPDATE_TIME));
-			jobExImpl.setJobInstanceId(((JDBCPersistenceManagerImpl)persistenceService).jobOperatorQueryJobExecutionJobInstanceId(executionId));
-		}
-    	jobExImpl.setExecutionId(executionId);
-    	
-    	return jobExImpl;
-    	*/
-    }
-    
-    @Override
-    public StepExecution getStepExecution(long jobExecutionId, long stepExecutionId) {
-    	return batchKernel.getStepExecution(jobExecutionId, stepExecutionId);
-    }
-    
-    @Override
-    public List<StepExecution> getJobSteps(long jobExecutionId) {
-    	return batchKernel.getJobSteps(jobExecutionId);
-    }
-
-    @Override
-    public List<JobExecution> getJobExecutions(long instanceId) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-	/* (non-Javadoc)
-	 * @see javax.batch.operations.JobOperator#getJobInstanceIds(java.lang.String, int, int)
-	 */
+	
 	@Override
-	public List<Long> getJobInstanceIds(String jobName, int start, int count)
-			throws NoSuchJobException {
-		return persistenceService.jobOperatorgetJobInstanceIds(jobName, start, count);
-	}
-
-	/* (non-Javadoc)
-	 * @see javax.batch.operations.JobOperator#getRunningInstanceIds(java.lang.String)
-	 */
-	@Override
-	public Set<Long> getRunningInstanceIds(String jobName)
-			throws NoSuchJobException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see javax.batch.operations.JobOperator#abandon(long)
-	 */
-	@Override
-	public void abandon(long instanceId) throws NoSuchJobExecutionException,
-			JobExecutionIsRunningException {
-		// TODO Auto-generated method stub
+	public void stop(long executionId) throws NoSuchJobExecutionException,
+			JobExecutionNotRunningException {
 		
+		batchKernel.stopJob(executionId);
 	}
-
-	/* (non-Javadoc)
-	 * @see javax.batch.operations.JobOperator#getJobInstance(long)
-	 */
-	@Override
-	public JobInstance getJobInstance(long instanceId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
 
 }

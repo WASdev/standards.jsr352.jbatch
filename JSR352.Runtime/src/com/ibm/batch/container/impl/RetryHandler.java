@@ -18,13 +18,16 @@ package com.ibm.batch.container.impl;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jsr352.batch.jsl.Chunk;
 
-import com.ibm.batch.container.artifact.proxy.RetryListenerProxy;
+import com.ibm.batch.container.artifact.proxy.RetryProcessListenerProxy;
+import com.ibm.batch.container.artifact.proxy.RetryReadListenerProxy;
+import com.ibm.batch.container.artifact.proxy.RetryWriteListenerProxy;
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
 public class RetryHandler {
@@ -43,17 +46,31 @@ public class RetryHandler {
 	  public static final String RETRY_COUNT      = "retry-limit";
 	  public static final String RETRY_INCLUDE_EX = "include class";
 	  public static final String RETRY_EXCLUDE_EX = "exclude class";
+	  
+	  private static final int RETRY_NONE = 0;
+	  private static final int RETRY_READ = 1;
+	  private static final int RETRY_PROCESS = 2;
+	  private static final int RETRY_WRITE = 3;
+	  
+	  private int retryType = RETRY_NONE;
 
-	  private RetryListenerProxy _retryListener = null;
+	  /*private RetryProcessListenerProxy _retryProcessListener = null;
+	  private RetryReadListenerProxy _retryReadListener = null;
+	  private RetryWriteListenerProxy _retryWriteListener = null;*/
+	  
+	  List<RetryProcessListenerProxy> _retryProcessListeners = null;
+	  List<RetryReadListenerProxy> _retryReadListeners = null;
+	  List<RetryWriteListenerProxy> _retryWriteListeners = null;
 
 	  private long _jobId = 0;
 	  private String _stepId = null;
 	  private Set<String> _retryNoRBIncludeExceptions = null;
 	  private Set<String> _retryNoRBExcludeExceptions = null;
+	  private Set<String> _retryIncludeExceptions = null;
+	  private Set<String> _retryExcludeExceptions = null;
 	  private int _retryLimit = 0;
 	  private long _retryCount = 0;
-	  private Exception _retryNoRBException = null;
-
+	  private Exception _retryException = null;
 
 	  public RetryHandler(Chunk chunk, long l, String stepId)
 	  {
@@ -65,12 +82,30 @@ public class RetryHandler {
 
 
 	  /**
-	   * Add the user-defined RetryListener.
+	   * Add the user-defined RetryProcessListener.
 	   *
 	   */
-	  public void addRetryListener(RetryListenerProxy retryListener)
+	  public void addRetryProcessListener(List<RetryProcessListenerProxy> retryProcessListeners)
 	  {
-	    _retryListener = retryListener;
+	    _retryProcessListeners =  retryProcessListeners;
+	  }
+	  
+	  /**
+	   * Add the user-defined RetryReadListener.
+	   *
+	   */
+	  public void addRetryReadListener(List<RetryReadListenerProxy> retryReadListeners)
+	  {
+	    _retryReadListeners = retryReadListeners;
+	  }
+	  
+	  /**
+	   * Add the user-defined RetryWriteListener.
+	   *
+	   */
+	  public void addRetryWriteListener(List<RetryWriteListenerProxy> retryWriteListeners)
+	  {
+	    _retryWriteListeners = retryWriteListeners;
 	  }
 
 
@@ -98,51 +133,74 @@ public class RetryHandler {
 	    if (_retryLimit > 0)
 	    {
 	      // Read the include/exclude exceptions.
-	  
+	      _retryIncludeExceptions = new HashSet<String>();
+	      _retryExcludeExceptions = new HashSet<String>();
 	      _retryNoRBIncludeExceptions = new HashSet<String>();
 	      _retryNoRBExcludeExceptions = new HashSet<String>();
 
-	      boolean done = false;
 	      String includeEx = null;
 	      String excludeEx = null;
+	      String includeExNoRB = null;
+	      String excludeExNoRB = null;
 	      
-			if (chunk.getNoRollbackExceptionClasses() != null) {
-				if (chunk.getNoRollbackExceptionClasses().getInclude() != null) {
-					includeEx = chunk.getNoRollbackExceptionClasses().getInclude().getClazz();
+			if (chunk.getRetryableExceptionClasses() != null) {
+				if (chunk.getRetryableExceptionClasses().getInclude() != null) {
+					includeEx = chunk.getRetryableExceptionClasses().getInclude().getClazz();
 					logger.finer("RETRYHANDLE: include: " + includeEx);
 				}
-			}
-			if (chunk.getNoRollbackExceptionClasses() != null) {
-				if (chunk.getNoRollbackExceptionClasses().getExclude() != null) {
-					excludeEx = chunk.getNoRollbackExceptionClasses().getExclude().getClazz();
+				if (chunk.getRetryableExceptionClasses().getExclude() != null) {
+					excludeEx = chunk.getRetryableExceptionClasses().getExclude().getClazz();
 					logger.finer("RETRYHANDLE: exclude: " + excludeEx);
 				}
 			}
+			if (chunk.getNoRollbackExceptionClasses() != null) {
+				if (chunk.getNoRollbackExceptionClasses().getInclude() != null) {
+					includeExNoRB = chunk.getNoRollbackExceptionClasses().getInclude().getClazz();
+					logger.finer("RETRYHANDLE: include no rollback: " + includeExNoRB);
+				}
+				if (chunk.getNoRollbackExceptionClasses().getExclude() != null) {
+					excludeExNoRB = chunk.getNoRollbackExceptionClasses().getExclude().getClazz();
+					logger.finer("RETRYHANDLE: exclude no rollback: " + excludeExNoRB);
+				}
+			}
 
-			if (includeEx != null)
-				_retryNoRBIncludeExceptions.add(includeEx.trim());
+			if (includeEx != null) {
+				
+				_retryIncludeExceptions.add(includeEx.trim());
+			}
 			if (excludeEx != null)
-				_retryNoRBExcludeExceptions.add(excludeEx.trim());
+				_retryExcludeExceptions.add(excludeEx.trim());
+			if (includeExNoRB != null) {
+				
+				_retryNoRBIncludeExceptions.add(includeExNoRB.trim());
+			}
+			if (excludeExNoRB != null)
+				_retryNoRBExcludeExceptions.add(excludeExNoRB.trim());
 
-			done = (includeEx == null && excludeEx == null);
-
-			if (logger.isLoggable(Level.FINE))
+			if (logger.isLoggable(Level.FINE)) {
 				logger.logp(Level.FINE, className, mName,
 						"added include exception " + includeEx
 								+ "; added exclude exception " + excludeEx);
+				logger.logp(Level.FINE, className, mName,
+						"added include no rollback exception " + includeExNoRB
+								+ "; added exclude no rollback exception " + excludeExNoRB);
+			}
 		}
 	        
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.exiting(className, mName, this.toString());
 	  }
-
-
+	  
+	  public boolean isRollbackException(Exception e)
+	  {
+		  return !isNoRollbackException(e);
+	  }
 	  /**
 	   * Handle exception from a read failure.
 	   */
-	  public void handleNoRollbackExceptionRead(Exception e)
+	  public void handleExceptionRead(Exception e)
 	  {
-	    final String mName = "handleException";
+	    final String mName = "handleExceptionRead";
 	    
 	    logger.finer("RETRYHANDLE: in retryhandler handle exception on a read:" + e.toString());
 
@@ -151,12 +209,17 @@ public class RetryHandler {
 	    
 	    if (!isRetryLimitReached() && isRetryable(e))
 	    {
+	       retryType = RETRY_READ;
+	       _retryException = e;
 	      // Retry it.  Log it.  Call the RetryListener.
 	      ++_retryCount;
 	      logRetry(e);
 
-	      if (_retryListener != null)
-	        _retryListener.onRetryReadItem(e);
+	      if (_retryReadListeners != null) {
+	    	  for (RetryReadListenerProxy retryReadListenerProxy : _retryReadListeners) {
+	    		  retryReadListenerProxy.onRetryReadException(e);
+				}
+	      }
 	    }
 	    else
 	    {
@@ -173,21 +236,26 @@ public class RetryHandler {
 	  /** 
 	   * Handle exception from a process failure.
 	   */
-	  public void handleNoRollbackExceptionWithRecordProcess(Exception e, Object w)
+	  public void handleExceptionProcess(Exception e, Object w)
 	  {
-	    final String mName = "handleException";
+	    final String mName = "handleExceptionProcess";
 	    
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
-
+	    
 	    if (!isRetryLimitReached() && isRetryable(e))
 	    {
+	      retryType = RETRY_PROCESS;
+	      _retryException = e;
 	      // Retry it.  Log it.  Call the RetryListener.
 	      ++_retryCount;
 	      logRetry(e);
 
-	      if (_retryListener != null)
-	        _retryListener.onRetryProcessException(e, w);
+	      if (_retryProcessListeners != null) {
+	    	  for (RetryProcessListenerProxy retryProcessListenerProxy : _retryProcessListeners) {
+	    		  retryProcessListenerProxy.onRetryProcessException(w, e);
+				}
+	      }
 	    }
 	    else
 	    {
@@ -201,9 +269,9 @@ public class RetryHandler {
 	  /** 
 	   * Handle exception from a write failure.
 	   */
-	  public void handleNoRollbackExceptionWithRecordWriteItem(Exception e, Object w)
+	  public void handleExceptionWrite(Exception e, List<Object> w)
 	  {
-	    final String mName = "handleException";
+	    final String mName = "handleExceptionWrite";
 	    
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
@@ -211,11 +279,16 @@ public class RetryHandler {
 	    if (!isRetryLimitReached() && isRetryable(e))
 	    {
 	      // Retry it.  Log it.  Call the RetryListener.
+	      retryType = RETRY_WRITE;
+	      _retryException = e;
 	      ++_retryCount;
 	      logRetry(e);
 
-	      if (_retryListener != null)
-	        _retryListener.onRetryWriteItem(e, w);
+	      if (_retryWriteListeners != null) {
+	    	  for (RetryWriteListenerProxy retryWriteListenerProxy : _retryWriteListeners) {
+	    		  retryWriteListenerProxy.onRetryWriteException(w, e);
+				}
+	      }
 	    }
 	    else
 	    {
@@ -228,7 +301,7 @@ public class RetryHandler {
 
 
 	  /**
-	   * Check the retryCount and retryable exception lists to determine whether
+	   * Check the retryable exception lists to determine whether
 	   * the given Exception is retryable.
 	   */
 	  private boolean isRetryable(Exception e)
@@ -237,11 +310,55 @@ public class RetryHandler {
 
 	    String exClassName = e.getClass().getName();
 
-	    boolean retVal = ((_retryNoRBIncludeExceptions.isEmpty() || containsRetryableNoRB(_retryNoRBIncludeExceptions, e)) &&
-	                      !containsRetryableNoRB(_retryNoRBExcludeExceptions, e));
-
+	    boolean retVal = ((_retryIncludeExceptions.isEmpty() || containsException(_retryIncludeExceptions, e)) &&
+                !containsException(_retryExcludeExceptions, e));
+	    
 	    if(logger.isLoggable(Level.FINE)) 
 	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal + ": " + exClassName);
+
+	    return retVal;
+	  }
+	
+	  private boolean isNoRollbackException(Exception e)
+	  {
+		  final String mName = "isNoRollbackException";
+
+		  String exClassName = e.getClass().getName();
+		  
+		  boolean retVal = false;
+		  
+		  if(!_retryNoRBIncludeExceptions.isEmpty())
+		  {
+			  retVal = (containsException(_retryNoRBIncludeExceptions, e) && !containsException(_retryNoRBExcludeExceptions, e));
+		  }
+			  
+		  if(logger.isLoggable(Level.FINE)) 
+		    logger.logp(Level.FINE, className, mName, mName + ": " + retVal + ": " + exClassName);
+
+		  return retVal;
+	  }
+	  
+	  /**
+	   * Check whether given exception is in the specified exception list 
+	   */
+	  private boolean containsException(Set<String> retryList, Exception e)
+	  {
+	    final String mName = "containsException";
+	    boolean retVal = false;
+
+	    for ( Iterator it = retryList.iterator(); it.hasNext(); ) {
+	        String exClassName = (String) it.next();
+	       
+	        try {
+	        	if (retVal = Thread.currentThread().getContextClassLoader().loadClass(exClassName).isInstance(e))
+	        		break;
+	        } catch (ClassNotFoundException cnf) {
+	        	logger.logp(Level.FINE, className, mName, cnf.getLocalizedMessage());
+	        }
+	    }
+
+	    if(logger.isLoggable(Level.FINE)) 
+	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal );
 
 	    return retVal;
 	  }
@@ -257,13 +374,13 @@ public class RetryHandler {
 	    for ( Iterator it = retryList.iterator(); it.hasNext(); ) {
 	        String exClassName = (String) it.next();   
 	        try {
-	            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-	        	if (retVal = tccl.loadClass(exClassName).isInstance(e))
+	        	if (retVal = Thread.currentThread().getContextClassLoader().loadClass(exClassName).isInstance(e))
 	        		break;
 	        } catch (ClassNotFoundException cnf) {
 	        	logger.logp(Level.FINE, className, mName, cnf.getLocalizedMessage());
 	        }
 	    }
+	    
 
 	    if(logger.isLoggable(Level.FINE)) 
 	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal );
@@ -292,7 +409,11 @@ public class RetryHandler {
 	    //logger.info(message);	
 		}
 
-
+	  public Exception getException()
+	  {
+		  return _retryException;
+	  }
+	  
 	  public long getRetryCount()
 	  {
 	    return _retryCount;
@@ -312,8 +433,5 @@ public class RetryHandler {
 	  {
 	    return "RetryHandler{" + super.toString() + "}count:limit=" + _retryCount + ":" + _retryLimit;
 	  }
-
-	
-
 
 }

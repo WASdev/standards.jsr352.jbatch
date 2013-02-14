@@ -19,11 +19,11 @@ package com.ibm.batch.container.transaction.impl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.spi.TransactionManagerSPI;
 
 import com.ibm.batch.container.exception.TransactionManagementException;
+import com.ibm.batch.container.services.TransactionManagerAdatper;
 
-public class DefaultNonTransactionalManager implements TransactionManagerSPI {
+public class DefaultNonTransactionalManager implements TransactionManagerAdatper {
 	
 	private static final String CLASSNAME = DefaultNonTransactionalManager.class.getName();
 	

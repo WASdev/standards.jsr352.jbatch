@@ -16,6 +16,7 @@
 */
 package com.ibm.batch.container.util;
 
+
 public class ExecutionStatus {
     
     private boolean executionFailedBeforeStarting = false;
@@ -24,46 +25,40 @@ public class ExecutionStatus {
         super();
     }
 
-    // Only for intra-RI usage since spec doesn't define enum, only String
-    // values.
-    public enum BatchStatus {
-        STARTING, STARTED, STOPPING, STOPPED, FAILED, COMPLETED
-    }
-
-    public static String getStringValue(BatchStatus batchStatus) {
-        switch (batchStatus) {
-        case STARTING:
-            return "STARTING";
-        case STARTED:
-            return "STARTED";
-        case STOPPING:
-            return "STOPPING";
-        case STOPPED:
-            return "STOPPED";
-        case FAILED:
-            return "FAILED";
-        case COMPLETED:
-            return "COMPLETED";
-        }
-        return null;
-    }
-    
-    public static BatchStatus getBatchStatusEnum(String batchStatus){
-        if (batchStatus.equals("STARTING")) {
-            return BatchStatus.STARTING;
-        } else if (batchStatus.equals("STARTED")) {
-            return BatchStatus.STARTED;
-        } else if (batchStatus.equals("STOPPING")) {
-            return BatchStatus.STOPPING;
-        } else if (batchStatus.equals("STOPPED")) {
-            return BatchStatus.STOPPED;
-        } else if (batchStatus.equals("FAILED")) {
-            return BatchStatus.FAILED;
-        } else if (batchStatus.equals("COMPLETED")) {
-            return BatchStatus.COMPLETED;
-        } 
-        return null;
-    }
+//    public static String getStringValue(BatchStatus batchStatus) {
+//        switch (batchStatus) {
+//        case STARTING:
+//            return "STARTING";
+//        case STARTED:
+//            return "STARTED";
+//        case STOPPING:
+//            return "STOPPING";
+//        case STOPPED:
+//            return "STOPPED";
+//        case FAILED:
+//            return "FAILED";
+//        case COMPLETED:
+//            return "COMPLETED";
+//        }
+//        return null;
+//    }
+//    
+//    public static BatchStatus getBatchStatusEnum(String batchStatus){
+//        if (batchStatus.equals("STARTING")) {
+//            return BatchStatus.STARTING;
+//        } else if (batchStatus.equals("STARTED")) {
+//            return BatchStatus.STARTED;
+//        } else if (batchStatus.equals("STOPPING")) {
+//            return BatchStatus.STOPPING;
+//        } else if (batchStatus.equals("STOPPED")) {
+//            return BatchStatus.STOPPED;
+//        } else if (batchStatus.equals("FAILED")) {
+//            return BatchStatus.FAILED;
+//        } else if (batchStatus.equals("COMPLETED")) {
+//            return BatchStatus.COMPLETED;
+//        } 
+//        return null;
+//    }
 
     public void markExecutionFailedBeforeStarting() {
         this.executionFailedBeforeStarting = true;

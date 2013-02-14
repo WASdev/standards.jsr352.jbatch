@@ -21,17 +21,20 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator.BatchStatus;
+
 import jsr352.batch.jsl.Batchlet;
 import jsr352.batch.jsl.Partition;
 import jsr352.batch.jsl.Property;
 import jsr352.batch.jsl.Step;
 
 import com.ibm.batch.container.artifact.proxy.BatchletProxy;
+import com.ibm.batch.container.artifact.proxy.InjectionReferences;
 import com.ibm.batch.container.artifact.proxy.ProxyFactory;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.jobinstance.RuntimeJobExecutionImpl;
-import com.ibm.batch.container.util.ExecutionStatus;
-import com.ibm.batch.container.util.ExecutionStatus.BatchStatus;
+import com.ibm.batch.container.util.PartitionDataWrapper;
+import com.ibm.batch.container.util.PartitionDataWrapper.PartitionEventType;
 import com.ibm.batch.container.validation.ArtifactValidationException;
 
 public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl {
@@ -39,7 +42,7 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
     private final static String sourceClass = BatchletStepControllerImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
     
-    private BatchletProxy proxy;
+    private BatchletProxy batchletProxy;
 
     public BatchletStepControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Step step) {
         super(jobExecutionImpl, step);
@@ -57,25 +60,24 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 
         String exitStatus = null;
        
+        InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, 
+                propList);
+
         try {
-            proxy = ProxyFactory.createBatchletProxy(batchletId, propList);
+            batchletProxy = ProxyFactory.createBatchletProxy(batchletId, injectionRef);
         } catch (ArtifactValidationException e) {
             throw new BatchContainerServiceException("Cannot create the batchlet [" + batchletId + "]", e);
         }
-
-
         
-        proxy.setJobContext(jobExecutionImpl.getJobContext());
-        proxy.setStepContext(stepContext);
-
         if (logger.isLoggable(Level.FINE))
-            logger.fine("Batchlet is loaded and validated: " + proxy);
+            logger.fine("Batchlet is loaded and validated: " + batchletProxy);
 
         
-        if (jobExecutionImpl.getJobContext().getBatchStatus().equals(ExecutionStatus.getStringValue(BatchStatus.STOPPING))){
-            this.stepContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.STOPPED));
+        if (jobExecutionImpl.getJobContext().getBatchStatus().equals(BatchStatus.STOPPING)){
+            this.statusStopped();
         } else {
-            exitStatus = proxy.process();
+           	
+            exitStatus = batchletProxy.process();
             //Set the exist status on the step context even if its null.
             //We'll check for null later and default it to the batch status
             if (logger.isLoggable(Level.FINE)) {
@@ -94,30 +96,51 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
         if (partition != null) {
         	//partition.getConcurrencyElements();
         }
-    	
-        invokeBatchlet(step.getBatchlet());
+    	try {
+    	    invokeBatchlet(step.getBatchlet());
+    	} finally {
+            if (collectorProxy != null) {
 
+                Externalizable data = this.collectorProxy.collectPartitionData();
 
-        if (collectorProxy != null) {
-        	
-        	Externalizable data = this.collectorProxy.collectPartitionData();
-        	
-        	if (this.analyzerProxy != null) {
-        		this.analyzerProxy.analyzeCollectorData(data);
-        	}
+                if (this.analyzerQueue != null) {
+                    // Invoke the partition analayzer at the end of each step if
+                    // the step runs
+
+                    PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
+                    dataWrapper.setCollectorData(data);
+                    dataWrapper.setEventType(PartitionEventType.ANALYZE_COLLECTOR_DATA);
+                    analyzerQueue.add(dataWrapper);
+                }
+
+            }
+
+            if (this.analyzerQueue != null) {
+                PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
+                dataWrapper.setBatchStatus(stepStatus.getBatchStatus());
+                dataWrapper.setExitStatus(stepStatus.getExitStatus());
+                dataWrapper.setEventType(PartitionEventType.ANALYZE_STATUS);
+                analyzerQueue.add(dataWrapper);
+            }
         }
         
     }
 
     @Override
-    public void stop() { 
-        stepContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.STOPPING));
+    public synchronized void stop() { 
         
-        if (proxy != null) {
-        	proxy.stop();	
-        }
-       	       
-
+    	if (BatchStatus.STARTING.equals(stepContext.getBatchStatus()) ||
+    	        BatchStatus.STARTED.equals(stepContext.getBatchStatus())) {
+    	
+    		stepContext.setBatchStatus(BatchStatus.STOPPING);
+    		
+            if (batchletProxy != null) {
+            	batchletProxy.stop();	
+            }
+    	} else {
+        	//TODO do we need to throw an error if the batchlet is already stopping/stopped
+    		//a stop gets issued twice
+    	}
     }
 
 

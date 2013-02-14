@@ -21,31 +21,28 @@ import jsr352.batch.jsl.Property;
 
 public class ChunkHelper {
 
-	public static int getBufferSize(Chunk chunk) {
+	public static int getItemCount(Chunk chunk) {
 
-		String chunkSizeStr = chunk.getBufferSize();
+		String chunkSizeStr = chunk.getItemCount();
 		int size = 0;
-		if (chunkSizeStr != null && ! chunkSizeStr.isEmpty()) {
-			size = Integer.valueOf(chunk.getBufferSize());
-			if (size == 0) {
-				// Spec says to treat '0' as a signal to turn off buffering.
-				size = 1;
-			}
+		if (chunkSizeStr != null && !chunkSizeStr.isEmpty()) {
+			size = Integer.valueOf(chunk.getItemCount());
 		} else {
 			// set default value
-			if (chunk.getCheckpointPolicy().equalsIgnoreCase("item")) {
-				//chunk size = commit-interval if checkpoint policy is item
-				size = getCommitInterval(chunk);
-			} else {
-				//chunk size = 10 for all other  type of check  point
-				size = 10;
-			}
+			size = 10;
 		}
-		return size;		
+		return size;
 	}
     
-    public static int getCommitInterval(Chunk chunk){    
-    	return Integer.valueOf(chunk.getCommitInterval());
+    public static int getTimeLimit(Chunk chunk){    
+		String chunkTimeLimitStr = chunk.getTimeLimit();
+		int timeLimit = 10; //default time limit = 10 seconds
+		
+		if (chunkTimeLimitStr != null && !chunkTimeLimitStr.isEmpty()) {
+			timeLimit = Integer.valueOf(chunk.getTimeLimit());
+		} 
+		
+		return timeLimit;
     }
     
     public static int getSkipLimit(Chunk chunk) {

@@ -19,7 +19,10 @@ package com.ibm.batch.container.jobinstance;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.batch.container.context.impl.JobContextImpl;
@@ -30,6 +33,9 @@ import com.ibm.batch.container.services.impl.JDBCPersistenceManagerImpl;
 
 public class JobOperatorJobExecutionImpl implements JobExecution {
 
+    private final static String sourceClass = JobOperatorJobExecutionImpl.class.getName();
+    private final static Logger logger = Logger.getLogger(sourceClass);
+    
 	private static ServicesManager servicesManager = ServicesManager.getInstance();
     private static IPersistenceManagerService _persistenceManagementService = 
         (IPersistenceManagerService)servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
@@ -44,41 +50,51 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
     Properties parameters;
     String batchStatus;
     String exitStatus;
+    Properties jobProperties = null;
     
     private JobContextImpl<?> jobcontext = null;
     
-	public JobOperatorJobExecutionImpl(long instanceId, long executionId, JobContextImpl<?> jobContext) {
+	public JobOperatorJobExecutionImpl(long executionId, long instanceId, JobContextImpl<?> jobContext) {
 		this.executionID = executionId;
 		this.instanceID = instanceId;
 		jobcontext = jobContext;
 	}
 	
 	@Override
-	public String getStatus() {
+	public BatchStatus getBatchStatus() {
 		
-		//if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-		//	batchStatus = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.BATCH_STATUS);
-		//}
+		BatchStatus batchStatus  = null;
 		
-		return this.jobcontext.getBatchStatus();
+		if (this.jobcontext != null){
+			batchStatus = this.jobcontext.getBatchStatus();
+			if (logger.isLoggable(Level.FINE)) {            
+				logger.fine("Returning batch status of: " + batchStatus + " from JobContext.");
+			}
+		}
+		else {
+			// old job, retrieve from the backend
+			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
+				batchStatus = BatchStatus.valueOf(((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.BATCH_STATUS));
+			} else {
+				throw new UnsupportedOperationException("Only JDBC-based persistence currently supported for this function.");
+			}
+			if (logger.isLoggable(Level.FINE)) {            
+				logger.fine("Returning batch status of: " + batchStatus + " from JobContext.");
+			}
+		}
+		return batchStatus;
 	}
 
 	@Override
-	public Timestamp getCreateTime() {
-		// if and only if we are accessing the JDBC impl, get the requested timestamp
-		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-			createTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.CREATE_TIME);
-		}
+	public Date getCreateTime() {
+
 		
 		return createTime;
 	}
 
 	@Override
-	public Timestamp getEndTime() {
-		// if and only if we are accessing the JDBC impl, get the requested timestamp
-		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-			endTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.END_TIME);
-		}
+	public Date getEndTime() {
+
 		
 		return endTime;
 	}
@@ -91,11 +107,18 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 
 	@Override
 	public String getExitStatus() {
-		//if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-		//	exitStatus = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.EXIT_STATUS);
-		//}
 		
-		return this.jobcontext.getExitStatus();
+		if (this.jobcontext != null){
+			return this.jobcontext.getExitStatus();
+		}
+		else {
+			// old job, retrieve from the backend
+			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
+				exitStatus = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.EXIT_STATUS);
+			}
+			return exitStatus;
+		}
+
 	}
 
 	// keep?
@@ -107,9 +130,11 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 	@Override
 	public Date getLastUpdatedTime() {
 		// if and only if we are accessing the JDBC impl, get the requested timestamp
+		/*
 		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
 			updateTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.UPDATE_TIME);
 		}
+		*/
 		
 		return updateTime;
 	}
@@ -118,12 +143,22 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 	public Date getStartTime() {
 		
 		// if and only if we are accessing the JDBC impl, get the requested timestamp
+		/*
 		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
 			startTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.START_TIME);
 		}
+		*/
 		
 		return startTime;
 	}
+	
+	@Override
+	public Properties getJobParameters() {
+		// TODO Auto-generated method stub
+		return jobProperties;
+	}
+	
+	// IMPL specific setters
 	
 	public void setBatchStatus(String status) {
 		batchStatus = status;
@@ -161,11 +196,9 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 	public void setStartTime(Timestamp ts) {
 		startTime = ts;
 	}
-
-	@Override
-	public Properties getJobParameters() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public void setJobProperties(Properties jProps){
+		jobProperties = jProps;
 	}
 
 }

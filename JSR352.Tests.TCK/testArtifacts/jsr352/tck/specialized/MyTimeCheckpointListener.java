@@ -20,14 +20,16 @@ package jsr352.tck.specialized;
 import java.io.Externalizable;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.*;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractChunkListener;
+import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 
 
-@CheckpointListener("MyTimeCheckpointListener")
-@javax.inject.Named("MyTimeCheckpointListener")
-public class MyTimeCheckpointListener {
+@javax.inject.Named("myTimeCheckpointListener")
+public class MyTimeCheckpointListener extends AbstractChunkListener {
     
     private final static String sourceClass = MyCustomCheckpointListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
@@ -35,56 +37,76 @@ public class MyTimeCheckpointListener {
     java.util.Date date;
     long ts;
     int timeinterval;
+    boolean init=true;
     
+    long startTime = 0;
+    long endTime = 0;
+    
+    @Inject    
     @BatchProperty(name="timeinterval")
     String timeintervalString;
     
-    @BatchContext
+    @Inject 
+    JobContext jobCtx;
+    
+    @Inject
     StepContext<Integer, Externalizable> stepCtx;
 
     public MyTimeCheckpointListener(){
-    	date = new java.util.Date();
-        ts = date.getTime();
-        
-        System.out.println("TIMECHKPTLISTENER: in ctor, ts = " + ts);
 
     }
     
-    @BeforeCheckpoint
-    public void before() {
-    	System.out.println("TIMECHKPTLISTENER: beforeCheckpoint");
+    @Override
+    public void beforeChunk() {
+    	System.out.println("CHUNKTLISTENER: beforeChunk");
     	
     	timeinterval = Integer.parseInt(timeintervalString);
     	
-    	//if (timeinterval == null){
-    		//timeinterval = stepCtx.getTransientUserData();
-    		System.out.println("TIMECHKPTLISTENER: got the timeinterval: " + timeinterval);
-    	//}
-    	
-        java.util.Date curDate = new java.util.Date();
-        long curts = curDate.getTime();
-        long curdiff = curts - ts;
-        int diff = (int)curdiff / 1000;
+    		System.out.println("CHUNKLISTENER: got the timeinterval: " + timeinterval);
+    		System.out.println("CHUNKLISTENER: startTime: " + startTime);
+    		System.out.println("CHUNKLISTENER: endTime: " + endTime);
+    		
+
         
-		if ((diff <= timeinterval+1) || (diff >= timeinterval-1) ) {
-			System.out.println("TIMECHKPTLISTENER: the chunk write is occuring at the correct time -> " + diff + " which is: " + timeinterval + " +/- 1 second");
+        long curdiff = endTime - startTime;
+        System.out.println("CHUNKLISTENER: curdiff: " + curdiff);
+        int diff = 0;
+        if (curdiff == 0){
+        	diff = 0;
+        }
+        else {
+        	diff = (int)((int)endTime - startTime)/1000;
+        }
+        
+        System.out.println("AJM: time diff =" + diff);
+        
+        if ((diff >= timeinterval-1) && (diff <= timeinterval+1)) {
+			System.out.println("CHUNKLISTENER: the checkpoint is occuring at the correct time -> " + diff + " which is: " + timeinterval + " +/- 1 second");
+			jobCtx.setExitStatus("TRUE: " + diff);
 		}
 		else {
-			System.out.println("TIMECHKPTLISTENER: we have an issue! throw exception here");
+			System.out.println("CHUNKLISTENER: checkpoint less then the requested time interval of " + timeinterval);
+			jobCtx.setExitStatus("FALSE: " + diff);
 			//throw new Exception("WRITE: the chunk write did not occur at the correct time boundry -> "+ diff + " which is: " + timeinterval + "+/- 1 second");
 		}
-		
-		//stepCtx.setTransientUserData(diff);
-    	
+		        
+        startTime = System.currentTimeMillis();    	
     }
     
-    @AfterCheckpoint
-    public void after() {
-    	System.out.println("CHKPTLISTENER: afterCheckpoint");
+   
+    @Override
+    public void afterChunk() {
+    	System.out.println("CHUNKLISTENER: afterChunk");
     	
     	date = new java.util.Date();
         ts = date.getTime();
+        
+        endTime = System.currentTimeMillis();
     }
     
+    @Override
+    public void onError() {
+    	System.out.println("CHUNKLISTENER: onError");
+    }
 
 }

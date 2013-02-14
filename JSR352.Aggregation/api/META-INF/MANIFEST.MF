@@ -9,5 +9,4 @@ Export-Package: javax.batch.annotation,
  javax.batch.operations,
  javax.batch.operations.exception,
  javax.batch.runtime,
- javax.batch.runtime.context,
- javax.batch.runtime.spi
+ javax.batch.runtime.context

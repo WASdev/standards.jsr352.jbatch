@@ -20,8 +20,11 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.batch.operations.exception.JobExecutionNotRunningException;
+import javax.batch.operations.exception.JobRestartException;
+import javax.batch.operations.exception.JobStartException;
 import javax.batch.operations.exception.NoSuchJobExecutionException;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.batch.container.jobinstance.RuntimeJobExecutionImpl;
@@ -30,26 +33,32 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
 	JobExecution getJobExecution(long executionId);
 	
-	StepExecution getStepExecution(long jobExecutionId, long stepExecutionId);
+	StepExecution getStepExecution(long stepExecutionId);
 
 	//AJM: void setJobExecution(Long executionID, JobExecution execution);
 
-	JobExecution restartJob(long jobInstanceId);
+	JobExecution restartJob(long executionID) throws JobRestartException;
+	
+	JobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException;
 
-	JobExecution startJob(String jobXML);
+	JobExecution startJob(String jobXML) throws JobStartException;
 
-	JobExecution startJob(String jobXML, Properties jobParameters);
+	JobExecution startJob(String jobXML, Properties jobParameters) throws JobStartException;
 
-    void stopJob(long jobInstanceId) throws NoSuchJobExecutionException, JobExecutionNotRunningException;
+    void stopJob(long executionID) throws NoSuchJobExecutionException, JobExecutionNotRunningException;
 
-    JobExecution restartJob(long jobInstanceId, Properties overrideJobParameters);
+    // should be removed once props are gone JobExecution restartJob(long jobInstanceId);
 
     void jobExecutionDone(RuntimeJobExecutionImpl jobExecution);
     
-    List<StepExecution> getJobSteps(long jobExecutionId);
+    //List<StepExecution> getJobSteps(long jobExecutionId);
     
     List<Long> getExecutionIds(long jobInstance);
     
     int getJobInstanceCount(String jobName);
-    
+
+	JobInstance getJobInstance(long instanceId);
+
+	List<StepExecution> getStepExecutions(long executionId);
+	    
 }

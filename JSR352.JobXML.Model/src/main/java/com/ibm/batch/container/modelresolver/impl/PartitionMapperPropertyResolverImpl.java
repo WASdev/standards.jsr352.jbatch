@@ -23,11 +23,32 @@ import jsr352.batch.jsl.PartitionMapper;
 public class PartitionMapperPropertyResolverImpl extends
 		AbstractPropertyResolver<PartitionMapper> {
 
+	public PartitionMapperPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
 	@Override
-	public PartitionMapper substituteProperties(PartitionMapper b,
+	public PartitionMapper substituteProperties(PartitionMapper partitionMapper,
 			Properties submittedProps, Properties parentProps) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		/*
+		<xs:complexType name="PartitionMapper">
+			<xs:sequence>
+				<xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+			</xs:sequence>
+			<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+		</xs:complexType>
+		*/
+		
+		partitionMapper.setRef(this.replaceAllProperties(partitionMapper.getRef(), submittedProps, parentProps));
+		
+        // Resolve all the properties defined for this step
+        Properties currentProps = null;
+        if (partitionMapper.getProperties() != null) {
+            currentProps = this.resolveElementProperties(partitionMapper.getProperties().getPropertyList(), submittedProps, parentProps);
+        }
+		
+		return partitionMapper;
 	}
 
 }

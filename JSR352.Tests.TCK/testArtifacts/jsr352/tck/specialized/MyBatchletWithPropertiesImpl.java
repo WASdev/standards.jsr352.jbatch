@@ -19,64 +19,81 @@ package jsr352.tck.specialized;
 import java.lang.reflect.Field;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.Batchlet;
-import javax.batch.annotation.Process;
-import javax.batch.annotation.Stop;
+import javax.batch.api.AbstractBatchlet;
+import javax.inject.Inject;
 
-@Batchlet("MyBatchletWithProperties")
-@javax.inject.Named("MyBatchletWithProperties")
-public class MyBatchletWithPropertiesImpl {
+@javax.inject.Named("myBatchletWithPropertiesImpl")
+public class MyBatchletWithPropertiesImpl extends AbstractBatchlet {
 
     private static int count = 1;
 
     public static String GOOD_EXIT_CODE = "VERY GOOD INVOCATION";
 
+    @Inject    
     @BatchProperty
     private String myProperty1;
 
+    @Inject    
     @BatchProperty
     public String myProperty2 = "This EYECATCHER should get overwritten from the job xml!!";
 
+    @Inject    
     @BatchProperty
     public String myDefaultProp1 = "Should get overwritten by default value";
     
+    @Inject    
     @BatchProperty
     public String mySubmittedProp = "This EYECATCHER should get overwritten by a submitted prop.";
     
-    @BatchProperty
-    public String mySystemProp = "This EYECATCHER should get overwritten by a system prop.";
-
+    @Inject    
     @BatchProperty
     public String batchletProp = "This EYECATCHER should get overwritten.";
     
+    @Inject    
     @BatchProperty
-    private String javaDefaultValueProp;
+    private String javaDefaultValueProp = "JAVA DEFAULT INITIALIZER"; //should go to null
     
+    @Inject    
     @BatchProperty(name="myProperty4")
     private String property4;
 
+    @Inject    
     @BatchProperty
     String myConcatProp;
     
+    @Inject    
     @BatchProperty
     String myJavaSystemProp;
     
-
-    @Process
+    @Inject    
+    @BatchProperty
+    String defaultPropName1;
+    
+    @Inject    
+    @BatchProperty
+    String defaultPropName2;
+    
+    @Override
     public String process() throws Exception {
 
         //FIXME use a submitted job parameter here instead so all tests are independent of each other.
         String propName = System.getProperty("property.junit.propName");
         String propertyValue =  this.getBatchPropertyValue(propName);
-        System.setProperty("property.junit.result", "" + propertyValue);
+        
+        if (propertyValue == null) {
+            System.clearProperty("property.junit.result");
+        } else {
+            System.setProperty("property.junit.result", "" + propertyValue);
+        }
         
         return this.getBatchPropertyValue(propName);
+    	
             
     }
 
     
-    @Stop
-    public void cancel() throws Exception {
+    @Override
+    public void stop() throws Exception {
         System.out.println("MyBatchletWithProperties.cancel() - @Cancel #" + count);
     }
 

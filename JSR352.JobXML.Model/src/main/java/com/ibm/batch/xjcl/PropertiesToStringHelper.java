@@ -30,8 +30,7 @@ public class PropertiesToStringHelper {
 		
 		StringBuffer buf = new StringBuffer(150);
 		for (Property prop : props.getPropertyList()) {
-			buf.append("name=" + prop.getName() + ",value=" + prop.getValue() + 
-					",target=" + prop.getTarget() + "\n");
+			buf.append("name=" + prop.getName() + ",value=" + prop.getValue() + "\n");
 		}
 		return buf.toString();
 	}

@@ -16,7 +16,7 @@
 */
 package jsr352.tck.chunktypes;
 
-@javax.inject.Named("WriteRecord")
+@javax.inject.Named("writeRecord")
 public class WriteRecord {
 private int count = 0;
 	

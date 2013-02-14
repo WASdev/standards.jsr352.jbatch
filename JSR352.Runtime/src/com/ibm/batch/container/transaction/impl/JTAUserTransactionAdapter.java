@@ -19,7 +19,6 @@ package com.ibm.batch.container.transaction.impl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.spi.TransactionManagerSPI;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.HeuristicMixedException;
@@ -30,12 +29,13 @@ import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import com.ibm.batch.container.exception.TransactionManagementException;
+import com.ibm.batch.container.services.TransactionManagerAdatper;
 
 /**
  * The JTA Transaction Adapter is used in a J2EE environment where a JTA tran
  * manager is available. *
  */
-public class JTAUserTransactionAdapter implements TransactionManagerSPI {
+public class JTAUserTransactionAdapter implements TransactionManagerAdatper {
 	
 	private static final String CLASSNAME = JTAUserTransactionAdapter.class.getName();
 	

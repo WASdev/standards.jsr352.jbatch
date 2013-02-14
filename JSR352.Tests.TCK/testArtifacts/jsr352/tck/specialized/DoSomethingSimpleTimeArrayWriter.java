@@ -16,21 +16,20 @@
 */
 package jsr352.tck.specialized;
 
-import java.util.ArrayList;
+import java.io.Externalizable;
+import java.util.List;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.Close;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.ItemWriter;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.WriteItems;
+import javax.batch.api.AbstractItemWriter;
+import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ArrayIndexCheckpointData;
 import jsr352.tck.chunktypes.ReadRecord;
+import jsr352.tck.reusable.MyPersistentRestartUserData;
 
-@ItemWriter("DoSomethingSimpleTimeArrayWriter")
-@javax.inject.Named("DoSomethingSimpleTimeArrayWriter")
-public class DoSomethingSimpleTimeArrayWriter {
+@javax.inject.Named("doSomethingSimpleTimeArrayWriter")
+public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRecord> {
 
 	private int[] writerDataArray;
 	//private int[] checkArray;
@@ -38,21 +37,37 @@ public class DoSomethingSimpleTimeArrayWriter {
 	private int chkArraySize;
 	int chunkWriteIteration = 0;
 	
-	@BatchProperty(name="app.arraysize")
+    @Inject    
+    @BatchProperty(name="app.arraysize")
     String appArraySizeString;
 	
-	@BatchProperty(name="app.sleeptime")
+    @Inject    
+    @BatchProperty(name="app.sleeptime")
     String sleeptimeString;
 	
-	@BatchProperty(name="app.timeinterval")
+    @Inject    
+    @BatchProperty(name="app.timeinterval")
     String timeintervalString;
+	
+	     @Inject 
+	 private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null;
 	
 	int arraysize;
 	long currwritetime;
 	
-	@Open
-	public void openWriter(ArrayIndexCheckpointData checkpointData) throws Exception {
+	@Override
+	public void open(Externalizable cpd) throws Exception {
 		System.out.println("openWriter");
+		
+	    MyPersistentRestartUserData myData = null;
+        if ((myData = stepCtx.getPersistentUserData()) != null) {        	
+        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
+        	System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+        } else {        
+        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
+        }
+		
+		ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
 		
 		arraysize = Integer.parseInt(appArraySizeString);
 
@@ -77,16 +92,16 @@ public class DoSomethingSimpleTimeArrayWriter {
 	}
 	
 	
-	@Close
-	public void closeWriter() throws Exception {
+	@Override
+	public void close() throws Exception {
 		//System.out.println("closeWriter - writerDataArray:\n");
 		for (int i = 0; i < arraysize; i++){
 			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
 	}
 	
-	@WriteItems
-	public void writeMyData(ArrayList<ReadRecord> myData) throws Exception {
+	@Override
+	public void writeItems(List<ReadRecord> myData) throws Exception {
 		
 		System.out.println("writeMyData receives chunk size=" + myData.size());
 		int i;
@@ -123,11 +138,18 @@ public class DoSomethingSimpleTimeArrayWriter {
 		//if (checkArray[chunkWriteIteration] == (chunkWriteIteration+1)*chunksize ) {
 	}
 	
-	@CheckpointInfo
-	public ArrayIndexCheckpointData getCPD() throws Exception {
+	@Override
+	public ArrayIndexCheckpointData checkpointInfo() throws Exception {
 			ArrayIndexCheckpointData _chkptData = new ArrayIndexCheckpointData();
 			_chkptData.setCurrentIndex(idx);
 		return _chkptData;
 	}
+	
+	   private class MyTransient {
+	        int data = 0;
+	        MyTransient(int x) {
+	            data = x;
+	        }   
+	    }
 }
 

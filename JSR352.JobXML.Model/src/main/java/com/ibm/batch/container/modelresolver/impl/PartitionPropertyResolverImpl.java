@@ -26,40 +26,43 @@ public class PartitionPropertyResolverImpl extends AbstractPropertyResolver<Part
 
 
 
-    @Override
+    public PartitionPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public Partition substituteProperties(final Partition partition, final Properties submittedProps, final Properties parentProps) {
     	/**
 			<xs:complexType name="Partition">
 				<xs:sequence>
-				    <xs:element name="partitionMapper" type="jsl:PartitionMapper" minOccurs="0" maxOccurs="1" />
-				    <xs:element name="partitionPlan" type="jsl:PartitionPlan" minOccurs="0" maxOccurs="1" />
+				    <xs:element name="mapper" type="jsl:PartitionMapper" minOccurs="0" maxOccurs="1" />
+				    <xs:element name="plan" type="jsl:PartitionPlan" minOccurs="0" maxOccurs="1" />
 					<xs:element name="collector" type="jsl:Collector" minOccurs="0" maxOccurs="1"/>
 					<xs:element name="analyzer" type="jsl:Analyzer" minOccurs="0" maxOccurs="1"/>
-					<xs:element name="partitionReducer " type="jsl:PartitionReducer" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="reducer " type="jsl:PartitionReducer" minOccurs="0" maxOccurs="1"/>
 				</xs:sequence>
 			</xs:complexType>
     	 */
     	
         // Resolve all the properties defined for a partition
-    	//FIXME applyToPartition attribute needs to be added
-        if (partition.getPartitionMapper() != null) {
-        	PropertyResolverFactory.createPartitionMapperPropertyResolver().substituteProperties(partition.getPartitionMapper(), submittedProps, null);
+        if (partition.getMapper() != null) {
+        	PropertyResolverFactory.createPartitionMapperPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getMapper(), submittedProps, null);
         }
     	
-        if (partition.getPartitionMapper() != null) {
-        	PropertyResolverFactory.createPartitionPlanPropertyResolver().substituteProperties(partition.getPartitionPlan(), submittedProps, null);
+        if (partition.getPlan() != null) {
+        	PropertyResolverFactory.createPartitionPlanPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getPlan(), submittedProps, null);
         }
         
         if (partition.getCollector() != null) {
-        	PropertyResolverFactory.createCollectorPropertyResolver().substituteProperties(partition.getCollector(), submittedProps, null);
+        	PropertyResolverFactory.createCollectorPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getCollector(), submittedProps, null);
         }
         
         if (partition.getAnalyzer() != null) {
-        	PropertyResolverFactory.createAnalyzerPropertyResolver().substituteProperties(partition.getAnalyzer(), submittedProps, null);
+        	PropertyResolverFactory.createAnalyzerPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getAnalyzer(), submittedProps, null);
         }
         
-        if (partition.getPartitionReducer() != null) {
-        	PropertyResolverFactory.createPartitionReducerPropertyResolver().substituteProperties(partition.getPartitionReducer(), submittedProps, null);
+        if (partition.getReducer() != null) {
+        	PropertyResolverFactory.createPartitionReducerPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getReducer(), submittedProps, null);
         }
         
         return partition;

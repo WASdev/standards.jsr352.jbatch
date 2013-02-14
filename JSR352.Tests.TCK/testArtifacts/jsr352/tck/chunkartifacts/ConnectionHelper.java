@@ -37,7 +37,13 @@ public class ConnectionHelper {
 
 	public static final String SELECT_INVENTORY = "select itemID, quantity from inventory where itemID = ?";
 
-	public static final String DELETE_INVENTORY = "delete from Inventory where id = ?";
+	public static final String DELETE_INVENTORY = "delete from Inventory where itemID = ?";
+	
+	public static final String DELETE_ALL_ORDERS = "delete from Orders where orderID > 0";
+	
+	public static final String INSERT_ORDER = "insert into Orders values(DEFAULT, ?, ?)";
+	
+	public static final String COUNT_ORDERS = "select COUNT(*) AS rowcount from Orders";
 	
 	/*
 	 * Connection where autoCommit defaults to true unless we are in a global tran where it gets ignored

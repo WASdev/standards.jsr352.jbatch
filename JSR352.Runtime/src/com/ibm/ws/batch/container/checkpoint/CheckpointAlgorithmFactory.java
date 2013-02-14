@@ -16,47 +16,39 @@
 */
 package com.ibm.ws.batch.container.checkpoint;
 
-import java.util.List;
-
 import jsr352.batch.jsl.Chunk;
-import jsr352.batch.jsl.Property;
 import jsr352.batch.jsl.Step;
 
 import com.ibm.batch.container.artifact.proxy.CheckpointAlgorithmProxy;
+import com.ibm.batch.container.artifact.proxy.InjectionReferences;
 import com.ibm.batch.container.artifact.proxy.ProxyFactory;
 import com.ibm.batch.container.validation.ArtifactValidationException;
 
 public class CheckpointAlgorithmFactory {
 
-	public static CheckpointAlgorithmProxy getCheckpointAlgorithmProxy (Step step) throws ArtifactValidationException{
+	public static CheckpointAlgorithmProxy getCheckpointAlgorithmProxy (Step step, InjectionReferences injectionReferences) throws ArtifactValidationException{
 		Chunk chunk = step.getChunk();
 		CheckpointAlgorithmProxy proxy = null;
 		String checkpointType = chunk.getCheckpointPolicy();
 
-		//TODO - is the checkpoint properties same as chunk properties ?
-		List<Property> propList = (chunk.getProperties() == null) ? null : chunk.getProperties().getPropertyList();
-
-		final String ItemCheckpointPolicyClassName = ItemCheckpointAlgorithm.class.getName();
-		final String TimeCheckpointPolicyClassName = TimeCheckpointAlgorithm.class.getName();
 
 		if (checkpointType.equals("item")) {
 
-			proxy = new CheckpointAlgorithmProxy( new ItemCheckpointAlgorithm(), propList);
+			proxy = new CheckpointAlgorithmProxy( new ItemCheckpointAlgorithm());
 
 		}else if (checkpointType.equalsIgnoreCase("time")) {
 
-			proxy = new CheckpointAlgorithmProxy(new TimeCheckpointAlgorithm(), propList);
+			proxy = new CheckpointAlgorithmProxy(new TimeCheckpointAlgorithm());
 
 		}else if (checkpointType.equalsIgnoreCase("custom")) {
 
 			//TODO - chunk need checkpoint-algorithm element and properties
 			//String customCheckpointRef = "customCheckpointRef-TOBECHANGED";
-			List<Property> custompropList = (chunk.getCheckpointAlgorithm().getProperties() == null) ? null : chunk.getCheckpointAlgorithm().getProperties().getPropertyList();
 			if (chunk.getCheckpointAlgorithm().getRef() == null){
-				proxy = new CheckpointAlgorithmProxy( new ItemTimeCheckpointAlgorithm(), custompropList);
+				proxy = new CheckpointAlgorithmProxy( new ItemTimeCheckpointAlgorithm());
 			}
 			else {
-				proxy = ProxyFactory.createCheckpointAlgorithmProxy(chunk.getCheckpointAlgorithm().getRef(), custompropList);
+				proxy = ProxyFactory.createCheckpointAlgorithmProxy(chunk.getCheckpointAlgorithm().getRef(), injectionReferences);
 			}
 		}	
 		return proxy;

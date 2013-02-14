@@ -13,75 +13,47 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.AfterProcess;
-import javax.batch.annotation.BeforeProcess;
-import javax.batch.annotation.OnProcessError;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.ItemProcessListener;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class ItemProcessListenerProxy extends AbstractProxy {
+public class ItemProcessListenerProxy extends AbstractProxy<ItemProcessListener> implements ItemProcessListener {
 
-    private Method beforeProcessMethod = null;
-    private Method afterProcessMethod = null;
-    private Method onProcessorErrorMethod = null;
+    ItemProcessListenerProxy(ItemProcessListener delegate) {
+        super(delegate);
 
-    ItemProcessListenerProxy(Object delegate, List<Property> props) {
-        super(delegate, props);
+    }
 
-        // find annotations
-        for (Method method : delegate.getClass().getDeclaredMethods()) {
-            Annotation beforeProcess = method.getAnnotation(BeforeProcess.class);
-            if (beforeProcess != null) {
-                beforeProcessMethod = method;
-            }
-            Annotation afterProcess = method.getAnnotation(AfterProcess.class);
-            if (afterProcess != null) {
-                afterProcessMethod = method;
-            }
+    @Override
+    public void afterProcess(Object item, Object result) {
+        try {
+            this.delegate.afterProcess(item, result);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+        
 
-            Annotation onProcessorError = method.getAnnotation(OnProcessError.class);
-            if (onProcessorError != null) {
-                onProcessorErrorMethod = method;
-            }
+    }
+
+    @Override
+    public void beforeProcess(Object item) {
+        try {
+            this.delegate.beforeProcess(item);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void beforeProcess() {
-        if (beforeProcessMethod != null) {
-            try {
-                beforeProcessMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+    @Override
+    public void onProcessError(Object item, Exception ex) {
+        try {
+            this.delegate.onProcessError(item, ex);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void onProcessorError() {
-        if (onProcessorErrorMethod != null) {
-            try {
-                onProcessorErrorMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
-
-    public void afterProcess() {
-        if (afterProcessMethod != null) {
-            try {
-                afterProcessMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
 }

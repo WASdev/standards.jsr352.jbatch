@@ -24,7 +24,11 @@ public class CheckpointAlgorithmPropertyResolverImpl extends AbstractPropertyRes
 
 
 
-    @Override
+    public CheckpointAlgorithmPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public CheckpointAlgorithm substituteProperties(final CheckpointAlgorithm checkpointalgorithm, final Properties submittedProps, final Properties parentProps) {
     	
     	//resolve all the properties used in attributes and update the JAXB model

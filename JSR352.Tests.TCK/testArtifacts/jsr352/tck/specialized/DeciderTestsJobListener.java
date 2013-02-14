@@ -16,24 +16,22 @@
 */
 package jsr352.tck.specialized;
 
-import javax.batch.annotation.AfterJob;
-import javax.batch.annotation.BatchContext;
-import javax.batch.annotation.JobListener;
+import javax.batch.api.AbstractJobListener;
 import javax.batch.runtime.context.JobContext;
+import javax.inject.Inject;
 
 import jsr352.tck.common.StatusConstants;
 
-@JobListener
 @javax.inject.Named
-public class DeciderTestsJobListener implements StatusConstants {
+public class DeciderTestsJobListener extends AbstractJobListener implements StatusConstants {
 
 	public static final String SUCCESS = "SUCCESS";
 	
-    @BatchContext
+    @Inject
     JobContext<Integer> jobCtx;
 
-	@AfterJob
-	public void postJob() {
+	@Override
+	public void afterJob() {
 		Integer count = jobCtx.getTransientUserData();
 		if (!count.equals(new Integer(2))) {
 			jobCtx.setExitStatus(UNEXPECTED);

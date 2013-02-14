@@ -23,6 +23,15 @@ public class DatabaseConfigurationBean {
 	protected String dbUser = "";
 	protected String dbPassword = "";
 	protected String jdbcUrl = "";
+	protected String schema = "";
+	
+	public String getSchema() {
+		return this.schema;
+	}
+	
+	public void setSchema(String schema) {
+		this.schema = schema;
+	}
 	
 	public String getJndiName() {
 		return this.jndiName;

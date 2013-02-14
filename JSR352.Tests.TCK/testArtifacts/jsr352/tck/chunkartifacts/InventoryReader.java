@@ -16,20 +16,17 @@
  */
 package jsr352.tck.chunkartifacts;
 
+import java.io.Externalizable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchContext;
-import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.ItemReader;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.ReadItem;
+import javax.batch.api.AbstractItemReader;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -37,9 +34,8 @@ import javax.sql.DataSource;
 import jsr352.tck.chunktypes.InventoryCheckpointData;
 import jsr352.tck.chunktypes.InventoryRecord;
 
-@ItemReader("InventoryReader")
-@javax.inject.Named("InventoryReader")
-public class InventoryReader {
+@javax.inject.Named("inventoryReader")
+public class InventoryReader extends AbstractItemReader<InventoryRecord> {
 
 	private static final String CLASSNAME = InventoryReader.class.getName();
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
@@ -47,58 +43,36 @@ public class InventoryReader {
 
 	protected DataSource dataSource = null;
 	
-    @BatchContext
+    @Inject
     JobContext<?> jobCtx;
 	
-    @BatchContext
+    @Inject
     StepContext<?,?> stepCtx;
     
-	@BatchProperty(name="forced.fail.count")
-	String forcedFailCountProp;
-	
-	@BatchProperty(name="dummy.delay.seconds")
-	String dummyDelayProp;
-	
-	@BatchProperty(name="auto.commit")
-	String autoCommitProp;
-
-	boolean autoCommit = true;
-	
-	int forcedFailCount, dummyDelay, expectedReaderChkp = -1;
 
 	int readerIndex = 0; //the number of items that have already been read
 	InventoryCheckpointData inventoryCheckpoint = new InventoryCheckpointData();
 	
 	
-	@Open
-	public void openMe(InventoryCheckpointData cpd) throws NamingException {
+	public void open(Externalizable cpd) throws NamingException {
 
-		forcedFailCount = Integer.parseInt(forcedFailCountProp);
-		dummyDelay = Integer.parseInt(dummyDelayProp);
-		autoCommit = Boolean.parseBoolean(autoCommitProp);
+	    InventoryCheckpointData checkpointData = (InventoryCheckpointData)cpd;
+	    
+
 		
 		InitialContext ctx = new InitialContext();
 		dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
 		
 		if (cpd != null) {
-			this.readerIndex = cpd.getInventoryCount();
+			this.readerIndex = checkpointData.getInventoryCount();
 			
 			stepCtx.getProperties().setProperty("init.checkpoint", this.readerIndex + "");
 		} 	
 
 	}
 
-	@ReadItem
 	public InventoryRecord readItem() throws Exception {
-		if (forcedFailCount != 0 && readerIndex >= forcedFailCount) {
-			//after reading up to the forced fail number force a dummy delay
-			if (dummyDelay > 0) {
-				Thread.sleep(dummyDelay); //sleep for dummyDelay seconds
-			} else {
-				throw new Exception("Fail on purpose in InventoryRecord.readItem()");	
-			}
-			
-		} 
+
 
 		Connection connection = null;
 		PreparedStatement statement = null;
@@ -121,10 +95,15 @@ public class InventoryReader {
 				return null;
 			}
 			
+			//decrement the quantity and update the table
+			
+			InventoryRecord ir = new InventoryRecord(1, --quantity);
+			decrementInventory(connection, ir);
+			
 			readerIndex++;			
 			this.inventoryCheckpoint.setInventoryCount(readerIndex);
 
-			return new InventoryRecord(1, quantity);
+			return new InventoryRecord(1, 1); //Every order only orders 1 item
 		} catch (SQLException e) {
 			throw e;
 		} finally {
@@ -133,13 +112,30 @@ public class InventoryReader {
 
 	}
 
-	@CheckpointInfo
-	public InventoryCheckpointData getInventoryCheckpoint() {
-		logger.finer("InventoryReader.getInventoryCheckpoint() index = " +this.inventoryCheckpoint.getInventoryCount());
-		
-		return this.inventoryCheckpoint;
-		 
-	}
+
+    @Override
+    public Externalizable checkpointInfo() throws Exception {
+        logger.finer("InventoryReader.getInventoryCheckpoint() index = " +this.inventoryCheckpoint.getInventoryCount());
+        
+        return this.inventoryCheckpoint;
+    }
+
+
+    
+
+    private void decrementInventory(Connection connection, InventoryRecord record) throws SQLException {
+        
+        int itemID = record.getItemID();
+        int quantity = record.getQuantity();
+
+        PreparedStatement statement = null;
+
+        statement = connection.prepareStatement(ConnectionHelper.UPDATE_INVENTORY);
+        statement.setInt(2, itemID);
+        statement.setInt(1, quantity);
+        int rs = statement.executeUpdate();            
+        
+    }
 
 
 

@@ -19,31 +19,36 @@ package jsr352.tck.specialized;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchContext;
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.Batchlet;
-import javax.batch.annotation.Process;
-import javax.batch.annotation.Stop;
+import javax.batch.api.AbstractBatchlet;
 import javax.batch.runtime.context.JobContext;
+import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
+import jsr352.tck.reusable.StopOnBullitenBoardTestData;
 
-@Batchlet("MyLongRunningBatchlet")
-@javax.inject.Named("MyLongRunningBatchlet")
-public class MyLongRunningBatchletImpl {
+@javax.inject.Named("myLongRunningBatchlet")
+public class MyLongRunningBatchletImpl extends AbstractBatchlet {
 
-    @BatchContext
+    @Inject
     JobContext<?> jobCtx;
 
+    @Inject    
     @BatchProperty(name="run.indefinitely")
     private String runIndefinitelyString = null;
     private boolean runIndefinitely = false;
 
+    @Inject    
     @BatchProperty(name="throw.exc.on.number.3")
     private String throwExcOnThreeString = null;
     private boolean throwExcOnThree = false;
     
+    @Inject    
     @BatchProperty(name="run.time")
     private String runTimeString;
+    
+	     @Inject 
+	 private StepContext<MyTransient, StopOnBullitenBoardTestData> stepCtx = null; 
 
     private final static String sourceClass = MyLongRunningBatchletImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
@@ -52,26 +57,43 @@ public class MyLongRunningBatchletImpl {
     // Not 100% sure.
     private volatile boolean stopped = false;
 
-    private void begin() throws Exception {
-        logger.fine("MyLongRunningBatchletImpl.begin()");
+	private void begin() throws Exception {
+		logger.fine("MyLongRunningBatchletImpl.begin()");
+		
+		System.out.println("AJM: in myLongRunning?");
 
-        if ("true".equalsIgnoreCase(runIndefinitelyString)) {
-            runIndefinitely = true;
-        }		
+		StopOnBullitenBoardTestData testData = null;
+		if ((testData = stepCtx.getPersistentUserData()) != null) {
+			this.runIndefinitely = testData.getRunInDef();
+			this.throwExcOnThree = testData.getThrowOn3();
+		} else {
 
-        if ("true".equalsIgnoreCase(throwExcOnThreeString)) {
-            throwExcOnThree = true;
-        }               
-    }
+		    testData = new StopOnBullitenBoardTestData();
+		    
+			if ("true".equalsIgnoreCase(runIndefinitelyString)) {
+				runIndefinitely = true;
+				// set to false for next restart
+				testData.setRunInDef(false);
+			}
 
-    @Process
+			if ("true".equalsIgnoreCase(throwExcOnThreeString)) {
+				throwExcOnThree = true;
+				// set to false for next restart
+				testData.setThrowOn3(false);
+			}
+
+			stepCtx.setPersistentUserData(testData);
+		}
+	}
+
+    @Override
     public String process() throws Exception {
         logger.fine("MyLongRunningBatchLetImpl.process(); current ExitStatus = " + jobCtx.getExitStatus());
 
         this.begin();
 
         int i = 0;
-        int numTimesToRun = 20;
+        int numTimesToRun = 500;
         boolean maxTimesReached = false;
 
         while (!stopped) {
@@ -105,10 +127,17 @@ public class MyLongRunningBatchletImpl {
         }
     }
 
-    @Stop
-    public void cancel() throws Exception {
+    @Override
+    public void stop() throws Exception {
         logger.fine("MyLongRunningBatchLetImpl.cancel()");
         this.stopped = true;
     }
+    
+	   private class MyTransient {
+	        int data = 0;
+	        MyTransient(int x) {
+	            data = x;
+	        }   
+	    }
 
 }

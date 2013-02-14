@@ -16,33 +16,10 @@
  */
 package jsr352.tck.specialized;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Properties;
-
 import jsr352.tck.common.AbstractPartitionPlan;
 
-@javax.inject.Named("MyPartitionPlan")
+
+@javax.inject.Named("myPartitionPlan")
 public class MyPartitionPlan extends AbstractPartitionPlan {
-
-	MyPartitionPlan(int partitionCount, Properties[] partitionProperties) {
-		this.setPartitionCount(partitionCount);
-		this.setPartitionProperties(partitionProperties);
-	}
-
-	@Override
-	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-		// TODO Auto-generated method stub
-
-	}
-
 
 }

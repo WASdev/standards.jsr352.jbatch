@@ -134,17 +134,14 @@ public class XJCLMerger {
 		Chunk merge = (new ObjectFactory()).createChunk();
 		
 		//merge chunks - 8 attributes
-		merge.setBufferSize( (childChunk.getBufferSize() == null
-				? parentChunk.getBufferSize()
-				: childChunk.getBufferSize()));
 		//FIXME: getCheckpointPolicy will never return null (defaults to "item"), can't check this
 //		merge.setCheckpointPolicy( (childChunk.getCheckpointPolicy() == null
 //				? parentChunk.getCheckpointPolicy()
 //				: childChunk.getCheckpointPolicy()));
-		//FIXME: getCommitInterval will never return null (defaults to 10), can't check this
-//		merge.setCommitInterval( (childChunk.getCommitInterval() == null
-//				? parentChunk.getCommitInterval()
-//				: childChunk.getCommitInterval()));
+		//FIXME: getItemCount will never return null (defaults to 10), can't check this
+//		merge.setCommitInterval( (childChunk.getItemCount() == null
+//				? parentChunk.getItemCount()
+//				: childChunk.getItemCount()));
 		merge.setProcessor( (childChunk.getProcessor() == null
 				? parentChunk.getProcessor()
 				: childChunk.getProcessor()));
@@ -163,7 +160,6 @@ public class XJCLMerger {
 		
 		
 		//merge chunks -  5 elements
-		merge.setProperties(mergeProperties(parentChunk.getProperties(), childChunk.getProperties()));
 		merge.setCheckpointAlgorithm( (childChunk.getCheckpointAlgorithm() == null
 				? parentChunk.getCheckpointAlgorithm()
 				: childChunk.getCheckpointAlgorithm()));

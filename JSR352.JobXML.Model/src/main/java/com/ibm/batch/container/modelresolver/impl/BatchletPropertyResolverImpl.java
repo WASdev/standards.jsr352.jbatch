@@ -24,7 +24,11 @@ import jsr352.batch.jsl.Batchlet;
 public class BatchletPropertyResolverImpl extends AbstractPropertyResolver<Batchlet> {
 
 
-    @Override
+    public BatchletPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public Batchlet substituteProperties(final Batchlet batchlet, final Properties submittedProps, final Properties parentProps) {
 
         //resolve all the properties used in attributes and update the JAXB model

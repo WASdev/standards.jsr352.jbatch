@@ -23,6 +23,7 @@ import jsr352.batch.jsl.Batchlet;
 import jsr352.batch.jsl.Chunk;
 import jsr352.batch.jsl.Decision;
 import jsr352.batch.jsl.Flow;
+import jsr352.batch.jsl.Partition;
 import jsr352.batch.jsl.Split;
 import jsr352.batch.jsl.Step;
 
@@ -44,20 +45,27 @@ public class ExecutionElementControllerFactory {
         if (executionElement instanceof Step) {
             Step step = (Step)executionElement;
             
-            if (step.getPartition() != null) {
-            	
-            	if (step.getPartition().getPartitionPlan() != null) {
-            		String instances = step.getPartition().getPartitionPlan().getInstances();
-            		
-            		if (instances != null && !!!instances.equals("1")) {
-            	
-            			if(logger.isLoggable(Level.FINER)) {  
-            				logger.logp (Level.FINER, CLASSNAME, methodName, "Found partitioned step", step);
-            			}            		
-            			return new PartitionedStepControllerImpl(jobExecutionImpl, step);
-            		}
-            		
-            	}
+            Partition partition = step.getPartition();
+            
+            if (partition != null) {
+                
+                if (partition.getMapper() != null ) {
+                    if (logger.isLoggable(Level.FINER)) {
+                        logger.logp(Level.FINER, CLASSNAME, methodName, "Found partitioned step with mapper" , step);
+                    }
+
+                    return new PartitionedStepControllerImpl(jobExecutionImpl, step);
+                }
+                
+                if (partition.getPlan() != null) {
+                    if (partition.getPlan().getPartitions() != null) {
+                        if (logger.isLoggable(Level.FINER)) {
+                            logger.logp(Level.FINER, CLASSNAME, methodName, "Found partitioned step with plan", step);
+                        }
+
+                        return new PartitionedStepControllerImpl(jobExecutionImpl, step);
+                    }
+                }
             	
             }
             

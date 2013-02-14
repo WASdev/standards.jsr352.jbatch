@@ -26,7 +26,11 @@ import jsr352.batch.jsl.Step;
 
 public class StepPropertyResolverImpl extends AbstractPropertyResolver<Step> {
 
-    @Override
+    public StepPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public Step substituteProperties(final Step step, final Properties submittedProps, final Properties parentProps) {
 
         // resolve all the properties used in attributes and update the JAXB
@@ -44,17 +48,22 @@ public class StepPropertyResolverImpl extends AbstractPropertyResolver<Step> {
         if (step.getProperties() != null) {
             currentProps = this.resolveElementProperties(step.getProperties().getPropertyList(), submittedProps, parentProps);
         }
+        
+        // Resolve partition
+        if (step.getPartition() != null) {
+            PropertyResolverFactory.createPartitionPropertyResolver(this.isPartitionedStep).substituteProperties(step.getPartition(), submittedProps, currentProps);
+        }
 
         // Resolve Listener properties, this is list of listeners List<Listener>
         if (step.getListeners() != null) {
             for (final Listener listener : step.getListeners().getListenerList()) {
-                PropertyResolverFactory.createListenerPropertyResolver().substituteProperties(listener, submittedProps, currentProps);
+                PropertyResolverFactory.createListenerPropertyResolver(this.isPartitionedStep).substituteProperties(listener, submittedProps, currentProps);
             }
         }
         
         if (step.getControlElements() != null) {
             for (final ControlElement controlElement : step.getControlElements()) {
-                PropertyResolverFactory.createControlElementPropertyResolver().substituteProperties(controlElement, submittedProps, currentProps);
+                PropertyResolverFactory.createControlElementPropertyResolver(this.isPartitionedStep).substituteProperties(controlElement, submittedProps, currentProps);
             }
         }
         
@@ -64,12 +73,12 @@ public class StepPropertyResolverImpl extends AbstractPropertyResolver<Step> {
 
         // Resolve Batchlet properties
         if (step.getBatchlet() != null) {
-            PropertyResolverFactory.createBatchletPropertyResolver().substituteProperties(step.getBatchlet(), submittedProps, currentProps);
+            PropertyResolverFactory.createBatchletPropertyResolver(this.isPartitionedStep).substituteProperties(step.getBatchlet(), submittedProps, currentProps);
         }
 
         // Resolve Chunk properties
         if (step.getChunk() != null) {
-            PropertyResolverFactory.createChunkPropertyResolver().substituteProperties(step.getChunk(), submittedProps, currentProps);
+            PropertyResolverFactory.createChunkPropertyResolver(this.isPartitionedStep).substituteProperties(step.getChunk(), submittedProps, currentProps);
         }
 
         return step;

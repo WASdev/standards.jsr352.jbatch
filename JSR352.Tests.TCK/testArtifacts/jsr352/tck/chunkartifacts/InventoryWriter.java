@@ -16,72 +16,88 @@
  */
 package jsr352.tck.chunkartifacts;
 
+import java.io.Externalizable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.ItemWriter;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.WriteItems;
+import javax.batch.api.AbstractItemWriter;
+import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import jsr352.tck.chunktypes.InventoryCheckpointData;
 import jsr352.tck.chunktypes.InventoryRecord;
 
-@ItemWriter("InventoryWriter")
-@javax.inject.Named("InventoryWriter")
-public class InventoryWriter {
-	
+@javax.inject.Named("inventoryWriter")
+public class InventoryWriter extends AbstractItemWriter<InventoryRecord> {
 
-	protected DataSource dataSource = null;
+    protected DataSource dataSource = null;
 
-	@BatchProperty(name="auto.commit")
-	String autoCommitProp;
+    @Inject
+    @BatchProperty(name = "forced.fail.count")
+    String forcedFailCountProp;
 
-	boolean autoCommit = true;
-	
-	@Open
-	public void openMe(InventoryCheckpointData cpd) throws NamingException {
+    @Inject
+    @BatchProperty(name = "dummy.delay.seconds")
+    String dummyDelayProp;
 
-		InitialContext ctx = new InitialContext();
-		dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
+    int forcedFailCount, dummyDelay = -1;
 
-		autoCommit = Boolean.parseBoolean(autoCommitProp);
-	}
-	
-	
-	@WriteItems
-	public void writeItem(List<InventoryRecord> records) throws SQLException {
-		int itemID = -1;
-		int quantity = -1;
-		
-		for (InventoryRecord record : records) {
-			itemID = record.getItemID();
-			quantity = record.getQuantity();
-		}
-		
-		Connection connection = null;	
-		PreparedStatement statement = null;
-		
-		try {
-			connection = ConnectionHelper.getConnection(dataSource);
+    int writerIndex = 0; // the number of items that have already been written
 
-			statement = connection.prepareStatement(ConnectionHelper.UPDATE_INVENTORY);
-			statement.setInt(2, itemID);
-			statement.setInt(1, quantity);
-			int rs = statement.executeUpdate();
+    @Override
+    public void open(Externalizable cpd) throws NamingException {
 
-			
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			ConnectionHelper.cleanupConnection(connection, null, statement);
-		}
-		
-	}
+        InitialContext ctx = new InitialContext();
+        dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
+
+        forcedFailCount = Integer.parseInt(forcedFailCountProp);
+        dummyDelay = Integer.parseInt(dummyDelayProp);
+
+    }
+
+    @Override
+    public void writeItems(List<InventoryRecord> records) throws Exception {
+
+
+        int itemID = -1;
+        int quantity = -1;
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+
+        try {
+            connection = ConnectionHelper.getConnection(dataSource);
+
+            for (InventoryRecord record : records) {
+                itemID = record.getItemID();
+                quantity = record.getQuantity();
+
+                statement = connection.prepareStatement(ConnectionHelper.INSERT_ORDER);
+                statement.setInt(1, itemID);
+                statement.setInt(2, quantity);
+                int rs = statement.executeUpdate();
+
+                writerIndex++;
+                
+                if (forcedFailCount != 0 && writerIndex >= forcedFailCount) {
+                    // after writing up to the forced fail number force a dummy delay
+                    if (dummyDelay > 0) {
+                        Thread.sleep(dummyDelay); // sleep for dummyDelay seconds to
+                                                  // force a tran timeout
+                    } else {
+                        throw new Exception("Fail on purpose in InventoryRecord.readItem()");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            ConnectionHelper.cleanupConnection(connection, null, statement);
+        }
+    }
 
 }

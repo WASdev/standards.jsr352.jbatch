@@ -19,8 +19,11 @@ package com.ibm.batch.container.impl;
 import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.batch.operations.JobOperator.BatchStatus;
 
 import jsr352.batch.jsl.Flow;
 import jsr352.batch.jsl.JSLJob;
@@ -28,18 +31,13 @@ import jsr352.batch.jsl.Split;
 
 import com.ibm.batch.container.AbortedBeforeStartException;
 import com.ibm.batch.container.IExecutionElementController;
-import com.ibm.batch.container.artifact.proxy.PartitionAnalyzerProxy;
-import com.ibm.batch.container.artifact.proxy.SplitListenerProxy;
-import com.ibm.batch.container.context.impl.FlowContextImpl;
-import com.ibm.batch.container.context.impl.SplitContextImpl;
 import com.ibm.batch.container.context.impl.StepContextImpl;
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
-import com.ibm.batch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.batch.container.jobinstance.ParallelJobExecution;
+import com.ibm.batch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.batch.container.services.ServicesManager;
 import com.ibm.batch.container.services.ServicesManager.ServiceType;
-import com.ibm.batch.container.util.ExecutionStatus;
-import com.ibm.batch.container.util.ExecutionStatus.BatchStatus;
+import com.ibm.batch.container.util.PartitionDataWrapper;
 
 public class SplitControllerImpl implements IExecutionElementController {
 
@@ -47,7 +45,6 @@ public class SplitControllerImpl implements IExecutionElementController {
     private final static Logger logger = Logger.getLogger(sourceClass);
 	
 	private final RuntimeJobExecutionImpl jobExecutionImpl;
-    protected SplitContextImpl currentSplitContext;
     
 	private volatile List<ParallelJobExecution> parallelJobExecs;
 
@@ -56,14 +53,10 @@ public class SplitControllerImpl implements IExecutionElementController {
     
 	final List<JSLJob> subJobs = new ArrayList<JSLJob>();
 	
-	private PartitionAnalyzerProxy analyzerProxy;
-	private List<SplitListenerProxy> splitListeners = null;
-	
     protected Split split;
 
     public SplitControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Split split) {
         this.jobExecutionImpl = jobExecutionImpl;
-        this.currentSplitContext = new SplitContextImpl(split.getId());
         this.split = split;
         
 		servicesManager = ServicesManager.getInstance();
@@ -73,7 +66,6 @@ public class SplitControllerImpl implements IExecutionElementController {
 
     @Override
     public void stop() { 
-		currentSplitContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.STOPPING));
 
 		// It's possible we may try to stop a split before any
 		// sub steps have been started.
@@ -102,44 +94,19 @@ public class SplitControllerImpl implements IExecutionElementController {
             logger.entering(sourceClass, sourceMethod);
         }
         
-        currentSplitContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.STARTING));
-
         List<Flow> flows = this.split.getFlow();
         
 		// Build all sub jobs from flows in split
 		synchronized (subJobs) {
 			
-			//check if we've already issued a stop
-	        if (currentSplitContext.getBatchStatus().equals(ExecutionStatus.getStringValue(BatchStatus.STOPPING))){
-	            this.currentSplitContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.STOPPED));
-	            
-	            return currentSplitContext.getExitStatus();
-	        }
-		
-			for (int instance = 0; instance < flows.size(); instance++) {
-				subJobs.add(ParallelJobBuilder.buildSubJob(jobExecutionImpl.getExecutionId(), this.split, flows.get(instance), null, instance));
+			for (Flow flow : flows) {
+				subJobs.add(PartitionedStepBuilder.buildSubJob(jobExecutionImpl.getExecutionId(), this.split, flow, null));
 			}
-
-			
-            //Set up flow listeners and call beforeSplit()
-    		this.splitListeners = jobExecutionImpl.getListenerFactory().getSplitListeners(split);
-
-    		for (SplitListenerProxy listenerProxy : splitListeners) {
-    			listenerProxy.setJobContext(jobExecutionImpl.getJobContext());
-    			listenerProxy.setSplitContext(this.currentSplitContext);
-    		}
-
-    		currentSplitContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.STARTED));
-    		
-    		// Call @BeforeSplit on all the split listeners
-    		for (SplitListenerProxy listenerProxy : splitListeners) {
-    			listenerProxy.beforeSplit();
-    		}
 			
 			// Then execute all subjobs in parallel
 			//FIXME Right now we don't pass any job parameters along for a split!!! I don't think this is right
 			//FIXME Each flow in a split should probably get a copy of the job params
-			parallelJobExecs = batchKernel.startParallelJobs(subJobs, null, this.analyzerProxy);
+			parallelJobExecs = batchKernel.startParallelJobs(subJobs, null, null);
 
 		}
         
@@ -154,63 +121,28 @@ public class SplitControllerImpl implements IExecutionElementController {
 		//FIXME
 		//check the batch status of each subJob after it's done to see if it stopped or failed
 		for (final ParallelJobExecution subJob : parallelJobExecs) {
-			String batchStatus = subJob.getJobExecution().getJobContext().getBatchStatus();
-			if (batchStatus.equals(ExecutionStatus.getStringValue(BatchStatus.FAILED))) {
+			BatchStatus batchStatus = subJob.getJobExecution().getJobContext().getBatchStatus();
+			if (batchStatus.equals(BatchStatus.FAILED)) {
 				if (logger.isLoggable(Level.FINE)) {
 					logger.fine("Subjob " + subJob.getJobExecution().getExecutionId() + "ended with status '" + batchStatus + "'" );
 					logger.fine("Starting logical transaction rollback.");
 				}
-				
-				this.currentSplitContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.FAILED));
 				
 				break;
-			} else if (batchStatus.equals(ExecutionStatus.getStringValue(BatchStatus.STOPPED))){
+			} else if (batchStatus.equals(BatchStatus.STOPPED)){
 				if (logger.isLoggable(Level.FINE)) {
 					logger.fine("Subjob " + subJob.getJobExecution().getExecutionId() + "ended with status '" + batchStatus + "'" );
 					logger.fine("Starting logical transaction rollback.");
 				}
-				this.currentSplitContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.STOPPED));
 				break;
 			}
-			
 		}
 		
-        
-        String curStatusString = currentSplitContext.getBatchStatus();
-        if (curStatusString == null) {
-            throw new IllegalStateException("Split BatchStatus should have been set by now");
-        }
-    	
         if (logger.isLoggable(Level.FINER)) {
             logger.exiting(sourceMethod, sourceMethod);
         }
 
-        // Transition to "COMPLETED"
-        if (currentSplitContext.getBatchStatus().equals(BatchStatus.STARTED)) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Transitioning split status to COMPLETED for split: " + split.getId());
-            }
-            this.currentSplitContext.setBatchStatus(ExecutionStatus.getStringValue(BatchStatus.COMPLETED));
-        } 
-        
-		// Call @AfterSplit on all the split listeners
-		for (SplitListenerProxy listenerProxy : splitListeners) {
-			listenerProxy.afterSplit();
-		}
-        
-        //if the split exit status hasn't been set, default it to the batch status
-        if (currentSplitContext.getExitStatus() != null) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Returning split with user-set exit status: " + currentSplitContext.getExitStatus());
-            }
-        } else {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Returning split with default exit status");
-            }
-            currentSplitContext.setExitStatus(currentSplitContext.getBatchStatus());
-        }
-
-        return currentSplitContext.getExitStatus();
+        return "SPLIT_CONTROLLER_RETURN_VALUE";
         
     }
 
@@ -218,16 +150,13 @@ public class SplitControllerImpl implements IExecutionElementController {
         throw new BatchContainerRuntimeException("Incorrect usage: step context is not in scope within a flow.");
     }
 
-    public void setSplitContext(SplitContextImpl splitContext) {
-    	this.currentSplitContext = splitContext;
+    @Override
+    public void setAnalyzerQueue(LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue) {
+        // no-op
     }
 
-    public void setFlowContext(FlowContextImpl flowContext) {
-    	throw new BatchContainerRuntimeException("Incorrect usage: flow context is not in scope within a split.");
-    }
+	public List<ParallelJobExecution> getParallelJobExecs() {
+		return parallelJobExecs;
+	}
 
-    public void setAnalyzerProxy(PartitionAnalyzerProxy analyzerProxy) {
-        this.analyzerProxy = analyzerProxy;
-    }
-    
 }

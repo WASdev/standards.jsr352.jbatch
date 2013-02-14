@@ -3,12 +3,12 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b03</version>
+        <version>1.0-b04</version>
     </parent>
     <groupId>com.ibm.batch</groupId>
     <artifactId>com.ibm.batch-runtime</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b03</version>
+    <version>1.0-b04</version>
 	<dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -19,25 +19,25 @@
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-annotation</artifactId>
-			<version>1.0-b03</version>
+			<version>1.0-b04</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
 			<artifactId>com.ibm.batch-model</artifactId>
-			<version>1.0-b03</version>
+			<version>1.0-b04</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-api</artifactId>
-			<version>1.0-b03</version>
+			<version>1.0-b04</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.batch</groupId>
 			<artifactId>com.ibm.batch-tck-spi</artifactId>
-			<version>1.0-b03</version>
+			<version>1.0-b04</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -114,6 +114,7 @@
                     </archive>
                 </configuration>
             </plugin>
+			<!--
 			 <plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -134,6 +135,7 @@
 				  </execution>
 				</executions>
 			  </plugin>
+			  -->
         </plugins>
     </build>
 </project>

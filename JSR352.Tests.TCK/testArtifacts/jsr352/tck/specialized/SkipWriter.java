@@ -16,22 +16,19 @@
 */
 package jsr352.tck.specialized;
 
-import java.util.ArrayList;
+import java.io.Externalizable;
+import java.util.List;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.Close;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.ItemWriter;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.WriteItems;
+import javax.batch.api.ItemWriter;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ArrayIndexCheckpointData;
 import jsr352.tck.chunktypes.ReadRecord;
 import jsr352.tck.reusable.MyParentException;
 
-@ItemWriter("SkipWriter")
-@javax.inject.Named("SkipWriter")
-public class SkipWriter {
+@javax.inject.Named("skipWriter")
+public class SkipWriter implements ItemWriter<ReadRecord> {
 
 	private int[] writerDataArray = new int[30];
 	//private int[] checkArray;
@@ -39,19 +36,23 @@ public class SkipWriter {
 	private int chkArraySize;
 	int chunkWriteIteration = 0;
 	
-	@BatchProperty(name="app.arraysize")
+    @Inject    
+    @BatchProperty(name="app.arraysize")
     String appArraySizeString;
 	
-	@BatchProperty(name="writerecord.fail")
+    @Inject    
+    @BatchProperty(name="writerecord.fail")
     String writeRecordFailNumberString = null;
 	
 	int arraysize;
 	int [] failnum;
 	int [] writePoints;
 	
-	@Open
-	public void openWriter(ArrayIndexCheckpointData checkpointData) throws Exception {
+	@Override
+	public void open(Externalizable cpd) throws Exception {
 		System.out.println("openWriter");
+		
+		ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
 		
 		arraysize = Integer.parseInt(appArraySizeString);
 		
@@ -97,29 +98,39 @@ public class SkipWriter {
 	}
 	
 	
-	@Close
-	public void closeWriter() throws Exception {
+	@Override
+	public void close() throws Exception {
 		//System.out.println("closeWriter - writerDataArray:\n");
 		for (int i = 0; i < arraysize; i++){
 			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
 	}
 	
-	@WriteItems
-	public void writeMyData(ArrayList<ReadRecord> myData) throws Exception {
+	@Override
+	public void writeItems(List<ReadRecord> myData) throws Exception {
 		
 		System.out.println("writeMyData receives chunk size=" + myData.size());
 		int i;
 		System.out.println("WRITE: before writing, idx = " + idx);
 		System.out.println("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
 		
-		chunkWriteIteration++;
+		if (chunkWriteIteration == 2){
+			chunkWriteIteration++;
+			throw new MyParentException("fail on purpose on write iteration = 2");
+		}
+		else if (chunkWriteIteration == 5){
+			chunkWriteIteration++;
+			throw new MyParentException("fail on purpose on write iteration = 5");
+		}
+		else if (chunkWriteIteration == 8){
+			chunkWriteIteration++;
+			throw new MyParentException("fail on purpose on write iteration = 8");
+		}
+		else {
+			chunkWriteIteration++;
+		}
 		
 		for  (i = 0; i < myData.size(); i++) {
-			if (isFailnum(i)){
-				System.out.println("WRITE: got the fail num..." + failnum);
-				throw new MyParentException("fail on purpose on idx = " + failnum);
-			}
 			
 			writerDataArray[idx] = myData.get(i).getCount();
 			idx++;
@@ -132,8 +143,8 @@ public class SkipWriter {
 		//if (checkArray[chunkWriteIteration] == (chunkWriteIteration+1)*chunksize ) {
 	}
 	
-	@CheckpointInfo
-	public ArrayIndexCheckpointData getCPD() throws Exception {
+	@Override
+	public ArrayIndexCheckpointData checkpointInfo() throws Exception {
 			ArrayIndexCheckpointData _chkptData = new ArrayIndexCheckpointData();
 			_chkptData.setCurrentIndex(idx);
 		return _chkptData;

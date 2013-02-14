@@ -16,10 +16,12 @@
  */
 package com.ibm.batch.container.util;
 
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.ibm.batch.container.artifact.proxy.PartitionAnalyzerProxy;
+import javax.batch.operations.JobOperator.BatchStatus;
+
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 import com.ibm.batch.container.impl.JobControllerImpl;
 import com.ibm.batch.container.jobinstance.RuntimeJobExecutionImpl;
@@ -40,21 +42,21 @@ public class BatchWorkUnit implements Runnable {
 	private IBatchKernelService batchKernel = null;
 	private final JobControllerImpl controller;
 
-	private PartitionAnalyzerProxy analyzerProxy;
+	private LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue;
 	private boolean notifyCallbackWhenDone;
 
 	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionImpl jobExecutionImpl) {
 		this(batchKernel, jobExecutionImpl, null, true);
 	}
 
-	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionImpl jobExecutionImpl, PartitionAnalyzerProxy analyzerProxy, boolean notifyCallbackWhenDone) {
+	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionImpl jobExecutionImpl, LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue, boolean notifyCallbackWhenDone) {
 		this.setBatchKernel(batchKernel);
 		this.setJobExecutionImpl(jobExecutionImpl);
-		this.analyzerProxy = analyzerProxy;
+		this.setAnalyzerQueue(analyzerQueue);
 		this.setNotifyCallbackWhenDone(notifyCallbackWhenDone);
 
 		controller = new JobControllerImpl(this.getJobExecutionImpl());
-		controller.setAnalyzerProxy(this.analyzerProxy);
+		controller.setAnalyzerQueue(this.analyzerQueue);
 
 	}
 
@@ -115,15 +117,9 @@ public class BatchWorkUnit implements Runnable {
 		}
 	}
 
-	public void setAnalyzerProxy(PartitionAnalyzerProxy analyzerProxy) {
-		this.analyzerProxy = analyzerProxy;
-	}
 
-	public PartitionAnalyzerProxy getAnalyzerProxy() {
-		return analyzerProxy;
-	}
 
-	private String getBatchStatus() {
+	private BatchStatus getBatchStatus() {
 		return jobExecutionImpl.getJobContext().getBatchStatus();
 	}
 
@@ -154,5 +150,13 @@ public class BatchWorkUnit implements Runnable {
 	public boolean isNotifyCallbackWhenDone() {
 		return notifyCallbackWhenDone;
 	}
+
+    public LinkedBlockingQueue<PartitionDataWrapper> getAnalyzerQueue() {
+        return analyzerQueue;
+    }
+
+    public void setAnalyzerQueue(LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue) {
+        this.analyzerQueue = analyzerQueue;
+    }
 
 }

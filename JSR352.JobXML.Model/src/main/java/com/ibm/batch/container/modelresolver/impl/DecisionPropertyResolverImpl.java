@@ -25,7 +25,11 @@ import com.ibm.batch.container.xjcl.ControlElement;
 
 public class DecisionPropertyResolverImpl extends AbstractPropertyResolver<Decision> {
 
-    public Decision substituteProperties(final Decision decision, final Properties submittedProps, final Properties parentProps) {
+    public DecisionPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	public Decision substituteProperties(final Decision decision, final Properties submittedProps, final Properties parentProps) {
 
         // resolve all the properties used in attributes and update the JAXB
         // model
@@ -40,7 +44,7 @@ public class DecisionPropertyResolverImpl extends AbstractPropertyResolver<Decis
         
         if (decision.getControlElements() != null) {
             for (final ControlElement controlElement : decision.getControlElements()) {
-                PropertyResolverFactory.createControlElementPropertyResolver().substituteProperties(controlElement, submittedProps, currentProps);
+                PropertyResolverFactory.createControlElementPropertyResolver(this.isPartitionedStep).substituteProperties(controlElement, submittedProps, currentProps);
             }
         }
         

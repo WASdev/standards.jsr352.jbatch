@@ -1,20 +1,139 @@
-<project name="jsr352.tck" default="cleanAndCompileTCK">
-	
+<project name="jsr352.tck" default="mainTckBuild" basedir="../">
+
 	<dirname property="jsr352.tck.basedir" file="${ant.file.jsr352.tck}"/>
 	<property file="${imported.basedir}/imported.properties"/>
 	<property name="workspace.home.dir" value="${jsr352.tck.basedir}/../.."/>
+
+	<!-- NOTE: Set this prior to running the task to generate the java6 signature file -->
+	<property name="java6.home" value=""/>
+
+	<!-- NOTE: Set this prior to running the task to generate the java7 signature file -->
+	<property name="java7.home" value=""/>
 	
+	<path id="build.classpath">
+		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar"/>
+		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar"/>
+		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar"/>
+		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar"/>
+		<pathelement location="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>	
+		<pathelement location="${workspace.home.dir}/JSR352.Annotations/bin"/>
+		<pathelement location="${workspace.home.dir}/JSR352.API/bin"/>
+		<pathelement location="${workspace.home.dir}/JSR352.JobXML.Model/bin"/>
+		<pathelement location="${jsr352.tck.basedir}/../bin"/>
+		<pathelement location="${jsr352.tck.basedir}/../testArtifactsBin"/>
+	</path>
+
+	<taskdef name="setup"  classname="com.sun.tdk.signaturetest.ant.ASetup"  classpath="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/sigtestdev.jar"/>
+
 	<target name="cleanTCK">
-		<delete dir="${jsr352.tck.basedir}/../testArtifactsBin"/>			
+		<delete dir="${jsr352.tck.basedir}/../testArtifactsBin"/>
+		<delete dir="${jsr352.tck.basedir}/../bin"/>
+		<delete dir="${jsr352.tck.basedir}/../tckZip"/>
+		<delete dir="${jsr352.tck.basedir}/../dist"/>
 	</target>
-	
+
 	<target name="compileTCK">
 		<mkdir dir="${jsr352.tck.basedir}/../testArtifactsBin"/>
-		<javac classpath="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar;${workspace.home.dir}/JSR352.Annotations/bin;${workspace.home.dir}/JSR352.API/bin;${workspace.home.dir}/JSR352.Processors/bin;" 
-			debug="true" debuglevel="lines,vars,source"
-			srcdir="${jsr352.tck.basedir}/../testArtifacts" destdir="${jsr352.tck.basedir}/../testArtifactsBin"/>
+		<mkdir dir="${jsr352.tck.basedir}/../bin"/>
+
+		<!-- compile test artifacts -->
+		<javac  debug="true" debuglevel="lines,vars,source" srcdir="${jsr352.tck.basedir}/../testArtifacts" destdir="${jsr352.tck.basedir}/../testArtifactsBin">
+			<classpath refid="build.classpath"/>
+		</javac>
+
+		<!-- compile tests and utils -->
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="${jsr352.tck.basedir}/../src" destdir="${jsr352.tck.basedir}/../bin">
+			<classpath refid="build.classpath"/>
+		</javac>
+
+		<copy todir="${jsr352.tck.basedir}/../testArtifactsBin/META-INF">
+			<fileset dir="${jsr352.tck.basedir}/../META-INF"/>
+		</copy>
+
+	</target>
+
+	<target name="buildTCKZip" depends="mainTckBuild">
+		<mkdir dir="${jsr352.tck.basedir}/../tckZip"/>
+		<mkdir dir="${jsr352.tck.basedir}/../tckZip/doc"/>
+		<touch file="${jsr352.tck.basedir}/../tckZip/doc/TODO"/>
+		<mkdir dir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<mkdir dir="${jsr352.tck.basedir}/../dist"/>
+		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl-src.jar">
+			<fileset dir="${jsr352.tck.basedir}/../src"/>
+			<fileset dir="${jsr352.tck.basedir}/../testArtifacts"/>
+		</jar>
+		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl.jar">
+			<fileset dir="${jsr352.tck.basedir}/../testArtifactsBin"
+				includes="**/*.class"/>
+			<fileset dir="${jsr352.tck.basedir}/../testArtifactsBin"
+							includes="**/*.xml"/>
+			<fileset dir="${jsr352.tck.basedir}/../testJobXml"/>
+			<fileset dir="${jsr352.tck.basedir}/../bin"/>
+		</jar>
+		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-SPI-src.jar">
+			<fileset dir="${workspace.home.dir}/JSR352.TCK.SPI/src"/>
+		</jar>
+		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-SPI.jar">
+			<fileset dir="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>
+		</jar>
+		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/LICENSE.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
+		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/NOTICE.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
+		<copy file="${jsr352.tck.basedir}/../build.xml" todir="${jsr352.tck.basedir}/../tckZip"/>
+		<copy file="${jsr352.tck.basedir}/../readme.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-tck.properties" todir="${jsr352.tck.basedir}/../tckZip"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-SE-suite.xml" tofile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl-suite.xml"/>
+		
+		<!--<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java6.sig" todir="${jsr352.tck.basedir}/../tckZip"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java7.sig" todir="${jsr352.tck.basedir}/../tckZip"/>-->
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.Annotations.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.JobXML.Model.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.TCK.SPI.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<zip destfile="${jsr352.tck.basedir}/../dist/jsr352-tck.zip" basedir="${jsr352.tck.basedir}/../tckZip"/>
+	</target>
+
+
+	<!-- Generate sig file for Java 7 -->
+	<!-- Set the java7.home variable in this build.xml prior to running -->
+	<target name="generateSigFile7">
+		<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java7.sig"
+			package="javax.batch">
+			<classpath>
+				<pathelement location="${java7.home}/lib/rt.jar"/>
+				<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.jar"/>
+			</classpath>
+		</setup>
+	</target>
+
+	<!-- Generate sig file for Java 6 -->
+	<!-- Set the java6.home variable in this build.xml prior to running -->
+	<target name="generateSigFile6">
+		<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java6.sig"
+				package="javax.batch">
+			<classpath>
+				<pathelement location="${java6.home}/lib/rt.jar;${java6.home}/lib/vm.jar;${java6.home}/lib/java.util.jar;${java6.home}/lib/annotation.jar"/>
+				<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.jar"/>
+			</classpath>
+		</setup>
+	</target>
+
+	<target name="run-batch-xml-generator">
+		<echo message="building ${jsr352.tck.basedir}/../testArtifactsBin/META-INF/build.xml"/>
+		<java classname="jsr352.tck.utils.BatchXMLGenerator">
+			<arg value="${jsr352.tck.basedir}/../testArtifactsBin"/>
+			<arg value="${jsr352.tck.basedir}/../testArtifactsBin/META-INF"/>
+			<classpath refid="build.classpath"/>
+		</java>
 	</target>
 	
-	<target name="cleanAndCompileTCK" depends="cleanTCK, compileTCK"/>
+	<target name="copy-batch-jobs">
+		<copy todir="${jsr352.tck.basedir}/../testArtifactsBin/">
+			<fileset dir="${jsr352.tck.basedir}/../testJobXml/"/>
+		</copy>
+	</target>
 
+	<target name="mainTckBuild" depends="cleanTCK, compileTCK, run-batch-xml-generator, copy-batch-jobs"/>
 </project>

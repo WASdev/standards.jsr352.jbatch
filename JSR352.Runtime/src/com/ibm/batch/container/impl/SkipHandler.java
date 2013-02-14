@@ -18,16 +18,20 @@ package com.ibm.batch.container.impl;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jsr352.batch.jsl.Chunk;
 
-import com.ibm.batch.container.artifact.proxy.SkipListenerProxy;
+import com.ibm.batch.container.artifact.proxy.RetryReadListenerProxy;
+import com.ibm.batch.container.artifact.proxy.SkipProcessListenerProxy;
+import com.ibm.batch.container.artifact.proxy.SkipReadListenerProxy;
+import com.ibm.batch.container.artifact.proxy.SkipWriteListenerProxy;
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class SkipHandler {
+public class SkipHandler<T> {
 
 	/**
 	 *
@@ -44,7 +48,9 @@ public class SkipHandler {
 	  public static final String SKIP_INCLUDE_EX = "include class";
 	  public static final String SKIP_EXCLUDE_EX = "exclude class";
 
-	  private SkipListenerProxy _skipListener = null;
+	  private List<SkipProcessListenerProxy> _skipProcessListener = null;
+	  private List<SkipReadListenerProxy> _skipReadListener = null;
+	  private List<SkipWriteListenerProxy> _skipWriteListener = null;
 
 	  private long _jobId = 0;
 	  private String _stepId = null;
@@ -65,12 +71,30 @@ public class SkipHandler {
 
 
 	  /**
-	   * Add the user-defined SkipListener.
+	   * Add the user-defined SkipReadListeners.
 	   *
 	   */
-	  public void addSkipListener(SkipListenerProxy skipListener)
+	  public void addSkipReadListener(List<SkipReadListenerProxy> skipReadListener)
 	  {
-	    _skipListener = skipListener;
+	    _skipReadListener = skipReadListener;
+	  }
+	  
+	  /**
+	   * Add the user-defined SkipWriteListeners.
+	   *
+	   */
+	  public void addSkipWriteListener(List<SkipWriteListenerProxy> skipWriteListener)
+	  {
+	    _skipWriteListener = skipWriteListener;
+	  }
+	  
+	  /**
+	   * Add the user-defined SkipReadListeners.
+	   *
+	   */
+	  public void addSkipProcessListener(List<SkipProcessListenerProxy> skipProcessListener)
+	  {
+	    _skipProcessListener = skipProcessListener;
 	  }
 
 
@@ -142,7 +166,7 @@ public class SkipHandler {
 	  /**
 	   * Handle exception from a read failure.
 	   */
-	  public void handleException(Exception e)
+	  public void handleExceptionRead(Exception e)
 	  {
 	    final String mName = "handleException";
 	    
@@ -157,8 +181,11 @@ public class SkipHandler {
 	      ++_skipCount;
 	      logSkip(e);
 
-	      if (_skipListener != null)
-	        _skipListener.onSkipInRead(e);
+	      if (_skipReadListener != null) {
+	    	  for (SkipReadListenerProxy skipReadListenerProxy : _skipReadListener) {
+	    		  skipReadListenerProxy.onSkipReadItem(e);
+				}
+	      }
 	    }
 	    else
 	    {
@@ -177,34 +204,36 @@ public class SkipHandler {
 	   */
 	  public void handleExceptionWithRecordProcess(Exception e, Object w)
 	  {
-	    final String mName = "handleException";
-	    
+	    final String mName = "handleExceptionWithRecordProcess";
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
 
 	    if (!isSkipLimitReached() && isSkippable(e))
 	    {
-	      // Retry it.  Log it.  Call the RetryListener.
+	      // Skip it.  Log it.  Call the SkipProcessListener.
 	      ++_skipCount;
 	      logSkip(e);
 
-	      if (_skipListener != null)
-	        _skipListener.onSkipInProcess(e, w);
+	      if (_skipProcessListener != null) {
+	    	  for (SkipProcessListenerProxy skipProcessListenerProxy : _skipProcessListener) {
+	    		  skipProcessListenerProxy.onSkipProcessItem(w, e);
+				}
+	      }
 	    }
 	    else
 	    {
-	      // No retry.  Throw it back.
+	      // No skip.  Throw it back.
 	      if(logger.isLoggable(Level.FINER)) 
-	        logger.logp(Level.FINE, className, mName, "No retry.  Rethrow ", e);
+	        logger.logp(Level.FINE, className, mName, "No skip.  Rethrow ", e);
 	      throw new BatchContainerRuntimeException(e);
 	    }
 	  }
 	  /** 
 	   * Handle exception from a write failure.
 	   */
-	  public void handleExceptionWithRecordWrite(Exception e, Object w)
+	  public void handleExceptionWithRecordListWrite(Exception e, List<T> items)
 	  {
-	    final String mName = "handleException";
+	    final String mName = "handleExceptionWithRecordListWrite(Exception, List<T>)";
 	    
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
@@ -215,11 +244,15 @@ public class SkipHandler {
 	      ++_skipCount;
 	      logSkip(e);
 
-	      if (_skipListener != null)
-	        _skipListener.onSkipInWrite(e, w);
+	      if (_skipWriteListener != null) {
+	    	  for (SkipWriteListenerProxy skipWriteListenerProxy : _skipWriteListener) {
+	    		  skipWriteListenerProxy.onSkipWriteItem(items, e);
+				}
+	      }
 	    }
 	    else
 	    {
+	      System.out.println("## NO SKIP");
 	      // No skip.  Throw it back. - No, exit without throwing
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No skip.  Rethrow ", e);

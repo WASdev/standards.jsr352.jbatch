@@ -20,6 +20,6 @@
 	<flow id="ignoredFlow"></flow>
 	<split id="ignoredSplit"></split>
 	<step id="ignoredStep">
-		<batchlet ref="Mybatchlet"/>
+		<batchlet ref="myBatchletImpl"/>
 	</step>
 </job>

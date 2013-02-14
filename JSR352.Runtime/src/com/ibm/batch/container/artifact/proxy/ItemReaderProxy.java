@@ -16,114 +16,61 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
+import java.io.Externalizable;
 
-import javax.batch.annotation.Close;
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.ReadItem;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.ItemReader;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class ItemReaderProxy extends AbstractProxy {
+public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemReader {
 
-    private Method openMethod = null;
-    private Method closeMethod = null;
-    private Method readItemMethod = null;
-    private Method checkpointInfoMethod = null;
 
-    ItemReaderProxy(Object delegate, List<Property> props) {
-        super(delegate, props);
+    ItemReaderProxy(ItemReader delegate) {
+        super(delegate);
 
-        for (Method method : this.delegate.getClass().getDeclaredMethods()) {
-            Annotation openReader = method.getAnnotation(Open.class);
-            if (openReader != null) {
-                openMethod = method;
-            }
-            Annotation closeReader = method.getAnnotation(Close.class);
-            if (closeReader != null) {
-                closeMethod = method;
-            }
-            Annotation readItemReader = method.getAnnotation(ReadItem.class);
-            if (readItemReader != null) {
-                readItemMethod = method;
-            }
-            Annotation checkpointInfoReader = method.getAnnotation(CheckpointInfo.class);
-            if (checkpointInfoReader != null) {
-                checkpointInfoMethod = method;
-            }
+    }
+
+    @Override
+    public Externalizable checkpointInfo() {
+        
+        try {
+            return this.delegate.checkpointInfo();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void openReader(Object checkpoint) {
-        if (openMethod != null) {
-            try {
-            	Object[] args = new Object[1];
-            	args[0] = checkpoint;
-            	openMethod.invoke(delegate, args);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+    @Override
+    public void close() {
+        
+        try {
+            this.delegate.close();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
-
     }
 
-    public void closeReader() {
-        if (closeMethod != null) {
-            try {
-                closeMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+    @Override
+    public void open(Externalizable checkpoint) {
+        
+        try {
+            this.delegate.open(checkpoint);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
-
     }
 
-    public Object readItem() throws Throwable {
-        Object item = null;
-
-        if (readItemMethod != null) {
-            try {
-                item = readItemMethod.invoke(delegate, (Object[]) null);
-            } catch (InvocationTargetException e) {
-                throw e.getCause();
-            } 
-        }
-
-        return item;
+    /*
+     * In order to provide skip/retry logic, these exceptions
+     * are thrown as-is rather than beeing wrapped.
+     * @see javax.batch.api.ItemReader#readItem()
+     */
+    @Override
+    public Object readItem() throws Exception {
+    	
+		return this.delegate.readItem();
     }
 
-    public Object checkpointInfo() {
-    	Object checkpointData = null;
-        if (checkpointInfoMethod != null)
-            try {
-            	checkpointData = checkpointInfoMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
 
-            return checkpointData;
-    }
-
-    public Method getOpenMethod() {
-        return openMethod;
-    }
-
-    public Method getCloseMethod() {
-        return closeMethod;
-    }
-
-    public Method getReadItemMethod() {
-        return readItemMethod;
-    }
-
-    public Method getCheckpointInfoMethod() {
-        return checkpointInfoMethod;
-    }
 
 }

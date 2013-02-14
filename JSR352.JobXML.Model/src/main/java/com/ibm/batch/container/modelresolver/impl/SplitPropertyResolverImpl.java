@@ -28,13 +28,15 @@ public class SplitPropertyResolverImpl extends AbstractPropertyResolver<Split> {
 
 
 
-    @Override
+    public SplitPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public Split substituteProperties(final Split split, final Properties submittedProps, final Properties parentProps) {
         // resolve all the properties used in attributes and update the JAXB model
     	split.setId(this.replaceAllProperties(split.getId(), submittedProps, parentProps));
     	split.setNextFromAttribute(this.replaceAllProperties(split.getNextFromAttribute(), submittedProps, parentProps));
-    	split.setAbstract(this.replaceAllProperties(split.getAbstract(), submittedProps, parentProps));
-    	split.setParent(this.replaceAllProperties(split.getParent(), submittedProps, parentProps));
     	
         // Resolve all the properties defined for this step
         Properties currentProps = null;
@@ -45,12 +47,12 @@ public class SplitPropertyResolverImpl extends AbstractPropertyResolver<Split> {
         // Resolve Listener properties, this is list of listeners List<Listener>
         if (split.getListeners() != null) {
             for (final Listener listener : split.getListeners().getListenerList()) {
-                PropertyResolverFactory.createListenerPropertyResolver().substituteProperties(listener, submittedProps, currentProps);
+                PropertyResolverFactory.createListenerPropertyResolver(this.isPartitionedStep).substituteProperties(listener, submittedProps, currentProps);
             }
         }
         
         for (final Flow flow : split.getFlow()) {
-        	PropertyResolverFactory.createFlowPropertyResolver().substituteProperties(flow, submittedProps, currentProps);
+        	PropertyResolverFactory.createFlowPropertyResolver(this.isPartitionedStep).substituteProperties(flow, submittedProps, currentProps);
         }
     	
         return split;

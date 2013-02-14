@@ -16,29 +16,14 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.BeginCheckpoint;
-import javax.batch.annotation.EndCheckpoint;
-import javax.batch.annotation.CheckpointTimeout;
-import javax.batch.annotation.IsReadyToCheckpoint;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.CheckpointAlgorithm;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
-import com.ibm.ws.batch.container.checkpoint.CheckpointAlgorithm;
 import com.ibm.ws.batch.container.checkpoint.ItemCheckpointAlgorithm;
-import com.ibm.ws.batch.container.checkpoint.ItemTimeCheckpointAlgorithm;
 import com.ibm.ws.batch.container.checkpoint.TimeCheckpointAlgorithm;
 
-public class CheckpointAlgorithmProxy extends AbstractProxy implements CheckpointAlgorithm {
+public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm> implements CheckpointAlgorithm {
 
-    private Method getCheckpointTimeOutMethod = null;
-    private Method beginCheckpointMethod = null;
-    private Method isReadyToCheckpointMethod = null;
-    private Method endCheckpointMethod = null;
     private String checkpointType = null;
     private String checkpointName = null;
 
@@ -46,94 +31,22 @@ public class CheckpointAlgorithmProxy extends AbstractProxy implements Checkpoin
      * Allow this to be public as a special case so we can easily treat the built-in algorithms
      * as identical to custom ones.
      */
-    public CheckpointAlgorithmProxy(final Object delegate, final List<Property> props) {
-        super(delegate, props);
+    public CheckpointAlgorithmProxy(final CheckpointAlgorithm delegate) {
+        super(delegate);
 
-        // find annotations
-        for (final Method method : this.delegate.getClass().getDeclaredMethods()) {
-            final Annotation getCheckpointTimeOut = method.getAnnotation(CheckpointTimeout.class);
-            if (getCheckpointTimeOut != null) {
-                getCheckpointTimeOutMethod = method;
-            }
-
-            final Annotation beginCheckpoint = method.getAnnotation(BeginCheckpoint.class);
-            if (beginCheckpoint != null) {
-                beginCheckpointMethod = method;
-            }
-
-            final Annotation isReadyToCheckpoint = method.getAnnotation(IsReadyToCheckpoint.class);
-            if (isReadyToCheckpoint != null) {
-                isReadyToCheckpointMethod = method;
-            }
-
-            final Annotation endCheckpoint = method.getAnnotation(EndCheckpoint.class);
-            if (endCheckpoint != null) {
-                endCheckpointMethod = method;
-            }
-            if (delegate instanceof ItemCheckpointAlgorithm) {
-                checkpointType = "item";
-                checkpointName = ItemCheckpointAlgorithm.class.getName();
-            } else if (delegate instanceof TimeCheckpointAlgorithm) {
-                checkpointType = "time";
-                checkpointName = TimeCheckpointAlgorithm.class.getName();
-            } else {
-            	checkpointType = "custom";
-            	
-            	if (delegate instanceof ItemTimeCheckpointAlgorithm){
-            		checkpointType = "item-time";
-            		checkpointName = ItemTimeCheckpointAlgorithm.class.getName();
-            	}
-            	else {
-            		checkpointType = "custom";
-            		checkpointName = delegate.getClass().getName();
-            	}
-            }
+        if (delegate instanceof ItemCheckpointAlgorithm) {
+            checkpointType = "item";
+            checkpointName = ItemCheckpointAlgorithm.class.getName();
+        } else if (delegate instanceof TimeCheckpointAlgorithm) {
+            checkpointType = "time";
+            checkpointName = TimeCheckpointAlgorithm.class.getName();
+        } else {
+			checkpointType = "custom";
+			checkpointName = delegate.getClass().getName();
         }
+
     }
 
-    public int getCheckpointTimeOut(final int timeOut) {
-        int retTimeOut = 0;
-        if (getCheckpointTimeOutMethod != null) {
-            try {
-                retTimeOut = (Integer) getCheckpointTimeOutMethod.invoke(delegate, timeOut);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-        return retTimeOut;
-    }
-
-    public void beginCheckpoint() {
-        if (beginCheckpointMethod != null) {
-            try {
-                beginCheckpointMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
-
-    public void endCheckpoint() {
-        if (endCheckpointMethod != null) {
-            try {
-                endCheckpointMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
-
-    public boolean isReadyToCheckpointMethod() {
-        Boolean ret = false;
-        if (isReadyToCheckpointMethod != null) {
-            try {
-                ret = (Boolean) isReadyToCheckpointMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-        return ret;
-    }
 
     public String getCheckpointType() {
         return checkpointType;
@@ -143,22 +56,45 @@ public class CheckpointAlgorithmProxy extends AbstractProxy implements Checkpoin
         return checkpointName;
     }
 
-	@Override
-	public boolean isReadyToCheckpoint() throws Exception {
-		// TODO Auto-generated method stub
-		return isReadyToCheckpointMethod();
-	}
 
-	@Override
-	public void setThreshold(int INthreshHold) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void beginCheckpoint() {
+        try {
+            this.delegate.beginCheckpoint();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
 
-	@Override
-	public void setThresholds(int itemthreshold, int timethreshold) {
-		// TODO Auto-generated method stub
-		
-	}
+
+    @Override
+    public int checkpointTimeout(int timeout) {
+        try {
+            return this.delegate.checkpointTimeout(timeout);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
+
+
+    @Override
+    public void endCheckpoint() {
+        try {
+             this.delegate.endCheckpoint();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
+
+
+    @Override
+    public boolean isReadyToCheckpoint() {
+        try {
+            return this.delegate.isReadyToCheckpoint();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
+
     
 }

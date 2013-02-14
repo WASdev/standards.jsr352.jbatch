@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package jsr352.tck.chunkartifacts;
 
 import java.sql.Connection;
@@ -22,89 +22,114 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.AfterStep;
-import javax.batch.annotation.BatchContext;
-import javax.batch.annotation.StepListener;
+import javax.batch.api.AbstractStepListener;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import jsr352.tck.common.StatusConstants;
 
-@StepListener("InventoryStepListener")
-@javax.inject.Named("InventoryStepListener")
-public class InventoryStepListener implements StatusConstants {
-	
+@javax.inject.Named("inventoryStepListener")
+public class InventoryStepListener extends AbstractStepListener implements StatusConstants {
+
     private final static String sourceClass = InventoryStepListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
-	
-    @BatchContext
-    StepContext<?,?> stepCtx;
 
-    @BatchContext
+    @Inject
+    StepContext<?, ?> stepCtx;
+
+    @Inject
     JobContext<?> jobCtx;
-	
-	protected String jndiName = "jdbc/orderDB";
 
-	protected DataSource dataSource = null;
-	
-	private void init() throws NamingException {
-		InitialContext ctx = new InitialContext();
-		dataSource = (DataSource) ctx.lookup(jndiName);
-	}
+    //protected String jndiName = "jdbc/orderDB";
 
+    protected DataSource dataSource = null;
 
-	private int getInventoryCount() throws Exception {
+    private void init() throws NamingException {
+        if (dataSource == null) {
+            InitialContext ctx = new InitialContext();
+            dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
+        }
+    }
 
-		this.init();
-		
-		Connection connection = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		
-		try {
-			connection = ConnectionHelper.getConnection(dataSource);
+    @Override
+    public void afterStep() throws Exception {
+        logger.fine("afterStep");
 
-			statement = connection
-					.prepareStatement(ConnectionHelper.SELECT_INVENTORY);
-			statement.setInt(1, 1);
-			rs = statement.executeQuery();
+        int finalInventoryCount = this.getInventoryCount();
+        int orderCount = this.getOrderCount();
+        String initCheckpoint = stepCtx.getProperties().getProperty("init.checkpoint");
 
-			int quantity = -1;
-			while (rs.next()) {
-				quantity = rs.getInt("quantity");
-			}
-			
-			return quantity;
+        String exitStatus = "Inventory=" + finalInventoryCount + " InitialCheckpoint=" + initCheckpoint + " OrderCount="+orderCount;
+        jobCtx.setExitStatus(exitStatus);
+    }
 
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			ConnectionHelper.cleanupConnection(connection, rs, statement);
-		}
+    
+    private int getInventoryCount() throws Exception {
 
-	}
+        this.init();
 
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
 
+        try {
+            connection = ConnectionHelper.getConnection(dataSource);
 
+            statement = connection.prepareStatement(ConnectionHelper.SELECT_INVENTORY);
+            statement.setInt(1, 1);
+            rs = statement.executeQuery();
+
+            int quantity = -1;
+            while (rs.next()) {
+                quantity = rs.getInt("quantity");
+            }
+
+            return quantity;
+
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            ConnectionHelper.cleanupConnection(connection, rs, statement);
+        }
+
+    }
+
+    private int getOrderCount() throws Exception {
+
+        this.init();
+
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+
+        try {
+            connection = ConnectionHelper.getConnection(dataSource);
+
+            statement = connection.prepareStatement(ConnectionHelper.COUNT_ORDERS);
+            rs = statement.executeQuery();
+
+            int count = 0;
+            while (rs.next()) {
+                count = rs.getInt("rowcount");
+            }
+
+            return count;
+
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            ConnectionHelper.cleanupConnection(connection, rs, statement);
+        }
+
+    }
+    
+    @Override
     public void beforeStep() {
     }
-    
-    
-    
-    
-    @AfterStep
-    public void afterStep() throws Exception {
-    	logger.fine("afterStep");
-    	
-    	int finalInventoryCount = this.getInventoryCount();
-    	String initCheckpoint = stepCtx.getProperties().getProperty("init.checkpoint");
-    	
-		String exitStatus = "Inventory=" + finalInventoryCount + " InitialCheckpoint=" + initCheckpoint;
-		jobCtx.setExitStatus(exitStatus);
-    }
 
-	
+
 }

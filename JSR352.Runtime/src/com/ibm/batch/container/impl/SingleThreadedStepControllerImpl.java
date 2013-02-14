@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.impl;
 
 import java.util.List;
@@ -24,6 +24,7 @@ import jsr352.batch.jsl.Property;
 import jsr352.batch.jsl.Step;
 
 import com.ibm.batch.container.IExecutionElementController;
+import com.ibm.batch.container.artifact.proxy.InjectionReferences;
 import com.ibm.batch.container.artifact.proxy.ProxyFactory;
 import com.ibm.batch.container.artifact.proxy.StepListenerProxy;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
@@ -32,85 +33,73 @@ import com.ibm.batch.container.validation.ArtifactValidationException;
 
 public abstract class SingleThreadedStepControllerImpl extends BaseStepControllerImpl implements IExecutionElementController {
 
-	private final static String sourceClass = SingleThreadedStepControllerImpl.class.getName();
-	private final static Logger logger = Logger.getLogger(sourceClass);
+    private final static String sourceClass = SingleThreadedStepControllerImpl.class.getName();
+    private final static Logger logger = Logger.getLogger(sourceClass);
 
-	protected SingleThreadedStepControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Step step) {
-		super(jobExecutionImpl, step);
+    protected SingleThreadedStepControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Step step) {
+        super(jobExecutionImpl, step);
 
-	}
+    }
 
-	List<StepListenerProxy> stepListeners = null;
+    List<StepListenerProxy> stepListeners = null;
 
-	protected void setupStepArtifacts() {
-		// set up listeners
-		this.stepListeners = jobExecutionImpl.getListenerFactory().getStepListeners(step);
+    protected void setupStepArtifacts() {
+        // set up listeners
 
-		// set up collectors if we are running a partitioned step
-		if (step.getPartition() != null) {
-			Collector collector = step.getPartition().getCollector();
-			if (collector != null) {
-				List<Property> propList = (collector.getProperties() == null) ? null : collector.getProperties().getPropertyList();
-				try {
-					this.collectorProxy = ProxyFactory.createPartitionCollectorProxy(collector.getRef(), propList);
-				} catch (ArtifactValidationException e) {
-					throw new BatchContainerServiceException("Cannot create the collector [" + collector.getRef() + "]", e);
-				}
-			}
-			
-		}
+        InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, 
+                null);
 
-	}
+        this.stepListeners = jobExecutionImpl.getListenerFactory().getStepListeners(step, injectionRef);
 
-	@Override
-	protected void invokePreStepArtifacts() {
-		if (stepListeners == null) {
-			return;
-		}
+        // set up collectors if we are running a partitioned step
+        if (step.getPartition() != null) {
+            Collector collector = step.getPartition().getCollector();
+            if (collector != null) {
+                List<Property> propList = (collector.getProperties() == null) ? null : collector.getProperties().getPropertyList();
+                /**
+                 * Inject job flow, split, and step contexts into partition
+                 * artifacts like collectors and listeners some of these
+                 * contexts may be null
+                 */
+                injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, propList);
 
-		/**
-		 * Inject job flow, split, and step contexts into partition artifacts
-		 * like collectors and listeners some of these contexts may be null
-		 */
-		if (this.collectorProxy != null) {
-			this.collectorProxy.setJobContext(jobExecutionImpl.getJobContext());
-			this.collectorProxy.setSplitContext(splitContext);
-			this.collectorProxy.setFlowContext(flowContext);
-			this.collectorProxy.setStepContext(stepContext);
-		}
+                try {
+                    this.collectorProxy = ProxyFactory.createPartitionCollectorProxy(collector.getRef(), injectionRef);
+                } catch (ArtifactValidationException e) {
+                    throw new BatchContainerServiceException("Cannot create the collector [" + collector.getRef() + "]", e);
+                }
+            }
 
-		for (StepListenerProxy listenerProxy : stepListeners) {
-			listenerProxy.setJobContext(jobExecutionImpl.getJobContext());
-			listenerProxy.setSplitContext(splitContext);
-			listenerProxy.setFlowContext(flowContext);
-			listenerProxy.setStepContext(stepContext);
-		}
+        }
 
-		// Call @BeforeStep on all the job listeners
-		for (StepListenerProxy listenerProxy : stepListeners) {
-			listenerProxy.beforeStep();
-		}
-		
-		// 
-		//ServicesManager.getInstance().setStepForThread(stepContext);
+    }
 
-	}
+    @Override
+    protected void invokePreStepArtifacts() {
+        if (stepListeners == null) {
+            return;
+        }
 
-	@Override
-	protected void invokePostStepArtifacts() {
-		
-		// Invoke the subjob analayzer at the end of each step
-		if (this.analyzerProxy != null) {
-			this.analyzerProxy.analyzeExitStatus(stepStatus.getExitStatus());
-		}
-		
-		// Call @AfterStep on all the step listeners
-		if (stepListeners != null) {
-			for (StepListenerProxy listenerProxy : stepListeners) {
-				listenerProxy.afterStep();
-			}
-		}
+        // Call @BeforeStep on all the step listeners
+        for (StepListenerProxy listenerProxy : stepListeners) {
+            listenerProxy.beforeStep();
+        }
 
-	}
+        // 
+        // ServicesManager.getInstance().setStepForThread(stepContext);
+
+    }
+
+    @Override
+    protected void invokePostStepArtifacts() {
+
+        // Call @AfterStep on all the step listeners
+        if (stepListeners != null) {
+            for (StepListenerProxy listenerProxy : stepListeners) {
+                listenerProxy.afterStep();
+            }
+        }
+
+    }
 
 }

@@ -16,24 +16,23 @@
  */
 package jsr352.tck.specialized;
 
+
 import java.io.Externalizable;
 
-import javax.batch.annotation.BatchContext;
-import javax.batch.annotation.CollectPartitionData;
-import javax.batch.annotation.PartitionCollector;
+import javax.batch.api.PartitionCollector;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import jsr352.tck.reusable.ExternalizableString;
 
-@PartitionCollector
 @javax.inject.Named
-public class MyPartitionCollector {
+public class MyPartitionCollector implements PartitionCollector {
 
-	@BatchContext
+    @Inject
 	StepContext ctx;
 	
-	@CollectPartitionData 
-	public Externalizable collect() throws Exception {
+	@Override
+	public Externalizable collectPartitionData() throws Exception {
 		
 		ExternalizableString eString = new ExternalizableString("C");
 		

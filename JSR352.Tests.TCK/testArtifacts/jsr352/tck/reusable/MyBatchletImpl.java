@@ -16,24 +16,18 @@
 */
 package jsr352.tck.reusable;
 
-import javax.batch.annotation.*;
-import javax.batch.annotation.Process;
+import javax.batch.api.AbstractBatchlet;
 
 
-@Batchlet("MyBatchlet")
-@javax.inject.Named("MyBatchlet")
-public class MyBatchletImpl {
+@javax.inject.Named("myBatchlet")
+public class MyBatchletImpl extends AbstractBatchlet {
     
     private volatile static int count = 1;
     
     public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
     
-	@BeginStep
-	public void begin() throws Exception {
 	
-	}
-	
-	@Process
+	@Override
 	public String process() throws Exception {	
 		System.out.println("Running batchlet process(): " + count);
 		count++;
@@ -42,13 +36,10 @@ public class MyBatchletImpl {
 				
 	}
 	
-	@Stop
-	public void cancel() throws Exception {
+	@Override
+	public void stop() throws Exception {
 				
 	}
 	
-	@EndStep
-	public void end() throws Exception {
-	
-	}
+
 }

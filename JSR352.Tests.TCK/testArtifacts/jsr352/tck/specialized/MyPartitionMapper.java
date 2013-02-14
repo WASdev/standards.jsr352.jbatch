@@ -19,36 +19,52 @@ package jsr352.tck.specialized;
 import java.util.Properties;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.CalculatePartitions;
-import javax.batch.annotation.PartitionMapper;
+import javax.batch.api.PartitionMapper;
 import javax.batch.api.parameters.PartitionPlan;
+import javax.inject.Inject;
 
-@PartitionMapper
+
 @javax.inject.Named
-public class MyPartitionMapper {
+public class MyPartitionMapper implements PartitionMapper {
 
 	
-	private static final String GOOD_EXIT_STATUS = "good_partition_status";
+	private static final String GOOD_EXIT_STATUS = "good.partition.status";
 
-	@BatchProperty
+    @Inject    
+    @BatchProperty
 	private String numPartitionsProp = null;
+    private int numPartitions;
+
+    
+    @Inject
+    @BatchProperty
+    private String failThisPartition = "-1";
+
+    
+
 	
-	private int numPartitions;
-	
-	@CalculatePartitions
-	public PartitionPlan calculatePartitions() throws Exception {
+	@Override
+	public PartitionPlan mapPartitions() throws Exception {
 		
 		numPartitions = Integer.parseInt(numPartitionsProp);
 		
 		Properties[] props = new Properties[numPartitions];
 		
-		
-		for (int i = 0; i < numPartitions; i++) {
+		Integer i;
+		for (i = 0; i < numPartitions; i++) {
 			props[i] = new Properties();
-			props[i].setProperty(GOOD_EXIT_STATUS, Integer.toString(i));
+			props[i].setProperty(GOOD_EXIT_STATUS, "MapperProp" + Integer.toString(i));
+			
+			if (i.toString().equals(failThisPartition)) {
+			    props[i].setProperty("fail.this.partition", "true");
+			} else{
+			    props[i].setProperty("fail.this.partition", "false");
+			}
 		}
 		
-		PartitionPlan partitionPlan = new MyPartitionPlan(numPartitions, props);
+		PartitionPlan partitionPlan = new MyPartitionPlan();
+		partitionPlan.setPartitionCount(numPartitions);
+		partitionPlan.setPartitionProperties(props);
 		
 		return partitionPlan;
 		

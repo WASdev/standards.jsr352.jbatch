@@ -26,6 +26,7 @@ import jsr352.batch.jsl.End;
 import jsr352.batch.jsl.Fail;
 import jsr352.batch.jsl.Flow;
 import jsr352.batch.jsl.Next;
+import jsr352.batch.jsl.Split;
 import jsr352.batch.jsl.Step;
 import jsr352.batch.jsl.Stop;
 
@@ -56,6 +57,12 @@ public class FlowNavigatorImpl implements Navigator<Flow> {
         if (currentElem instanceof Step) {
             nextAttrId = ((Step) currentElem).getNextFromAttribute();
             nextExecutionElement = getExecutionElementByID(nextAttrId);
+        } else if (currentElem instanceof Split) {
+            nextAttrId = ((Split) currentElem).getNextFromAttribute();
+            nextExecutionElement = getExecutionElementByID(nextAttrId);
+        } else if (currentElem instanceof Flow) {
+        	nextAttrId = ((Flow) currentElem).getNextFromAttribute();
+        	nextExecutionElement = getExecutionElementByID(nextAttrId);
         } else if (currentElem instanceof Decision) {
             // Nothing special to do in this case.
         }

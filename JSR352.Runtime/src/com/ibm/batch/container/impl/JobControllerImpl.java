@@ -20,10 +20,15 @@ import java.io.Externalizable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.StepExecution;
 
 import jsr352.batch.jsl.Decision;
 import jsr352.batch.jsl.End;
@@ -39,21 +44,20 @@ import jsr352.batch.jsl.Stop;
 import com.ibm.batch.container.AbortedBeforeStartException;
 import com.ibm.batch.container.IController;
 import com.ibm.batch.container.IExecutionElementController;
+import com.ibm.batch.container.artifact.proxy.InjectionReferences;
 import com.ibm.batch.container.artifact.proxy.JobListenerProxy;
 import com.ibm.batch.container.artifact.proxy.ListenerFactory;
-import com.ibm.batch.container.artifact.proxy.PartitionAnalyzerProxy;
-import com.ibm.batch.container.context.impl.FlowContextImpl;
 import com.ibm.batch.container.context.impl.JobContextImpl;
-import com.ibm.batch.container.context.impl.SplitContextImpl;
 import com.ibm.batch.container.context.impl.StepContextImpl;
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
+import com.ibm.batch.container.jobinstance.JobExecutionHelper;
+import com.ibm.batch.container.jobinstance.ParallelJobExecution;
 import com.ibm.batch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.batch.container.services.IJobStatusManagerService;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.services.ServicesManager;
 import com.ibm.batch.container.services.impl.JDBCPersistenceManagerImpl;
-import com.ibm.batch.container.util.ExecutionStatus;
-import com.ibm.batch.container.util.ExecutionStatus.BatchStatus;
+import com.ibm.batch.container.util.PartitionDataWrapper;
 import com.ibm.batch.container.xjcl.ControlElement;
 import com.ibm.batch.container.xjcl.ExecutionElement;
 import com.ibm.batch.container.xjcl.Navigator;
@@ -73,8 +77,7 @@ public class JobControllerImpl implements IController {
     private final Navigator<JSLJob> jobNavigator;
     private final String jobId;
 
-    private PartitionAnalyzerProxy analyzerProxy = null;
-    
+    private LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue;
 	private ListenerFactory listenerFactory = null;
     
     private final long jobInstanceId;
@@ -84,6 +87,7 @@ public class JobControllerImpl implements IController {
     // local variable reference when we are ready to accept stop events for
     // this execution.
     private volatile IExecutionElementController currentStoppableElementController = null;
+
 
     public JobControllerImpl(RuntimeJobExecutionImpl jobExecution) {
         this.jobExecution = jobExecution;
@@ -106,9 +110,8 @@ public class JobControllerImpl implements IController {
     	JSLProperties jslProps = jobModel.getProperties();
     	
     	if (jslProps != null) {
+    		Properties contextProps = jobContext.getProperties();
     		for (Property property : jslProps.getPropertyList()) {
-        		Properties contextProps = jobContext.getProperties();
-        		
         		contextProps.setProperty(property.getName(), property.getValue());
         	}	
     	}
@@ -116,8 +119,11 @@ public class JobControllerImpl implements IController {
     }
     
     private void setupListeners() {
-        JSLJob jobModel = jobExecution.getJobNavigator().getJSL();            
-        listenerFactory = new ListenerFactory(jobModel);
+        JSLJob jobModel = jobExecution.getJobNavigator().getJSL();   
+        
+        InjectionReferences injectionRef = new InjectionReferences(jobContext, null, null);
+        
+        listenerFactory = new ListenerFactory(jobModel, injectionRef);
         jobExecution.setListenerFactory(listenerFactory);
     }
 
@@ -130,7 +136,7 @@ public class JobControllerImpl implements IController {
 
         try {
             // Periodic check for stopping job
-            if (ExecutionStatus.getStringValue(BatchStatus.STOPPING).equals(jobContext.getBatchStatus())) {
+            if (BatchStatus.STOPPING.equals(jobContext.getBatchStatus())) {
                 updateJobBatchStatus(BatchStatus.STOPPED);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " Exiting as job has been stopped");
@@ -141,7 +147,7 @@ public class JobControllerImpl implements IController {
             updateJobBatchStatus(BatchStatus.STARTING);
 
             // Periodic check for stopping job
-            if (jobContext.getBatchStatus().equals(ExecutionStatus.getStringValue(BatchStatus.STOPPING))) {
+            if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
                 updateJobBatchStatus(BatchStatus.STOPPED);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " Exiting as job has been stopped");
@@ -153,19 +159,6 @@ public class JobControllerImpl implements IController {
             
             List<JobListenerProxy> jobListeners = listenerFactory.getJobListeners();
 
-            // Inject job context into listeners, we could move this into
-            // the above
-            // for loop if need. But it's more readable here for now. We
-            // haven't
-            // started the step yet so I assume the step context will be
-            // null.
-            for (JobListenerProxy listenerProxy : jobListeners) {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.fine(methodName + " Setting jobContext on jobListener: " + listenerProxy.getDelegate() + " of type: " + listenerProxy.getDelegate().getClass());
-                }
-                listenerProxy.setJobContext(jobContext);
-            }
-
             // Call @BeforeJob on all the job listeners
             for (JobListenerProxy listenerProxy : jobListeners) {
                 if (logger.isLoggable(Level.FINE)) {
@@ -175,7 +168,7 @@ public class JobControllerImpl implements IController {
             }
 
             // Periodic check for stopping job
-            if (jobContext.getBatchStatus().equals(ExecutionStatus.getStringValue(BatchStatus.STOPPING))) {
+            if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
                 updateJobBatchStatus(BatchStatus.STOPPED);
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " Exiting as job has been stopped");
@@ -191,11 +184,11 @@ public class JobControllerImpl implements IController {
             doExecutionLoop(jobNavigator);
 
             // TODO - Before or after afterJob()?
-            String curStatusString = jobContext.getBatchStatus();
-            if (curStatusString == null) {
+            BatchStatus currentStatus = jobContext.getBatchStatus();
+            if (currentStatus == null) {
                 throw new IllegalStateException("Job BatchStatus should have been set by now");
             }
-            BatchStatus curStatus = ExecutionStatus.getBatchStatusEnum(curStatusString);
+            BatchStatus curStatus = currentStatus;
 
             // BatchStatus may already have been set by a JSL <stop> or <fail>
             // decision directive.
@@ -209,7 +202,7 @@ public class JobControllerImpl implements IController {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("No job-level exitStatus set, defaulting to job batch Status = " + jobContext.getBatchStatus());
                 }
-                jobContext.setExitStatus(jobContext.getBatchStatus());
+                jobContext.setExitStatus(jobContext.getBatchStatus().name());
             }
 
             // TODO - These job listener afterJob() still gets called on
@@ -242,7 +235,7 @@ public class JobControllerImpl implements IController {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("No job-level exitStatus set, defaulting to job batch Status = " + jobContext.getBatchStatus());
                 }
-                jobContext.setExitStatus(jobContext.getBatchStatus());
+                jobContext.setExitStatus(jobContext.getBatchStatus().name());
             }
 
             throw new BatchContainerRuntimeException(t);
@@ -260,9 +253,15 @@ public class JobControllerImpl implements IController {
 
             try {
                 jobStatusService.updateJobExecutionStatus(jobExecution.getInstanceId(), 
-                        ExecutionStatus.getBatchStatusEnum(jobContext.getBatchStatus()), 
+                        jobContext.getBatchStatus(), 
                         jobContext.getExitStatus());
-                        
+              //set update time onto the runtime JobExecution Obj - should I also update the status string here too?
+                long time = System.currentTimeMillis();
+            	Timestamp updateTS = new Timestamp(time);
+            	jobExecution.setLastUpdateTime(updateTS);
+                if (persistenceService instanceof JDBCPersistenceManagerImpl){	
+                	persistenceService.jobExecutionStatusStringUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.EXIT_STATUS, jobContext.getExitStatus(), updateTS);
+                }                        
             } catch (Throwable t) {
                 if (logger.isLoggable(Level.WARNING)) {
                     StringWriter sw = new StringWriter();
@@ -277,7 +276,7 @@ public class JobControllerImpl implements IController {
         }
     }
 
-    private void doExecutionLoop(Navigator jobNavigator) {
+    private void doExecutionLoop(Navigator jobNavigator) throws Exception {
         final String methodName = "doExecutionLoop";
 
         JobContextImpl<?> jobContext = jobExecution.getJobContext();
@@ -297,10 +296,10 @@ public class JobControllerImpl implements IController {
         // it's possible
 
         StepContextImpl<?, ?> stepContext = null;
-        FlowContextImpl flowContext = null;
-        SplitContextImpl splitContext = null;
 
         ExecutionElement previousExecutionElement = null;
+        
+        IExecutionElementController previousElementController = null;
 
         while (true) {
 
@@ -316,8 +315,8 @@ public class JobControllerImpl implements IController {
             IExecutionElementController elementController = 
                 ExecutionElementControllerFactory.getExecutionElementController(jobExecution, currentExecutionElement);
 
-            //If this is a sub job it may have a partition analyzer we need to pass along
-            elementController.setAnalyzerProxy(analyzerProxy);
+            //If this is a sub job it may have a analyzer queue we need to pass along
+            elementController.setAnalyzerQueue(this.analyzerQueue);
             
             // Depending on the execution element new up the associated context
             // and add it to the controller
@@ -329,8 +328,6 @@ public class JobControllerImpl implements IController {
 
                     // we need to set to null if batch artifacts are reused
                     elementController.setStepContext(null);
-                    elementController.setFlowContext(null);
-                    elementController.setSplitContext(null);
 
                 } else if (previousExecutionElement instanceof Decision) {
                     throw new BatchContainerRuntimeException("A decision cannot precede another decision...OR CAN IT???");
@@ -342,30 +339,26 @@ public class JobControllerImpl implements IController {
                     // previous
                     // execution
                     // element
-                    elementController.setFlowContext(null); // this is supposed to pass null
-                    elementController.setSplitContext(null); // this is supposed to pass null
+                    StepExecution lastStepExecution = getLastStepExecution((Step) previousExecutionElement);
+                    
+                    ((DecisionControllerImpl)elementController).setStepExecution((Step)previousExecutionElement, lastStepExecution);
 
                 } else if (previousExecutionElement instanceof Split) {
-                    elementController.setStepContext(null);// this is supposed to pass null
-                    elementController.setFlowContext(null); // this is supposed to pass null
-                    elementController.setSplitContext(splitContext);// this is
-                    // the
-                    // context
-                    // from the
-                    // previous
-                    // execution
-                    // element
+                	
+                	List<StepExecution> stepExecutions = getSplitStepExecutions(previousElementController);
+           		
+            		((DecisionControllerImpl)elementController).setStepExecutions((Split)previousExecutionElement, stepExecutions);
+            		                    
                 } else if (previousExecutionElement instanceof Flow) {
-                    elementController.setStepContext(null);// this is supposed to pass null
-                    elementController.setFlowContext(flowContext); // this is
-                    // the
-                    // context
-                    // from the
-                    // previous
-                    // execution
-                    // element
-                    elementController.setSplitContext(null); // this is supposed
-                    // to pass null
+                	
+                    // get last step in flow
+                    Step last = getLastStepInTheFlow(previousExecutionElement);
+                    
+                    // get last step StepExecution
+                    StepExecution lastStepExecution = getLastStepExecution(last);
+                    
+                    ((DecisionControllerImpl)elementController).setStepExecution((Flow)previousExecutionElement, lastStepExecution);
+           
                 }
 
             } else if (currentExecutionElement instanceof Step) {
@@ -374,16 +367,12 @@ public class JobControllerImpl implements IController {
                 elementController.setStepContext(stepContext);
             } else if (currentExecutionElement instanceof Flow) {
             	String flowId = ((Flow) currentExecutionElement).getId();
-                flowContext = new FlowContextImpl(flowId);
-                elementController.setFlowContext(flowContext);
             } else if (currentExecutionElement instanceof Split) {
             	String splitId = ((Split) currentExecutionElement).getId();
-                splitContext = new SplitContextImpl(splitId);
-                elementController.setSplitContext(splitContext);
             }
 
             // check for stop before every executing each execution element
-            if (jobContext.getBatchStatus().equals(ExecutionStatus.getStringValue(BatchStatus.STOPPING))) {
+            if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
                 updateJobBatchStatus(BatchStatus.STOPPED);
 
                 if (logger.isLoggable(Level.FINE)) {
@@ -418,14 +407,15 @@ public class JobControllerImpl implements IController {
             // set the execution element controller to null so we don't try to
             // call stop
             // on it after the element has finished executing
-            this.currentStoppableElementController = null;            
+            this.currentStoppableElementController = null; 
+            previousElementController = elementController;
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.fine("Done executing element=" + currentExecutionElement.getId() + ", exitStatus=" + executionElementExitStatus);
             }
 
             // If we are currently in STOPPING state, then we can now move transition to STOPPED state.
-            if (ExecutionStatus.getBatchStatusEnum(jobContext.getBatchStatus()).equals(BatchStatus.STOPPING)) {
+            if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
 
                 updateJobBatchStatus(BatchStatus.STOPPED);
 
@@ -436,7 +426,7 @@ public class JobControllerImpl implements IController {
             }
 
             Transition nextTransition = jobNavigator.getNextTransition(currentExecutionElement, executionElementExitStatus);
-
+            
             // TODO
             if (nextTransition == null) {
                 if (logger.isLoggable(Level.FINE)) {
@@ -452,6 +442,7 @@ public class JobControllerImpl implements IController {
                 // into the decider
                 previousExecutionElement = currentExecutionElement;
                 currentExecutionElement = nextTransition.getNextExecutionElement();
+                
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " , Looping through to next execution element=" + currentExecutionElement.getId());
                 }
@@ -516,6 +507,7 @@ public class JobControllerImpl implements IController {
                 }
                 return;
             } else {
+                
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " Exiting as there are no more execution elements= ");
                 }
@@ -524,33 +516,119 @@ public class JobControllerImpl implements IController {
         }
     }
 
+	private List<StepExecution> getSplitStepExecutions(
+			IExecutionElementController previousElementController) {
+		List<StepExecution> stepExecutions = new ArrayList<StepExecution>();
+		if(previousElementController != null) {
+			SplitControllerImpl controller = (SplitControllerImpl)previousElementController;
+			for (ParallelJobExecution parallelJob : controller.getParallelJobExecs()) {
+				                			
+				StepExecution lastStepExecution = null;
+				List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(parallelJob.getJobExecution().getExecutionId());
+				for (StepExecution stepExecution : stepExecs) {
+					lastStepExecution = stepExecution;
+				}
+				stepExecutions.add(lastStepExecution);
+			}
+		}
+		return stepExecutions;
+	}
+
+	private StepExecution getLastStepExecution(Step last) {
+		StepExecution lastStepExecution = null;
+		List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(jobExecution.getExecutionId());
+		for (StepExecution stepExecution : stepExecs) {
+			if(last.getId().equals(stepExecution.getName())) {
+				lastStepExecution = stepExecution;
+			}
+		}
+		return lastStepExecution;
+	}
+
+	private Step getLastStepInTheFlow(ExecutionElement previousExecutionElement) {
+		Flow flow = (Flow)previousExecutionElement;
+		Step last = null;
+		for (ExecutionElement elem : flow.getExecutionElements()) {
+			if(elem instanceof Step) {
+				last = (Step) elem;
+			}
+		}
+		return last;
+	}
+
     @Override
     public void stop() {
+    	if (jobContext.getBatchStatus().equals(BatchStatus.STARTING) ||
+    			jobContext.getBatchStatus().equals(BatchStatus.STARTED)) {
+    	
         updateJobBatchStatus(BatchStatus.STOPPING);
         if (this.currentStoppableElementController != null) {
             this.currentStoppableElementController.stop();
         }
+    	} else {
+        	//TODO do we need to throw an error if the batchlet is already stopping/stopped
+    		//a stop gets issued twice
+    	}
+
     }
 
     private void updateJobBatchStatus(BatchStatus batchStatus) {
         String methodName = "updateJobBatchStatus";
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine(methodName + " Setting job batch status to: " + ExecutionStatus.getStringValue(batchStatus));
+            logger.fine(methodName + " Setting job batch status to: " + batchStatus);
         }
 
-        jobContext.setBatchStatus(ExecutionStatus.getStringValue(batchStatus));
+        jobContext.setBatchStatus(batchStatus);
         jobStatusService.updateJobBatchStatus(jobInstanceId, batchStatus);
         
-        // update job information keyed by execution id
-        if (persistenceService instanceof JDBCPersistenceManagerImpl){
-        	Timestamp updateTS = new Timestamp(0);
-        	persistenceService.jobExecutionStatusStringUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.BATCH_STATUS, ExecutionStatus.getStringValue(batchStatus), updateTS);
+        //set update time onto the runtime JobExecution Obj - should I also update the status string here too?
+        long time = System.currentTimeMillis();
+    	Timestamp timestamp = new Timestamp(time);
+    	jobExecution.setLastUpdateTime(timestamp);
+    	
+    	switch (batchStatus) {
+    	case STARTING:
+    		//perisistence call to update batch status and update time
+    		JobExecutionHelper.updateBatchStatusUPDATEonly(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
+    		break;
+    	case STARTED:
+    		//perisistence call to update batch status and update time and start time
+    		// Timestamp startTS = new Timestamp(time);
+    		JobExecutionHelper.updateBatchStatusSTART(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
+    		break;
+    	case STOPPING:
+    		//perisistence call to update batch status and update time
+    		JobExecutionHelper.updateBatchStatusUPDATEonly(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
+    		break;
+    	case STOPPED:
+    		//perisistence call to update batch status and update time and stop time
+    		// Timestamp stopTS = new Timestamp(time);
+    		JobExecutionHelper.updateBatchStatusSTOP(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
+    		break;
+    	case COMPLETED:
+    		//perisistence call to update batch status and update time and end time
+    		// Timestamp stopTS = new Timestamp(time);
+    		JobExecutionHelper.updateBatchStatusCOMPLETED(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
+    		break;
+    	case FAILED:
+    		//perisistence call to update batch status and update time and end time
+    		// Timestamp endTS = new Timestamp(time);
+    		JobExecutionHelper.updateBatchStatusFAILED(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
+    		break;
+    	default:
+    			//?
         }
+    	
+        // update job execution instance information keyed by execution id
+        //if (persistenceService instanceof JDBCPersistenceManagerImpl){	
+        //	persistenceService.jobExecutionStatusStringUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.BATCH_STATUS, ExecutionStatus.getStringValue(batchStatus), updateTS);
+        //}
+        
     }
 
-    public void setAnalyzerProxy(PartitionAnalyzerProxy analyzerProxy) {
-        this.analyzerProxy = analyzerProxy;
+    public void setAnalyzerQueue(LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue) {
+        this.analyzerQueue = analyzerQueue;
     }
 
 }

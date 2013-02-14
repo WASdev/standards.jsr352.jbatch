@@ -23,8 +23,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
+import com.ibm.batch.container.context.impl.StepContextImpl;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.status.JobStatus;
@@ -159,26 +161,66 @@ public class InMemoryPersistenceManagerImpl extends AbstractMapBasedPersistenceM
 
 	@Override
 	public void stepExecutionCreateStepExecutionData(String stepExecutionKey,
-			long jobExecutionID, long stepExecutionID) {
+			long jobExecutionID, StepContextImpl stepContext) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public long stepExecutionQueryID(String key, String idtype) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public List<StepExecution> stepExecutionQueryIDList(long key, String idtype) {
+	public JobExecution jobOperatorGetJobExecution(long jobExecutionId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public void jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(long key,
+			String statusToUpdate, String statusString, Timestamp updatets) {
+		// TODO Auto-generated method stub
+		
+	}
 
-	
-	
+	@Override
+	public void jobOperatorUpdateBatchStatusWithUPDATETSonly(long key,
+			String statusToUpdate, String statusString, Timestamp updatets) {
+		// TODO Auto-generated method stub
+		
+	}
 
+	@Override
+	public List<JobExecution> jobOperatorGetJobExecutionsByJobInstanceID(
+			long jobInstanceID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<JobExecution> jobOperatorGetJobExecutions(long jobInstanceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<Long> jobOperatorGetRunningInstances(String jobName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<StepExecution> getStepExecutionIDListQueryByJobID(long execid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public StepExecution getStepExecutionObjQueryByStepID(long stepexecutionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Properties getParameters(long instanceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

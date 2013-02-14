@@ -16,66 +16,70 @@
  */
 package jsr352.tck.chunkartifacts;
 
+import java.io.Externalizable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.batch.annotation.ItemWriter;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.WriteItems;
+import javax.batch.api.AbstractItemWriter;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import jsr352.tck.chunktypes.InventoryCheckpointData;
 import jsr352.tck.chunktypes.InventoryRecord;
 
-@ItemWriter("InventoryInitWriter")
-@javax.inject.Named("InventoryInitWriter")
-public class InventoryInitWriter {
+@javax.inject.Named("inventoryInitWriter")
+public class InventoryInitWriter extends AbstractItemWriter<InventoryRecord> {
 	
 	
 	protected DataSource dataSource = null;
 	
-	@Open
-	public void openMe(InventoryCheckpointData cpd) throws NamingException {
+    public void open(Externalizable cpd) throws NamingException {
 
-		InitialContext ctx = new InitialContext();
-		dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
+        InitialContext ctx = new InitialContext();
+        dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
 
-	}
+    }
+
 	
-	
-	@WriteItems
-	public void writeItem(List<InventoryRecord> records) throws SQLException {
-		int itemID = -1;
-		int quantity = -1;
-		
-		for (InventoryRecord record : records) {
-			itemID = record.getItemID();
-			quantity = record.getQuantity();
-		}
-		
-		Connection connection = null;	
-		PreparedStatement statement = null;
-		
-		try {
-			connection = ConnectionHelper.getConnection(dataSource);
+    @Override
+    public void writeItems(List<InventoryRecord> records) throws Exception {
+        int itemID = -1;
+        int quantity = -1;
+        
+        for (InventoryRecord record : records) {
+            itemID = record.getItemID();
+            quantity = record.getQuantity();
+        }
+        
+        Connection connection = null;   
+        PreparedStatement statement = null;
+        
+        try {
+            
+            //Clear all orders from the orders table
+            connection = ConnectionHelper.getConnection(dataSource);
+            statement = connection.prepareStatement(ConnectionHelper.DELETE_ALL_ORDERS);
+            int rs = statement.executeUpdate();
 
-			statement = connection.prepareStatement(ConnectionHelper.UPDATE_INVENTORY);
-			statement.setInt(2, itemID);
-			statement.setInt(1, quantity);
-			int rs = statement.executeUpdate();
-
-			
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			ConnectionHelper.cleanupConnection(connection, null, statement);
-		}
-		
-	}
-
+            
+            ConnectionHelper.cleanupConnection(connection, null, statement);
+            
+            //Reset the inventory table
+            connection = ConnectionHelper.getConnection(dataSource);
+            statement = connection.prepareStatement(ConnectionHelper.UPDATE_INVENTORY);
+            statement.setInt(2, itemID);
+            statement.setInt(1, quantity);
+            rs = statement.executeUpdate();
+            
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            ConnectionHelper.cleanupConnection(connection, null, statement);
+        }
+        
+        
+    }
 
 }

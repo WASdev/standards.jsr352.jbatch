@@ -23,7 +23,11 @@ import jsr352.batch.jsl.Listener;
 public class ListenerPropertyResolverImpl extends AbstractPropertyResolver<Listener> {
 
 
-    @Override
+    public ListenerPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
+
+	@Override
     public Listener substituteProperties(final Listener listener, final Properties submittedProps, final Properties parentProps) {
         //resolve all the properties used in attributes and update the JAXB model
         listener.setRef(this.replaceAllProperties(listener.getRef(), submittedProps, parentProps));

@@ -18,37 +18,34 @@ package jsr352.tck.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.*;
-import javax.batch.annotation.Process;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractBatchlet;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
-@Batchlet("BatchletStopOnEndOn")
-@javax.inject.Named("BatchletStopOnEndOn")
-public class BatchletStopOnEndOn {
+@javax.inject.Named("batchletStopOnEndOn")
+public class BatchletStopOnEndOn extends AbstractBatchlet{
 
     private final static String sourceClass = BatchletStopOnEndOn.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    @BatchContext
+    @Inject
     StepContext<?,?> stepCtx;
 
-    @BatchContext
+    @Inject
     JobContext<?> jobCtx;
     
 
+    @Inject    
     @BatchProperty(name="execution.number")
     String executionNumberString;
 
-    @BeginStep
-    public void begin() throws Exception {
-        logger.fine(sourceClass + ".begin()");	            
-    }
 
     /*
      * Appends "intended.exit.status" property to the current Job-level ExitStatus
      */
-    @Process
+    @Override
     public String process() throws Exception {
         logger.fine(sourceClass + ".calculateExitStatus(), executionNumberString = " + executionNumberString);
         
@@ -98,14 +95,10 @@ public class BatchletStopOnEndOn {
         }
     }
 
-    @Stop
-    public void cancel() throws Exception {
+    @Override
+    public void stop() throws Exception {
         // Do nothing since this is too quick to bother canceling.
         logger.fine(sourceClass + ".cancel()");		
     }
 
-    @EndStep
-    public void end() throws Exception {
-        logger.fine(sourceClass + ".end()");
-    }
 }

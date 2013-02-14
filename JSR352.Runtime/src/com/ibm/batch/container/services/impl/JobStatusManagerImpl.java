@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.batch.container.config.IBatchConfig;
@@ -31,7 +32,6 @@ import com.ibm.batch.container.status.JobStatus;
 import com.ibm.batch.container.status.JobStatusKey;
 import com.ibm.batch.container.status.StepStatus;
 import com.ibm.batch.container.status.StepStatusKey;
-import com.ibm.batch.container.util.ExecutionStatus.BatchStatus;
 
 public class JobStatusManagerImpl implements IJobStatusManagerService {
 

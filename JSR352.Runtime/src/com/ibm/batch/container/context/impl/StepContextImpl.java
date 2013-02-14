@@ -17,30 +17,30 @@
 package com.ibm.batch.container.context.impl;
 
 import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.Metric;
-import javax.batch.runtime.context.FlowContext;
+import javax.batch.runtime.context.BatchContext;
 import javax.batch.runtime.context.StepContext;
 
-public class StepContextImpl<T, P extends Externalizable> 
-implements StepContext<T, P> {
+public class StepContextImpl<T, P extends Externalizable> implements StepContext<T, P> {
 
     private final static String sourceClass = StepContextImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
     
     private String stepId = null;
-    private String batchStatus = null;
+    private BatchStatus batchStatus = null;
     private String exitStatus = null;
     private T transientUserData = null;
     private P persistentUserData = null;
+    Timestamp starttime = null;
+    Timestamp endtime = null;
     
     private long stepExecID = 0;
     
@@ -53,7 +53,7 @@ implements StepContext<T, P> {
     }
 
     @Override
-    public String getBatchStatus() {
+    public BatchStatus getBatchStatus() {
         return batchStatus;
     }
 
@@ -109,7 +109,7 @@ implements StepContext<T, P> {
         }
     }
 
-    public void setBatchStatus(String status) {
+    public void setBatchStatus(BatchStatus status) {
         this.batchStatus = status;
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "Batch status set to: " + status + " for step id:" + getId());
@@ -144,28 +144,57 @@ implements StepContext<T, P> {
 		return stepExecID;
 	}
 
+	/*
 	@Override
 	public List<FlowContext<T>> getBatchContexts() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+    */
+	
+	/*
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}
-
+    */
+	
+	/*
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		// TODO Auto-generated method stub
 		
 	}
+	*/
 	
 	public void setStepExecutionId(long stepExecutionId){
 		stepExecID = stepExecutionId;
 	}
-    
+
+	public void setStartTime(Timestamp startTS) {
+		starttime = startTS;
+		
+	}
+
+	public void setEndTime(Timestamp endTS) {
+		endtime = endTS;
+		
+	}
+	
+	public Timestamp getStartTimeTS(){
+		return starttime;
+	}
+	
+	public Timestamp getEndTimeTS(){
+		return endtime;
+	}
+
+    @Override
+    public List<BatchContext<T>> getBatchContexts() {
+        // TODO Auto-generated method stub
+        return null;
+    }   
 
 }

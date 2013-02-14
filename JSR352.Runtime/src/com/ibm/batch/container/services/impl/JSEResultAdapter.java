@@ -19,6 +19,8 @@ package com.ibm.batch.container.services.impl;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.services.ParallelTaskResult;
@@ -28,6 +30,9 @@ import com.ibm.batch.container.services.ParallelTaskResult;
  */
 public class JSEResultAdapter implements ParallelTaskResult {
 
+    private final static String sourceClass = JSEResultAdapter.class.getName();
+    private final static Logger logger = Logger.getLogger(sourceClass);
+    
     private Future result;
     
     public JSEResultAdapter(Future result) {
@@ -41,7 +46,12 @@ public class JSEResultAdapter implements ParallelTaskResult {
         } catch (InterruptedException e) {
             throw new BatchContainerServiceException("Parallel thread was interrupted while waiting for result.", e);
         } catch (ExecutionException e) {
-            throw new BatchContainerServiceException("Parallel thread was aborted due to exception.", e);
+            //We will handle this case through a failed batch status. We will not propagate the exception
+            //through the entire thread.
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine(sourceClass + ": caught exception/error: " + e.getMessage() + " : Stack trace: " + e.getCause().toString());
+            }
+            
         } catch (CancellationException e) {
             throw new BatchContainerServiceException("Parallel thread was canceled before completion.", e);
         }

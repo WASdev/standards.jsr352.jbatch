@@ -17,6 +17,6 @@
 -->
 <job id="job1" xmlns="http://batch.jsr352/jsl">
 	<step id="step1" >
-		<batchlet ref="MyBatchlet" />
+		<batchlet ref="myBatchletImpl" />
 	</step>
 </job>

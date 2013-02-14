@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.artifact.proxy;
 
 import java.util.ArrayList;
@@ -21,53 +21,47 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.batch.annotation.CheckpointListener;
-import javax.batch.annotation.FlowListener;
-import javax.batch.annotation.ItemProcessListener;
-import javax.batch.annotation.ItemReadListener;
-import javax.batch.annotation.ItemWriteListener;
-import javax.batch.annotation.JobListener;
-import javax.batch.annotation.RetryListener;
-import javax.batch.annotation.SkipListener;
-import javax.batch.annotation.SplitListener;
-import javax.batch.annotation.StepListener;
+import javax.batch.api.ChunkListener;
+import javax.batch.api.ItemProcessListener;
+import javax.batch.api.ItemReadListener;
+import javax.batch.api.ItemWriteListener;
+import javax.batch.api.JobListener;
+import javax.batch.api.RetryProcessListener;
+import javax.batch.api.RetryReadListener;
+import javax.batch.api.RetryWriteListener;
+import javax.batch.api.SkipProcessListener;
+import javax.batch.api.SkipReadListener;
+import javax.batch.api.SkipWriteListener;
+import javax.batch.api.StepListener;
 
-import jsr352.batch.jsl.Flow;
 import jsr352.batch.jsl.JSLJob;
 import jsr352.batch.jsl.Listener;
 import jsr352.batch.jsl.Listeners;
 import jsr352.batch.jsl.Property;
-import jsr352.batch.jsl.Split;
 import jsr352.batch.jsl.Step;
 
 public class ListenerFactory {
 
-    private List<ListenerInfo> jobLevelListenerInfo = null;          
+    private List<ListenerInfo> jobLevelListenerInfo = null;
 
-    private Map<String, List<ListenerInfo>> stepLevelListenerInfo =  
-        new HashMap<String, List<ListenerInfo>>();
+    private Map<String, List<ListenerInfo>> stepLevelListenerInfo = new HashMap<String, List<ListenerInfo>>();
 
-    private Map<String, List<ListenerInfo>> splitLevelListenerInfo =  
-        new HashMap<String, List<ListenerInfo>>();
-
-    private Map<String, List<ListenerInfo>> flowLevelListenerInfo =  
-        new HashMap<String, List<ListenerInfo>>();
-    
     /*
-     * Build job-level ListenerInfo(s) up-front, but build step-level ones lazily.
+     * Build job-level ListenerInfo(s) up-front, but build step-level ones
+     * lazily.
      */
-    public ListenerFactory(JSLJob jobModel) {     
-        initJobLevelListeners(jobModel);
+    public ListenerFactory(JSLJob jobModel, InjectionReferences injectionRefs) {
+        initJobLevelListeners(jobModel, injectionRefs);
     }
 
-    private void initJobLevelListeners(JSLJob jobModel) {
+    private void initJobLevelListeners(JSLJob jobModel, InjectionReferences injectionRefs) {
         jobLevelListenerInfo = new ArrayList<ListenerInfo>();
 
         Listeners jobLevelListeners = jobModel.getListeners();
 
         if (jobLevelListeners != null) {
             for (Listener listener : jobLevelListeners.getListenerList()) {
-                ListenerInfo info = buildListenerInfo(listener);
+                ListenerInfo info = buildListenerInfo(listener, injectionRefs);
                 jobLevelListenerInfo.add(info);
             }
         }
@@ -75,18 +69,18 @@ public class ListenerFactory {
 
     /*
      * Does NOT throw an exception if a step-level listener is annotated with
-     * @JobListener, even if that is the only type of listener annotation found. 
-     */   
-    private synchronized List<ListenerInfo> getStepListenerInfo(Step step) {
+     * 
+     * @JobListener, even if that is the only type of listener annotation found.
+     */
+    private synchronized List<ListenerInfo> getStepListenerInfo(Step step, InjectionReferences injectionRefs) {
         if (!stepLevelListenerInfo.containsKey(step.getId())) {
-            List<ListenerInfo> stepListenerInfoList = 
-                new ArrayList<ListenerInfo>();
+            List<ListenerInfo> stepListenerInfoList = new ArrayList<ListenerInfo>();
             stepLevelListenerInfo.put(step.getId(), stepListenerInfoList);
 
             Listeners stepLevelListeners = step.getListeners();
             if (stepLevelListeners != null) {
                 for (Listener listener : stepLevelListeners.getListenerList()) {
-                    ListenerInfo info = buildListenerInfo(listener);
+                    ListenerInfo info = buildListenerInfo(listener, injectionRefs);
                     stepListenerInfoList.add(info);
                 }
             }
@@ -97,60 +91,14 @@ public class ListenerFactory {
         }
     }
 
-    /*
-     * Does NOT throw an exception if a split-level listener is annotated with
-     * @JobListener, even if that is the only type of listener annotation found. 
-     */   
-    private synchronized List<ListenerInfo> getSplitListenerInfo(Split split) {
-        if (!splitLevelListenerInfo.containsKey(split.getId())) {
-            List<ListenerInfo> splitListenerInfoList = 
-                new ArrayList<ListenerInfo>();
-            splitLevelListenerInfo.put(split.getId(), splitListenerInfoList);
-
-            Listeners splitLevelListeners = split.getListeners();
-            if (splitLevelListeners != null) {
-                for (Listener listener : splitLevelListeners.getListenerList()) {
-                    ListenerInfo info = buildListenerInfo(listener);
-                    splitListenerInfoList.add(info);
-                }
-            }
-
-            return splitListenerInfoList;
-        } else {
-            return splitLevelListenerInfo.get(split.getId());
-        }
-    }
-
-    /*
-     * Does NOT throw an exception if a flow-level listener is annotated with
-     * @JobListener, even if that is the only type of listener annotation found. 
-     */   
-    private synchronized List<ListenerInfo> getFlowListenerInfo(Flow flow) {
-        if (!flowLevelListenerInfo.containsKey(flow.getId())) {
-            List<ListenerInfo> flowListenerInfoList = 
-                new ArrayList<ListenerInfo>();
-            flowLevelListenerInfo.put(flow.getId(), flowListenerInfoList);
-
-            Listeners flowLevelListeners = flow.getListeners();
-            if (flowLevelListeners != null) {
-                for (Listener listener : flowLevelListeners.getListenerList()) {
-                    ListenerInfo info = buildListenerInfo(listener);
-                    flowListenerInfoList.add(info);
-                }
-            }
-
-            return flowListenerInfoList;
-        } else {
-            return flowLevelListenerInfo.get(flow.getId());
-        }
-    }
-    
-    private ListenerInfo buildListenerInfo(Listener listener) {
+    private ListenerInfo buildListenerInfo(Listener listener, InjectionReferences injectionRefs) {
 
         String id = listener.getRef();
 
         List<Property> propList = (listener.getProperties() == null) ? null : listener.getProperties().getPropertyList();
-        Object listenerArtifact = ProxyFactory.loadArtifact(id);
+
+        injectionRefs.setProps(propList);
+        Object listenerArtifact = ProxyFactory.loadArtifact(id, injectionRefs);
         if (listenerArtifact == null) {
             throw new IllegalArgumentException("Load of artifact id: " + id + " returned <null>.");
         }
@@ -163,28 +111,22 @@ public class ListenerFactory {
         List<JobListenerProxy> retVal = new ArrayList<JobListenerProxy>();
         for (ListenerInfo li : jobLevelListenerInfo) {
             if (li.isJobListener()) {
-                JobListenerProxy proxy = new JobListenerProxy(li.getArtifact(), li.getPropList());
+                JobListenerProxy proxy = new JobListenerProxy((JobListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
         return retVal;
     }
 
-    public List<CheckpointListenerProxy> getCheckpointListeners(Step step) {
+    public List<ChunkListenerProxy> getChunkListeners(Step step, InjectionReferences injectionRefs) {
 
-        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step);
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
 
-        List<CheckpointListenerProxy> retVal = new ArrayList<CheckpointListenerProxy>();
+        List<ChunkListenerProxy> retVal = new ArrayList<ChunkListenerProxy>();
 
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isCheckpointListener()) {
-                CheckpointListenerProxy proxy = new CheckpointListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
         for (ListenerInfo li : stepListenerInfo) {
-            if (li.isCheckpointListener()) {
-                CheckpointListenerProxy proxy = new CheckpointListenerProxy(li.getArtifact(), li.getPropList());
+            if (li.isChunkListener()) {
+                ChunkListenerProxy proxy = new ChunkListenerProxy((ChunkListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
@@ -192,21 +134,15 @@ public class ListenerFactory {
         return retVal;
     }
 
-    public List<ItemProcessListenerProxy> getItemProcessListeners(Step step) {
+    public List<ItemProcessListenerProxy> getItemProcessListeners(Step step, InjectionReferences injectionRefs) {
 
-        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step);
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
 
         List<ItemProcessListenerProxy> retVal = new ArrayList<ItemProcessListenerProxy>();
 
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isItemProcessListener()) {
-                ItemProcessListenerProxy proxy = new ItemProcessListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isItemProcessListener()) {
-                ItemProcessListenerProxy proxy = new ItemProcessListenerProxy(li.getArtifact(), li.getPropList());
+                ItemProcessListenerProxy proxy = new ItemProcessListenerProxy((ItemProcessListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
@@ -214,21 +150,15 @@ public class ListenerFactory {
         return retVal;
     }
 
-    public List<ItemReadListenerProxy> getItemReadListeners(Step step) {
+    public List<ItemReadListenerProxy> getItemReadListeners(Step step, InjectionReferences injectionRefs) {
 
-        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step);
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
 
         List<ItemReadListenerProxy> retVal = new ArrayList<ItemReadListenerProxy>();
 
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isItemReadListener()) {
-                ItemReadListenerProxy proxy = new ItemReadListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isItemReadListener()) {
-                ItemReadListenerProxy proxy = new ItemReadListenerProxy(li.getArtifact(), li.getPropList());
+                ItemReadListenerProxy proxy = new ItemReadListenerProxy((ItemReadListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
@@ -236,20 +166,14 @@ public class ListenerFactory {
         return retVal;
     }
 
-    public List<ItemWriteListenerProxy> getItemWriteListeners(Step step) {
-        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step);
+    public List<ItemWriteListenerProxy> getItemWriteListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
 
         List<ItemWriteListenerProxy> retVal = new ArrayList<ItemWriteListenerProxy>();
 
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isItemWriteListener()) {
-                ItemWriteListenerProxy proxy = new ItemWriteListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isItemWriteListener()) {
-                ItemWriteListenerProxy proxy = new ItemWriteListenerProxy(li.getArtifact(), li.getPropList());
+                ItemWriteListenerProxy proxy = new ItemWriteListenerProxy((ItemWriteListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
@@ -257,42 +181,59 @@ public class ListenerFactory {
         return retVal;
     }
 
+    public List<RetryProcessListenerProxy> getRetryProcessListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
 
-    public List<RetryListenerProxy> getRetryListeners(Step step) {
-        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step);
+        List<RetryProcessListenerProxy> retVal = new ArrayList<RetryProcessListenerProxy>();
 
-        List<RetryListenerProxy> retVal = new ArrayList<RetryListenerProxy>();
-
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isRetryListener()) {
-                RetryListenerProxy proxy = new RetryListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
         for (ListenerInfo li : stepListenerInfo) {
-            if (li.isRetryListener()) {
-                RetryListenerProxy proxy = new RetryListenerProxy(li.getArtifact(), li.getPropList());
+            if (li.isRetryProcessListener()) {
+                RetryProcessListenerProxy proxy = new RetryProcessListenerProxy((RetryProcessListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
 
         return retVal;
     }
+    
+    public List<RetryReadListenerProxy> getRetryReadListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
 
-    public List<SkipListenerProxy> getSkipListeners(Step step) {
-        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step);
+        List<RetryReadListenerProxy> retVal = new ArrayList<RetryReadListenerProxy>();
 
-        List<SkipListenerProxy> retVal = new ArrayList<SkipListenerProxy>();
-
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isSkipListener()) {
-                SkipListenerProxy proxy = new SkipListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
         for (ListenerInfo li : stepListenerInfo) {
-            if (li.isSkipListener()) {
-                SkipListenerProxy proxy = new SkipListenerProxy(li.getArtifact(), li.getPropList());
+            if (li.isRetryReadListener()) {
+                RetryReadListenerProxy proxy = new RetryReadListenerProxy((RetryReadListener) li.getArtifact());
+                retVal.add(proxy);
+            }
+        }
+
+        return retVal;
+    }
+    
+    public List<RetryWriteListenerProxy> getRetryWriteListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
+
+        List<RetryWriteListenerProxy> retVal = new ArrayList<RetryWriteListenerProxy>();
+
+        for (ListenerInfo li : stepListenerInfo) {
+            if (li.isRetryWriteListener()) {
+                RetryWriteListenerProxy proxy = new RetryWriteListenerProxy((RetryWriteListener) li.getArtifact());
+                retVal.add(proxy);
+            }
+        }
+
+        return retVal;
+    }
+    
+    public List<SkipProcessListenerProxy> getSkipProcessListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
+
+        List<SkipProcessListenerProxy> retVal = new ArrayList<SkipProcessListenerProxy>();
+
+        for (ListenerInfo li : stepListenerInfo) {
+            if (li.isSkipProcessListener()) {
+                SkipProcessListenerProxy proxy = new SkipProcessListenerProxy((SkipProcessListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
@@ -300,20 +241,44 @@ public class ListenerFactory {
         return retVal;
     }
 
-    public List<StepListenerProxy> getStepListeners(Step step) {
-        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step);
+    public List<SkipReadListenerProxy> getSkipReadListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
+
+        List<SkipReadListenerProxy> retVal = new ArrayList<SkipReadListenerProxy>();
+
+        for (ListenerInfo li : stepListenerInfo) {
+            if (li.isSkipReadListener()) {
+                SkipReadListenerProxy proxy = new SkipReadListenerProxy((SkipReadListener) li.getArtifact());
+                retVal.add(proxy);
+            }
+        }
+
+        return retVal;
+    }
+    
+    public List<SkipWriteListenerProxy> getSkipWriteListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
+
+        List<SkipWriteListenerProxy> retVal = new ArrayList<SkipWriteListenerProxy>();
+
+        for (ListenerInfo li : stepListenerInfo) {
+            if (li.isSkipWriteListener()) {
+                SkipWriteListenerProxy proxy = new SkipWriteListenerProxy((SkipWriteListener) li.getArtifact());
+                retVal.add(proxy);
+            }
+        }
+
+        return retVal;
+    }
+
+    public List<StepListenerProxy> getStepListeners(Step step, InjectionReferences injectionRefs) {
+        List<ListenerInfo> stepListenerInfo = getStepListenerInfo(step, injectionRefs);
 
         List<StepListenerProxy> retVal = new ArrayList<StepListenerProxy>();
 
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isStepListener()) {
-                StepListenerProxy proxy = new StepListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isStepListener()) {
-                StepListenerProxy proxy = new StepListenerProxy(li.getArtifact(), li.getPropList());
+                StepListenerProxy proxy = new StepListenerProxy((StepListener) li.getArtifact());
                 retVal.add(proxy);
             }
         }
@@ -321,49 +286,6 @@ public class ListenerFactory {
         return retVal;
     }
 
-    public List<SplitListenerProxy> getSplitListeners(Split split) {
-        List<ListenerInfo> splitListenerInfo = getSplitListenerInfo(split);
-
-        List<SplitListenerProxy> retVal = new ArrayList<SplitListenerProxy>();
-
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isSplitListener()) {
-                SplitListenerProxy proxy = new SplitListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
-        for (ListenerInfo li : splitListenerInfo) {
-            if (li.isSplitListener()) {
-                SplitListenerProxy proxy = new SplitListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
-
-        return retVal;
-    }
-    
-    public List<FlowListenerProxy> getFlowListeners(Flow flow) {
-        List<ListenerInfo> flowListenerInfo = getFlowListenerInfo(flow);
-
-        List<FlowListenerProxy> retVal = new ArrayList<FlowListenerProxy>();
-
-        for (ListenerInfo li : jobLevelListenerInfo) {
-            if (li.isFlowListener()) {
-                FlowListenerProxy proxy = new FlowListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
-        for (ListenerInfo li : flowListenerInfo) {
-            if (li.isFlowListener()) {
-                FlowListenerProxy proxy = new FlowListenerProxy(li.getArtifact(), li.getPropList());
-                retVal.add(proxy);
-            }
-        }
-
-        return retVal;
-    }
-    
-    
     private class ListenerInfo {
         Object listenerArtifact = null;
         Class listenerArtifactClass = null;
@@ -380,40 +302,52 @@ public class ListenerFactory {
         }
 
         boolean isJobListener() {
-            return listenerArtifactClass.isAnnotationPresent(JobListener.class);   
+
+            return JobListener.class.isAssignableFrom(listenerArtifactClass);
         }
 
-        boolean isSplitListener() {
-            return listenerArtifactClass.isAnnotationPresent(SplitListener.class);
-        }
-        
-        boolean isFlowListener() {
-            return listenerArtifactClass.isAnnotationPresent(FlowListener.class);
-        }
-        
         boolean isStepListener() {
-            return listenerArtifactClass.isAnnotationPresent(StepListener.class);
+            return StepListener.class.isAssignableFrom(listenerArtifactClass);
         }
 
-        boolean isCheckpointListener() {
-            return listenerArtifactClass.isAnnotationPresent(CheckpointListener.class);
+        boolean isChunkListener() {
+            return ChunkListener.class.isAssignableFrom(listenerArtifactClass);
         }
 
         boolean isItemProcessListener() {
-            return listenerArtifactClass.isAnnotationPresent(ItemProcessListener.class);
-        }
-        boolean isItemReadListener() {
-            return listenerArtifactClass.isAnnotationPresent(ItemReadListener.class);
-        }
-        boolean isItemWriteListener() {
-            return listenerArtifactClass.isAnnotationPresent(ItemWriteListener.class);
+            return ItemProcessListener.class.isAssignableFrom(listenerArtifactClass);
         }
 
-        boolean isRetryListener() {
-            return listenerArtifactClass.isAnnotationPresent(RetryListener.class);
+        boolean isItemReadListener() {
+            return ItemReadListener.class.isAssignableFrom(listenerArtifactClass);
         }
-        boolean isSkipListener() {
-            return listenerArtifactClass.isAnnotationPresent(SkipListener.class);
+
+        boolean isItemWriteListener() {
+            return ItemWriteListener.class.isAssignableFrom(listenerArtifactClass);
+        }
+
+        boolean isRetryReadListener() {
+            return RetryReadListener.class.isAssignableFrom(listenerArtifactClass);
+        }
+        
+        boolean isRetryWriteListener() {
+            return RetryWriteListener.class.isAssignableFrom(listenerArtifactClass);
+        }
+        
+        boolean isRetryProcessListener() {
+            return RetryProcessListener.class.isAssignableFrom(listenerArtifactClass);
+        }
+
+        boolean isSkipProcessListener() {
+            return SkipProcessListener.class.isAssignableFrom(listenerArtifactClass);
+        }
+        
+        boolean isSkipReadListener() {
+            return SkipReadListener.class.isAssignableFrom(listenerArtifactClass);
+        }
+        
+        boolean isSkipWriteListener() {
+            return SkipWriteListener.class.isAssignableFrom(listenerArtifactClass);
         }
 
         List<Property> getPropList() {
@@ -424,4 +358,5 @@ public class ListenerFactory {
             this.propList = propList;
         }
     }
+
 }

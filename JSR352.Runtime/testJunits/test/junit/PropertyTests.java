@@ -44,7 +44,7 @@ public class PropertyTests {
         JSLJob jobModel = jobResolver.resolveModel(jobXML);
         
         //Resolve the properties for this job
-        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver();
+        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(false);
         propResolver.substituteProperties(jobModel);  
 
         String propValue = null;
@@ -67,7 +67,7 @@ public class PropertyTests {
         JSLJob jobModel = resolver.resolveModel(jobXML);
         
         //Resolve the properties for this job
-        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver();
+        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(false);
         propResolver.substituteProperties(jobModel);  
         
         String propValue = null;

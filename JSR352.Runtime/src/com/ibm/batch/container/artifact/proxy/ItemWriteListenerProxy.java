@@ -16,72 +16,49 @@
 */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.List;
 
-import javax.batch.annotation.AfterWrite;
-import javax.batch.annotation.BeforeWrite;
-import javax.batch.annotation.OnWriteError;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.ItemWriteListener;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class ItemWriteListenerProxy extends AbstractProxy {
+public class ItemWriteListenerProxy extends AbstractProxy<ItemWriteListener> implements ItemWriteListener { 
 
-    private Method beforeWriteMethod = null;
-    private Method afterWriteMethod = null;
-    private Method onWriteErrorMethod = null;
 
-    ItemWriteListenerProxy(Object delegate, List<Property> props) {
-        super(delegate, props);
+    ItemWriteListenerProxy(ItemWriteListener delegate) {
+        super(delegate);
+    }
 
-        for (Method method : this.delegate.getClass().getDeclaredMethods()) {
-            Annotation beforeWrite = method.getAnnotation(BeforeWrite.class);
-            if (beforeWrite != null) {
-                beforeWriteMethod = method;
-            }
-
-            Annotation afterWrite = method.getAnnotation(AfterWrite.class);
-            if (afterWrite != null) {
-                afterWriteMethod = method;
-            }
-
-            Annotation onWriteError = method.getAnnotation(OnWriteError.class);
-            if (onWriteError != null) {
-                onWriteErrorMethod = method;
-            }
+    @Override
+    public void afterWrite(List items) {
+        
+        try {
+            this.delegate.afterWrite(items);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void beforeWrite() {
-        if (beforeWriteMethod != null) {
-            try {
-                beforeWriteMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+    @Override
+    public void beforeWrite(List items) {
+        
+        try {
+            this.delegate.beforeWrite(items);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void afterWrite() {
-        if (afterWriteMethod != null) {
-            try {
-                afterWriteMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+    @Override
+    public void onWriteError(List items, Exception ex) {
+        
+        
+        try {
+            this.delegate.onWriteError(items, ex);
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
 
-    public void onWriteError() {
-        if (onWriteErrorMethod != null) {
-            try {
-                onWriteErrorMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
+
 }

@@ -17,44 +17,27 @@
 package com.ibm.batch.container.artifact.proxy;
 
 import java.io.Externalizable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
 
-import javax.batch.annotation.CollectPartitionData;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.PartitionCollector;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class PartitionCollectorProxy extends AbstractProxy {
-
-    private Method collectPartitionDataMethod = null;
+public class PartitionCollectorProxy extends AbstractProxy<PartitionCollector> implements PartitionCollector {
 
 
-    PartitionCollectorProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
+    PartitionCollectorProxy(PartitionCollector delegate) { 
+        super(delegate);
         
-        // find annotations
-        for (Method method : delegate.getClass().getDeclaredMethods()) {
-            Annotation beforeProcess = method.getAnnotation(CollectPartitionData.class);
-            if (beforeProcess != null) {
-                collectPartitionDataMethod = method;
-            }
-
-        }
     }
 
+    @Override
     public Externalizable collectPartitionData() {
-        Externalizable result = null;
-        if (collectPartitionDataMethod != null) {
-            try {
-                result = (Externalizable)collectPartitionDataMethod.invoke(delegate);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
         
-        return result;
+        try {
+            return this.delegate.collectPartitionData();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
     }
+
 }

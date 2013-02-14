@@ -18,16 +18,16 @@ package jsr352.tck.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.*;
-import javax.batch.annotation.Process;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractBatchlet;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import jsr352.tck.common.StatusConstants;
 
-@Batchlet("DeciderBatchlet")
-@javax.inject.Named("DeciderBatchlet")
-public class DeciderTestsBatchlet implements StatusConstants {
+@javax.inject.Named("deciderTestsBatchlet")
+public class DeciderTestsBatchlet extends AbstractBatchlet implements StatusConstants {
 
 	public final static String NORMAL_VALUE = "21";
 	public final static String SPECIAL_VALUE = "25";
@@ -37,16 +37,18 @@ public class DeciderTestsBatchlet implements StatusConstants {
     private final static String sourceClass = DeciderTestsBatchlet.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    @BatchContext
+    @Inject
     StepContext<String, ?> stepCtx;
 
-    @BatchContext
+    @Inject
     JobContext<Integer> jobCtx;
 
+    @Inject    
     @BatchProperty(name=ACTION)
     String action;
     
     // Take a shortcut and use a String rather than an int.
+    @Inject    
     @BatchProperty(name=ACTUAL_VALUE)
     String value1; 
         
@@ -54,8 +56,8 @@ public class DeciderTestsBatchlet implements StatusConstants {
      * The idea here is that the decider will act on a combination of the 'action'
      * property and the exit status.
      */
-    @Process
-    public String run() {
+    @Override
+    public String process() {
     	if (action != null) {
     		stepCtx.setTransientUserData(action);
     	}
@@ -68,8 +70,8 @@ public class DeciderTestsBatchlet implements StatusConstants {
     	}
     }
     
-    @Stop
-    public void cancel(){
+    @Override
+    public void stop(){
         // Do nothing since this is too quick to bother canceling.
         logger.fine(sourceClass + ".cancel()");		
     }

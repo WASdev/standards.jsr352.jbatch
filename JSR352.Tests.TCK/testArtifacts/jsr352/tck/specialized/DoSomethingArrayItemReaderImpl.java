@@ -16,28 +16,39 @@
 */
 package jsr352.tck.specialized;
 
-import javax.batch.annotation.*;
+import java.io.Externalizable;
+
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractItemReader;
+import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ArrayIndexCheckpointData;
 import jsr352.tck.chunktypes.ReadRecord;
+import jsr352.tck.reusable.MyPersistentRestartUserData;
 
-@ItemReader("DoSomethingArrayItemReader")
-@javax.inject.Named("DoSomethingArrayItemReader")
-public class DoSomethingArrayItemReaderImpl {
+@javax.inject.Named("doSomethingArrayItemReaderImpl")
+public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadRecord> {
 		
 	private int count = 0;
 	private int[] readerDataArray;
 	private int idx;
 	ArrayIndexCheckpointData _cpd = new ArrayIndexCheckpointData();
 	
-	@BatchProperty(name="readrecord.fail")
+    @Inject    
+    @BatchProperty(name="readrecord.fail")
     String readrecordfailNumberString;
 	
-	@BatchProperty(name="execution.number")
+    @Inject    
+    @BatchProperty(name="execution.number")
     String executionNumberString;
 	
-	@BatchProperty(name="app.arraysize")
+    @Inject    
+    @BatchProperty(name="app.arraysize")
     String appArraySizeString;
+	
+	     @Inject 
+	 private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null; 
 		
 	int failnum;
 	int execnum;
@@ -47,14 +58,24 @@ public class DoSomethingArrayItemReaderImpl {
 			
 	}
 		
-		@Open
-		public void openMe(ArrayIndexCheckpointData cpd) {
+		@Override
+		public void open(Externalizable cpd) {
 						
+		    ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
+		    
 			failnum = Integer.parseInt(readrecordfailNumberString);
             execnum = Integer.parseInt(executionNumberString);
             
     		arraysize = Integer.parseInt(appArraySizeString);
     		readerDataArray =  new int[arraysize];
+    		
+ 	       //MyPersistentRestartUserData myData = null;
+	        //if ((myData = stepCtx.getPersistentUserData()) != null) {        	
+	        	//stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
+	        	//System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+	        //} else {        
+	        	//stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
+	        //}
     		
     		for (int i = 0; i<arraysize; i++){
     			// init the data array
@@ -67,15 +88,18 @@ public class DoSomethingArrayItemReaderImpl {
 			}
 			else {
 				// position at index held in the cpd
-				idx = cpd.getCurrentIndex() + 1; 
+				idx = checkpointData.getCurrentIndex() + 1; 
 			}
 			System.out.println("READ: starting at index: " + idx);
 		}
 		
-		@ReadItem
-		public ReadRecord readIt() throws Exception {
+		@Override
+		public ReadRecord readItem() throws Exception {
 		
 			int i = idx;
+			
+			execnum = stepCtx.getPersistentUserData().getExecutionNumber();
+			System.out.println("AJM: iternation number = " + execnum);
 			
 			if (i == arraysize) {
 				return null;
@@ -94,13 +118,20 @@ public class DoSomethingArrayItemReaderImpl {
 		    return new ReadRecord(readerDataArray[i]);
 		}
 		
-		@CheckpointInfo
-		public ArrayIndexCheckpointData getCPD() {
+		@Override
+		public ArrayIndexCheckpointData checkpointInfo() {
 			
 			System.out.println("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
 			System.out.println("READ: in getCPD idx : " + idx);
 			
 		    return _cpd;   
 		}
+		
+		   private class MyTransient {
+		        int data = 0;
+		        MyTransient(int x) {
+		            data = x;
+		        }   
+		    }
 
 }

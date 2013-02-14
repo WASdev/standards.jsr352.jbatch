@@ -21,16 +21,20 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.Metric;
-import javax.batch.runtime.context.FlowContext;
+import javax.batch.runtime.context.BatchContext;
 import javax.batch.runtime.context.JobContext;
+
+import jsr352.batch.jsl.JSLProperties;
+import jsr352.batch.jsl.Property;
 
 public class JobContextImpl<T> implements JobContext<T> {
 
     private final static String sourceClass = JobContextImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    private String batchStatus = null;
+    private BatchStatus batchStatus = null;
     private String exitStatus = null;
     
     private T transientUserData = null;
@@ -40,17 +44,33 @@ public class JobContextImpl<T> implements JobContext<T> {
 
     private ConcurrentHashMap<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
 
-    public JobContextImpl(String id) {
-        this.id = id;
+//    public JobContextImpl(String id) {
+//        this.id = id;
+//    }
+    
+    public JobContextImpl(String id, JSLProperties jslProperties) {
+    	this.id = id;
+    	this.properties = convertJSProperties(jslProperties);
+    }
+    
+    private Properties convertJSProperties(JSLProperties jslProperties) {
+    	
+        Properties jobProperties = new Properties();
+        if(jslProperties != null) { // null if not job properties defined.
+        	for (Property property : jslProperties.getPropertyList()) {
+        		jobProperties.setProperty(property.getName(), property.getValue());
+        	}
+        }
+        return jobProperties;
     }
     
     /*
      * Copy Constructor returns a new JobContextImpl with the same properties as the original context
      */
-    public JobContextImpl(JobContextImpl<T> jobContext) {
-    	//jobContext.getProperties().
-    	
-    }
+//    public JobContextImpl(JobContextImpl<T> jobContext) {
+//    	//jobContext.getProperties().
+//    	
+//    }
     
     public String getExitStatus() {
         return exitStatus;
@@ -67,12 +87,12 @@ public class JobContextImpl<T> implements JobContext<T> {
     }
 
 
-    public String getBatchStatus() {
+    public BatchStatus getBatchStatus() {
         return batchStatus;
     }
 
 
-    public void setBatchStatus(String batchStatus) {
+    public void setBatchStatus(BatchStatus batchStatus) {
         this.batchStatus = batchStatus;
     }
 
@@ -105,7 +125,7 @@ public class JobContextImpl<T> implements JobContext<T> {
 	}
 
 	@Override
-	public List<FlowContext<T>> getBatchContexts() {
+	public List<BatchContext<T>> getBatchContexts() {
 		// TODO Auto-generated method stub
 		return null;
 	}

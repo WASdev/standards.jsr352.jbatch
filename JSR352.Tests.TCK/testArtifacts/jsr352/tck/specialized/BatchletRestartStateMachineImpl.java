@@ -19,32 +19,34 @@ package jsr352.tck.specialized;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.*;
-import javax.batch.annotation.Process;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractBatchlet;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
-@Batchlet("BatchletRestartStateMachine")
-@javax.inject.Named("BatchletRestartStateMachine")
-public class BatchletRestartStateMachineImpl {
+@javax.inject.Named("BatchletRestartStateMachineImpl")
+public class BatchletRestartStateMachineImpl extends AbstractBatchlet {
 
     private final static String sourceClass = BatchletRestartStateMachineImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    @BatchContext
-    StepContext<?,?> stepCtx;
+ 
+    @Inject
+    StepContext stepCtx;
 
+    @Inject    
     @BatchProperty(name="execution.number")
     String executionNumberString;
 
-    @BeginStep
-    public void begin() throws Exception {
-        logger.fine(sourceClass + ".begin()");	            
-    }
 
-    @Process
+    @Override
     public String process() throws Exception {
         logger.fine(sourceClass + ".process()");
 
+        ClassLoader cl = BatchletRestartStateMachineImpl.class.getClassLoader();
+        
+        
+        
         // Do something a bit "compute-intensive".
         Random r = new Random();
         int x = r.nextInt();
@@ -63,16 +65,12 @@ public class BatchletRestartStateMachineImpl {
         return exitStatus;
     }
 
-    @Stop
-    public void cancel() throws Exception {
+    @Override
+    public void stop() throws Exception {
         // Do nothing since this is too quick to bother canceling.
         logger.fine(sourceClass + ".cancel()");		
     }
 
-    @EndStep
-    public void end() throws Exception {
-        logger.fine(sourceClass + ".end()");
-    }
 
     private String calculateExitStatus() {
 

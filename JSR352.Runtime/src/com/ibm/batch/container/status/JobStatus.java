@@ -17,10 +17,10 @@
 package com.ibm.batch.container.status;
 import java.io.Serializable;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.batch.container.jobinstance.JobInstanceImpl;
-import com.ibm.batch.container.util.ExecutionStatus.BatchStatus;
 
 public class JobStatus implements Serializable, Cloneable{
 

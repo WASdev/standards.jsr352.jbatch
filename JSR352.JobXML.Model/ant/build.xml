@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <project name="gen.xjcl.model" default="generate">
 		
-  <property name="prereq.dir" value="prereqs"/>
   <property name="proj.dir" value="${basedir}/.."/>
+  <property name="prereq.dir" value="${proj.dir}/prereqs"/>
   <property name="generate.dir" value = "${proj.dir}/jaxbgen"/>
   <property name="generate.pkg.dir" value = "${generate.dir}/jsr352/batch/jsl"/>
   <property name="work.dir" value = "${proj.dir}/work"/>
@@ -20,10 +20,10 @@
 		<xjc destdir="${generate.dir}">
 			<arg value="-mark-generated"/>
 			<binding dir="${proj.dir}/src/main/resources">
-			 	<include name="**/*.xjb"/>
+			 	<include name="**/jobXML.xjb"/>
 			</binding>
 			<schema dir="${proj.dir}/src/main/resources">
-			 	<include name="**/*.xsd"/>
+			 	<include name="**/jobXML.xsd"/>
 			</schema>
 			<!-- Uncomment if we want to switch to only doing codegen when XSD or XJC has changed. 
             <depends dir="${proj.dir}/src/main/resources" includes="**/*"/>

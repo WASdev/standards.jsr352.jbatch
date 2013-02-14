@@ -17,12 +17,11 @@
 package com.ibm.batch.container.services;
 
 import javax.batch.runtime.context.StepContext;
-import javax.batch.runtime.spi.TransactionManagerSPI;
 
 import com.ibm.batch.container.exception.TransactionManagementException;
 
 public interface ITransactionManagementService extends IBatchServiceBase {
 
-	public TransactionManagerSPI getTransactionManager(StepContext<?, ?> stepContext) throws TransactionManagementException;
+	public TransactionManagerAdatper getTransactionManager(StepContext<?, ?> stepContext) throws TransactionManagementException;
 	
 }

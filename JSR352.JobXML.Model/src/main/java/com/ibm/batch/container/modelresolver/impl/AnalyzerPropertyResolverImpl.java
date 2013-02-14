@@ -20,9 +20,11 @@ import java.util.Properties;
 
 import jsr352.batch.jsl.Analyzer;
 
-import com.ibm.batch.container.modelresolver.PropertyResolver;
+public class AnalyzerPropertyResolverImpl extends AbstractPropertyResolver<Analyzer> {
 
-public class AnalyzerPropertyResolverImpl implements PropertyResolver<Analyzer> {
+	public AnalyzerPropertyResolverImpl(boolean isPartitionStep) {
+		super(isPartitionStep);
+	}
 
 	@Override
 	public Analyzer substituteProperties(Analyzer b) {

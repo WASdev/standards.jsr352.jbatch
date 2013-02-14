@@ -16,35 +16,60 @@
 */
 package jsr352.tck.specialized;
 
-import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.AfterProcess;
-import javax.batch.annotation.BeforeProcess;
-import javax.batch.annotation.ItemProcessListener;
-import javax.batch.annotation.OnProcessError;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractItemProcessListener;
+import javax.batch.runtime.context.JobContext;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.ReadRecord;
-import jsr352.tck.chunktypes.WriteRecord;
 
 
-@ItemProcessListener("MyItemProcessListener")
-public class MyItemProcessListenerImpl {
+@javax.inject.Named("myItemProcessListenerImpl")
+public class MyItemProcessListenerImpl extends AbstractItemProcessListener<ReadRecord, ReadRecord> {
 	private final static String sourceClass = MyItemProcessListenerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
+	
+	int beforecounter = 1;
+	int aftercounter = 1;
+	
+	public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
+	public static final String BAD_EXIT_STATUS = "BAD STATUS";
+	
+    @Inject 
+    JobContext jobCtx; 
+	
+    @Inject    
+    @BatchProperty(name="app.listenertest")
+    String applistenerTest;
 
-	@BeforeProcess
+	@Override
 	public void beforeProcess(ReadRecord item) {
-		logger.finer("In beforeProcess(), item = " + item.getCount());
+		if (item != null && applistenerTest.equals("PROCESS")){
+			logger.finer("In afterRead(), item = " + item.getCount());
+			beforecounter++;
+
+		}
 	}
 	
-	@AfterProcess
-	public void afterProcess(ReadRecord input, WriteRecord output) throws Exception {
-		logger.finer("In afterProcess(), input = " + input.getCount() + ", output = " + output.getCount());		
+	@Override
+	public void afterProcess(ReadRecord input, ReadRecord result) throws Exception {
+		if (input != null && applistenerTest.equals("PROCESS")){
+			logger.finer("In afterProcess(), input = " + input.getCount() + ", output = " + result.getCount());	
+			
+			aftercounter++;
+
+			if (beforecounter == aftercounter) {
+				jobCtx.setExitStatus(GOOD_EXIT_STATUS);
+			} else
+				jobCtx.setExitStatus(BAD_EXIT_STATUS);
+		}
+			
 	}
 	
-	@OnProcessError
-	public void onProcessError(SQLException e, ReadRecord input) throws Exception {
+	@Override
+	public void onProcessError(ReadRecord input, Exception e) throws Exception {
 		logger.finer("In onProcessError(), input = " + input.getCount() + ", " + e);
 	}
 	

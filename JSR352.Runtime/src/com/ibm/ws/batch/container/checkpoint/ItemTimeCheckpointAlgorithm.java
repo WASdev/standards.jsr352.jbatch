@@ -20,9 +20,9 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.IsReadyToCheckpoint;
+import javax.batch.api.CheckpointAlgorithm;
 
-public class ItemTimeCheckpointAlgorithm implements CheckpointAlgorithm {
+public final class ItemTimeCheckpointAlgorithm implements CheckpointAlgorithm {
 
 	private static final String className = ItemCheckpointAlgorithm.class.getName();
 	private static Logger logger  = Logger.getLogger(ItemCheckpointAlgorithm.class.getPackage().getName());;
@@ -52,17 +52,14 @@ public class ItemTimeCheckpointAlgorithm implements CheckpointAlgorithm {
 
     }
 
-	//@EndCheckpoint
 	public void endCheckpoint() throws Exception {
     	inCheckpoint = false; 
 	}
 
-	//@GetCheckpointTimeout
 	public int getCheckpointTimeOut(int timeOut) throws Exception {
     	return timeout;
 	}
 
-	//@IsReadyToCheckpoint
 	public boolean isReadyToCheckpointItem() throws Exception {
        	String method = "isReadyToCheckpoint";
     	if(logger.isLoggable(Level.FINER)) { logger.entering(className, method); }
@@ -122,7 +119,6 @@ public class ItemTimeCheckpointAlgorithm implements CheckpointAlgorithm {
 		threshold = INthreshHold;
 	}
 
-	@IsReadyToCheckpoint
 	public boolean isReadyToCheckpoint() throws Exception {
 		
 		boolean ready = false; 
@@ -134,12 +130,23 @@ public class ItemTimeCheckpointAlgorithm implements CheckpointAlgorithm {
 		return ready;
 	}
 
-	@Override
 	public void setThresholds(int itemthreshold, int timethreshold) {
 
 		item = itemthreshold;
         time = timethreshold;
 		
+	}
+
+	@Override
+	public void beginCheckpoint() throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int checkpointTimeout(int timeout) throws Exception {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 

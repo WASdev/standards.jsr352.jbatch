@@ -16,18 +16,17 @@
 */
 package jsr352.tck.specialized;
 
-import javax.batch.annotation.BatchContext;
 import javax.batch.annotation.BatchProperty;
-import javax.batch.annotation.Decide;
-import javax.batch.annotation.Decider;
+import javax.batch.api.Decider;
+import javax.batch.runtime.StepExecution;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import jsr352.tck.common.StatusConstants;
 
-@Decider
 @javax.inject.Named
-public class DeciderTestsDecider implements StatusConstants {
+public class DeciderTestsDecider implements Decider<Object>, StatusConstants {
 	
 	public final static String SPECIAL_EXIT_STATUS = "SpecialExitStatus";
 
@@ -35,17 +34,19 @@ public class DeciderTestsDecider implements StatusConstants {
 	 * Since this is a job involving repeated uses of the same step, let's include
 	 * a count to ensure we don't wrongly re-run a step multiple times.
 	 */
-    @BatchContext
+	@Inject
     JobContext<Integer> jobCtx;
 
-    @BatchContext
+    
+    @Inject
     StepContext<String, ?> stepCtx;
     
+    @Inject    
     @BatchProperty(name=SPECIAL_EXIT_STATUS)
     String specialExitStatus;    
     
-	@Decide
-	public String decideExitStatus() {	
+	@Override
+	public String decide(StepExecution stepExecution) {	
 		String coreExitStatus = coreExitStatus();
 		Integer count = jobCtx.getTransientUserData();
 		String retVal = count.toString() + ":" + coreExitStatus;
@@ -65,5 +66,14 @@ public class DeciderTestsDecider implements StatusConstants {
 			return specialExitStatus;
 		}		
 	}
+
+
+	@Override
+	public String decide(StepExecution[] stepExecutions) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 	
 }

@@ -13,65 +13,36 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.artifact.proxy;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.List;
-
-import javax.batch.annotation.AfterJob;
-import javax.batch.annotation.BeforeJob;
-
-import jsr352.batch.jsl.Property;
+import javax.batch.api.JobListener;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
 
-public class JobListenerProxy extends AbstractProxy {
+public class JobListenerProxy extends AbstractProxy<JobListener> implements JobListener {
 
-    private Method afterJobMethod = null;
-    private Method beforeJobMethod = null;
-
-
-    JobListenerProxy(Object delegate, List<Property> props) { 
-        super(delegate, props);
-
-        //find annotations: beforeJob, afterJob
-        for (Method method: delegate.getClass().getDeclaredMethods()) { 
-            Annotation beforeJob= method.getAnnotation(BeforeJob.class);
-            if ( beforeJob != null ) { 
-                beforeJobMethod= method;
-            }
-            
-            Annotation afterJob= method.getAnnotation(AfterJob.class);
-            if ( afterJob != null ) { 
-                afterJobMethod = method;
-            }
-
-        }
-        
+    JobListenerProxy(JobListener delegate) {
+        super(delegate);
     }
 
-    public void beforeJob() {
-        if ( beforeJobMethod != null ) {
-            try {
-                beforeJobMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
-        }
-    }
-
+    @Override
     public void afterJob() {
-        if ( afterJobMethod != null ) {
-            try {
-                afterJobMethod.invoke(delegate, (Object[]) null);
-            } catch (Exception e) {
-                throw new BatchContainerRuntimeException(e);
-            }
+
+        try {
+            this.delegate.afterJob();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
         }
     }
-    
+
+    @Override
+    public void beforeJob() {
+
+        try {
+            this.delegate.beforeJob();
+        } catch (Exception e) {
+            throw new BatchContainerRuntimeException(e);
+        }
+    }
 }
-
-

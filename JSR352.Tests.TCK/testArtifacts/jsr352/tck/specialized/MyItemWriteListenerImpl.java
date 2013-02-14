@@ -16,36 +16,65 @@
 */
 package jsr352.tck.specialized;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.AfterWrite;
-import javax.batch.annotation.BeforeWrite;
-import javax.batch.annotation.ItemWriteListener;
-import javax.batch.annotation.OnWriteError;
+import javax.batch.annotation.BatchProperty;
+import javax.batch.api.AbstractItemWriteListener;
+import javax.batch.runtime.context.JobContext;
+import javax.inject.Inject;
 
 import jsr352.tck.chunktypes.WriteRecord;
 
-@ItemWriteListener("MyItemWriteListener")
-@javax.inject.Named("MyItemWriteListener")
-public class MyItemWriteListenerImpl {
+@javax.inject.Named("myItemWriteListenerImpl")
+public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteRecord> {
 	private final static String sourceClass = MyItemWriteListenerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 
-	@BeforeWrite
+	int beforecounter = 1;
+	int aftercounter = 1;
+	
+	public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
+	public static final String BAD_EXIT_STATUS = "BAD STATUS";
+	
+    @Inject 
+    JobContext jobCtx; 
+	
+    @Inject    
+    @BatchProperty(name="app.listenertest")
+    String applistenerTest;
+	
+	@Override
 	public void beforeWrite(List<WriteRecord> items) throws Exception {
-		logger.finer("In beforeWrite()");
+		if (items != null && applistenerTest.equals("WRITE")){
+			logger.finer("In beforeWrite()");
+			beforecounter++;
+			System.out.println("AJM: beforecounter = " + beforecounter);
+
+		}
 	}
 	
-	@AfterWrite
+	@Override
 	public void afterWrite(List<WriteRecord> items) throws Exception {
-		logger.finer("In afterWrite()");
+		
+		System.out.println("AJM: applistenerTest = " + applistenerTest);
+		
+		if (items != null && applistenerTest.equals("WRITE")){
+			logger.finer("In afterWrite()");
+			
+			aftercounter++;
+			System.out.println("AJM: aftercounter = " + aftercounter);
+
+			if (beforecounter == aftercounter) {
+				jobCtx.setExitStatus(GOOD_EXIT_STATUS);
+			} else
+				jobCtx.setExitStatus(BAD_EXIT_STATUS);
+		}
 	}
 	
-	@OnWriteError
-	public void onWriteError (SQLException e, List<WriteRecord> items) throws Exception {
-		logger.finer("In onWriteError()" + e);
-	}
+    @Override
+    public void onWriteError(List<WriteRecord> items, Exception e) throws Exception {
+        logger.finer("In onWriteError()" + e);
+    }
 	
 }

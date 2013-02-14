@@ -22,6 +22,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.JobExecution;
+
 public class IOHelper {
 
     public static String readJobXML(String fileWithPath) throws FileNotFoundException, IOException {
@@ -40,5 +43,13 @@ public class IOHelper {
         return ( jobXMLBuffer==null ? null : jobXMLBuffer.toString() );
 
     }
+    
+	public static void waitForBatchStatusOrTimeout(JobExecution jobExecution, BatchStatus batchStatus, long timeout) {
+
+		long future = System.currentTimeMillis() + timeout;
+		while(!jobExecution.getBatchStatus().equals(batchStatus) && future > System.currentTimeMillis()) {
+			// loops while job equals batchStatus or it times out
+		}
+	}
 
 }

@@ -11,11 +11,10 @@
 	    buf.append(", processor = " + processor);
 	    buf.append(", writer = " + writer);
 	    buf.append(", checkpointPolicy = " + checkpointPolicy);
-	    buf.append(", commitInterval = " + commitInterval);
-	    buf.append(", bufferSize = " + bufferSize);
-	    buf.append(", retryLimit = " + retryLimit);
+	    buf.append(", itemCount = " + itemCount);
+	    buf.append(", timeLimit = " + timeLimit);
 	    buf.append(", skipLimit = " + skipLimit);
+	    buf.append(", retryLimit = " + retryLimit);
 	    buf.append("\n");
-	    buf.append("Properties = " + com.ibm.batch.xjcl.PropertiesToStringHelper.getString(properties));
 	    return buf.toString();
     }

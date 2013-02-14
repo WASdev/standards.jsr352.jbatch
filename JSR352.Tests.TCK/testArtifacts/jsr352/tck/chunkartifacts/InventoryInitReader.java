@@ -16,15 +16,13 @@
  */
 package jsr352.tck.chunkartifacts;
 
+import java.io.Externalizable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.batch.annotation.CheckpointInfo;
-import javax.batch.annotation.ItemReader;
-import javax.batch.annotation.Open;
-import javax.batch.annotation.ReadItem;
+import javax.batch.api.AbstractItemReader;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -32,64 +30,58 @@ import javax.sql.DataSource;
 import jsr352.tck.chunktypes.InventoryCheckpointData;
 import jsr352.tck.chunktypes.InventoryRecord;
 
-@ItemReader("InventoryInitReader")
-@javax.inject.Named("InventoryInitReader")
-public class InventoryInitReader {
+@javax.inject.Named("inventoryInitReader")
+public class InventoryInitReader extends AbstractItemReader<InventoryRecord> {
 
-	protected DataSource dataSource = null;
+    protected DataSource dataSource = null;
 
-	private int count = 0;
+    private int count = 0;
 
-	@Open
-	public void openMe(InventoryCheckpointData cpd) throws NamingException {
+    public void open(Externalizable cpd) throws NamingException {
 
-		InitialContext ctx = new InitialContext();
-		dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
+        InitialContext ctx = new InitialContext();
+        dataSource = (DataSource) ctx.lookup(ConnectionHelper.jndiName);
 
-	}
+    }
 
-	@ReadItem
-	public InventoryRecord readItem() throws SQLException {
-		if (count > 0) {
-			return null;
-		}
+    @Override
+    public InventoryRecord readItem() throws SQLException {
+        if (count > 0) {
+            return null;
+        }
 
-		Connection connection = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		
-		try {
-			connection = ConnectionHelper.getConnection(dataSource);
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
 
-			statement = connection
-					.prepareStatement(ConnectionHelper.SELECT_INVENTORY);
-			statement.setInt(1, 1);
-			rs = statement.executeQuery();
+        try {
+            connection = ConnectionHelper.getConnection(dataSource);
 
-			int quantity = -1;
-			while (rs.next()) {
-				quantity = rs.getInt("quantity");
-				count++;
-			}
+            statement = connection.prepareStatement(ConnectionHelper.SELECT_INVENTORY);
+            statement.setInt(1, 1);
+            rs = statement.executeQuery();
 
-			return new InventoryRecord(1, quantity);
+            int quantity = -1;
+            while (rs.next()) {
+                quantity = rs.getInt("quantity");
+                count++;
+            }
 
-		} catch (SQLException e) {
-			throw e;
-		} finally {
-			ConnectionHelper.cleanupConnection(connection, rs, statement);
-		}
+            return new InventoryRecord(1, quantity);
 
-	}
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            ConnectionHelper.cleanupConnection(connection, rs, statement);
+        }
 
-	@CheckpointInfo
-	public InventoryCheckpointData getCPD() {
-		
-		InventoryCheckpointData chkpData = new InventoryCheckpointData();
-		chkpData.setInventoryCount(count);
-		return chkpData;
-	}
+    }
 
 
-
+    @Override
+    public Externalizable checkpointInfo() throws Exception {
+        InventoryCheckpointData chkpData = new InventoryCheckpointData();
+        chkpData.setInventoryCount(count);
+        return chkpData;
+    }
 }
