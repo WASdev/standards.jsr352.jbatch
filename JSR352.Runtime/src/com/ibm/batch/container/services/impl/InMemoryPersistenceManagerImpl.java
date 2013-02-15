@@ -19,19 +19,19 @@ package com.ibm.batch.container.services.impl;
 import java.sql.Timestamp;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.batch.container.context.impl.StepContextImpl;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
+import com.ibm.batch.container.persistence.CheckpointData;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.status.JobStatus;
 import com.ibm.batch.container.status.StepStatus;
-import com.ibm.ws.batch.container.checkpoint.CheckpointData;
 
 public class InMemoryPersistenceManagerImpl extends AbstractMapBasedPersistenceManagerImpl implements IPersistenceManagerService {
 

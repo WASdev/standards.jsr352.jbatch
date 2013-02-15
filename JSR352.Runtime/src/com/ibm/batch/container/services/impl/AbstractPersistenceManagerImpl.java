@@ -22,14 +22,14 @@ import java.util.List;
 import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.exception.PersistenceException;
+import com.ibm.batch.container.persistence.CheckpointData;
+import com.ibm.batch.container.persistence.CheckpointDataKey;
 import com.ibm.batch.container.services.IPersistenceDataKey;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.status.JobStatus;
 import com.ibm.batch.container.status.JobStatusKey;
 import com.ibm.batch.container.status.StepStatus;
 import com.ibm.batch.container.status.StepStatusKey;
-import com.ibm.ws.batch.container.checkpoint.CheckpointData;
-import com.ibm.ws.batch.container.checkpoint.CheckpointDataKey;
 
 public abstract class AbstractPersistenceManagerImpl  implements IPersistenceManagerService {
 

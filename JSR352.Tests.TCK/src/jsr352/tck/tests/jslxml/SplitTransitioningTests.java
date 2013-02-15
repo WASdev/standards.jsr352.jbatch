@@ -20,6 +20,7 @@ import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.exception.JobStartException;
@@ -51,16 +52,22 @@ public class SplitTransitioningTests {
 	 * @throws InterruptedException
 	 */
 	@Test @org.junit.Test
-	public void testSplitTransitionToStep() throws JobStartException, FileNotFoundException, IOException, InterruptedException {
+	public void testSplitTransitionToStep() throws Exception {
 
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_step", null);
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
+		String METHOD = "testSplitTransitionToStep";
 		
-		assertWithMessage("Split transitioned to step", jobExec.getExitStatus().equals("step1"));
-		
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
+		try {
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_step", null);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			
+			assertWithMessage("Split transitioned to step", jobExec.getExitStatus().equals("step1"));
+			
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
 	
 	/**
@@ -100,19 +107,25 @@ public class SplitTransitioningTests {
 	 */
     @Test(enabled = false)
     @org.junit.Test
-	public void testSplitTransitionToStepOutOfScope() {
+	public void testSplitTransitionToStepOutOfScope() throws Exception {
+    	
+    	String METHOD = "testSplitTransitionToStepOutOfScope";
 
-		Reporter.log("starting job");
-		JobExecution jobExec = null;
-		try {
-			jobExec = jobOp.startJobAndWaitForResult("split_transition_to_step_out_of_scope", null);
-		} catch (JobStartException e) {
-			Reporter.log("job failed to start " + e.getLocalizedMessage());
-		}
-		
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		
-		assertWithMessage("Job should have failed because of out of scope execution elements.", jobExec.getBatchStatus().equals(BatchStatus.FAILED));
+    	try {
+			Reporter.log("starting job");
+			JobExecution jobExec = null;
+			try {
+				jobExec = jobOp.startJobAndWaitForResult("split_transition_to_step_out_of_scope", null);
+			} catch (JobStartException e) {
+				Reporter.log("job failed to start " + e.getLocalizedMessage());
+			}
+			
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			
+			assertWithMessage("Job should have failed because of out of scope execution elements.", jobExec.getBatchStatus().equals(BatchStatus.FAILED));
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
 	
 	/**
@@ -129,23 +142,52 @@ public class SplitTransitioningTests {
 	 * @throws InterruptedException
 	 */
 	@Test @org.junit.Test
-	public void testFlowTransitionToDecision() throws JobStartException, FileNotFoundException, IOException, InterruptedException {
+	public void testFlowTransitionToDecision() throws Exception {
 
-		String exitStatus = "ThatsAllFolks";
-		// based on our decider exit status
-		/*
-		<decision id="decider1" ref="flowTransitionToDecisionTestDecider">
-			<end exit-status="ThatsAllFolks" on="DECIDER_EXIT_STATUS*2" />
-		</decision>
-		*/
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_decision", null);
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
+		String METHOD = "testFlowTransitionToDecision";
 		
-		assertWithMessage("Job Exit Status is from decider", jobExec.getExitStatus().equals(exitStatus));
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
+		try {
+			String exitStatus = "ThatsAllFolks";
+			// based on our decider exit status
+			/*
+			<decision id="decider1" ref="flowTransitionToDecisionTestDecider">
+				<end exit-status="ThatsAllFolks" on="DECIDER_EXIT_STATUS*2" />
+			</decision>
+			*/
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_decision", null);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			
+			assertWithMessage("Job Exit Status is from decider", jobExec.getExitStatus().equals(exitStatus));
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
+	
+	 private static void handleException(String methodName, Exception e) throws Exception {
+			Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+			Reporter.log(methodName + " failed<p>");
+			throw e;
+		}
+	    
+	 /* cleanup */
+		public void  cleanup()
+		{		
+		
+		}
+	 
+	 public void setup(String[] args, Properties props) throws Exception {
+	    	
+	    	String METHOD = "setup";
+	    	
+	    	try {
+	    		jobOp = new JobOperatorBridge();
+	    	} catch (Exception e) {
+	    		handleException(METHOD, e);
+	    	}
+	    } 
 
 	@BeforeTest
     @Before

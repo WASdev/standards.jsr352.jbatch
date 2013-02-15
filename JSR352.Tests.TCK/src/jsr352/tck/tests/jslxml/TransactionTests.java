@@ -83,33 +83,38 @@ public class TransactionTests {
     	String METHOD = "testTranRollbackRetryReadSkipRead";
         begin(METHOD);
         
-        Integer initNumbers = 10;
-        Integer forcedFailCountRead = 8;
-        Integer forcedFailCountProcess = 0;
-        Integer forcedFailCountWrite = 0;
-        Integer dummyDelay = 0;
-        Boolean rollback = true;
-        Boolean autoCommit = false;
+        try {
         
-        Properties jobParams = new Properties();
-    	
-        jobParams.put("javax.transaction.global.mode", "true");
-        jobParams.put("javax.transaction.global.timeout", "20");
-        jobParams.put("init.numbers.quantity", initNumbers.toString());
-        jobParams.put("forced.fail.count.read", forcedFailCountRead.toString());
-        jobParams.put("forced.fail.count.write", forcedFailCountWrite.toString());
-        jobParams.put("forced.fail.count.process", forcedFailCountProcess.toString());
-        jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-        jobParams.put("rollback", rollback.toString());
-        jobParams.put("auto.commit", autoCommit.toString());
-
-        Reporter.log("Locate job XML file: job_chunk_retryskip_rollback.xml<p>");
-        URL jobXMLURL = TransactionTests.class.getResource("/job_chunk_retryskip_rollback.xml");
-
-
-        Reporter.log("Invoke startJobAndWaitForResult<p>");
-        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_retryskip_rollback",jobParams);
-        assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+	        Integer initNumbers = 10;
+	        Integer forcedFailCountRead = 8;
+	        Integer forcedFailCountProcess = 0;
+	        Integer forcedFailCountWrite = 0;
+	        Integer dummyDelay = 0;
+	        Boolean rollback = true;
+	        Boolean autoCommit = false;
+	        
+	        Properties jobParams = new Properties();
+	    	
+	        jobParams.put("javax.transaction.global.mode", "true");
+	        jobParams.put("javax.transaction.global.timeout", "20");
+	        jobParams.put("init.numbers.quantity", initNumbers.toString());
+	        jobParams.put("forced.fail.count.read", forcedFailCountRead.toString());
+	        jobParams.put("forced.fail.count.write", forcedFailCountWrite.toString());
+	        jobParams.put("forced.fail.count.process", forcedFailCountProcess.toString());
+	        jobParams.put("dummy.delay.seconds", dummyDelay.toString());
+	        jobParams.put("rollback", rollback.toString());
+	        jobParams.put("auto.commit", autoCommit.toString());
+	
+	        Reporter.log("Locate job XML file: job_chunk_retryskip_rollback.xml<p>");
+	        URL jobXMLURL = TransactionTests.class.getResource("/job_chunk_retryskip_rollback.xml");
+	
+	
+	        Reporter.log("Invoke startJobAndWaitForResult<p>");
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_retryskip_rollback",jobParams);
+	        assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+        } catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
     }
     
     /*
@@ -129,33 +134,37 @@ public class TransactionTests {
        	String METHOD = "testTranRollbackRetryProcessSkipProcess";
            begin(METHOD);
            
-           Integer initNumbers = 10;
-           Integer forcedFailCountRead = 0;
-           Integer forcedFailCountProcess = 8;
-           Integer forcedFailCountWrite = 0;
-           Integer dummyDelay = 0;
-           Boolean rollback = true;
-           Boolean autoCommit = false;
-           
-           Properties jobParams = new Properties();
-       	
-           jobParams.put("javax.transaction.global.mode", "true");
-           jobParams.put("javax.transaction.global.timeout", "20");
-           jobParams.put("init.numbers.quantity", initNumbers.toString());
-           jobParams.put("forced.fail.count.read", forcedFailCountRead.toString());
-           jobParams.put("forced.fail.count.write", forcedFailCountWrite.toString());
-           jobParams.put("forced.fail.count.process", forcedFailCountProcess.toString());
-           jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-           jobParams.put("rollback", rollback.toString());
-           jobParams.put("auto.commit", autoCommit.toString());
-
-           Reporter.log("Locate job XML file: job_chunk_retryskip_rollback.xml<p>");
-           URL jobXMLURL = TransactionTests.class.getResource("/job_chunk_retryskip_rollback.xml");
-
-
-           Reporter.log("Invoke startJobAndWaitForResult<p>");
-           JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_retryskip_rollback",jobParams);
-           assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+           try {
+	           Integer initNumbers = 10;
+	           Integer forcedFailCountRead = 0;
+	           Integer forcedFailCountProcess = 8;
+	           Integer forcedFailCountWrite = 0;
+	           Integer dummyDelay = 0;
+	           Boolean rollback = true;
+	           Boolean autoCommit = false;
+	           
+	           Properties jobParams = new Properties();
+	       	
+	           jobParams.put("javax.transaction.global.mode", "true");
+	           jobParams.put("javax.transaction.global.timeout", "20");
+	           jobParams.put("init.numbers.quantity", initNumbers.toString());
+	           jobParams.put("forced.fail.count.read", forcedFailCountRead.toString());
+	           jobParams.put("forced.fail.count.write", forcedFailCountWrite.toString());
+	           jobParams.put("forced.fail.count.process", forcedFailCountProcess.toString());
+	           jobParams.put("dummy.delay.seconds", dummyDelay.toString());
+	           jobParams.put("rollback", rollback.toString());
+	           jobParams.put("auto.commit", autoCommit.toString());
+	
+	           Reporter.log("Locate job XML file: job_chunk_retryskip_rollback.xml<p>");
+	           URL jobXMLURL = TransactionTests.class.getResource("/job_chunk_retryskip_rollback.xml");
+	
+	
+	           Reporter.log("Invoke startJobAndWaitForResult<p>");
+	           JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_retryskip_rollback",jobParams);
+	           assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+           } catch (Exception e) {
+       		handleException(METHOD, e);
+       	   }
        }
        
        /*
@@ -175,39 +184,43 @@ public class TransactionTests {
           	String METHOD = "testTranRollbackRetryWriteSkipWrite";
               begin(METHOD);
               
-              Integer initNumbers = 10;
-              Integer forcedFailCountRead = 0;
-              Integer forcedFailCountProcess = 0;
-              Integer forcedFailCountWrite = 8;
-              Integer dummyDelay = 0;
-              Boolean rollback = true;
-              Boolean autoCommit = false;
-              
-              Properties jobParams = new Properties();
-          	
-              jobParams.put("javax.transaction.global.mode", "true");
-              jobParams.put("javax.transaction.global.timeout", "20");
-              jobParams.put("init.numbers.quantity", initNumbers.toString());
-              jobParams.put("forced.fail.count.read", forcedFailCountRead.toString());
-              jobParams.put("forced.fail.count.write", forcedFailCountWrite.toString());
-              jobParams.put("forced.fail.count.process", forcedFailCountProcess.toString());
-              jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-              jobParams.put("rollback", rollback.toString());
-              jobParams.put("auto.commit", autoCommit.toString());
-
-              Reporter.log("Locate job XML file: job_chunk_retryskip_rollback.xml<p>");
-              URL jobXMLURL = TransactionTests.class.getResource("/job_chunk_retryskip_rollback.xml");
-
-
-              Reporter.log("Invoke startJobAndWaitForResult<p>");
-              JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_retryskip_rollback",jobParams);
-              assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+              try {
+	              Integer initNumbers = 10;
+	              Integer forcedFailCountRead = 0;
+	              Integer forcedFailCountProcess = 0;
+	              Integer forcedFailCountWrite = 8;
+	              Integer dummyDelay = 0;
+	              Boolean rollback = true;
+	              Boolean autoCommit = false;
+	              
+	              Properties jobParams = new Properties();
+	          	
+	              jobParams.put("javax.transaction.global.mode", "true");
+	              jobParams.put("javax.transaction.global.timeout", "20");
+	              jobParams.put("init.numbers.quantity", initNumbers.toString());
+	              jobParams.put("forced.fail.count.read", forcedFailCountRead.toString());
+	              jobParams.put("forced.fail.count.write", forcedFailCountWrite.toString());
+	              jobParams.put("forced.fail.count.process", forcedFailCountProcess.toString());
+	              jobParams.put("dummy.delay.seconds", dummyDelay.toString());
+	              jobParams.put("rollback", rollback.toString());
+	              jobParams.put("auto.commit", autoCommit.toString());
+	
+	              Reporter.log("Locate job XML file: job_chunk_retryskip_rollback.xml<p>");
+	              URL jobXMLURL = TransactionTests.class.getResource("/job_chunk_retryskip_rollback.xml");
+	
+	
+	              Reporter.log("Invoke startJobAndWaitForResult<p>");
+	              JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_retryskip_rollback",jobParams);
+	              assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+              } catch (Exception e) {
+          		handleException(METHOD, e);
+          	}
           }
     
     /*
-	 * @Test(enabled = false)Name: testGlobalTranNoExceptions
+	 * @testName: testGlobalTranNoExceptions
 	 * @assertion: FIXME
-	 * @Test(enabled = false)_Strategy: FIXME
+	 * @test_Strategy: FIXME
 	 */
     @Test
     @org.junit.Test  
@@ -301,9 +314,9 @@ public class TransactionTests {
     }
     
     /*
-   	 * @Test(enabled = false)Name: testGlobalTranForcedExceptionCheckpointRestart
+   	 * @testName: testGlobalTranForcedExceptionCheckpointRestart
    	 * @assertion: FIXME
-   	 * @Test(enabled = false)_Strategy: FIXME
+   	 * @test_Strategy: FIXME
    	 */
     @Test
     @org.junit.Test  
@@ -368,9 +381,9 @@ public class TransactionTests {
     
 
     /*
-   	 * @Test(enabled = false)Name: testGlobalTranForcedTimeoutCheckpointRestart
+   	 * @testName: testGlobalTranForcedTimeoutCheckpointRestart
    	 * @assertion: FIXME
-   	 * @Test(enabled = false)_Strategy: FIXME
+   	 * @test_Strategy: FIXME
    	 */    
     @Test
     @org.junit.Test  

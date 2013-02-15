@@ -49,7 +49,7 @@ public class MyPartitionAnalyzer extends AbstractPartitionAnalyzer {
 	}
 	
 	@Override 
-	public void analyzeStatus(BatchStatus batchStatus, String exitStatus)throws Exception {
+	public void analyzeStatus(String batchStatus, String exitStatus)throws Exception {
 	    analyzedStatus = analyzedStatus  + "S";
 	    
 	    //If this method is called the partition is complete. So we should expect analyzedData to 

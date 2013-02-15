@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.ibm.ws.batch.container.checkpoint;
+package com.ibm.batch.container.persistence;
 
 import jsr352.batch.jsl.Chunk;
 import jsr352.batch.jsl.Step;

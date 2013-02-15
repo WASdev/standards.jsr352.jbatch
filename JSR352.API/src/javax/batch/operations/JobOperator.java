@@ -189,12 +189,12 @@ public interface JobOperator {
 	 * Set batch status to ABANDONED.  The instance must have 
 	 * no running execution. 
 	 * 
-	 * @param instanceId
+	 * @param instance
 	 *            specifies the job instance to abandon.
 	 * @throws NoSuchJobInstanceException
 	 * @throws JobExecutionIsRunningException
 	 */
-	void abandon(JobExecution jobExecution) throws NoSuchJobInstanceException, 
+	public void abandon(JobInstance instance) throws NoSuchJobInstanceException, 
 			JobExecutionIsRunningException;
 	
 	

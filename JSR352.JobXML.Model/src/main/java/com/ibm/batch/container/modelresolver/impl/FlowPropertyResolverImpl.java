@@ -21,6 +21,7 @@ import java.util.Properties;
 import jsr352.batch.jsl.Decision;
 import jsr352.batch.jsl.Flow;
 import jsr352.batch.jsl.Listener;
+import jsr352.batch.jsl.Split;
 import jsr352.batch.jsl.Step;
 
 import com.ibm.batch.container.modelresolver.PropertyResolverFactory;
@@ -58,7 +59,11 @@ public class FlowPropertyResolverImpl extends AbstractPropertyResolver<Flow>  {
                 PropertyResolverFactory.createStepPropertyResolver(this.isPartitionedStep).substituteProperties((Step)next, submittedProps, currentProps);
             } else if (next instanceof Decision) {
                 PropertyResolverFactory.createDecisionPropertyResolver(this.isPartitionedStep).substituteProperties((Decision)next, submittedProps, currentProps);
-            } 
+            } else if (next instanceof Flow) {
+                PropertyResolverFactory.createFlowPropertyResolver(this.isPartitionedStep).substituteProperties((Flow)next, submittedProps, currentProps);
+           } else if (next instanceof Split) {
+               PropertyResolverFactory.createSplitPropertyResolver(this.isPartitionedStep).substituteProperties((Split)next, submittedProps, currentProps);
+          } 
         }
     	
         return flow;

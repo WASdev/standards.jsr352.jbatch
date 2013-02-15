@@ -20,6 +20,7 @@ import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
@@ -52,18 +53,24 @@ public class JobLevelPropertiesTests {
 	@Test @org.junit.Test
 	public void testJobLevelPropertiesCount() throws Exception {
 		
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_count");
-
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
+		String METHOD = "testJobLevelPropertiesCount";
 		
-		int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 0;
+		try {
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_count");
 	
-		assertWithMessage("Properties count", count  == PROPERTIES_COUNT);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+			
+			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 0;
 		
-		Reporter.log("Job batchlet return code is the job.properties size " + count);
+			assertWithMessage("Properties count", count  == PROPERTIES_COUNT);
+			
+			Reporter.log("Job batchlet return code is the job.properties size " + count);
+		} catch (Exception e) {
+            handleException(METHOD, e);
+        }
 	}
 	
 	/**
@@ -77,17 +84,23 @@ public class JobLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testJobLevelPropertiesPropertyValue() throws Exception {
-
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_value");
-
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
 		
-		assertWithMessage("Property value", FOO_VALUE.equals(jobExec.getExitStatus()));
-		
-		Reporter.log("Job batchlet return code is the job property foo value " + FOO_VALUE);
+		String METHOD = "testJobLevelPropertiesPropertyValue";
+
+		try {
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_value");
+	
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+			
+			assertWithMessage("Property value", FOO_VALUE.equals(jobExec.getExitStatus()));
+			
+			Reporter.log("Job batchlet return code is the job property foo value " + FOO_VALUE);
+		} catch (Exception e) {
+            handleException(METHOD, e);
+        }
 	}
 	
 	/**
@@ -102,18 +115,24 @@ public class JobLevelPropertiesTests {
 	@Test @org.junit.Test
 	public void testJobLevelPropertiesEmpty() throws Exception {
 		
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_count_zero");
-
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
+		String METHOD = "testJobLevelPropertiesEmpty";
 		
-		int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 100;
+		try {
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_count_zero");
 	
-		assertWithMessage("Properties count", count == 0);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+			
+			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 100;
 		
-		Reporter.log("Job batchlet return code is the job.properties size " + count);
+			assertWithMessage("Properties count", count == 0);
+			
+			Reporter.log("Job batchlet return code is the job.properties size " + count);
+		} catch (Exception e) {
+            handleException(METHOD, e);
+        }
 	}
 	
 	/**
@@ -126,16 +145,45 @@ public class JobLevelPropertiesTests {
 	@Test @org.junit.Test
 	public void testJobLevelPropertiesShouldNotBeAvailableThroughStepContext() throws Exception {
 		
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_scope");
-
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
+		String METHOD = "testJobLevelPropertiesShouldNotBeAvailableThroughStepContext";
 		
-		assertWithMessage("Job Level Property is not available through step context", jobExec.getExitStatus().equals(BatchStatus.COMPLETED.name()));
-		Reporter.log("Job batchlet return code is the job.property read through step context (expected value=COMPLETED) " + jobExec.getExitStatus());
+		try {
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_scope");
+	
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+			
+			assertWithMessage("Job Level Property is not available through step context", jobExec.getExitStatus().equals(BatchStatus.COMPLETED.name()));
+			Reporter.log("Job batchlet return code is the job.property read through step context (expected value=COMPLETED) " + jobExec.getExitStatus());
+		} catch (Exception e) {
+            handleException(METHOD, e);
+        }
 	}
+	
+	 private static void handleException(String methodName, Exception e) throws Exception {
+	        Reporter.log("Caught exception: " + e.getMessage() + "<p>");
+	        Reporter.log(methodName + " failed<p>");
+	        throw e;
+	    }
+	 
+	  public void setup(String[] args, Properties props) throws Exception {
+	    	
+	    	String METHOD = "setup";
+	    	
+	    	try {
+	    		jobOp = new JobOperatorBridge();
+	    	} catch (Exception e) {
+	    		handleException(METHOD, e);
+	    	}
+	    }
+	    
+	    /* cleanup */
+		public void  cleanup()
+		{		
+		
+		}
 
 	@BeforeTest
     @Before

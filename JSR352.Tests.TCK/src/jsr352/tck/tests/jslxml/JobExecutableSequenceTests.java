@@ -20,6 +20,7 @@ import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.exception.JobStartException;
@@ -51,19 +52,49 @@ public class JobExecutableSequenceTests {
 	 */
     @Test(enabled = false)
     @org.junit.Test
-	public void testJobExecutableSequenceToUnknown() throws JobStartException, FileNotFoundException, IOException, InterruptedException {
+	public void testJobExecutableSequenceToUnknown() throws Exception {
 
-		Reporter.log("starting job");
-		JobExecution jobExec = null;
-		try {
-			jobExec = jobOp.startJobAndWaitForResult("job_executable_sequence_invalid", null);
-		} catch (Exception e) {
-			Reporter.log("Job Failed with error: " + e.getLocalizedMessage());
-		}
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		
-		assertWithMessage("Job should have failed with unknown steps ", jobExec.getBatchStatus().equals(BatchStatus.FAILED));
-		Reporter.log("job failed");
+    	String METHOD = "testJobExecutableSequenceToUnknown";
+    	
+    	try {
+    	
+			Reporter.log("starting job");
+			JobExecution jobExec = null;
+			try {
+				jobExec = jobOp.startJobAndWaitForResult("job_executable_sequence_invalid", null);
+			} catch (Exception e) {
+				Reporter.log("Job Failed with error: " + e.getLocalizedMessage());
+			}
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			
+			assertWithMessage("Job should have failed with unknown steps ", jobExec.getBatchStatus().equals(BatchStatus.FAILED));
+			Reporter.log("job failed");
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
+	}
+    
+    private static void handleException(String methodName, Exception e) throws Exception {
+		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+		Reporter.log(methodName + " failed<p>");
+		throw e;
+	}
+    
+  public void setup(String[] args, Properties props) throws Exception {
+    	
+    	String METHOD = "setup";
+    	
+    	try {
+    		jobOp = new JobOperatorBridge();
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
+    }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
 	}
 	
 	@BeforeTest

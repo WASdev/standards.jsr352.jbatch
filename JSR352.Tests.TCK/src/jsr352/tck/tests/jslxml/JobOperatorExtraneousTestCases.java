@@ -80,7 +80,7 @@ public class JobOperatorExtraneousTestCases {
  
 	@Test(enabled = false) @org.junit.Test @Ignore
     public void testJobOperatorGetExecutionsException() throws Exception {
-        String METHOD = "testInvokeJobWithStopElement";
+        String METHOD = "testJobOperatorGetExecutionsException";
         begin(METHOD);
         
         try {
@@ -153,7 +153,7 @@ public class JobOperatorExtraneousTestCases {
 	
 	@Test(enabled = false) @org.junit.Test @Ignore
     public void testJobOperatorGetParametersException() throws Exception {
-        String METHOD = "testInvokeJobWithStopElement";
+        String METHOD = "testJobOperatorGetParametersException";
         begin(METHOD);
         
         try {

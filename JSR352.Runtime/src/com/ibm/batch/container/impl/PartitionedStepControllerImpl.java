@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.api.PartitionReducer.PartitionStatus;
-import javax.batch.api.parameters.PartitionPlan;
+import javax.batch.api.PartitionPlan;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.exception.JobRestartException;
 
@@ -289,7 +289,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
                         analyzerProxy.analyzeCollectorData(dataWrapper.getCollectorData());
                         break;
                     case ANALYZE_STATUS:
-                        analyzerProxy.analyzeStatus(dataWrapper.getBatchstatus(), dataWrapper.getExitStatus());
+                        analyzerProxy.analyzeStatus(dataWrapper.getBatchstatus().name(), dataWrapper.getExitStatus());
                         completedPartitions++;
                         break;
                     case STEP_FINISHED:

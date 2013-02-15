@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.ibm.ws.batch.container.checkpoint;
+package com.ibm.batch.container.persistence;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 /**

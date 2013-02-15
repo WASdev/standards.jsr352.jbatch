@@ -20,7 +20,7 @@ import java.io.Externalizable;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-import javax.batch.api.parameters.PartitionPlan;
+import javax.batch.api.PartitionPlan;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
@@ -53,7 +53,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     
     private PartitionPlan plan = null;
     
-    private Object persistentUserData = null;
+    private Externalizable persistentUserData = null;
     
     private StepContextImpl<?, ? extends Externalizable> stepContext = null;
     
@@ -136,14 +136,14 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 		}
 		else {
 			Metric[] metrics = new MetricImpl[8];
-			metrics[0] = new MetricImpl(MetricImpl.Counter.valueOf("READ_COUNT"), readCount);
-			metrics[1] = new MetricImpl(MetricImpl.Counter.valueOf("WRITE_COUNT"), writeCount);
-			metrics[2] = new MetricImpl(MetricImpl.Counter.valueOf("COMMIT_COUNT"), commitCount);
-			metrics[3] = new MetricImpl(MetricImpl.Counter.valueOf("ROLLBACK_COUNT"), rollbackCount);
-			metrics[4] = new MetricImpl(MetricImpl.Counter.valueOf("READ_SKIP_COUNT"), readSkipCount);
-			metrics[5] = new MetricImpl(MetricImpl.Counter.valueOf("PROCESS_SKIP_COUNT"), processSkipCount);
-			metrics[6] = new MetricImpl(MetricImpl.Counter.valueOf("FILTER_COUNT"), filterCount);
-			metrics[7] = new MetricImpl(MetricImpl.Counter.valueOf("WRITE_SKIP_COUNT"), writeSkipCount);
+			metrics[0] = new MetricImpl(MetricImpl.MetricName.READCOUNT, readCount);
+			metrics[1] = new MetricImpl(MetricImpl.MetricName.WRITECOUNT, writeCount);
+			metrics[2] = new MetricImpl(MetricImpl.MetricName.COMMITCOUNT, commitCount);
+			metrics[3] = new MetricImpl(MetricImpl.MetricName.ROLLBACKCOUNT, rollbackCount);
+			metrics[4] = new MetricImpl(MetricImpl.MetricName.READSKIPCOUNT, readSkipCount);
+			metrics[5] = new MetricImpl(MetricImpl.MetricName.PROCESSSKIPCOUNT, processSkipCount);
+			metrics[6] = new MetricImpl(MetricImpl.MetricName.FILTERCOUNT, filterCount);
+			metrics[7] = new MetricImpl(MetricImpl.MetricName.WRITESKIPCOUNT, writeSkipCount);
 			
 			return metrics;
 		}
@@ -161,7 +161,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 	}
 
 	@Override
-	public Object getUserPersistentData() {
+	public Externalizable getUserPersistentData() {
 		if (stepContext != null){
 			return this.stepContext.getPersistentUserData();
 		}
@@ -240,7 +240,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     	this.endTime = endts;
     }
     
-    public void setpersistentUserData(Object data){
+    public void setpersistentUserData(Externalizable data){
     	this.persistentUserData = data;
     }
 

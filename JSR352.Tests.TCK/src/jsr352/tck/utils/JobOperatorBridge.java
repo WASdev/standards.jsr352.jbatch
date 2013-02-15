@@ -104,8 +104,8 @@ public class JobOperatorBridge {
     }
     
     public void abandonJobInstance(JobExecution jobExecution) throws NoSuchJobInstanceException, JobExecutionIsRunningException {
-           
-        jobOp.abandon(jobExecution);        
+             
+    	jobOp.abandon(jobOp.getJobInstance(jobExecution.getInstanceId()));
        
     }
 

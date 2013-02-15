@@ -23,13 +23,13 @@ import java.util.logging.Logger;
 
 import com.ibm.batch.container.config.IBatchConfig;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
+import com.ibm.batch.container.persistence.CheckpointData;
+import com.ibm.batch.container.persistence.CheckpointDataKey;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.status.JobStatus;
 import com.ibm.batch.container.status.JobStatusKey;
 import com.ibm.batch.container.status.StepStatus;
 import com.ibm.batch.container.status.StepStatusKey;
-import com.ibm.ws.batch.container.checkpoint.CheckpointData;
-import com.ibm.ws.batch.container.checkpoint.CheckpointDataKey;
 
 public abstract class AbstractMapBasedPersistenceManagerImpl  extends
 AbstractPersistenceManagerImpl  implements 	IPersistenceManagerService {

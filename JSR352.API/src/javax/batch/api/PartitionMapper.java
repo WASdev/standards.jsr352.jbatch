@@ -16,7 +16,7 @@
  */
 package javax.batch.api;
 
-import javax.batch.api.parameters.PartitionPlan;
+import javax.batch.api.PartitionPlan;
 
 /**
  * PartitionMapper receives control at the start of a partitioned execution. A

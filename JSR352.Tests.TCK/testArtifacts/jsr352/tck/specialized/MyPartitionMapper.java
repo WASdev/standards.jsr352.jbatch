@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.PartitionMapper;
-import javax.batch.api.parameters.PartitionPlan;
+import javax.batch.api.PartitionPlan;
 import javax.inject.Inject;
 
 

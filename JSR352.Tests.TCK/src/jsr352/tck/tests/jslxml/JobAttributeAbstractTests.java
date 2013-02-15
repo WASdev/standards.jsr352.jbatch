@@ -50,21 +50,28 @@ public class JobAttributeAbstractTests {
 	 * @throws InterruptedException
 	 */
 	@Test @org.junit.Test 
-	public void testJobAttributeAbstractTrue() throws FileNotFoundException, IOException, InterruptedException {
+	public void testJobAttributeAbstractTrue() throws Exception {
 		
-		Properties jobParams = new Properties();
-		jobParams.setProperty("abstract", "true");
-
-		JobExecution jobExec = null;
-		Reporter.log("starting job, should fail because abstract is true");
+		String METHOD = "testJobAttributeAbstractTrue";
+		
 		try {
-			jobExec = jobOp.startJobAndWaitForResult(JOB_FILE, jobParams);
-		} catch (JobStartException jse) {
-			
-			Reporter.log("JobStartException = " + jse.getLocalizedMessage());
-		}
-		assertWithMessage("Job should fails to start", jobExec == null);
-		Reporter.log("Job should fails to start");
+		
+			Properties jobParams = new Properties();
+			jobParams.setProperty("abstract", "true");
+	
+			JobExecution jobExec = null;
+			Reporter.log("starting job, should fail because abstract is true");
+			try {
+				jobExec = jobOp.startJobAndWaitForResult(JOB_FILE, jobParams);
+			} catch (JobStartException jse) {
+				
+				Reporter.log("JobStartException = " + jse.getLocalizedMessage());
+			}
+			assertWithMessage("Job should fails to start", jobExec == null);
+			Reporter.log("Job should fails to start");
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
 
 	/**
@@ -78,18 +85,47 @@ public class JobAttributeAbstractTests {
 	 * @throws InterruptedException
 	 */
 	@Test @org.junit.Test
-	public void testJobAttributeAbstractFalse() throws JobStartException, FileNotFoundException, IOException, InterruptedException {
+	public void testJobAttributeAbstractFalse() throws Exception {
 		
-		Properties jobParams = new Properties();
-		jobParams.setProperty("abstract", "false");
-
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult(JOB_FILE, jobParams);
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
+		String METHOD = "testJobAttributeAbstractFalse";
 		
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("Job completed");
+		try {
+			Properties jobParams = new Properties();
+			jobParams.setProperty("abstract", "false");
+	
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult(JOB_FILE, jobParams);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("Job completed");
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
+	
+	private static void handleException(String methodName, Exception e) throws Exception {
+		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+		Reporter.log(methodName + " failed<p>");
+		throw e;
+	}
+	
+	  public void setup(String[] args, Properties props) throws Exception {
+	    	
+	    	String METHOD = "setup";
+	    	
+	    	try {
+	    		jobOp = new JobOperatorBridge();
+	    	} catch (Exception e) {
+	    		handleException(METHOD, e);
+	    	}
+	    }
+	    
+	    /* cleanup */
+		public void  cleanup()
+		{		
+		
+		}
 
 	@BeforeTest
     @Before

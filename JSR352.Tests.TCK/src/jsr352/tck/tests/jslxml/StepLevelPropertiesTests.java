@@ -20,6 +20,7 @@ import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
@@ -51,6 +52,10 @@ public class StepLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesCount() throws Exception {
+		
+		String METHOD = "testStepLevelPropertiesCount";
+		
+		try {
 			
 		Reporter.log("starting job");
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count");
@@ -64,6 +69,9 @@ public class StepLevelPropertiesTests {
 		assertWithMessage("Properties count", count == PROPERTIES_COUNT);
 		
 		Reporter.log("Job batchlet return code is the step.properties size " + count);
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
 	
 	/**
@@ -77,6 +85,10 @@ public class StepLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesPropertyValue() throws Exception {
+		
+		String METHOD = "testStepLevelPropertiesPropertyValue";
+		
+		try {
 
 		Reporter.log("starting job");
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_value");
@@ -88,6 +100,9 @@ public class StepLevelPropertiesTests {
 		assertWithMessage("Property value", FOO_VALUE.equals(jobExec.getExitStatus()));
 		
 		Reporter.log("Job batchlet return code is the step property foo value " + FOO_VALUE);
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
 	
 	/**
@@ -101,6 +116,10 @@ public class StepLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesEmpty() throws Exception {
+		
+		String METHOD = "testStepLevelPropertiesEmpty";
+		
+		try {
 	
 		Reporter.log("starting job");
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count_zero");
@@ -114,6 +133,9 @@ public class StepLevelPropertiesTests {
 		assertWithMessage("Properties count", count == 0);
 		
 		Reporter.log("Job batchlet return code is the step.properties size " + count);
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
 	
 	/**
@@ -126,6 +148,10 @@ public class StepLevelPropertiesTests {
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesShouldNotBeAvailableThroughJobContext() throws Exception {
 		
+		String METHOD = "testStepLevelPropertiesShouldNotBeAvailableThroughJobContext";
+		
+		try {
+		
 		Reporter.log("starting job");
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_scope");
 
@@ -135,7 +161,33 @@ public class StepLevelPropertiesTests {
 		;
 		assertWithMessage("Step Level Property is not available through job context", jobExec.getExitStatus().equals(BatchStatus.COMPLETED.name()));
 		Reporter.log("Job batchlet return code is the step.property read through job context (expected value=COMPLETED) " + jobExec.getExitStatus());
+		} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
+	
+	private static void handleException(String methodName, Exception e) throws Exception {
+		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+		Reporter.log(methodName + " failed<p>");
+		throw e;
+	}
+	
+	  public void setup(String[] args, Properties props) throws Exception {
+	    	
+	    	String METHOD = "setup";
+	    	
+	    	try {
+	    		jobOp = new JobOperatorBridge();
+	    	} catch (Exception e) {
+	    		handleException(METHOD, e);
+	    	}
+	    }
+	    
+	    /* cleanup */
+		public void  cleanup()
+		{		
+		
+		}
 	
 	@BeforeTest
     @Before

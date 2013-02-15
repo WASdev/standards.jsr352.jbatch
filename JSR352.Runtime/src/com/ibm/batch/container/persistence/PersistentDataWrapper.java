@@ -14,24 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package javax.batch.api;
+package com.ibm.batch.container.persistence;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
 /**
- * SplitCollector provides a way to send data from individual split flows with
- * to single point of control belonging to the parent split. The SplitAnalyzer
- * is used to receive and process this data.
+ * 
  */
-public interface SplitCollector {
-	/**
-	 * The collectSplitData method receives control when a split flow ends. This
-	 * method receives control on each thread processing a split flow. The
-	 * FlowContext is in scope when this method receives control.
-	 * 
-	 * @return payload to send to SplitAnalyzer.
-	 * @throws Exception
-	 *             is thrown if an error occurs.
-	 */
-	public Externalizable collectSplitData() throws Exception;
+public class PersistentDataWrapper implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    private byte[] persistentDataBytes;
+
+    public PersistentDataWrapper(byte[] persistentData) {
+        this.persistentDataBytes = persistentData;
+    }
+
+    public byte[] getPersistentDataBytes() {
+        return persistentDataBytes;
+    }
+
+
 }

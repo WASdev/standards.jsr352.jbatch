@@ -19,8 +19,8 @@ package com.ibm.batch.container.artifact.proxy;
 import javax.batch.api.CheckpointAlgorithm;
 
 import com.ibm.batch.container.exception.BatchContainerRuntimeException;
-import com.ibm.ws.batch.container.checkpoint.ItemCheckpointAlgorithm;
-import com.ibm.ws.batch.container.checkpoint.TimeCheckpointAlgorithm;
+import com.ibm.batch.container.persistence.ItemCheckpointAlgorithm;
+import com.ibm.batch.container.persistence.TimeCheckpointAlgorithm;
 
 public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm> implements CheckpointAlgorithm {
 

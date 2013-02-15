@@ -80,4 +80,12 @@ public class InventoryCachedConnWriter extends AbstractItemWriter<InventoryRecor
 	public void close() {
 		ConnectionHelper.cleanupConnection(connection, null, null);
 	}
+
+
+
+	@Override
+	public void writeItems(List<InventoryRecord> items) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
 }

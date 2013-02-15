@@ -190,7 +190,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals("readSkipCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.READSKIPCOUNT)) {
 					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
 					assertWithMessage(
 							"Testing the read skip count for execution #1", 4L,
@@ -267,7 +267,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the write skip count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals("writeSkipCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.WRITESKIPCOUNT)) {
 					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
 					assertWithMessage(
 							"Testing the write skip count for execution #1", 3L,
@@ -346,7 +346,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals("processSkipCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.PROCESSSKIPCOUNT)) {
 					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
 					assertWithMessage(
 							"Testing the read count for execution #1", 2L,
@@ -359,7 +359,7 @@ public class MetricsTests {
 	}
 	
 	/*
-	 * @testName: testMetricsReadMetrics
+	 * @testName: testReadMetric
 	 * 
 	 * @assertion: Section 7.1 Job Metrics - Read Count
 	 * @test_Strategy: Batch Artifact reads a known number of items - test that those reads are reflected in the read count
@@ -368,7 +368,7 @@ public class MetricsTests {
 	@Test
 	@org.junit.Test
 	public void testReadMetric() throws Exception {
-		String METHOD = "testMetrics";
+		String METHOD = "testReadMetric";
 
 		try {
 			Reporter.log("Create job parameters for execution #1:<p>");
@@ -418,7 +418,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals("readCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.READCOUNT)) {
 					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
 					assertWithMessage(
 							"Testing the read count for execution #1", 9L,
@@ -482,7 +482,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals("writeCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.WRITECOUNT)) {
 					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
 					assertWithMessage(
 							"Testing the write count for execution #1", 9L,
@@ -548,7 +548,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the filter count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals("filterCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.FILTERCOUNT)) {
 					assertWithMessage(
 							"Testing the filter count for execution #1", 1L,
 							metrics[i].getValue());
@@ -610,7 +610,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the commit count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals("commitCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.COMMITCOUNT)) {
 					assertWithMessage(
 							"Testing the commit count for execution #1", 4L,
 							metrics[i].getValue());

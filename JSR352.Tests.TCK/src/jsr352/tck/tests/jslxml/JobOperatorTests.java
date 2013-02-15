@@ -57,6 +57,12 @@ public class JobOperatorTests {
     		handleException(METHOD, e);
     	}
     }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
+	}
 
     @BeforeMethod
     @BeforeClass
@@ -227,12 +233,12 @@ public class JobOperatorTests {
     }
     
 	/*
-	 * @testName: testJobOperatorGetStepExceptions
+	 * @testName: testJobOperatorGetStepExecutions
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getJobNames
 	 * @test_Strategy: start a job that completes successfully. Get the list of all StepException objects associated with job execution id.
 	 *                 Test that all objects retrieved are of type StepExecution.
-	 * @throws NoSuchJobExecutionException
+	 * @throws Exception
 	 */
     @Test
     @org.junit.Test
@@ -324,8 +330,7 @@ public class JobOperatorTests {
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getJobNames
 	 * @test_Strategy: run a job that completes successfully. Abandon the job. Test to ensure the Batch Status for the said job is marked as 'ABANDONED'
-	 * @throws NoSuchJobInstanceException, 
-	 * @throws JobExecutionIsRunningException
+	 * @throws Exception
 	 * 
 	 */
 	@Test
@@ -359,7 +364,7 @@ public class JobOperatorTests {
 	 * @assertion: Section 7.7.9 Job Operator - getJobInstanceCount
 	 * @test_Strategy: Retrieve the job instance count for a known job name. Run that job. 
 	 *                 Retrieve the job instance count for that job again. Test that the count has increased by 1.
-	 * @throws NoSuchJobException
+	 * @throws Exception
 	 * 
 	 */
 	@Test  
@@ -424,12 +429,12 @@ public class JobOperatorTests {
     }
 	
 	/*
-	 * @testName: testJobOpgetJobInstanceCountExcetion
+	 * @testName: testJobOpgetJobInstanceCountException
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getJobInstanceCountException
 	 * @test_Strategy: Retrieve the job instance count for a known job name. Run that job. 
 	 *                 Retrieve the job instance count for a job name that does not exist. Test that the NoSuchJobInstanceException is returned.
-	 * @throws NoSuchJobException 
+	 * @throws Exception
 	 * 
 	 */
 	@Test  
@@ -500,7 +505,7 @@ public class JobOperatorTests {
 	 * @test_Strategy: start a job which will ensure at least one job instance known to the runtime. 
 	 *                 Retrieve a list of job instance ids for the job name just started. Ask for the first 200 found.
 	 *                 Test that 
-	 * @throws NoSuchJobException, 
+	 * @throws Exception
 	 * 
 	 */
 	@Test  
@@ -581,7 +586,7 @@ public class JobOperatorTests {
 	 * @assertion: Section 7.7.9 Job Operator - getJobInstancesException
 	 * @test_Strategy: Retrieve a list of job instances for a job name that does not exist. 
 	 *                 Test that the NoSuchJobException is thrown.
-	 * @throws NoSuchJobException, 
+	 * @throws  Exception 
 	 * 
 	 */
 	@Test  
@@ -717,19 +722,19 @@ public class JobOperatorTests {
     }
     
 	/*
-	 * @testName: testJobOperatorgetParameters
+	 * @testName: testJobOperatorGetParameters
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getParameters
 	 * @test_Strategy: Start a job with a set of parameters. Restart the job with a set of override parameters. Once completed, retrieve the 
 	 *                 parameters object associated with the job instance. Test that the object retrieved is a Properties object. 
 	 *                 Test that the NoSuchJobException is thrown.
-	 * @throws NoSuchJobExecutionException
+	 * @throws Exception
 	 * 
 	 */
 	@Test  
 	@org.junit.Test
     public void testJobOperatorGetParameters() throws Exception {
-        String METHOD = "testInvokeJobWithStopElement";
+        String METHOD = "testJobOperatorGetParameters";
         begin(METHOD);
         
         try {
@@ -876,13 +881,13 @@ public class JobOperatorTests {
  	}
 	
 	/*
-	 * @testName: testJobOpgetJobInstancesException
+	 * @testName: testJobOperatorGetJobInstance
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getJobInstance
 	 * @test_Strategy: Start a job, which is configured to fail. Restart the same job which is configured to complete successfully.
 	 *                 Retrieve the Job Instance object for the known job instance id. Test that the object retrieved is an instance of JobInstance
 	 *                 
-	 * @throws NoSuchJobExecutionException 
+	 * @throws Exception 
 	 * 
 	 */
 	@Test  
@@ -962,7 +967,7 @@ public class JobOperatorTests {
 	 *                 List 1 will contain JobExecution Objects for job start 1 - 3. List 2 will contain JobExecution Objects for job start 2 - 4.
 	 *                 Test that the second and third JobExecution objects of List 1 is equivalent to the first and second JobExecution objects in List 2.
 	 *                                   
-	 * @throws NoSuchJobException 
+	 * @throws Exception
 	 * 
 	 */
 	@Test  
@@ -1056,13 +1061,13 @@ public class JobOperatorTests {
  	}
 	
 	/*
-	 * @testName: testJobOperatorgetRunningJobInstances
+	 * @testName: testJobOperatorGetRunningJobInstances
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getJobInstances
 	 * @test_Strategy: start a job which will ensure at least one job instance known to the runtime. Job will be long running. Testcase does not wait for job to complete.
 	 *                 Retrieve a list of job instance ids for the job name just started that are in running state. Ensure that at least one Job Instance is returned
 	 *                 Test that 
-	 * @throws NoSuchJobInstanceException, 
+	 * @throws Exception
 	 * 
 	 */
 	@Test
@@ -1105,19 +1110,19 @@ public class JobOperatorTests {
  	}
 	
 	/*
-	 * @testName: testJobOperatorgetRunningJobInstances
+	 * @testName: testJobOperatorGetRunningJobInstancesExeception
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getJobInstances
 	 * @test_Strategy: start a job which will ensure at least one job instance known to the runtime. Job will be long running. Testcase does not wait for job to complete.
 	 *                 Retrieve a list of job instance ids for a job name that does not exist in running state. Ensure that NoSuchJobException exception is thrown
 	 *                 Test that 
-	 * @throws NoSuchJobException, 
+	 * @throws Exception
 	 * 
 	 */
 	@Test
 	@org.junit.Test
-    public void testJobOperatorGetRunningJobInstancesExecption() throws Exception {
-        String METHOD = "testJobOperatorGetRunningJobInstances";
+    public void testJobOperatorGetRunningJobInstancesExeception() throws Exception {
+        String METHOD = "testJobOperatorGetRunningJobInstancesExeception";
         begin(METHOD);
         
         try {
@@ -1167,7 +1172,7 @@ public class JobOperatorTests {
 	 *                 Retrieve a JobExecution object using the execution ID returned by the start command.
 	 *                 Ensure the object returned is an instance of JobExecution
 	 *                  
-	 * @throws NoSuchJobException, 
+	 * @throws Exception 
 	 * 
 	 */
 	@Test 
@@ -1247,7 +1252,7 @@ public class JobOperatorTests {
 	 *                 Retrieve a JobExecution object using the execution ID returned by the start command.
 	 *                 Ensure the object returned is an instance of JobExecution
 	 *                  
-	 * @throws NoSuchJobException, 
+	 * @throws Exception 
 	 * 
 	 */
 	@Test 

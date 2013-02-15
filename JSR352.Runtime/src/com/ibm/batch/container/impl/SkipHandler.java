@@ -24,8 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jsr352.batch.jsl.Chunk;
+import jsr352.batch.jsl.ExceptionClassFilter;
 
-import com.ibm.batch.container.artifact.proxy.RetryReadListenerProxy;
 import com.ibm.batch.container.artifact.proxy.SkipProcessListenerProxy;
 import com.ibm.batch.container.artifact.proxy.SkipReadListenerProxy;
 import com.ibm.batch.container.artifact.proxy.SkipWriteListenerProxy;
@@ -131,17 +131,34 @@ public class SkipHandler<T> {
 	      String excludeEx = null;
 	      
 			if (chunk.getSkippableExceptionClasses() != null) {
-				if (chunk.getSkippableExceptionClasses().getInclude() != null) {
-					includeEx = chunk.getSkippableExceptionClasses()
-							.getInclude().getClazz();
-					logger.finer("SKIPHANDLE: include: " + includeEx);
+				if (chunk.getSkippableExceptionClasses().getIncludeList() != null) {
+					List<ExceptionClassFilter.Include> includes = chunk.getSkippableExceptionClasses().getIncludeList();
+					if (includes.size() > 1) {
+						String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
+						logger.severe(msg);
+						throw new IllegalArgumentException(msg);
+					} else if (includes.size() == 1) {
+						includeEx = includes.get(0).getClazz();
+						logger.finer("SKIPHANDLE: include: " + includeEx);
+					}  else {
+						logger.finer("SKIPHANDLE: include element not present");
+					}
 				}
 			}
+			
 			if (chunk.getSkippableExceptionClasses() != null) {
-				if (chunk.getSkippableExceptionClasses().getExclude() != null) {
-					excludeEx = chunk.getSkippableExceptionClasses()
-							.getExclude().getClazz();
-					logger.finer("SKIPHANDLE: exclude: " + excludeEx);
+				if (chunk.getSkippableExceptionClasses().getExcludeList() != null) {
+					List<ExceptionClassFilter.Exclude> excludes = chunk.getSkippableExceptionClasses().getExcludeList();
+					if (excludes.size() > 1) {
+						String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
+						logger.severe(msg);
+						throw new IllegalArgumentException(msg);
+					} else if (excludes.size() == 1) {
+						excludeEx = excludes.get(0).getClazz();
+						logger.finer("SKIPHANDLE: exclude: " + excludeEx);
+					}  else {
+						logger.finer("SKIPHANDLE: exclude element not present");
+					}
 				}
 			}
 

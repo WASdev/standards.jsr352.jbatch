@@ -18,6 +18,7 @@ package com.ibm.batch.container.services.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -35,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,18 +49,20 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import com.ibm.batch.container.config.IBatchConfig;
+import com.ibm.batch.container.context.impl.MetricImpl;
 import com.ibm.batch.container.context.impl.StepContextImpl;
 import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.exception.PersistenceException;
 import com.ibm.batch.container.jobinstance.JobOperatorJobExecutionImpl;
 import com.ibm.batch.container.jobinstance.StepExecutionImpl;
+import com.ibm.batch.container.persistence.CheckpointData;
+import com.ibm.batch.container.persistence.CheckpointDataKey;
 import com.ibm.batch.container.services.IPersistenceManagerService;
 import com.ibm.batch.container.status.JobStatus;
 import com.ibm.batch.container.status.JobStatusKey;
 import com.ibm.batch.container.status.StepStatus;
 import com.ibm.batch.container.status.StepStatusKey;
-import com.ibm.ws.batch.container.checkpoint.CheckpointData;
-import com.ibm.ws.batch.container.checkpoint.CheckpointDataKey;
+import com.ibm.batch.container.util.TCCLObjectInputStream;
 
 public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl implements IPersistenceManagerService {
 
@@ -1296,21 +1298,21 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl i
 		Metric[] metrics = stepContext.getMetrics();
 		for (int i = 0; i < metrics.length; i++) {
 			
-			if (metrics[i].getName().equals("readCount")) {
+			if (metrics[i].getName().equals(MetricImpl.MetricName.READCOUNT)) {
 				readCnt = metrics[i].getValue();
-			} else if (metrics[i].getName().equals("writeCount")) {
+			} else if (metrics[i].getName().equals(MetricImpl.MetricName.WRITECOUNT)) {
 				writeCnt = metrics[i].getValue();	
-			} else if (metrics[i].getName().equals("processSkipCount")) {
+			} else if (metrics[i].getName().equals(MetricImpl.MetricName.PROCESSSKIPCOUNT)) {
 				processSkipCnt = metrics[i].getValue();	
-			} else if (metrics[i].getName().equals("commitCount")) {
+			} else if (metrics[i].getName().equals(MetricImpl.MetricName.COMMITCOUNT)) {
 				commitCnt = metrics[i].getValue();
-			} else if (metrics[i].getName().equals("rollbackCount")) {
+			} else if (metrics[i].getName().equals(MetricImpl.MetricName.ROLLBACKCOUNT)) {
 				rollbackCnt = metrics[i].getValue();	
-			} else if (metrics[i].getName().equals("readSkipCount")) {
+			} else if (metrics[i].getName().equals(MetricImpl.MetricName.READSKIPCOUNT)) {
 				readSkipCnt = metrics[i].getValue();
-			} else if (metrics[i].getName().equals("filterCount")) {
+			} else if (metrics[i].getName().equals(MetricImpl.MetricName.FILTERCOUNT)) {
 				filterCnt = metrics[i].getValue();	
-			} else if (metrics[i].getName().equals("writeSkipCount")) {
+			} else if (metrics[i].getName().equals(MetricImpl.MetricName.WRITESKIPCOUNT)) {
 				writeSkipCnt = metrics[i].getValue();	
 			}
 		
@@ -1391,7 +1393,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl i
 		long writeSkipCount = 0;
 		Timestamp startTS = null;
 		Timestamp endTS = null;
-		Object persistentData = null;
+		Externalizable persistentData = null;
 		StepExecutionImpl stepEx = null;
 		ObjectInputStream objectIn = null;
 		
@@ -1422,9 +1424,9 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl i
 				// get the object based data
 				byte[] pDataBytes = rs.getBytes("persistentData");
 				if (pDataBytes != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(pDataBytes));
+					objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
 				}
-				persistentData = objectIn.readObject();
+				persistentData = (Externalizable)objectIn.readObject();
 				
 				stepEx = new StepExecutionImpl(jobexecid, stepexecid);
 				
@@ -1479,7 +1481,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl i
 		long writeSkipCount = 0;
 		Timestamp startTS = null;
 		Timestamp endTS = null;
-		Object persistentDataObj = null;
+		Externalizable persistentDataObj = null;
 		StepExecutionImpl stepEx = null;
 		ObjectInputStream objectIn = null;
 	
@@ -1507,10 +1509,10 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl i
 				// get the object based data
 				byte[] pDataBytes = rs.getBytes("persistentData");
 				if (pDataBytes != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(pDataBytes));
+					objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
 				}
 				
-				persistentDataObj = objectIn.readObject();
+				persistentDataObj = (Externalizable)objectIn.readObject();
 				
 				stepEx = new StepExecutionImpl(jobexecid, stepexecid);
 				

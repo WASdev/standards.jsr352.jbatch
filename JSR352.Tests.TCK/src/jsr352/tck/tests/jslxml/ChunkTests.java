@@ -546,7 +546,7 @@ public class ChunkTests {
     }
 
     /*
-     * @testName: testChunkTimeBasedDefaultCheckpoint
+     * @testName: testChunkTimeBased10Seconds
      * @assertion: job will finish successfully with COMPLETED and the time-limit of 10 seconds recognized
      *             5.2.1.1 - Reader, 5.2.1.1.1 - Reader Properties,
      *             5.2.1.2 - Processor
@@ -563,20 +563,26 @@ public class ChunkTests {
     @Test
     @org.junit.Test
     public void testChunkTimeBased10Seconds() throws Exception {
+    	
+    	 String METHOD = "testChunkTimeBased10Seconds";
 
-        Properties jobParams = new Properties();
-        jobParams.put("execution.number", "1");
-        jobParams.put("readrecord.fail", "31");
-        jobParams.put("app.arraysize", "30");
-
-        URL jobXMLURL = this.getClass().getResource("/chunkTimeBasedCheckpoint.xml");
-
-
-        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunkTimeBasedCheckpoint", jobParams);
-        assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
-        assertWithMessage("Testing execution #1", "TRUE: 10", execution1.getExitStatus());
-
-        System.out.println("AJM: exit status = " + execution1.getExitStatus());
+    	try {
+	        Properties jobParams = new Properties();
+	        jobParams.put("execution.number", "1");
+	        jobParams.put("readrecord.fail", "31");
+	        jobParams.put("app.arraysize", "30");
+	
+	        URL jobXMLURL = this.getClass().getResource("/chunkTimeBasedCheckpoint.xml");
+	
+	
+	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunkTimeBasedCheckpoint", jobParams);
+	        assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
+	        assertWithMessage("Testing execution #1", "TRUE: 10", execution1.getExitStatus());
+	
+	        System.out.println("AJM: exit status = " + execution1.getExitStatus());
+    	 } catch (Exception e) {
+             handleException(METHOD, e);
+         }
     }
 
     /*

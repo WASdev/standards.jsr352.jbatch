@@ -16,7 +16,9 @@
 */
 package com.ibm.batch.container.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
@@ -38,9 +40,11 @@ import com.ibm.batch.container.IExecutionElementController;
 import com.ibm.batch.container.artifact.proxy.PartitionCollectorProxy;
 import com.ibm.batch.container.context.impl.MetricImpl;
 import com.ibm.batch.container.context.impl.StepContextImpl;
+import com.ibm.batch.container.exception.BatchContainerServiceException;
 import com.ibm.batch.container.jobinstance.JobExecutionHelper;
 import com.ibm.batch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.batch.container.jobinstance.StepExecutionImpl;
+import com.ibm.batch.container.persistence.PersistentDataWrapper;
 import com.ibm.batch.container.services.IJobIdManagementService;
 import com.ibm.batch.container.services.IJobStatusManagerService;
 import com.ibm.batch.container.services.ITransactionManagementService;
@@ -106,14 +110,14 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     	}
     	
 		// set up metrics
-		stepContext.addMetric(MetricImpl.Counter.valueOf("READ_COUNT"), 0);
-		stepContext.addMetric(MetricImpl.Counter.valueOf("WRITE_COUNT"), 0);
-		stepContext.addMetric(MetricImpl.Counter.valueOf("READ_SKIP_COUNT"), 0);
-		stepContext.addMetric(MetricImpl.Counter.valueOf("PROCESS_SKIP_COUNT"), 0);
-		stepContext.addMetric(MetricImpl.Counter.valueOf("WRITE_SKIP_COUNT"), 0);
-		stepContext.addMetric(MetricImpl.Counter.valueOf("FILTER_COUNT"), 0);
-		stepContext.addMetric(MetricImpl.Counter.valueOf("COMMIT_COUNT"), 0);
-		stepContext.addMetric(MetricImpl.Counter.valueOf("ROLLBACK_COUNT"), 0);
+		stepContext.addMetric(MetricImpl.MetricName.READCOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricName.WRITECOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricName.READSKIPCOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricName.PROCESSSKIPCOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricName.WRITESKIPCOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricName.FILTERCOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricName.COMMITCOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricName.ROLLBACKCOUNT, 0);
 		
 		ITransactionManagementService transMgr = (ITransactionManagementService) ServicesManager.getInstance().getService(ServiceType.TRANSACTION_SERVICE);
 		transactionManager = transMgr.getTransactionManager(stepContext);
@@ -219,13 +223,6 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     	StepExecutionImpl stepExecution = new StepExecutionImpl(jobExecutionId, stepExecutionId);
         stepExecution.setStepName(step.getId());
         stepExecution.setStepContext(stepContext);
-        if (stepStatus != null) {
-        	stepExecution.setpersistentUserData(stepStatus.getPersistentUserData());
-        }
-        // set the StepExecutionID on the StepContext here?
-        
-    
-        //batchKernel.registerStepExecution(jobExecutionId,stepExecutionId, stepExecution);
         
     }
 
@@ -294,7 +291,19 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     }
 
     private void persistStepExitStatusAndUserData() {
-        stepStatus.setPersistentUserData(stepContext.getPersistentUserData());
+                
+        ByteArrayOutputStream persistentBAOS = new ByteArrayOutputStream();
+        ObjectOutputStream persistentDataOOS = null;
+        
+        try {
+            persistentDataOOS = new ObjectOutputStream(persistentBAOS);
+            persistentDataOOS.writeObject(stepContext.getPersistentUserData());
+            persistentDataOOS.close();
+        } catch (Exception e) {
+            throw new BatchContainerServiceException("Cannot persist the persistent user data for the step.", e);
+        }
+
+        stepStatus.setPersistentUserData(new PersistentDataWrapper(persistentBAOS.toByteArray()));
         stepStatus.setExitStatus(stepContext.getExitStatus());
         _jobStatusService.updateEntireStepStatus(jobInstance.getInstanceId(), step.getId(), stepStatus);
         

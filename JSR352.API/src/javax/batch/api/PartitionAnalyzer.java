@@ -43,16 +43,12 @@ public interface PartitionAnalyzer {
 	public void analyzeCollectorData(Externalizable data) throws Exception;
 
 	/**
-	 * The analyzeStatus method receives control each time a partition ends. It
-	 * receives as input the batch and exit status strings of the partition.
-	 * 
-	 * @param batchStatus
-	 *            specifies the batch status of a partition.
-	 * @param exitStatus
-	 *            specifies the exit status of a partition.
-	 * @throws Exception
-	 *             is thrown if an error occurs.
+	 * The analyzeStatus method receives control each time a 
+	 * partition ends.  It receives the batch and exit 
+	 * status strings of the partition as inputs.
+	 * @param batchStatus specifies the batch status of a partition.
+	 * @param exitStatus specifies the exit status of a partition. 
+	 * @throws Exception is thrown if an error occurs.
 	 */
-	public void analyzeStatus(BatchStatus batchStatus, String exitStatus)
-			throws Exception;
+	public void analyzeStatus(String batchStatus, String exitStatus) throws Exception;
 }

@@ -20,6 +20,7 @@ import static jsr352.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.exception.JobStartException;
@@ -51,25 +52,29 @@ public class ContextsGetIdTests {
 	 *		</step>
 	 *	</job>
 	 *
-	 * @throws JobStartException
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws InterruptedException
+	 * @throws Exception
 	 */
     @Test
     @org.junit.Test
-	public void testJobContextGetId() throws JobStartException, FileNotFoundException, IOException, InterruptedException {
+	public void testJobContextGetId() throws Exception {
 
-    	String jobId = "job1";
+    	String METHOD = "testJobContextGetId";
     	
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_jobcontext", null);
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		
-		assertWithMessage("job id equals job1", jobExec.getExitStatus().equals(jobId));
-		
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
+    	try {
+    	
+	    	String jobId = "job1";
+	    	
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_jobcontext", null);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			
+			assertWithMessage("job id equals job1", jobExec.getExitStatus().equals(jobId));
+			
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
 	}
     
 	/**
@@ -86,25 +91,51 @@ public class ContextsGetIdTests {
 	 *		</step>
 	 *	</job>
 	 *
-	 * @throws JobStartException
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws InterruptedException
+	 * @throws Exception
 	 */
     @Test
     @org.junit.Test
-	public void testStepContextGetId() throws JobStartException, FileNotFoundException, IOException, InterruptedException {
+	public void testStepContextGetId() throws Exception {
 
-    	String stepId = "step1";
+    	String METHOD = "testStepContextGetId";
     	
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_stepcontext", null);
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		
-		assertWithMessage("job id equals job1", jobExec.getExitStatus().equals(stepId));
-		
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-		Reporter.log("job completed");
+    	try {
+	    	String stepId = "step1";
+	    	
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_stepcontext", null);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			
+			assertWithMessage("job id equals job1", jobExec.getExitStatus().equals(stepId));
+			
+			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			Reporter.log("job completed");
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
+	}
+    
+    private static void handleException(String methodName, Exception e) throws Exception {
+		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+		Reporter.log(methodName + " failed<p>");
+		throw e;
+	}
+    
+  public void setup(String[] args, Properties props) throws Exception {
+    	
+    	String METHOD = "setup";
+    	
+    	try {
+    		jobOp = new JobOperatorBridge();
+    	} catch (Exception e) {
+    		handleException(METHOD, e);
+    	}
+    }
+    
+    /* cleanup */
+	public void  cleanup()
+	{		
+	
 	}
 	
 	@BeforeTest

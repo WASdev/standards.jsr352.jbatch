@@ -56,7 +56,7 @@ public class PartitionedStepBuilder {
 	
     /*
      * Build a generated job with only one step in it to submit to the
-     * BatchKernel.
+     * BatchKernel. This is used for partitioned steps.
      * 
      */
     public static JSLJob buildSubJob(Long parentJobInstanceId, Step step, int partitionInstance) {

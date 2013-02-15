@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.batch.container.impl;
 
 import java.util.HashSet;
@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jsr352.batch.jsl.Chunk;
+import jsr352.batch.jsl.ExceptionClassFilter;
 
 import com.ibm.batch.container.artifact.proxy.RetryProcessListenerProxy;
 import com.ibm.batch.container.artifact.proxy.RetryReadListenerProxy;
@@ -40,142 +41,179 @@ public class RetryHandler {
 	 *
 	 */
 
-	  private static final String className = RetryHandler.class.getName();
-		private static Logger logger = Logger.getLogger(RetryHandler.class.getPackage().getName());
+	private static final String className = RetryHandler.class.getName();
+	private static Logger logger = Logger.getLogger(RetryHandler.class.getPackage().getName());
 
-	  public static final String RETRY_COUNT      = "retry-limit";
-	  public static final String RETRY_INCLUDE_EX = "include class";
-	  public static final String RETRY_EXCLUDE_EX = "exclude class";
-	  
-	  private static final int RETRY_NONE = 0;
-	  private static final int RETRY_READ = 1;
-	  private static final int RETRY_PROCESS = 2;
-	  private static final int RETRY_WRITE = 3;
-	  
-	  private int retryType = RETRY_NONE;
+	public static final String RETRY_COUNT      = "retry-limit";
+	public static final String RETRY_INCLUDE_EX = "include class";
+	public static final String RETRY_EXCLUDE_EX = "exclude class";
 
-	  /*private RetryProcessListenerProxy _retryProcessListener = null;
+	private static final int RETRY_NONE = 0;
+	private static final int RETRY_READ = 1;
+	private static final int RETRY_PROCESS = 2;
+	private static final int RETRY_WRITE = 3;
+
+	private int retryType = RETRY_NONE;
+
+	/*private RetryProcessListenerProxy _retryProcessListener = null;
 	  private RetryReadListenerProxy _retryReadListener = null;
 	  private RetryWriteListenerProxy _retryWriteListener = null;*/
-	  
-	  List<RetryProcessListenerProxy> _retryProcessListeners = null;
-	  List<RetryReadListenerProxy> _retryReadListeners = null;
-	  List<RetryWriteListenerProxy> _retryWriteListeners = null;
 
-	  private long _jobId = 0;
-	  private String _stepId = null;
-	  private Set<String> _retryNoRBIncludeExceptions = null;
-	  private Set<String> _retryNoRBExcludeExceptions = null;
-	  private Set<String> _retryIncludeExceptions = null;
-	  private Set<String> _retryExcludeExceptions = null;
-	  private int _retryLimit = 0;
-	  private long _retryCount = 0;
-	  private Exception _retryException = null;
+	List<RetryProcessListenerProxy> _retryProcessListeners = null;
+	List<RetryReadListenerProxy> _retryReadListeners = null;
+	List<RetryWriteListenerProxy> _retryWriteListeners = null;
 
-	  public RetryHandler(Chunk chunk, long l, String stepId)
-	  {
-	    _jobId = l;
-	    _stepId = stepId;
+	private long _jobId = 0;
+	private String _stepId = null;
+	private Set<String> _retryNoRBIncludeExceptions = null;
+	private Set<String> _retryNoRBExcludeExceptions = null;
+	private Set<String> _retryIncludeExceptions = null;
+	private Set<String> _retryExcludeExceptions = null;
+	private int _retryLimit = 0;
+	private long _retryCount = 0;
+	private Exception _retryException = null;
 
-	    initialize(chunk);
-	  }
+	public RetryHandler(Chunk chunk, long l, String stepId)
+	{
+		_jobId = l;
+		_stepId = stepId;
 
-
-	  /**
-	   * Add the user-defined RetryProcessListener.
-	   *
-	   */
-	  public void addRetryProcessListener(List<RetryProcessListenerProxy> retryProcessListeners)
-	  {
-	    _retryProcessListeners =  retryProcessListeners;
-	  }
-	  
-	  /**
-	   * Add the user-defined RetryReadListener.
-	   *
-	   */
-	  public void addRetryReadListener(List<RetryReadListenerProxy> retryReadListeners)
-	  {
-	    _retryReadListeners = retryReadListeners;
-	  }
-	  
-	  /**
-	   * Add the user-defined RetryWriteListener.
-	   *
-	   */
-	  public void addRetryWriteListener(List<RetryWriteListenerProxy> retryWriteListeners)
-	  {
-	    _retryWriteListeners = retryWriteListeners;
-	  }
+		initialize(chunk);
+	}
 
 
-	  /**
-	   * Read the retry exception lists from the BDS props.
-	   */
-	  private void initialize(Chunk chunk)
-	  {
-	    final String mName = "initialize";
+	/**
+	 * Add the user-defined RetryProcessListener.
+	 *
+	 */
+	public void addRetryProcessListener(List<RetryProcessListenerProxy> retryProcessListeners)
+	{
+		_retryProcessListeners =  retryProcessListeners;
+	}
 
-	    if(logger.isLoggable(Level.FINER)) 
-	      logger.entering(className, mName);
+	/**
+	 * Add the user-defined RetryReadListener.
+	 *
+	 */
+	public void addRetryReadListener(List<RetryReadListenerProxy> retryReadListeners)
+	{
+		_retryReadListeners = retryReadListeners;
+	}
 
-	    try
-	    {
-	    	if (chunk.getRetryLimit() != null){
-	    		_retryLimit = Integer.parseInt(chunk.getRetryLimit());
-	    	}
-	    }
-	    catch (NumberFormatException nfe)
-	    {
-	      throw new RuntimeException("NumberFormatException reading " + RETRY_COUNT, nfe);
-	    }
+	/**
+	 * Add the user-defined RetryWriteListener.
+	 *
+	 */
+	public void addRetryWriteListener(List<RetryWriteListenerProxy> retryWriteListeners)
+	{
+		_retryWriteListeners = retryWriteListeners;
+	}
 
-	    if (_retryLimit > 0)
-	    {
-	      // Read the include/exclude exceptions.
-	      _retryIncludeExceptions = new HashSet<String>();
-	      _retryExcludeExceptions = new HashSet<String>();
-	      _retryNoRBIncludeExceptions = new HashSet<String>();
-	      _retryNoRBExcludeExceptions = new HashSet<String>();
 
-	      String includeEx = null;
-	      String excludeEx = null;
-	      String includeExNoRB = null;
-	      String excludeExNoRB = null;
-	      
+	/**
+	 * Read the retry exception lists from the BDS props.
+	 */
+	private void initialize(Chunk chunk)
+	{
+		final String mName = "initialize";
+
+		if(logger.isLoggable(Level.FINER)) 
+			logger.entering(className, mName);
+
+		try
+		{
+			if (chunk.getRetryLimit() != null){
+				_retryLimit = Integer.parseInt(chunk.getRetryLimit());
+			}
+		}
+		catch (NumberFormatException nfe)
+		{
+			throw new RuntimeException("NumberFormatException reading " + RETRY_COUNT, nfe);
+		}
+
+		if (_retryLimit > 0)
+		{
+			// Read the include/exclude exceptions.
+			_retryIncludeExceptions = new HashSet<String>();
+			_retryExcludeExceptions = new HashSet<String>();
+			_retryNoRBIncludeExceptions = new HashSet<String>();
+			_retryNoRBExcludeExceptions = new HashSet<String>();
+
+			String includeEx = null;
+			String excludeEx = null;
+			String includeExNoRB = null;
+			String excludeExNoRB = null;
+
 			if (chunk.getRetryableExceptionClasses() != null) {
-				if (chunk.getRetryableExceptionClasses().getInclude() != null) {
-					includeEx = chunk.getRetryableExceptionClasses().getInclude().getClazz();
-					logger.finer("RETRYHANDLE: include: " + includeEx);
+				if (chunk.getRetryableExceptionClasses().getIncludeList() != null) {
+					List<ExceptionClassFilter.Include> includes = chunk.getRetryableExceptionClasses().getIncludeList();
+					if (includes.size() > 1) {
+						String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
+						logger.severe(msg);
+						throw new IllegalArgumentException(msg);
+					} else if (includes.size() == 1) {
+						includeEx = includes.get(0).getClazz();
+						logger.finer("RETRYHANDLE: include: " + includeEx);
+					}  else {
+						logger.finer("RETRYHANDLE: include element not present");
+					}
 				}
-				if (chunk.getRetryableExceptionClasses().getExclude() != null) {
-					excludeEx = chunk.getRetryableExceptionClasses().getExclude().getClazz();
-					logger.finer("RETRYHANDLE: exclude: " + excludeEx);
+				if (chunk.getRetryableExceptionClasses().getExcludeList() != null) {
+					List<ExceptionClassFilter.Exclude> excludes = chunk.getRetryableExceptionClasses().getExcludeList();
+					if (excludes.size() > 1) {
+						String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
+						logger.severe(msg);
+						throw new IllegalArgumentException(msg);
+					} else if (excludes.size() == 1) {
+						excludeEx = excludes.get(0).getClazz();
+						logger.finer("RETRYHANDLE: exclude: " + excludeEx);
+					}  else {
+						logger.finer("RETRYHANDLE: exclude element not present");
+					}
 				}
 			}
+
 			if (chunk.getNoRollbackExceptionClasses() != null) {
-				if (chunk.getNoRollbackExceptionClasses().getInclude() != null) {
-					includeExNoRB = chunk.getNoRollbackExceptionClasses().getInclude().getClazz();
-					logger.finer("RETRYHANDLE: include no rollback: " + includeExNoRB);
+				if (chunk.getNoRollbackExceptionClasses().getIncludeList() != null) {
+					List<ExceptionClassFilter.Include> includes = chunk.getNoRollbackExceptionClasses().getIncludeList();
+					if (includes.size() > 1) {
+						String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
+						logger.severe(msg);
+						throw new IllegalArgumentException(msg);
+					} else if (includes.size() == 1) {
+						includeExNoRB = includes.get(0).getClazz();
+						logger.finer("RETRYHANDLE: include no rollback: " + includeExNoRB);
+					}  else {
+						logger.finer("RETRYHANDLE: include element not present");
+					}
 				}
-				if (chunk.getNoRollbackExceptionClasses().getExclude() != null) {
-					excludeExNoRB = chunk.getNoRollbackExceptionClasses().getExclude().getClazz();
-					logger.finer("RETRYHANDLE: exclude no rollback: " + excludeExNoRB);
+				if (chunk.getNoRollbackExceptionClasses().getExcludeList() != null) {
+					List<ExceptionClassFilter.Exclude> excludes = chunk.getNoRollbackExceptionClasses().getExcludeList();
+					if (excludes.size() > 1) {
+						String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
+						logger.severe(msg);
+						throw new IllegalArgumentException(msg);
+					} else if (excludes.size() == 1) {
+						excludeExNoRB = excludes.get(0).getClazz();
+						logger.finer("RETRYHANDLE: exclude no rollback: " + excludeExNoRB);
+					}  else {
+						logger.finer("RETRYHANDLE: include element not present");
+					}
 				}
 			}
 
 			if (includeEx != null) {
-				
 				_retryIncludeExceptions.add(includeEx.trim());
 			}
-			if (excludeEx != null)
+			if (excludeEx != null) {
 				_retryExcludeExceptions.add(excludeEx.trim());
+			}
 			if (includeExNoRB != null) {
-				
 				_retryNoRBIncludeExceptions.add(includeExNoRB.trim());
 			}
-			if (excludeExNoRB != null)
+			if (excludeExNoRB != null) {
 				_retryNoRBExcludeExceptions.add(excludeExNoRB.trim());
+			}
 
 			if (logger.isLoggable(Level.FINE)) {
 				logger.logp(Level.FINE, className, mName,
@@ -187,8 +225,9 @@ public class RetryHandler {
 			}
 		}
 	        
-	    if(logger.isLoggable(Level.FINER)) 
+	    if(logger.isLoggable(Level.FINER)) {
 	      logger.exiting(className, mName, this.toString());
+	    }
 	  }
 	  
 	  public boolean isRollbackException(Exception e)

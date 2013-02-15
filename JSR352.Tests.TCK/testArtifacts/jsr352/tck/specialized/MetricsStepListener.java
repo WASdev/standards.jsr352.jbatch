@@ -67,7 +67,7 @@ public class MetricsStepListener extends AbstractStepListener {
 		Metric[] metrics = stepCtx.getMetrics();
 		for (int i = 0; i < metrics.length; i++) {
 			if (RPWString.equals("READ")) {
-				if (metrics[i].getName().equals("readCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.READCOUNT)) {
 					if (metrics[i].getValue() == 30) {
 
 						JobCtx.setExitStatus(GOOD_EXIT_STATUS_READ);
@@ -76,7 +76,7 @@ public class MetricsStepListener extends AbstractStepListener {
 					}
 				}
 			} else if (RPWString.equals("READ_SKIP")) {
-					if (metrics[i].getName().equals("readSkipCount")) {
+					if (metrics[i].getName().equals(Metric.MetricName.READSKIPCOUNT)) {
 						if (metrics[i].getValue() == skipNum) {
 
 							JobCtx.setExitStatus(GOOD_EXIT_STATUS_READ);
@@ -85,7 +85,7 @@ public class MetricsStepListener extends AbstractStepListener {
 						}
 					}
 			} else if (RPWString.equals("PROCESS")) {
-				if (metrics[i].getName().equals("processSkipCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.PROCESSSKIPCOUNT)) {
 					if (metrics[i].getValue() == (skipNum)) {
 
 						JobCtx.setExitStatus(GOOD_EXIT_STATUS_PROCESS);
@@ -94,7 +94,7 @@ public class MetricsStepListener extends AbstractStepListener {
 					}
 				}
 			} else if (RPWString.equals("WRITE")) {
-				if (metrics[i].getName().equals("writeCount")) {
+				if (metrics[i].getName().equals(Metric.MetricName.WRITECOUNT)) {
 					if (metrics[i].getValue() == (30 - skipNum)) {
 
 						JobCtx.setExitStatus(GOOD_EXIT_STATUS);
@@ -104,7 +104,7 @@ public class MetricsStepListener extends AbstractStepListener {
 				}
 			
 		} else if (RPWString.equals("WRITE_SKIP")) {
-			if (metrics[i].getName().equals("writeSkipCount")) {
+			if (metrics[i].getName().equals(Metric.MetricName.WRITESKIPCOUNT)) {
 				if (metrics[i].getValue() == skipNum) {
 
 					JobCtx.setExitStatus(GOOD_EXIT_STATUS);

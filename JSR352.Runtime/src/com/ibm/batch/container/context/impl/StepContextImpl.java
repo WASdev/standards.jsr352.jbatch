@@ -78,12 +78,12 @@ public class StepContextImpl<T, P extends Externalizable> implements StepContext
         return metrics.values().toArray(new Metric[0]);
     }
     
-    public MetricImpl getMetric(MetricImpl.Counter counter) {
-        return (MetricImpl)metrics.get(counter.name());
+    public MetricImpl getMetric(MetricImpl.MetricName metricName) {
+        return (MetricImpl)metrics.get(metricName.name());
     }
     
-    public void addMetric(MetricImpl.Counter counter, long value) {
-    	metrics.putIfAbsent(counter.name(), new MetricImpl(counter, value));
+    public void addMetric(MetricImpl.MetricName metricName, long value) {
+    	metrics.putIfAbsent(metricName.name(), new MetricImpl(metricName, value));
     }
 
     @Override
@@ -190,11 +190,5 @@ public class StepContextImpl<T, P extends Externalizable> implements StepContext
 	public Timestamp getEndTimeTS(){
 		return endtime;
 	}
-
-    @Override
-    public List<BatchContext<T>> getBatchContexts() {
-        // TODO Auto-generated method stub
-        return null;
-    }   
 
 }

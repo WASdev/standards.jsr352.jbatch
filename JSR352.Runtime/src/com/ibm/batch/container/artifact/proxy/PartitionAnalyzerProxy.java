@@ -41,7 +41,7 @@ public class PartitionAnalyzerProxy extends AbstractProxy<PartitionAnalyzer> imp
     }
 
     @Override
-    public synchronized void analyzeStatus(BatchStatus batchStatus, String exitStatus) {
+    public synchronized void analyzeStatus(String batchStatus, String exitStatus) {
         
         try {
             this.delegate.analyzeStatus(batchStatus, exitStatus);

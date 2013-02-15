@@ -20,41 +20,18 @@ import javax.batch.runtime.Metric;
 
 public class MetricImpl implements Metric {
 	
-	public enum Counter {
-		READ_COUNT("readCount"),
-		WRITE_COUNT("writeCount"),
-		COMMIT_COUNT("commitCount"),
-		ROLLBACK_COUNT("rollbackCount"),
-		READ_SKIP_COUNT("readSkipCount"),
-		PROCESS_SKIP_COUNT("processSkipCount"),
-		FILTER_COUNT("filterCount"),
-		WRITE_SKIP_COUNT("writeSkipCount");
-		
-		private String name;
-		private Counter(String name) {
-			this.name = name;
-		}
-		@Override
-		public String toString() {
-			return this.name;
-		}
-	}
-	
-	private String name;
-	
-	private Counter counter;
+	private MetricName name;
 	
 	private long value;
 	
-	public MetricImpl(Counter counter, long value) {
-		//this.name = counter.toString();
-		this.counter = counter;
+	public MetricImpl(MetricName name, long value) {
+		this.name = name;
 		this.value = value;
 	}
 	
 	@Override
-	public String getName() {
-		return this.counter.toString();
+	public MetricName getName() {
+		return name;
 	}
 
 	@Override

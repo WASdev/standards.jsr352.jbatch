@@ -123,13 +123,4 @@ public class JobContextImpl<T> implements JobContext<T> {
 		// TODO Auto-generated method stub
 		return 0;
 	}
-
-	@Override
-	public List<BatchContext<T>> getBatchContexts() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-
 }

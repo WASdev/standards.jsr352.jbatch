@@ -90,26 +90,27 @@ public class JobOperatorImpl implements JobOperator {
 
 
 	@Override
-	public void abandon(JobExecution jobExecution)
+	public void abandon(JobInstance jobInstance)
 			throws NoSuchJobExecutionException, JobExecutionIsRunningException {
 		// TODO Auto-generated method stub
 		
 		boolean abandoned = false;
-		long executionId = jobExecution.getExecutionId();
+		//long executionId = jobExecution.getExecutionId();
+		long instanceId = jobInstance.getInstanceId();
 		
 		// get the job executions associated with the job instance
-		//List<JobExecution> jobExecutions = persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instanceId);
+		List<JobExecution> jobExecutions = persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instanceId);
 		
-		JobExecution jobEx = persistenceService.jobOperatorGetJobExecution(executionId);
+		//JobExecution jobEx = persistenceService.jobOperatorGetJobExecution(executionId);
 		
 		// if there are none found, throw exception saying so
-		if (jobEx == null){
-			throw new NoSuchJobInstanceException(null, "Job Execution: " + executionId + " not found");
+		if (jobExecutions == null){
+			throw new NoSuchJobInstanceException(null, "No Job Execution found for instance " + instanceId);
 		}
 		
 		// for every job execution associated with the job
 		// if it is not in STARTED state, mark it as ABANDONED
-		//for (JobExecution jobEx : jobExecutions){
+		for (JobExecution jobEx : jobExecutions){
 			if (!jobEx.getBatchStatus().equals(BatchStatus.STARTED) || !jobEx.getBatchStatus().equals(BatchStatus.STARTING)){
 				// update table to reflect ABANDONED state
 		        long time = System.currentTimeMillis();
@@ -118,9 +119,9 @@ public class JobOperatorImpl implements JobOperator {
 			}
 			else {
 				// If one of the JobExecutions is still running, throw an exception
-				throw new JobExecutionIsRunningException(null, "Job Execution: " + executionId + " is still running");
+				throw new JobExecutionIsRunningException(null, "A Job Execution for instance " + instanceId + " is still running");
 			}
-		//}
+		}
 		
 	}
 

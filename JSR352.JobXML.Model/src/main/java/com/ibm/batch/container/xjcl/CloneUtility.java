@@ -205,8 +205,13 @@ public class CloneUtility {
         
         ExceptionClassFilter newExceptionClassFilter = jslFactory.createExceptionClassFilter();
         
-        newExceptionClassFilter.setInclude(cloneExceptionClassFilterInclude(newExceptionClassFilter.getInclude()));
-        newExceptionClassFilter.setExclude(cloneExceptionClassFilterExclude(newExceptionClassFilter.getExclude()));
+        for  (ExceptionClassFilter.Include oldInclude : exceptionClassFilter.getIncludeList()) {
+        	newExceptionClassFilter.getIncludeList().add(cloneExceptionClassFilterInclude(oldInclude));
+        }
+        
+        for  (ExceptionClassFilter.Exclude oldExclude : exceptionClassFilter.getExcludeList()) {
+        	newExceptionClassFilter.getExcludeList().add(cloneExceptionClassFilterExclude(oldExclude));
+        }
         
         return newExceptionClassFilter;
         

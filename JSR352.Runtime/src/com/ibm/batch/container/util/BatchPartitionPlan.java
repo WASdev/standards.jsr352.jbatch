@@ -21,7 +21,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Properties;
 
-import javax.batch.api.parameters.PartitionPlan;
+import javax.batch.api.PartitionPlan;
 
 public class BatchPartitionPlan implements PartitionPlan {
 

@@ -56,6 +56,12 @@
         <jaxb:bindings node="//xsd:complexType[@name='Listeners']/xsd:sequence/xsd:element[1]">
             <jaxb:property name="listenerList"/>
         </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='ExceptionClassFilter']/xsd:sequence/xsd:element[@name='include']">
+            <jaxb:property name="includeList"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xsd:complexType[@name='ExceptionClassFilter']/xsd:sequence/xsd:element[@name='exclude']">
+            <jaxb:property name="excludeList"/>
+        </jaxb:bindings>
     </jaxb:bindings>
 </jaxb:bindings>
 
