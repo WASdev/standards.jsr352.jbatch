@@ -3,7 +3,7 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b04</version>
+        <version>1.0-b05</version>
     </parent>
     <groupId>com.ibm.batch</groupId>
     <artifactId>com.ibm.batch-runtime-all</artifactId>
