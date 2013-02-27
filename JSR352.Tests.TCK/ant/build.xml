@@ -122,7 +122,7 @@
 
 	<target name="run-batch-xml-generator">
 		<echo message="building ${jsr352.tck.basedir}/../testArtifactsBin/META-INF/build.xml"/>
-		<java classname="jsr352.tck.utils.BatchXMLGenerator">
+		<java classname="com.ibm.jbatch.tck.utils.BatchXMLGenerator">
 			<arg value="${jsr352.tck.basedir}/../testArtifactsBin"/>
 			<arg value="${jsr352.tck.basedir}/../testArtifactsBin/META-INF"/>
 			<classpath refid="build.classpath"/>

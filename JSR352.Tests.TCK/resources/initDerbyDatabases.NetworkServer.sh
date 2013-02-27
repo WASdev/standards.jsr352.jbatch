@@ -73,9 +73,6 @@ $DERBY_HOME/bin/startNetworkServer -h localhost -p $PORT_NUMBER &
 PORT_TWO=`expr $PORT_NUMBER + 1`
 $DERBY_HOME/bin/startNetworkServer -h localhost -p $PORT_TWO &
 
-PORT_THREE=`expr $PORT_NUMBER + 2`
-$DERBY_HOME/bin/startNetworkServer -h localhost -p $PORT_THREE &
-
 echo
 echo "*********************************************************"
 echo "If you see socket errors like this it means you derby servers are already started and you can ignore the warning. Or" 
@@ -98,12 +95,8 @@ echo "Running $DERBY_HOME/bin/ij $JSR352_ECLIPSE_WORKSPACE/JSR352.Runtime/resour
 $DERBY_HOME/bin/ij "$JSR352_ECLIPSE_WORKSPACE/JSR352.Runtime/resources/jsr352-derby.ddl"
 
 echo
-echo "Running $DERBY_HOME/bin/ij $JSR352_ECLIPSE_WORKSPACE/JSR352.Tests.TCK/resources/jsr352-order-database.ddl"
+echo "Running $DERBY_HOME/bin/ij $JSR352_ECLIPSE_WORKSPACE/JSR352.Tests.TCK/resources/jsr352-tck-database.ddl"
 $DERBY_HOME/bin/ij "$JSR352_ECLIPSE_WORKSPACE/JSR352.Tests.TCK/resources/jsr352-order-database.ddl"
-
-echo
-echo "Running $DERBY_HOME/bin/ij $JSR352_ECLIPSE_WORKSPACE/JSR352.Tests.TCK/resources/jsr352-numbers-database.ddl"
-$DERBY_HOME/bin/ij "$JSR352_ECLIPSE_WORKSPACE/JSR352.Tests.TCK/resources/jsr352-numbers-database.ddl"
 
 cd $CUR_TEMP_DIR
 

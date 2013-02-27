@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<job id="job1" parent="parent-job1" xmlns="http://batch.jsr352/jsl">
+<job id="job1" parent="parent-job1" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<properties>
 		<property name="childProp1" value="true"/>
 		<property name="childProp2" value="false"/>

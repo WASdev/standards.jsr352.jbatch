@@ -24,22 +24,22 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
-import jsr352.batch.jsl.Batchlet;
-import jsr352.batch.jsl.JSLJob;
-import jsr352.batch.jsl.Step;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.ibm.batch.xjcl.ValidatorHelper;
-import com.ibm.batch.xjcl.XJCLValidationEventHandler;
+import com.ibm.jbatch.jsl.model.Batchlet;
+import com.ibm.jbatch.jsl.model.JSLJob;
+import com.ibm.jbatch.jsl.model.Step;
+import com.ibm.jbatch.jsl.util.ValidatorHelper;
+import com.ibm.jbatch.jsl.util.JSLValidationEventHandler;
 
 public class JobModelTest {
 
     @Test
     public void testModelNoValidate() throws Exception {
         
-        JAXBContext ctx = JAXBContext.newInstance("jsr352.batch.jsl");
+        JAXBContext ctx = JAXBContext.newInstance("com.ibm.jbatch.jsl.model");
         
         Unmarshaller u = ctx.createUnmarshaller();
         URL url = this.getClass().getResource("/job1.xml");
@@ -62,11 +62,11 @@ public class JobModelTest {
     @Test
     public void testModelValidate() throws Exception {
         
-        JAXBContext ctx = JAXBContext.newInstance("jsr352.batch.jsl");
+        JAXBContext ctx = JAXBContext.newInstance("com.ibm.jbatch.jsl.model");
         
         Unmarshaller u = ctx.createUnmarshaller();
         u.setSchema(ValidatorHelper.getXJCLSchema());
-        XJCLValidationEventHandler handler = new XJCLValidationEventHandler();
+        JSLValidationEventHandler handler = new JSLValidationEventHandler();
         u.setEventHandler(handler);
         URL url = this.getClass().getResource("/job1.xml");
         
@@ -90,11 +90,11 @@ public class JobModelTest {
     @Test
     public void testValidateInvalid() throws Exception {
         
-        JAXBContext ctx = JAXBContext.newInstance("jsr352.batch.jsl");
+        JAXBContext ctx = JAXBContext.newInstance("com.ibm.jbatch.jsl.model");
         
         Unmarshaller u = ctx.createUnmarshaller();
         u.setSchema(ValidatorHelper.getXJCLSchema());
-        XJCLValidationEventHandler handler = new XJCLValidationEventHandler();
+        JSLValidationEventHandler handler = new JSLValidationEventHandler();
         u.setEventHandler(handler);
         URL url = this.getClass().getResource("/invalid.job1.xml");
         
@@ -110,11 +110,11 @@ public class JobModelTest {
     @Ignore
     public void testValidateInvalidEmptyString() throws Exception {
         
-        JAXBContext ctx = JAXBContext.newInstance("jsr352.batch.jsl");
+        JAXBContext ctx = JAXBContext.newInstance("com.ibm.jbatch.jsl.model");
         
         Unmarshaller u = ctx.createUnmarshaller();
         u.setSchema(ValidatorHelper.getXJCLSchema());
-        XJCLValidationEventHandler handler = new XJCLValidationEventHandler();
+        JSLValidationEventHandler handler = new JSLValidationEventHandler();
         u.setEventHandler(handler);
         URL url = this.getClass().getResource("/emptyString.xml");
         

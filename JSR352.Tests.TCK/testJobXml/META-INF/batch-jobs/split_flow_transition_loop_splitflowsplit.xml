@@ -15,38 +15,60 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="splitFlowTransitionLoop" xmlns="http://batch.jsr352/jsl">
-	<properties>
-		<property name="temp.file" value="#{jobParameters['temp.file']}"/>
-	</properties>
+<job id="splitFlowTransitionLoop" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
+
     <split id="split1">
 	    <flow id="split1Flow" next="flow2">
 			<step id="split1FlowStep1" next="split1FlowSplit">
-				<batchlet ref="splitFlowTransitionLoopTestBatchlet"/>
+				<batchlet ref="splitFlowTransitionLoopTestBatchlet">
+					<properties>
+						<property name="temp.file" value="#{jobParameters['temp.file']}"/>
+					</properties>
+				</batchlet>
 			</step>
 			<split id="split1FlowSplit" next="split1FlowStep2">
 				<flow id="split1FlowSplitFlow1">
 					<step id="split1FlowSplitFlow1Step">
-						<batchlet ref="splitFlowTransitionLoopTestBatchlet"/>
+						<batchlet ref="splitFlowTransitionLoopTestBatchlet">
+							<properties>
+								<property name="temp.file" value="#{jobParameters['temp.file']}"/>
+							</properties>
+						</batchlet>
 					</step>
 				</flow>
 				<flow id="split1FlowSplitFlow2">
 					<step id="split1FlowSplitFlow2Step">
-						<batchlet ref="splitFlowTransitionLoopTestBatchlet"/>
+						<batchlet ref="splitFlowTransitionLoopTestBatchlet">
+							<properties>
+								<property name="temp.file" value="#{jobParameters['temp.file']}"/>
+							</properties>
+						</batchlet>
 					</step>
 				</flow>
 			</split>
 			<step id="split1FlowStep2">
-				<batchlet ref="splitFlowTransitionLoopTestBatchlet"/>
+				<batchlet ref="splitFlowTransitionLoopTestBatchlet">
+					<properties>
+						<property name="temp.file" value="#{jobParameters['temp.file']}"/>
+					</properties>
+				</batchlet>
 			</step>
 		</flow>
 		
 		<flow id="flow2">
 			<step id="flow2step1" next="flow2step2">
-				<batchlet ref="splitFlowTransitionLoopTestBatchlet"/>
+				<batchlet ref="splitFlowTransitionLoopTestBatchlet">
+					<properties>
+						<property name="temp.file" value="#{jobParameters['temp.file']}"/>
+					</properties>
+				</batchlet>
 			</step>
 			<step id="flow2step2">
-				<batchlet ref="splitFlowTransitionLoopTestBatchlet"/>
+				<batchlet ref="splitFlowTransitionLoopTestBatchlet">
+					<properties>
+						<property name="temp.file" value="#{jobParameters['temp.file']}"/>
+					</properties>
+				</batchlet>
 			</step>
 		</flow>
 	</split>

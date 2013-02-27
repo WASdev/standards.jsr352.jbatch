@@ -1,38 +1,10 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="JSR352 TCK SE" verbose="0">
+<suite name="JSR352 TCK SE" verbose="2">
 	<test name="JSR352 TCK SE">
-		<classes>
-			<class name="jsr352.tck.tests.jslgen.DeciderTests" />
-			<class name="jsr352.tck.tests.jslgen.ExecuteTests" />
-			<class name="jsr352.tck.tests.jslxml.BatchletRestartStateMachineTests" />
-			<class name="jsr352.tck.tests.jslxml.ChunkTests" />
-			<class name="jsr352.tck.tests.jslxml.ContextAndListenerTests" />
-			<class name="jsr352.tck.tests.jslxml.ContextsGetIdTests" />
-			<class name="jsr352.tck.tests.jslxml.ExecutionTests" />
-			<class name="jsr352.tck.tests.jslxml.FlowTransitioningTests" />
-			<class name="jsr352.tck.tests.jslxml.JobAttributeAbstractTests" />
-			<class name="jsr352.tck.tests.jslxml.JobAttributeRestartTests" />
-			<class name="jsr352.tck.tests.jslxml.JobExecutableSequenceTests" />
-			<class name="jsr352.tck.tests.jslxml.JobLevelPropertiesTests" />
-			<class name="jsr352.tck.tests.jslxml.JobOperatorExtraneousTestCases" />
-			<class name="jsr352.tck.tests.jslxml.JobOperatorTests" />
-			<class name="jsr352.tck.tests.jslxml.MetricsTests" />
-			<class name="jsr352.tck.tests.jslxml.ParallelExecutionTests" />
-			<class name="jsr352.tck.tests.jslxml.PropertySubstitutionTests" />
-			<class name="jsr352.tck.tests.jslxml.RetryListenerTests" />
-			<class name="jsr352.tck.tests.jslxml.SplitFlowTransitionLoopTests" />
-			<class name="jsr352.tck.tests.jslxml.SplitTransitioningTests" />
-			<class name="jsr352.tck.tests.jslxml.StepExecutionTests" />
-			<class name="jsr352.tck.tests.jslxml.StepLevelPropertiesTests" />
-			<class name="jsr352.tck.tests.jslxml.StopOrFailOnExitStatusWithRestartTests" />
-			<class name="jsr352.tck.tests.xmlinheritance.InheritanceMergeTests">
-				<methods>
-					<exclude name="testCase6" />
-					<exclude name="testCase11" />
-				</methods>
-			</class>
-			<class name="jsr352.tck.tests.xmlinheritance.JobInheritanceTests" />
-		</classes>
+      <packages>
+         <package name="com.ibm.jbatch.tck.tests.jslxml" />
+         <package name="com.ibm.jbatch.tck.tests.xmlinheritance" />
+      </packages>
 	</test>
 </suite>

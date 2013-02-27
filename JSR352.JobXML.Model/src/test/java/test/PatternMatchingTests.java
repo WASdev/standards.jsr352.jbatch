@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.ibm.batch.container.xjcl.impl.GlobPatternMatcherImpl;
+import com.ibm.jbatch.container.jsl.impl.GlobPatternMatcherImpl;
 
 public class PatternMatchingTests {
 

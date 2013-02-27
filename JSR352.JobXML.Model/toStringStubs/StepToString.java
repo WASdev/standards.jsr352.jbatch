@@ -7,7 +7,7 @@
 	    buf.append(", startLimit=" + startLimit);
 	    buf.append(", allowStartIfComplete=" + allowStartIfComplete);
 	    buf.append("\n");
-	    buf.append("Properties = " + com.ibm.batch.xjcl.PropertiesToStringHelper.getString(properties));
+	    buf.append("Properties = " + com.ibm.jbatch.jsl.util.PropertiesToStringHelper.getString(properties));
 	    buf.append("\n");
 	    if (batchlet != null) {
 	    	buf.append("Contains batchlet=" + batchlet);

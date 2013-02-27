@@ -3,23 +3,23 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b05</version>
+        <version>1.0-b06</version>
     </parent>
     <groupId>javax.batch</groupId>
     <artifactId>javax.batch-api-all</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b10</version>
+    <version>1.0-b11</version>
 
 	<dependencies>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>javax.batch-api</artifactId>
-			<version>1.0-b05</version>
+			<artifactId>javax.batch-annotation</artifactId>
+			<version>1.0-b06</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
-			<artifactId>javax.batch-annotation</artifactId>
-			<version>1.0-b05</version>
+			<artifactId>javax.batch-api</artifactId>
+			<version>1.0-b06</version>
 		</dependency>
 	</dependencies>
 	

@@ -6,6 +6,6 @@
 	    buf.append("Job: id=" + id);
 	    buf.append(", restartable=" + restartable);
 	    buf.append("\n");
-	    buf.append("Properties = " + com.ibm.batch.xjcl.PropertiesToStringHelper.getString(properties));
+	    buf.append("Properties = " + com.ibm.jbatch.jsl.util.PropertiesToStringHelper.getString(properties));
 	    return buf.toString();
     }

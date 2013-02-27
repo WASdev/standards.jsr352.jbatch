@@ -16,7 +16,7 @@
     limitations under the License.
 
 -->
-<job id="11.Child" xmlns="http://batch.jsr352/jsl">
+<job id="11.Child" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
  	<step id="MyStep" parent="11.Parent">
  		<chunk processor="expected" buffer-size="expected"/>
  	</step>

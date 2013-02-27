@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="chunksizeDEFAULTcommitIntervalDEFAULT" xmlns="http://batch.jsr352/jsl">
+<job id="chunksizeDEFAULTcommitIntervalDEFAULT" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
 		<chunk
 		 	checkpoint-policy="item">
@@ -25,12 +25,14 @@
 				<property name="readrecord.fail" value="#{jobParameters['readrecord.fail']}"  />
 				<property name="app.arraysize" value="#{jobParameters['app.arraysize']}"  />
 				<property name="app.writepoints" value="#{jobParameters['app.writepoints']}"  />
+				<property name="app.checkpoint.position" value="#{jobParameters['app.checkpoint.position']}"  />
    	         </properties>
 		 </reader>
 		 <processor ref="doSomethingArrayItemProcessorImpl"/>
 		 <writer ref="defaultValueArrayWriter">
 		     <properties>
 		     	<property name="app.arraysize" value="#{jobParameters['app.arraysize']}"  />
+		     	<property name="app.checkpoint.position" value="#{jobParameters['app.checkpoint.position']}"  />
    	         </properties>
 		 </writer>
 		</chunk>	

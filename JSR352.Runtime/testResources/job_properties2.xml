@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="job2" xmlns="http://batch.jsr352/jsl">
+<job id="job2" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<properties>
 		<property name="myprop1" value="step2" />
 		<property name="myprop2" value="#{jobProperties['myprop1']}" />

@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="chunkSkipNoSkipChildExTest" xmlns="http://batch.jsr352/jsl">
+<job id="chunkSkipNoSkipChildExTest" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
 		<listeners>
         	<listener ref="myCustomCheckpointListener"/>
@@ -48,8 +48,8 @@
 			</properties>	
 		</checkpoint-algorithm>
 		<skippable-exception-classes>
-			<include class="jsr352.tck.reusable.MyParentException"/>
-			<exclude class="jsr352.tck.reusable.MyChildException"/>
+			<include class="com.ibm.jbatch.tck.artifacts.reusable.MyParentException"/>
+			<exclude class="com.ibm.jbatch.tck.artifacts.reusable.MyChildException"/>
 		</skippable-exception-classes>
 		</chunk>	
 	</step>

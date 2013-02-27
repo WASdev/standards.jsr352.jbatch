@@ -16,7 +16,7 @@
     limitations under the License.
 
 -->
-<job id="10.Child" xmlns="http://batch.jsr352/jsl">
+<job id="10.Child" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
  	<step id="MyStep" parent="10.Parent">
  		<properties merge="true"><property name="childProp" value="val"/></properties>
  		<listeners merge="true"><listener ref="childRef"/></listeners>

@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="testMetricCount" xmlns="http://batch.jsr352/jsl">
+<job id="testMetricCount" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1Metric">
 		<chunk item-count="31">
 		     <reader ref="doSomethingItemReaderImpl"> </reader>

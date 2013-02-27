@@ -1,0 +1,60 @@
+
+DROP TABLE JOBSTATUS;
+DROP TABLE STEPSTATUS;
+DROP TABLE CHECKPOINTDATA;
+DROP TABLE JOBINSTANCEDATA;
+DROP TABLE EXECUTIONINSTANCEDATA;
+DROP TABLE STEPEXECUTIONINSTANCEDATA;
+
+CREATE TABLE JOBSTATUS (
+  id		NUMBER(19,0),
+  obj		BLOB
+);
+
+CREATE TABLE STEPSTATUS(
+  id		VARCHAR2(512),
+  obj		BLOB
+);
+
+CREATE TABLE CHECKPOINTDATA(
+  id		VARCHAR2(512),
+  obj		BLOB
+);
+
+CREATE TABLE JOBINSTANCEDATA(
+  id		VARCHAR2(512),
+  name		VARCHAR2(512)
+);
+
+CREATE TABLE EXECUTIONINSTANCEDATA(
+  id			VARCHAR2(512),
+  createtime	TIMESTAMP,
+  starttime		TIMESTAMP,
+  endtime		TIMESTAMP,
+  updatetime	TIMESTAMP,
+  parameters	BLOB,
+  jobinstanceid	VARCHAR2(512),
+  batchstatus		VARCHAR2(512),
+  exitstatus		VARCHAR2(512)
+  );
+  
+CREATE TABLE STEPEXECUTIONINSTANCEDATA(
+	id			VARCHAR2(512),
+	jobexecid	VARCHAR2(512),
+	stepexecid			VARCHAR2(512),
+	batchstatus         VARCHAR2(512),
+    exitstatus			VARCHAR2(512),
+    stepname			VARCHAR2(512),
+	readcount			VARCHAR2(512),
+	writecount			VARCHAR2(512),
+	commitcount         VARCHAR2(512),
+	rollbackcount		VARCHAR2(512),
+	readskipcount		VARCHAR2(512),
+	processskipcount	VARCHAR2(512),
+	filtercount			VARCHAR2(512),
+	writeskipcount		VARCHAR2(512),
+	startTime           TIMESTAMP,
+	endTime             TIMESTAMP,
+	persistentData		BLOB
+);  
+  

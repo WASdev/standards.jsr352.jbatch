@@ -6,4 +6,4 @@ Bundle-Version: 1.0.0.qualifier
 Import-Package: javax.batch.operations,
  javax.batch.runtime,
  javax.batch.operations.exception
-Export-Package: com.ibm.batch.tck.spi
+Export-Package: com.ibm.jbatch.tck.spi

@@ -20,18 +20,18 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
 
-import jsr352.batch.jsl.JSLJob;
-import jsr352.batch.jsl.Property;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import test.utils.IOHelper;
 
-import com.ibm.batch.container.modelresolver.PropertyResolver;
-import com.ibm.batch.container.modelresolver.PropertyResolverFactory;
-import com.ibm.batch.container.xjcl.ModelResolver;
-import com.ibm.batch.container.xjcl.ModelResolverFactory;
+import com.ibm.jbatch.container.jsl.ModelResolver;
+import com.ibm.jbatch.container.jsl.ModelResolverFactory;
+import com.ibm.jbatch.container.modelresolver.PropertyResolver;
+import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
+import com.ibm.jbatch.jsl.model.JSLJob;
+import com.ibm.jbatch.jsl.model.Property;
 
 public class PropertyTests {
     

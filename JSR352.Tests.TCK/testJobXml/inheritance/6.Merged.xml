@@ -17,7 +17,7 @@
     limitations under the License.
 
 -->
-<job id="6.Child" xmlns="http://batch.jsr352/jsl">
+<job id="6.Child" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="MyStep">
 		<properties><property name="prop" value="val"/></properties>
 		<listeners><listener ref="ref"/></listeners>

@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="testMetricsSkipWriteCount" xmlns="http://batch.jsr352/jsl">
+<job id="testMetricsSkipWriteCount" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
 		<listeners>
         	<listener ref="metricsStepListener">
@@ -46,7 +46,7 @@
    	         </properties>
 		 </writer>		 
 		<skippable-exception-classes>
-			<include class="jsr352.tck.reusable.MyParentException"/>
+			<include class="com.ibm.jbatch.tck.artifacts.reusable.MyParentException"/>
 			<exclude class="java.io.FileNotFoundException"/>
 		</skippable-exception-classes>
 		</chunk>	

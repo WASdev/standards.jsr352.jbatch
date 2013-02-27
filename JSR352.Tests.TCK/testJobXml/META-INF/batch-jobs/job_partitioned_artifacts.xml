@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="job_partitioned_artifacts" xmlns="http://batch.jsr352/jsl">
+<job id="job_partitioned_artifacts" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1" >
 		<batchlet ref="myPartitionedBatchletImpl" >
 			<properties>

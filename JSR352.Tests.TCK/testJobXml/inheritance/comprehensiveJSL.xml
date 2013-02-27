@@ -16,7 +16,7 @@
     limitations under the License.
 
 -->
-<job id="inheritJobID" xmlns="http://batch.jsr352/jsl">
+<job id="inheritJobID" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 
 	<properties>
 		<property name="jobProperty" value="parent"/>

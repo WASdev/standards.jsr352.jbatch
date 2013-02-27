@@ -15,12 +15,12 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="chunkTimeBasedDefaultCheckpoint" xmlns="http://batch.jsr352/jsl">
+<job id="chunkTimeBasedDefaultCheckpoint" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
 	<listeners>
         	<listener ref="myTimeCheckpointListener">
         		<properties>
-        			<property name="timeinterval" value="10" />
+        			<property name="timeinterval" value="0" />
         		</properties>
         	</listener>
     	</listeners>

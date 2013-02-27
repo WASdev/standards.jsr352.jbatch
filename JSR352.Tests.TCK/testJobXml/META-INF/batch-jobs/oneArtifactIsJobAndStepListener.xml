@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="oneArtifactIsJobAndStepListener" xmlns="http://batch.jsr352/jsl">
+<job id="oneArtifactIsJobAndStepListener" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
     <listeners>
         <listener ref="myUniversalListener">
         	<properties>

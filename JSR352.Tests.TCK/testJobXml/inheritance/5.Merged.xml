@@ -17,7 +17,7 @@
     limitations under the License.
 
 -->
-<job id="5.Child" xmlns="http://batch.jsr352/jsl">
+<job id="5.Child" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<properties>
 		<property name="parentProp1" value="true"/>
 		<property name="parentProp2" value="false"/>

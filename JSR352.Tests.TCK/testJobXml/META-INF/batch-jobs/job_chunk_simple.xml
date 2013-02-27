@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="job_chunk_simple" xmlns="http://batch.jsr352/jsl">
+<job id="job_chunk_simple" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1" next="step2">
 		<batchlet ref="myBatchletImpl" />
 	</step>

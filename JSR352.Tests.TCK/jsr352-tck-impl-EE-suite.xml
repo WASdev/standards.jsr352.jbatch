@@ -3,7 +3,7 @@
 <suite name="JSR352 TCK" verbose="0"  >
    <test name="JSR352 TCK">
       <packages>
-         <package name="jsr352.tck.tests.*" />
+         <package name="com.ibm.jbatch.tck.tests.*" />
       </packages>
    </test>
 </suite>

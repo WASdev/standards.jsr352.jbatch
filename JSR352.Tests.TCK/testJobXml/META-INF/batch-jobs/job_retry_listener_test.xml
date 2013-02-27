@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="chunkRetryInitialTest" xmlns="http://batch.jsr352/jsl">
+<job id="chunkRetryInitialTest" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
 		<listeners>
         	<listener ref="myRetryReadListener"/>
@@ -51,10 +51,10 @@
 			</properties>	
 		</checkpoint-algorithm>
 		<retryable-exception-classes>
-			<include class="jsr352.tck.reusable.MyParentException"/>
+			<include class="com.ibm.jbatch.tck.artifacts.reusable.MyParentException"/>
 		</retryable-exception-classes>
 		<no-rollback-exception-classes>
-			<include class="jsr352.tck.reusable.MyParentException"/>
+			<include class="com.ibm.jbatch.tck.artifacts.reusable.MyParentException"/>
 		</no-rollback-exception-classes>
 		</chunk>	
 	</step>

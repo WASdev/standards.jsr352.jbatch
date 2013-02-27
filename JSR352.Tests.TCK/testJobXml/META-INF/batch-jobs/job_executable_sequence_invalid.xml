@@ -16,7 +16,7 @@
   limitations under the License.
 
 -->
-<job id="jobExecutableSequenceTest" xmlns="http://batch.jsr352/jsl">
+<job id="jobExecutableSequenceTest" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 
 	<step id="step1" next="step2">
 		<batchlet ref="myBatchletImpl"/>

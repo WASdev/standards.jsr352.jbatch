@@ -16,7 +16,7 @@
   limitations under the License.
 
 -->
-<job id="flowTransitionToStepOutOfScope" xmlns="http://batch.jsr352/jsl">
+<job id="flowTransitionToStepOutOfScope" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 
 	<flow id="flow1">
 		<step id="flow1step1" next="flow1step2">

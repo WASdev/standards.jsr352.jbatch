@@ -1,1 +1,1 @@
-com.ibm.batch.container.services.BatchCDIInjectionExtension
+com.ibm.jbatch.container.services.BatchCDIInjectionExtension

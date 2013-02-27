@@ -16,7 +16,7 @@
     limitations under the License.
 
 -->
-<step id="6.Parent" xmlns="http://batch.jsr352/jsl">
+<step id="6.Parent" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<properties><property name="prop" value="val"/></properties>
 	<listeners><listener ref="ref"/></listeners>
 	<chunk reader="r" processor="p" writer="w" buffer-size="1"/>

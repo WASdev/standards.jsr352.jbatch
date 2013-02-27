@@ -3,20 +3,20 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Runtime
 Bundle-SymbolicName: JSR352.Runtime
 Bundle-Version: 1.0.0.qualifier
-Export-Package: com.ibm.batch.container,
- com.ibm.batch.container.artifact.proxy,
- com.ibm.batch.container.config,
- com.ibm.batch.container.exception,
- com.ibm.batch.container.jobinstance,
- com.ibm.batch.container.services,
- com.ibm.batch.container.services.impl,
- com.ibm.batch.container.tck.bridge,
- com.ibm.batch.container.util,
- com.ibm.batch.container.validation
-Import-Package: com.ibm.batch.container.modelresolver,
- com.ibm.batch.container.xjcl,
- com.ibm.batch.container.xjcl.impl,
- com.ibm.batch.tck.spi,
+Export-Package: com.ibm.jbatch.container,
+ com.ibm.jbatch.container.artifact.proxy,
+ com.ibm.jbatch.container.config,
+ com.ibm.jbatch.container.exception,
+ com.ibm.jbatch.container.jobinstance,
+ com.ibm.jbatch.container.tck.bridge,
+ com.ibm.jbatch.container.util,
+ com.ibm.jbatch.container.validation
+Import-Package: com.ibm.jbatch.container.jsl,
+ com.ibm.jbatch.container.modelresolver,
+ com.ibm.jbatch.jsl.model,
+ com.ibm.jbatch.spi,
+ com.ibm.jbatch.spi.services,
+ com.ibm.jbatch.tck.spi,
  com.ibm.websphere.asynchbeans;resolution:=optional,
  javax.batch.annotation,
  javax.batch.operations,
@@ -25,6 +25,5 @@ Import-Package: com.ibm.batch.container.modelresolver,
  javax.batch.runtime.context,
  javax.enterprise.context.spi;resolution:=optional,
  javax.enterprise.inject.spi;resolution:=optional,
- javax.transaction;version="1.1.0";resolution:=optional,
- jsr352.batch.jsl
+ javax.transaction;version="1.1.0";resolution:=optional
 Require-Bundle: JSR352.API

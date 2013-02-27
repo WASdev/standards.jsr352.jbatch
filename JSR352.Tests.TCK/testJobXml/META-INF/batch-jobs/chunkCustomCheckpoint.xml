@@ -15,12 +15,12 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="chunkCustomCheckpoint" xmlns="http://batch.jsr352/jsl">
+<job id="chunkCustomCheckpoint" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
 		<listeners>
         	<listener ref="myCustomCheckpointListener"/>
     	</listeners>
-		<chunk item-count="31"
+		<chunk item-count="3"
 		 checkpoint-policy="custom">
 		 <reader ref="doSomethingArrayItemReaderImpl">
 		     <properties>

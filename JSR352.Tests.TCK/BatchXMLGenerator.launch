@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <stringAttribute key="bad_container_name" value="\JSR352.Tests.TCK\BatchXMLGenerator.launch"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/JSR352.Tests.TCK/src/jsr352/tck/utils/BatchXMLGenerator.java"/>
+<listEntry value="/JSR352.Tests.TCK/src/com/ibm/jbatch/tck/utils/BatchXMLGenerator.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -15,7 +15,7 @@
 <listEntry value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;runtimeClasspathEntry path=&quot;3&quot; projectName=&quot;JSR352.TCK.SPI&quot; type=&quot;1&quot;/&gt;"/>
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="jsr352.tck.utils.BatchXMLGenerator"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.ibm.jbatch.tck.utils.BatchXMLGenerator"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${workspace_loc}/JSR352.Tests.TCK/testArtifactsBin ${workspace_loc}/JSR352.Tests.TCK/testArtifactsBin/META-INF"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="JSR352.Tests.TCK"/>
 </launchConfiguration>

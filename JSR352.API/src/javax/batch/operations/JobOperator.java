@@ -84,7 +84,7 @@ public interface JobOperator {
 	 * @return a list of JobInstances. 
 	 * @throws NoSuchJobException
 	 */
-	List<JobInstance> getRunningInstances(String jobName) throws NoSuchJobException;
+	List<JobExecution> getRunningExecutions(String jobName) throws NoSuchJobException;
 
 	/**
 	 * Returns all JobExecutions belonging to a particular job instance.
@@ -189,12 +189,12 @@ public interface JobOperator {
 	 * Set batch status to ABANDONED.  The instance must have 
 	 * no running execution. 
 	 * 
-	 * @param instance
+	 * @param instanceId
 	 *            specifies the job instance to abandon.
 	 * @throws NoSuchJobInstanceException
 	 * @throws JobExecutionIsRunningException
 	 */
-	public void abandon(JobInstance instance) throws NoSuchJobInstanceException, 
+	void abandon(JobExecution jobExecution) throws NoSuchJobInstanceException, 
 			JobExecutionIsRunningException;
 	
 	

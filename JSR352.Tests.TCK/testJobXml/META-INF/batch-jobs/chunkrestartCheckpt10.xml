@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="chunkrestartCheckpt10" xmlns="http://batch.jsr352/jsl">
+<job id="chunkrestartCheckpt10" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
 		<chunk
 		 	checkpoint-policy="item"
@@ -26,6 +26,7 @@
 				<property name="readrecord.fail" value="#{jobParameters['readrecord.fail']}"  />
 				<property name="app.arraysize" value="#{jobParameters['app.arraysize']}"  />
 				<property name="app.writepoints" value="#{jobParameters['app.writepoints']}"  />
+				<property name="app.checkpoint.position" value="#{jobParameters['app.checkpoint.position']}"  />
    	         </properties>
 		 </reader>
 		 <processor ref="doSomethingArrayItemProcessorImpl"/>
@@ -33,8 +34,8 @@
 		     <properties>
 		     	<property name="app.arraysize" value="#{jobParameters['app.arraysize']}"  />
 				<property name="app.writepoints" value="#{jobParameters['app.writepoints']}"  />
-								<property name="app.next.writepoints" value="#{jobParameters['app.next.writepoints']}"  />
-				
+				<property name="app.next.writepoints" value="#{jobParameters['app.next.writepoints']}"  />
+				<property name="app.checkpoint.position" value="#{jobParameters['app.checkpoint.position']}"  />
    	         </properties>
 		 </writer>
 		</chunk>	
@@ -49,6 +50,7 @@
 				<property name="readrecord.fail" value="#{jobParameters['readrecord.fail']}"  />
 				<property name="app.arraysize" value="#{jobParameters['app.arraysize']}"  />
 				<property name="app.writepoints" value="#{jobParameters['app.writepoints']}"  />
+				<property name="app.checkpoint.position" value="#{jobParameters['app.checkpoint.position']}"  />				
    	         </properties>
 		 </reader>
 		 <processor ref="doSomethingArrayItemProcessorImpl"/>
@@ -56,6 +58,7 @@
 		     <properties>
 		     	<property name="app.arraysize" value="#{jobParameters['app.arraysize']}"  />
 				<property name="app.writepoints" value="#{jobParameters['app.writepoints']}"  />
+				<property name="app.checkpoint.position" value="#{jobParameters['app.checkpoint.position']}"  />
    	         </properties>
 		 </writer>
 		</chunk>	 
