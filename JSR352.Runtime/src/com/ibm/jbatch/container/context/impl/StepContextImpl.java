@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.context.impl;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +27,7 @@ import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.StepContext;
 
-public class StepContextImpl<T, P extends Externalizable> implements StepContext<T, P> {
+public class StepContextImpl<T, P extends Serializable> implements StepContext<T, P> {
 
     private final static String sourceClass = StepContextImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);

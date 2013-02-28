@@ -114,19 +114,23 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 		System.out.println("WRITE: before writing, idx = " + idx);
 		System.out.println("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
 		
-		if (chunkWriteIteration == 2){
-			chunkWriteIteration++;
-			throw new MyParentException("fail on purpose on write iteration = 2");
-		}
-		else if (chunkWriteIteration == 5){
-			chunkWriteIteration++;
-			throw new MyParentException("fail on purpose on write iteration = 5");
-		}
-		else if (chunkWriteIteration == 8){
-			chunkWriteIteration++;
-			throw new MyParentException("fail on purpose on write iteration = 8");
-		}
-		else {
+		if (!writeRecordFailNumberString.equals("null")) {
+			if (chunkWriteIteration == 2) {
+				chunkWriteIteration++;
+				throw new MyParentException(
+						"fail on purpose on write iteration = 2");
+			} else if (chunkWriteIteration == 5) {
+				chunkWriteIteration++;
+				throw new MyParentException(
+						"fail on purpose on write iteration = 5");
+			} else if (chunkWriteIteration == 8) {
+				chunkWriteIteration++;
+				throw new MyParentException(
+						"fail on purpose on write iteration = 8");
+			} else {
+				chunkWriteIteration++;
+			}
+		} else {
 			chunkWriteIteration++;
 		}
 		

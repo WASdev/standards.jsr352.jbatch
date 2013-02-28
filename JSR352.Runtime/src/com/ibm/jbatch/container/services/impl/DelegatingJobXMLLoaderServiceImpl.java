@@ -25,11 +25,10 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.ibm.jbatch.spi.IBatchConfig;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 import com.ibm.jbatch.spi.services.IJobXMLLoaderService;
 
 public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
@@ -38,7 +37,7 @@ public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
     private final static Logger logger = Logger.getLogger(DelegatingBatchArtifactFactoryImpl.class.getName());
     private final static String CLASSNAME = DelegatingBatchArtifactFactoryImpl.class.getName();
     
-    protected static IJobXMLLoaderService preferredJobXmlLoader = (IJobXMLLoaderService) ServicesManagerImpl.getInstance().getService(ServiceType.JOBXML_LOADER_SERVICE);
+    protected static IJobXMLLoaderService preferredJobXmlLoader = ServicesManagerImpl.getInstance().getPreferredJobXMLLoaderService();
     
     public static final String PREFIX = "META-INF/batch-jobs/";
     
@@ -52,14 +51,17 @@ public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
         
         String jobXML = null;
 
-        if (preferredJobXmlLoader.getClass() != this.getClass()) {
+        if (!preferredJobXmlLoader.getClass().equals(this.getClass())) {
             jobXML = preferredJobXmlLoader.loadJob(id);
+        } else {
+            if (logger.isLoggable(Level.FINER)) {
+                logger.log(Level.FINER, "No preferred job xml loader is detected in configuration");
+            } 
         }
 
         if (jobXML != null) {
-            
             if (logger.isLoggable(Level.FINER)) {
-                logger.log(Level.FINER, "Preferred artifact loaded job with id " + id +".");
+                logger.log(Level.FINER, "Preferred job xml loader loaded job with id " + id +".");
             } 
             return jobXML;
         }

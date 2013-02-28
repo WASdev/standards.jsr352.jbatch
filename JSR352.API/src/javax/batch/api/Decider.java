@@ -28,26 +28,7 @@ import javax.batch.runtime.StepExecution;
  * batch context.
  */
 public interface Decider <T> {
-	/**
-	 * The decide method receives control during job processing to 
-	 * set exit status between a step, split, or flow. The return 
-	 * value updates the current job execution's exit status.
-	 * @param ctx specifies the last execution element's batch context.
-	 * @return updated job exit status
-	 * @throws Exception is thrown if an error occurs. 
-	 */
-	/**
-	 * The decide method receives control during job processing to 
-	 * set exit status between a step, split, or flow. The return 
-	 * value updates the current job execution's exit status. This
-     * decide method signature with a single StepStatus input receives
-     * control following a step or a flow. In the case of a flow, the
-     * StepStatus is from the last step to execute in the flow.
-	 * @param execution specifies the StepExecution of the preceding step.	 
-       * @return updated job exit status
-	 * @throws Exception is thrown if an error occurs. 
-	 */
-	public String decide(StepExecution<?> execution) throws Exception;
+
 	/**
 	 * The decide method receives control during job processing to 
 	 * set exit status between a step, split, or flow. The return 

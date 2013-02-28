@@ -60,18 +60,23 @@ public class DeciderTests implements StatusConstants {
 	
 	}
 
-   
-    /* 
-     * Uses batchlet-level properties.
-     */
-
-    
-
-
     /*
 	 * @testName: testDeciderEndNormal
-	 * @assertion: FIXME
-	 * @test_Strategy: FIXME
+	 * @assertion: Tests that decider can be configured via property
+	 *             Tests that results of previous step execution matter 
+	 *             Tests that JobContext can be utilized in decider (the same instance as that of the earlier steps).
+	 *             Tests exit status globbing ('*' and '?') 
+	 *             Tests setting of <stop>, <end>, <fail> @exit-status attribute value.
+	 * @test_Strategy: Tests 
+	                   1. Batchlet is coded to end with one of two different exit status values depending on @BatchProperty populated by job param set either to:
+	                         jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.NORMAL_VALUE);
+	                                OR
+	                         jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.SPECIAL_VALUE);
+	                   2. Decider 
+	                   3. JobContext utilized to adjust "core exit status" by prefixing the number of times the step has run.
+	                   4. Special globbing chars '*' and '?' are used in the @on values to test exit status globbing.
+	                   5. Test asserts specific exit status as well as batch status.  In addition to testing the overall test flow this 
+	                      tests the @exit-status attributes of fail, stop, end.
 	 */
     @Test
     @org.junit.Test
@@ -82,7 +87,7 @@ public class DeciderTests implements StatusConstants {
     	try {
 	    	// 1. Here "EndSpecial" is the exit status the decider will return if the step exit status
 	    	// is the "special" exit status value.  It is set as a property on the decider.
-    		Reporter.log("Build JSL for EndSpecial exit status<p>");
+    		Reporter.log("Build job parameters for EndSpecial exit status<p>");
 	    	        
 	        Properties jobParameters = new Properties();
 	        
@@ -96,8 +101,11 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.NORMAL_VALUE + "<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.NORMAL_VALUE);
 	        
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value EndSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "EndSpecial");
+	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_end_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_incompleterun", jobParameters); 
 	
 	        Reporter.log("Expected JobExecution getExitStatus()=EndNormal<p>");
 	        Reporter.log("Actual JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
@@ -122,7 +130,7 @@ public class DeciderTests implements StatusConstants {
     	String METHOD = "testDeciderEndSpecial";
 
     	try {
-    		Reporter.log("Build JSL for EndSpecial exit status<p>");	    
+    		Reporter.log("Build job parameters for EndSpecial exit status<p>");	    
 	    	
 	        Properties jobParameters = new Properties();        
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTION, "EndNormal");
@@ -130,9 +138,11 @@ public class DeciderTests implements StatusConstants {
 	        // 1. This is the only test parameter that differs from testDeciderEndNormal().
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.SPECIAL_VALUE +"<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.SPECIAL_VALUE);
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value EndSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "EndSpecial");
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_end_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_incompleterun", jobParameters); 
 	        
 	        // 2. And the job exit status differs accordingly.
 	        Reporter.log("Expected JobExecution getExitStatus()=EndSpecial<p>");
@@ -158,7 +168,7 @@ public class DeciderTests implements StatusConstants {
     	String METHOD = " testDeciderStopNormal";
     	
     	try {
-    		Reporter.log("Build JSL for StopSpecial exit status<p>");
+    		Reporter.log("Build job parameters for StopSpecial exit status<p>");
 	    	
 	        Properties jobParameters = new Properties();    
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTION + " with value StopNormal<p>");
@@ -167,8 +177,11 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.NORMAL_VALUE +"<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.NORMAL_VALUE);
 	        
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value StopSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "StopSpecial");
+	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_stop_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_incompleterun", jobParameters); 
 	
 	        Reporter.log("Expected JobExecution getExitStatus()=StopNormal<p>");
 	        Reporter.log("Actual JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
@@ -194,7 +207,7 @@ public class DeciderTests implements StatusConstants {
     	String METHOD = "testDeciderStopSpecial";
     	
     	try {
-    		Reporter.log("Build JSL for StopSpecial exit status<p>");
+    		Reporter.log("Build job parameters for StopSpecial exit status<p>");
 	    	
 	        Properties jobParameters = new Properties();     
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTION + " with value StopNormal<p>");
@@ -203,8 +216,11 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.SPECIAL_VALUE +"<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.SPECIAL_VALUE);
 	        
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value StopSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "StopSpecial");
+	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_stop_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_incompleterun", jobParameters); 
 	
 	        Reporter.log("Expected JobExecution getExitStatus()=StopSpecial<p>");
 	        Reporter.log("Actual JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
@@ -230,7 +246,7 @@ public class DeciderTests implements StatusConstants {
     	String METHOD = "testDeciderFailNormal";
     	
     	try {
-    		Reporter.log("Build JSL for FailSpecial exit status<p>");	    	
+    		Reporter.log("Build job parameters for FailSpecial exit status<p>");	    	
 	    	
 	        Properties jobParameters = new Properties();        
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTION + " with value FailNormal<p>");
@@ -239,8 +255,11 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.NORMAL_VALUE +"<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.NORMAL_VALUE);
 	        
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value FailSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "FailSpecial");
+	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_fail_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_incompleterun", jobParameters); 
 	
 	        Reporter.log("Expected JobExecution getExitStatus()=FailNormal<p>");
 	        Reporter.log("Actual JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
@@ -265,7 +284,7 @@ public class DeciderTests implements StatusConstants {
     	String METHOD = "testDeciderFailSpecial";
     	
     	try {
-    		Reporter.log("Build JSL for FailSpecial exit status<p>");
+    		Reporter.log("Build job parameters for FailSpecial exit status<p>");
 	    	
 	        Properties jobParameters = new Properties();        
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTION + " with value FailNormal<p>");
@@ -274,8 +293,11 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.SPECIAL_VALUE +"<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.SPECIAL_VALUE);
 	        
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value FailSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "FailSpecial");
+	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_fail_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_incompleterun", jobParameters); 
 	
 	        Reporter.log("Expected JobExecution getExitStatus()=FailSpecial<p>");
 	        Reporter.log("Actual JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
@@ -299,7 +321,7 @@ public class DeciderTests implements StatusConstants {
     	String METHOD = "testDeciderNextNormal";
     	
     	try {
-    		Reporter.log("Build JSL for NextSpecial exit status<p>");
+    		Reporter.log("Build job parameters for NextSpecial exit status<p>");
 	
 	    	Properties jobParameters = new Properties();        
 	    	Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTION + " with value NextNormal<p>");
@@ -308,10 +330,13 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.NORMAL_VALUE +"<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.NORMAL_VALUE);
 	        
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value NextSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "NextSpecial");
+	        
 	        Reporter.log("Create single job listener deciderTestJobListener and get JSL<p>");
 
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_next_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_completerun", jobParameters); 
 	    	
 	        Reporter.log("Expected JobExecution getExitStatus()="+GOOD_JOB_EXIT_STATUS+"<p>");
 	        Reporter.log("Actual JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
@@ -335,7 +360,7 @@ public class DeciderTests implements StatusConstants {
     	String METHOD = "testDeciderNextSpecial";
     	
     	try {
-    		Reporter.log("Build JSL for NextSpecial exit status<p>");	
+    		Reporter.log("Build job parameters for NextSpecial exit status<p>");	
 	
 	    	Properties jobParameters = new Properties();        
 	    	
@@ -345,10 +370,13 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.ACTUAL_VALUE + " with value " + DeciderTestsBatchlet.SPECIAL_VALUE + "<p>");
 	        jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.SPECIAL_VALUE);
 	        
+	        Reporter.log("Set job parameters property " + DeciderTestsBatchlet.SPECIAL_EXIT_STATUS + " with value NextSpecial<p>");
+	        jobParameters.setProperty(DeciderTestsBatchlet.SPECIAL_EXIT_STATUS, "NextSpecial");
+	        
 	        Reporter.log("Create single job listener deciderTestJobListener and get JSL<p>");
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_next_special", jobParameters); 
+	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_decider_completerun", jobParameters); 
 	    	
 	        // This actually exits with the exact same status as the "...NextNormal" test.
 	        Reporter.log("Expected JobExecution getExitStatus()="+GOOD_JOB_EXIT_STATUS+"<p>");

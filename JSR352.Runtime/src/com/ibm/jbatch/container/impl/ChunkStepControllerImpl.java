@@ -43,9 +43,6 @@ import com.ibm.jbatch.container.artifact.proxy.RetryWriteListenerProxy;
 import com.ibm.jbatch.container.artifact.proxy.SkipProcessListenerProxy;
 import com.ibm.jbatch.container.artifact.proxy.SkipReadListenerProxy;
 import com.ibm.jbatch.container.artifact.proxy.SkipWriteListenerProxy;
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
@@ -56,6 +53,8 @@ import com.ibm.jbatch.container.persistence.CheckpointDataKey;
 import com.ibm.jbatch.container.persistence.CheckpointManager;
 import com.ibm.jbatch.container.persistence.ItemCheckpointAlgorithm;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.container.util.PartitionDataWrapper.PartitionEventType;
@@ -830,7 +829,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         if (logger.isLoggable(Level.FINE))
             logger.entering(sourceClass, sourceMethod);
 
-        _persistenceManagerService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        _persistenceManagerService = servicesManager.getPersistenceManagerService();
         readerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "READER");
         List<?> data = _persistenceManagerService.getData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK);
         try {
@@ -986,7 +985,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     }
 
     private void positionReaderAtCheckpoint() {
-        _persistenceManagerService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        _persistenceManagerService = servicesManager.getPersistenceManagerService();
         readerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "READER");
         List<?> data = _persistenceManagerService.getData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK);
 
@@ -1019,7 +1018,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     }
 
     private void positionWriterAtCheckpoint() {
-        _persistenceManagerService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        _persistenceManagerService = servicesManager.getPersistenceManagerService();
         writerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "WRITER");
         List<?> data = _persistenceManagerService.getData(IPersistenceManagerService.CHECKPOINT_STORE_ID, writerChkptDK);
 

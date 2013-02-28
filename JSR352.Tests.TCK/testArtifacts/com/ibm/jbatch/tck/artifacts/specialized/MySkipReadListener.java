@@ -16,7 +16,6 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.batch.api.SkipReadListener;
@@ -26,7 +25,6 @@ import javax.inject.Inject;
 
 import org.testng.Reporter;
 
-import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 @javax.inject.Named("mySkipReadListener")
@@ -41,8 +39,8 @@ public class MySkipReadListener implements SkipReadListener {
     private final static String sourceClass = MySkipReadListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
-    public static final String BAD_EXIT_STATUS = "BAD STATUS";
+    public static final String GOOD_EXIT_STATUS = "MySkipReadListener: GOOD STATUS";
+    public static final String BAD_EXIT_STATUS = "MySkipReadListener: BAD STATUS";
 
     @Override
     public void onSkipReadItem(Exception e) {

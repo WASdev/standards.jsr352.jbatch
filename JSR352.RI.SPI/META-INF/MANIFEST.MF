@@ -3,7 +3,4 @@ Bundle-ManifestVersion: 2
 Bundle-Name: SPI
 Bundle-SymbolicName: JSR352.RI.SPI
 Bundle-Version: 1.0.0.qualifier
-Import-Package: javax.batch.operations.exception,
- javax.batch.runtime.context
-Export-Package: com.ibm.jbatch.spi,
- com.ibm.jbatch.spi.services
+Export-Package: com.ibm.jbatch.spi

@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.impl;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -26,16 +26,15 @@ import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 
-
 import com.ibm.jbatch.container.AbortedBeforeStartException;
 import com.ibm.jbatch.container.IExecutionElementController;
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.ParallelJobExecution;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
+import com.ibm.jbatch.container.services.IBatchKernelService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.JSLJob;
@@ -51,7 +50,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 	private volatile List<ParallelJobExecution> parallelJobExecs;
 
 	private final ServicesManager servicesManager;
-	private final BatchKernelImpl batchKernel;
+	private final IBatchKernelService batchKernel;
     
 	final List<JSLJob> subJobs = new ArrayList<JSLJob>();
 	
@@ -62,7 +61,7 @@ public class SplitControllerImpl implements IExecutionElementController {
         this.split = split;
         
 		servicesManager = ServicesManagerImpl.getInstance();
-		batchKernel = (BatchKernelImpl) servicesManager.getService(ServiceType.BATCH_KERNEL_SERVICE);
+		batchKernel = servicesManager.getBatchKernelService();
         
     }
 
@@ -148,7 +147,7 @@ public class SplitControllerImpl implements IExecutionElementController {
         
     }
 
-    public void setStepContext(StepContextImpl<?, ? extends Externalizable> stepContext) {
+    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
         throw new BatchContainerRuntimeException("Incorrect usage: step context is not in scope within a flow.");
     }
 

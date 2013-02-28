@@ -26,21 +26,17 @@ public class FlowTransitionToDecisionTestDecider implements Decider<Object>, Sta
 	
 	public final static String DECIDER_EXIT_STATUS = "DECIDER_EXIT_STATUS";
 
-
 	@Override
-	public String decide(StepExecution stepExecution) throws Exception {
+	public String decide(StepExecution[] stepExecutions) throws Exception {
+		if (stepExecutions.length != 1) {
+			throw new IllegalStateException("Expecting stepExecutions array of size 1, found one of size = " + stepExecutions.length);
+		}
+		
+		StepExecution stepExecution = stepExecutions[0];
 		
 		// for our test 
 		// <end exit-status="ThatsAllFolks" on="DECIDER_EXIT_STATUS*VERY GOOD INVOCATION" />
 		return DECIDER_EXIT_STATUS + "*" + stepExecution.getExitStatus();
-	}
-
-
-	@Override
-	public String decide(StepExecution[] stepExecutions) throws Exception {
-		
-		// this method should be only invoked for split transition to decision
-		return "INVALID_THIS_TEST_IS_FOR_FLOW_NOT_SPLIT";
 	}
 
    

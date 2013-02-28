@@ -1,1 +1,1 @@
-com.ibm.jbatch.container.services.impl.JobOperatorImpl
+com.ibm.jbatch.container.api.impl.JobOperatorImpl

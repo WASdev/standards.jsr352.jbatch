@@ -31,8 +31,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.spi.IBatchConfig;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class JSEBatchArtifactFactoryImpl implements IBatchArtifactFactory, XMLStreamConstants {
 

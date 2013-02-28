@@ -30,20 +30,19 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
 
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
-import com.ibm.jbatch.spi.IBatchConfig;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.util.DependencyInjectionUtility;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class DelegatingBatchArtifactFactoryImpl implements IBatchArtifactFactory, XMLStreamConstants {
 
 	private final static Logger logger = Logger.getLogger(DelegatingBatchArtifactFactoryImpl.class.getName());
 	private final static String CLASSNAME = DelegatingBatchArtifactFactoryImpl.class.getName();
 	
-    protected static IBatchArtifactFactory preferredArtifactFactory = (IBatchArtifactFactory) ServicesManagerImpl.getInstance().getService(ServiceType.CONTAINER_ARTIFACT_FACTORY_SERVICE);
+    protected static IBatchArtifactFactory preferredArtifactFactory = ServicesManagerImpl.getInstance().getPreferredArtifactFactory();
   
 
 	// TODO - surface constants
@@ -64,7 +63,7 @@ public class DelegatingBatchArtifactFactoryImpl implements IBatchArtifactFactory
         }
 
         //If preferred artifact factory is different from this one, use the preferred factory.
-        if (preferredArtifactFactory.getClass() != this.getClass()) {
+        if (!preferredArtifactFactory.getClass().equals(this.getClass())) {
             Object artifact = preferredArtifactFactory.load(batchId);
             if (artifact != null) {
                 return artifact;

@@ -29,15 +29,6 @@ public class DeciderProxy extends AbstractProxy<Decider> implements Decider {
     }
 
 	@Override
-	public String decide(StepExecution stepExecution) throws Exception {
-		try {
-			return delegate.decide(stepExecution);
-		} catch (Exception e) {
-			throw new BatchContainerRuntimeException(e);
-		}
-	}
-
-	@Override
 	public String decide(StepExecution[] stepExecutions) throws Exception {
 		try {
 			return delegate.decide(stepExecutions);

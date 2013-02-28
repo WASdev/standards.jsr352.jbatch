@@ -11,7 +11,7 @@ import javax.naming.NamingException;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.util.BatchContainerConstants;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 import com.ibm.jbatch.spi.services.IBatchThreadPoolService;
 import com.ibm.jbatch.spi.services.ParallelTaskResult;
 

@@ -30,34 +30,31 @@ import javax.batch.operations.exception.JobExecutionNotRunningException;
 import javax.batch.operations.exception.JobRestartException;
 import javax.batch.operations.exception.JobStartException;
 import javax.batch.operations.exception.NoSuchJobExecutionException;
-import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
+import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
 
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.spi.IBatchConfig;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
 import com.ibm.jbatch.container.jobinstance.ParallelJobExecution;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.tck.bridge.IJobEndCallbackService;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 import com.ibm.jbatch.spi.services.IBatchThreadPoolService;
-import com.ibm.jbatch.spi.services.IJobIdManagementService;
 import com.ibm.jbatch.spi.services.ParallelTaskResult;
 
 public class BatchKernelImpl implements IBatchKernelService {
 
     private final static String sourceClass = BatchKernelImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
-    private static IJobIdManagementService _jobIdManagementService = null;
 
     private Map<Long, JobControllerImpl> instanceId2jobControllerMap = new ConcurrentHashMap<Long, JobControllerImpl>();
     private Map<Long, RuntimeJobExecutionImpl> jobExecutionInstancesMap = new ConcurrentHashMap<Long, RuntimeJobExecutionImpl>();
@@ -75,11 +72,9 @@ public class BatchKernelImpl implements IBatchKernelService {
     public final static int THREAD_POOL_SIZE = 5;
 
     public BatchKernelImpl() {
-        // get the JobId service
-        _jobIdManagementService = (IJobIdManagementService) servicesManager.getService(ServiceType.JOB_ID_MANAGEMENT_SERVICE);
-        executorService = (IBatchThreadPoolService)servicesManager.getService(ServiceType.BATCH_THREADPOOL_SERVICE);
-        callbackService = (IJobEndCallbackService) servicesManager.getService(ServiceType.CALLBACK_SERVICE);
-        persistenceService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        executorService = servicesManager.getThreadPoolService();
+        callbackService = servicesManager.getJobCallbackService();
+        persistenceService = servicesManager.getPersistenceManagerService();
     }
 
     public void init(IBatchConfig pgcConfig) throws BatchContainerServiceException {
@@ -291,6 +286,7 @@ public class BatchKernelImpl implements IBatchKernelService {
         return parallelJobExec;
     }
     
+    @Override
     public List<ParallelJobExecution> startParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties, LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue) {
         
         List<ParallelJobExecution> parallelJobExecs = new ArrayList<ParallelJobExecution>(jobModels.size());

@@ -16,12 +16,19 @@
 */
 package com.ibm.jbatch.spi.services;
 
-import com.ibm.jbatch.spi.IBatchConfig;
+import java.util.Properties;
 
-public interface IBatchServiceBase {
+import com.ibm.jbatch.spi.DatabaseConfigurationBean;
 
-	public void init(IBatchConfig batchConfig) ;
-	
-	public void shutdown() ;
+//All configuration data related to the batch container
 
+
+/**
+ * Only getters are provided here since the fields will be set in 
+ * specially-defined ways.
+ */
+public interface IBatchConfig {
+	public boolean isJ2seMode();
+	public DatabaseConfigurationBean getDatabaseConfigurationBean();
+	public Properties getConfigProperties();
 }

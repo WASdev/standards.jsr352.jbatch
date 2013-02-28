@@ -16,15 +16,11 @@
 */
 package com.ibm.jbatch.spi.services;
 
-import com.ibm.jbatch.spi.IBatchConfig;
 
-public interface IJobIdManagementService extends IBatchServiceBase {
+public interface IBatchServiceBase {
 
-	public void init(IBatchConfig pgcConfig);
-		
+	public void init(IBatchConfig batchConfig) ;
+	
 	public void shutdown() ;
 
-	public long getInstanceId();
-	public long getExecutionId();
-	public long getStepExecutionId();
 }

@@ -29,7 +29,7 @@ import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.container.status.JobStatusKey;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.status.StepStatusKey;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public abstract class AbstractMapBasedPersistenceManagerImpl  extends
 AbstractPersistenceManagerImpl  implements 	IPersistenceManagerService {

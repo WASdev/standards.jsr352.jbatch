@@ -25,8 +25,8 @@ import javax.naming.InitialContext;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.spi.IBatchConfig;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class CDIBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 

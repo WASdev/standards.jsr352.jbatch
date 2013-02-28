@@ -14,19 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.ibm.jbatch.spi;
-
-import java.util.Properties;
-
-//All configuration data related to the batch container
+package com.ibm.jbatch.spi.services;
 
 
-/**
- * Only getters are provided here since the fields will be set in 
- * specially-defined ways.
- */
-public interface IBatchConfig {
-	public boolean isJ2seMode();
-	public DatabaseConfigurationBean getDatabaseConfigurationBean();
-	public Properties getConfigProperties();
+public interface IJobIdManagementService extends IBatchServiceBase {
+
+	public void init(IBatchConfig pgcConfig);
+		
+	public void shutdown() ;
+
+	public long getInstanceId();
+	public long getExecutionId();
+	public long getStepExecutionId();
 }

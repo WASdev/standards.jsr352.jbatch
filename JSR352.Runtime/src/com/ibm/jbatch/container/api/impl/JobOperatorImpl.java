@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.ibm.jbatch.container.services.impl;
+package com.ibm.jbatch.container.api.impl;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -39,13 +39,11 @@ import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
-import com.ibm.jbatch.container.tck.bridge.IJobEndCallbackService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.spi.services.IJobXMLLoaderService;
-import com.ibm.jbatch.spi.services.ServiceType;
 
 
 public class JobOperatorImpl implements JobOperator {
@@ -55,16 +53,14 @@ public class JobOperatorImpl implements JobOperator {
     
     private ServicesManager servicesManager = null; 
     private IBatchKernelService batchKernel = null;
-    private IJobEndCallbackService callbackService = null;
     private IPersistenceManagerService persistenceService = null;
     private IJobXMLLoaderService jobXMLLoaderService = null;
 	
     public JobOperatorImpl() {
         servicesManager = ServicesManagerImpl.getInstance();
-        batchKernel = (IBatchKernelService) servicesManager.getService(ServiceType.BATCH_KERNEL_SERVICE);
-        callbackService = (IJobEndCallbackService) servicesManager.getService(ServiceType.CALLBACK_SERVICE);
-        persistenceService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
-        jobXMLLoaderService = (IJobXMLLoaderService) servicesManager.getService(ServiceType.JOBXML_LOADER_SERVICE);
+        batchKernel = servicesManager.getBatchKernelService();
+        persistenceService = servicesManager.getPersistenceManagerService();
+        jobXMLLoaderService =  servicesManager.getDelegatingJobXMLLoaderService();
     }
     
 	@Override

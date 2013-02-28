@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 import com.ibm.jbatch.spi.services.IBatchThreadPoolService;
 import com.ibm.jbatch.spi.services.ParallelTaskResult;
 

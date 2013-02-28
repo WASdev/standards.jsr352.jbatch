@@ -85,7 +85,7 @@ public class MyTimeCheckpointListener extends AbstractChunkListener {
 			jobCtx.setExitStatus("TRUE: " + diff);
 		}
 		else {
-			System.out.println("CHUNKLISTENER: checkpoint less then the requested time interval of " + timeinterval);
+			System.out.println("CHUNKLISTENER: checkpoint outside the window surrounding the time interval of " + timeinterval);
 			jobCtx.setExitStatus("FALSE: " + diff);
 			//throw new Exception("WRITE: the chunk write did not occur at the correct time boundry -> "+ diff + " which is: " + timeinterval + "+/- 1 second");
 		}

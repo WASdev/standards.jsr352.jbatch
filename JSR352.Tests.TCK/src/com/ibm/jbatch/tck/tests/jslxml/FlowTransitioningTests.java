@@ -162,7 +162,7 @@ public class FlowTransitioningTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("flow_transition_to_decision", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("Job Exit Status is from decider", jobExec.getExitStatus().equals(exitStatus));
+			assertWithMessage("Job Exit Status is from decider", exitStatus, jobExec.getExitStatus());
 			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
 			Reporter.log("Job completed");
 		} catch (Exception e) {

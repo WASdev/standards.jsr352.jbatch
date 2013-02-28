@@ -24,13 +24,13 @@ package javax.batch.runtime.context;
   *
   * @see javax.batch.annotation.context.StepContext
   */
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.Properties;
 import javax.batch.runtime.context.BatchContext;
 import javax.batch.runtime.Metric;
 import javax.batch.operations.JobOperator.BatchStatus;
 
-public interface StepContext <T,P extends Externalizable> extends BatchContext <T> {
+public interface StepContext <T,P extends Serializable> extends BatchContext <T> {
 
 	/**
 	 * The getStepExecutionId method returns the current step's 

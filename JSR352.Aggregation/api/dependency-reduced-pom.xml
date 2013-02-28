@@ -3,13 +3,13 @@
   <parent>
     <artifactId>jbatch</artifactId>
     <groupId>javax.batch</groupId>
-    <version>1.0-b06</version>
+    <version>1.0-b07</version>
     <relativePath>../pom.xml/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>javax.batch</groupId>
   <artifactId>javax.batch-api-all</artifactId>
-  <version>1.0-b11</version>
+  <version>1.0-b12</version>
   <build>
     <plugins>
       <plugin>

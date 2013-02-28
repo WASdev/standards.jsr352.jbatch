@@ -30,9 +30,6 @@ import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
 
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.jsl.ModelResolverFactory;
 import com.ibm.jbatch.container.jsl.ModelSerializer;
@@ -44,6 +41,8 @@ import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.spi.services.IJobIdManagementService;
@@ -58,15 +57,13 @@ public class JobExecutionHelper {
     private static ServicesManager servicesManager = ServicesManagerImpl.getInstance();
 
     private static IJobIdManagementService _jobIdManagementService = 
-        (IJobIdManagementService)servicesManager.getService(ServiceType.JOB_ID_MANAGEMENT_SERVICE);
+    		servicesManager.getJobIdManagementService();
 
-    private static IJobStatusManagerService _jobIdStatusManagerService = 
-        (IJobStatusManagerService)servicesManager.getService(ServiceType.JOB_STATUS_MANAGEMENT_SERVICE);
+    private static IJobStatusManagerService _jobStatusManagerService = 
+    		servicesManager.getJobStatusManagerService();
     
     private static IPersistenceManagerService _persistenceManagementService = 
-        (IPersistenceManagerService)servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
-
-    
+    		servicesManager.getPersistenceManagerService();
 
     public static RuntimeJobExecutionImpl startJob(String jobXML, Properties jobParameters) throws JobStartException {
         long instanceId = _jobIdManagementService.getInstanceId();
@@ -86,7 +83,7 @@ public class JobExecutionHelper {
         
         jobInstanceImpl.setJobName(jobNavigator.getId());                                
 
-        _jobIdStatusManagerService.createJobStatus(jobInstanceImpl, executionId);
+        _jobStatusManagerService.createJobStatus(jobInstanceImpl, executionId);
                 
         long time = System.currentTimeMillis();
         // register jobName in the jobop job information table
@@ -131,7 +128,7 @@ public class JobExecutionHelper {
     	JobExecution jobEx = _persistenceManagementService.jobOperatorGetJobExecution(executionId);
     	long jobInstanceId = jobEx.getInstanceId();
     	
-        JobStatus jobStatus = _jobIdStatusManagerService.getJobStatus(jobInstanceId);
+        JobStatus jobStatus = _jobStatusManagerService.getJobStatus(jobInstanceId);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("On restartJob with jobInstance Id = " + jobInstanceId + " , found JobStatus: " + jobStatus );            
@@ -164,7 +161,7 @@ public class JobExecutionHelper {
         
 		validateRestartableFalseJobsDoNotRestart(jobModel);
         
-        _jobIdStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), nextExecutionId);        
+        _jobStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), nextExecutionId);        
         long time = System.currentTimeMillis();
         Timestamp starttime = null; // what is the arg here?
         Timestamp updatetime = new Timestamp(time); // what is the arg here?
@@ -207,7 +204,7 @@ public class JobExecutionHelper {
 
         jobInstanceImpl.setJobName(jobNavigator.getId());                                
 
-        _jobIdStatusManagerService.createJobStatus(jobInstanceImpl, executionId);
+        _jobStatusManagerService.createJobStatus(jobInstanceImpl, executionId);
                 
         long time = System.currentTimeMillis();
         // register jobName in the jobop job information table
@@ -339,7 +336,7 @@ public class JobExecutionHelper {
     }
     
     public static JobInstance getJobInstance(long instanceId){
-    	JobStatus jobStatus = _jobIdStatusManagerService.getJobStatus(instanceId);
+    	JobStatus jobStatus = _jobStatusManagerService.getJobStatus(instanceId);
     	JobInstanceImpl jobInstance = jobStatus.getJobInstance();
     	return jobInstance;
     }

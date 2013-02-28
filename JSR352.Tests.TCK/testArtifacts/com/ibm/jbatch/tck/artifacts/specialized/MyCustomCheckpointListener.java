@@ -20,7 +20,6 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.io.Externalizable;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractChunkListener;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
@@ -42,17 +41,17 @@ public class MyCustomCheckpointListener extends AbstractChunkListener {
 
     @Override
     public void beforeChunk() {
-    	System.out.println("CUSTOMCHKPTLISTENER: beforeCheckpoint");
+    	System.out.println("CHUNKLISTENER: beforeChunk");
     }
     
     @Override
     public void afterChunk() {
-    	System.out.println("CUSTOMCHKPTLISTENER: afterCheckpoint");
+    	System.out.println("CHUNKLISTENER: afterChunk");
     }
     
     @Override
     public void onError() {
-    	System.out.println("CUSTOMCHKPTLISTENER: onError");
+    	System.out.println("CHUNKLISTENER: onError");
     }
 }
 

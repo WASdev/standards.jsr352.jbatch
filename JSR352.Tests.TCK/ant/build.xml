@@ -88,10 +88,6 @@
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.Annotations.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.JobXML.Model.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<copy file="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.TCK.SPI.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
 		<zip destfile="${jsr352.tck.basedir}/../dist/jsr352-tck.zip" basedir="${jsr352.tck.basedir}/../tckZip"/>
 	</target>
 

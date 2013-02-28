@@ -25,12 +25,11 @@ import java.util.logging.Logger;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 
 public class JobOperatorJobExecutionImpl implements JobExecution {
 
@@ -38,8 +37,7 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
     private final static Logger logger = Logger.getLogger(sourceClass);
     
 	private static ServicesManager servicesManager = ServicesManagerImpl.getInstance();
-    private static IPersistenceManagerService _persistenceManagementService = 
-        (IPersistenceManagerService)servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+    private static IPersistenceManagerService _persistenceManagementService = servicesManager.getPersistenceManagerService();
 
     private long executionID = 0L;
     private long instanceID = 0L;

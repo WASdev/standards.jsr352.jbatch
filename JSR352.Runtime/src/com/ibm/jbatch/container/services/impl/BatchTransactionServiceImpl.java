@@ -26,7 +26,7 @@ import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.exception.TransactionManagementException;
 import com.ibm.jbatch.container.transaction.impl.DefaultNonTransactionalManager;
 import com.ibm.jbatch.container.transaction.impl.JTAUserTransactionAdapter;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 import com.ibm.jbatch.spi.services.ITransactionManagementService;
 import com.ibm.jbatch.spi.services.TransactionManagerAdapter;
 

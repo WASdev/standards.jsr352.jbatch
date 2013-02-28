@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.util.BatchContainerConstants;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class BoundedThreadPoolServiceImpl extends AbstractThreadPoolServiceImpl implements BatchContainerConstants {
 

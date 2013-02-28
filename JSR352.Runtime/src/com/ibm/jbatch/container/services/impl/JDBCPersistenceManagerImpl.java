@@ -18,11 +18,11 @@ package com.ibm.jbatch.container.services.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -61,7 +61,7 @@ import com.ibm.jbatch.container.status.JobStatusKey;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.status.StepStatusKey;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 
@@ -1459,7 +1459,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		long writeSkipCount = 0;
 		Timestamp startTS = null;
 		Timestamp endTS = null;
-		Externalizable persistentData = null;
+		Serializable persistentData = null;
 		StepExecutionImpl stepEx = null;
 		ObjectInputStream objectIn = null;
 		
@@ -1492,7 +1492,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 				if (pDataBytes != null) {
 					objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
 				}
-				persistentData = (Externalizable)objectIn.readObject();
+				persistentData = (Serializable)objectIn.readObject();
 				
 				stepEx = new StepExecutionImpl(jobexecid, stepexecid);
 				
@@ -1547,7 +1547,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		long writeSkipCount = 0;
 		Timestamp startTS = null;
 		Timestamp endTS = null;
-		Externalizable persistentDataObj = null;
+		Serializable persistentDataObj = null;
 		StepExecutionImpl stepEx = null;
 		ObjectInputStream objectIn = null;
 	
@@ -1578,7 +1578,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 					objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
 				}
 				
-				persistentDataObj = (Externalizable)objectIn.readObject();
+				persistentDataObj = (Serializable)objectIn.readObject();
 				
 				stepEx = new StepExecutionImpl(jobexecid, stepexecid);
 				

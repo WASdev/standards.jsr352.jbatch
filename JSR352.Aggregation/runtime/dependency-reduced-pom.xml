@@ -3,13 +3,13 @@
   <parent>
     <artifactId>jbatch</artifactId>
     <groupId>javax.batch</groupId>
-    <version>1.0-b06</version>
+    <version>1.0-b07</version>
     <relativePath>../pom.xml/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.jbatch</groupId>
   <artifactId>com.ibm.jbatch-runtime-all</artifactId>
-  <version>1.0-b11</version>
+  <version>1.0-b12</version>
   <build>
     <resources>
       <resource>
@@ -30,6 +30,7 @@
                 <excludes>
                   <exclude>javax.batch:javax.batch-api</exclude>
                   <exclude>javax.batch:javax.batch-annotation</exclude>
+                  <exclude>com.ibm.jbatch:com.ibm.jbatch-ri-spi</exclude>
                 </excludes>
               </artifactSet>
             </configuration>
@@ -64,6 +65,12 @@
     </plugins>
   </build>
   <dependencies>
+    <dependency>
+      <groupId>com.ibm.jbatch</groupId>
+      <artifactId>com.ibm.jbatch-ri-spi</artifactId>
+      <version>1.0-b07</version>
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>

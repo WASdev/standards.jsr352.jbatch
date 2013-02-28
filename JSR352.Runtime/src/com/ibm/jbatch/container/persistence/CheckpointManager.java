@@ -25,12 +25,11 @@ import javax.batch.api.CheckpointAlgorithm;
 
 import com.ibm.jbatch.container.artifact.proxy.ItemReaderProxy;
 import com.ibm.jbatch.container.artifact.proxy.ItemWriterProxy;
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 
 public class CheckpointManager {
 	private final static String sourceClass = CheckpointManager.class.getName();
@@ -58,7 +57,7 @@ public class CheckpointManager {
 		this.stepId = stepId;
 		this.jobInstanceID = jobInstanceID;
 		
-		_persistenceManagerService = (IPersistenceManagerService) servicesManager.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+		_persistenceManagerService = servicesManager.getPersistenceManagerService();
 	}
 
 	public void beginCheckpoint(int timeoutVal)

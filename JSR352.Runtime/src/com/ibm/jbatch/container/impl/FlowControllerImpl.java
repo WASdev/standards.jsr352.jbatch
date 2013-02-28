@@ -18,6 +18,7 @@ package com.ibm.jbatch.container.impl;
 
 import java.io.Externalizable;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,6 @@ import javax.batch.runtime.StepExecution;
 import com.ibm.jbatch.container.AbortedBeforeStartException;
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.ParallelJobExecution;
@@ -42,6 +42,7 @@ import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.Decision;
 import com.ibm.jbatch.jsl.model.End;
@@ -50,7 +51,6 @@ import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.Split;
 import com.ibm.jbatch.jsl.model.Step;
 import com.ibm.jbatch.jsl.model.Stop;
-import com.ibm.jbatch.spi.services.ServiceType;
 
 public class FlowControllerImpl implements IExecutionElementController {
 
@@ -77,8 +77,7 @@ public class FlowControllerImpl implements IExecutionElementController {
         this.jobExecutionImpl = jobExecutionImpl;
         this.flow = flow;
         
-        persistenceService = (IPersistenceManagerService) ServicesManagerImpl.getInstance().getService(
-                ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        persistenceService = (IPersistenceManagerService) ServicesManagerImpl.getInstance().getPersistenceManagerService();
         
         flowNavigator = NavigatorFactory.createFlowNavigator(flow);
     }
@@ -195,13 +194,6 @@ public class FlowControllerImpl implements IExecutionElementController {
                 } else if (previousExecutionElement instanceof Decision) {
                     throw new BatchContainerRuntimeException("A decision cannot precede another decision...OR CAN IT???");
                 } else if (previousExecutionElement instanceof Step) {
-                    elementController.setStepContext(stepContext); // this is
-                    // the
-                    // context
-                    // from the
-                    // previous
-                    // execution
-                    // element
                     
                     StepExecution lastStepExecution = getLastStepExecution((Step) previousExecutionElement);
                     
@@ -399,7 +391,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 
     }
 
-    public void setStepContext(StepContextImpl<?, ? extends Externalizable> stepContext) {
+    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
         throw new BatchContainerRuntimeException("Incorrect usage: step context is not in scope within a flow.");
     }
 

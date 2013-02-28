@@ -37,7 +37,6 @@ import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.JobListenerProxy;
 import com.ibm.jbatch.container.artifact.proxy.ListenerFactory;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
@@ -51,6 +50,7 @@ import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.Decision;
 import com.ibm.jbatch.jsl.model.End;
@@ -62,7 +62,6 @@ import com.ibm.jbatch.jsl.model.Property;
 import com.ibm.jbatch.jsl.model.Split;
 import com.ibm.jbatch.jsl.model.Step;
 import com.ibm.jbatch.jsl.model.Stop;
-import com.ibm.jbatch.spi.services.ServiceType;
 
 public class JobControllerImpl implements IController {
 
@@ -99,10 +98,8 @@ public class JobControllerImpl implements IController {
         jobId = jobNavigator.getId();
         //AJM: jobContext = new JobContextImpl(jobId); // TODO - is this the right id?
         jobInstanceId = jobExecution.getJobInstance().getInstanceId();
-        jobStatusService = (IJobStatusManagerService) ServicesManagerImpl.getInstance().getService(
-                ServiceType.JOB_STATUS_MANAGEMENT_SERVICE);
-        persistenceService = (IPersistenceManagerService) ServicesManagerImpl.getInstance().getService(
-                ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        jobStatusService = ServicesManagerImpl.getInstance().getJobStatusManagerService();
+        persistenceService = ServicesManagerImpl.getInstance().getPersistenceManagerService();
         
         setContextProperties();
         setupListeners();
@@ -327,18 +324,12 @@ public class JobControllerImpl implements IController {
             // Depending on the execution element new up the associated context
             // and add it to the controller
             if (currentExecutionElement instanceof Decision) {
-
                 if (previousExecutionElement == null) {
                     // only job context is available to the decider since it is
                     // the first execution element in the job
-
-                    // we need to set to null if batch artifacts are reused
-                    elementController.setStepContext(null);
-
                 } else if (previousExecutionElement instanceof Decision) {
                     throw new BatchContainerRuntimeException("A decision cannot precede another decision...OR CAN IT???");
                 } else if (previousExecutionElement instanceof Step) {
-                    elementController.setStepContext(stepContext); // this is
                     // the
                     // context
                     // from the

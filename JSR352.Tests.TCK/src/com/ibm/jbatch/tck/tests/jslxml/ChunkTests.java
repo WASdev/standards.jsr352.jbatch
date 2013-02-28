@@ -377,50 +377,6 @@ public class ChunkTests {
     }
 
     /*
-     * @testName: testChunkRestartCustomChunkDefaults
-     * @assertion: job will finish successfully with COMPLETED. 
-     *             5.2.1.1 - Reader, 5.2.1.1.1 - Reader Properties,
-     *             5.2.1.2 - Processor
-     *             5.2.1.3 - Writer, 5.2.1.3.1 - Writer Properties
-     *             5.2.1 - Chunk, item-count default value
-     *             5.2.1 - Chunk item checkpointing/restart
-     * 
-     * @test_Strategy: start a job with no item-count specified and a custom checkpoint algorithm specified..
-     *                  Batch artifact enforces that the checkpointing occurs at the custom checkpoints.
-     *                  
-     */
-    @Test
-    @org.junit.Test
-    public void testChunkRestartCustomChunkDefaults() throws Exception {
-        String METHOD = "testChunkRestartCustomChunkDefaults";
-
-        try {
-            Reporter.log("Create job parameters for execution #1:<p>");
-            Properties jobParams = new Properties();
-            Reporter.log("execution.number=1<p>");
-            jobParams.put("app.checkpoint.position" , "0");
-            Reporter.log("readrecord.fail=40<p>");
-            Reporter.log("app.arraysize=30<p>");
-            jobParams.put("execution.number", "1");
-            
-            jobParams.put("readrecord.fail", "40");
-            jobParams.put("app.arraysize", "30");
-
-            Reporter.log("Locate job XML file: chunkCustomCheckpointDEFAULTcommitInterval.xml<p>");
-
-            Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-            JobExecution execution1 = jobOp.startJobAndWaitForResult("chunkCustomCheckpointDEFAULTcommitInterval", jobParams);
-            Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
-            Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
-            assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
-            assertWithMessage("Testing execution #1", "buffer size = 30", execution1.getExitStatus());
-        } catch (Exception e) {
-            handleException(METHOD, e);
-        }
-
-    }
-
-    /*
      * @testName: testChunkRestartCustomCheckpoint
      * @assertion: first job start will finish with FAILED. restart of job will finish successfully with COMPLETED.
      *             5.2.1.1 - Reader, 5.2.1.1.1 - Reader Properties,
@@ -728,11 +684,11 @@ public class ChunkTests {
      *             5.2.1 - Chunk, item-count, skip-limit
      *             5.2.1.4 - Exception Handling - skippable-exception-classes
      * 
-     * @test_Strategy: start a job with item-count specified at a value greater than the read data set.  
+     * @test_Strategy: start a job with item-count specified at 3.  
      *                  Application is configured to encounter an error on two separate reads, at which point
      *                  a skippable exception is thrown by the application. Batch Application enforces that the exceptions
      *                  were recognized as skippable.
-     *                  test that the job completes successfully.     
+     *                  test that the job completes successfully and that the application recognized the exceptions as skippable     
      */
     @Test
     @org.junit.Test
@@ -757,8 +713,6 @@ public class ChunkTests {
             Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
             assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
             assertWithMessage("Testing execution #1", MySkipReadListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
-            // assertWithMessage("Testing execution #1", "COMPLETED",
-            // execution1.getExitStatus());
         } catch (Exception e) {
             handleException(METHOD, e);
         }
@@ -774,11 +728,11 @@ public class ChunkTests {
      *             5.2.1 - Chunk, item-count, skip-limit
      *             5.2.1.4 - Exception Handling - skippable-exception-classes
      * 
-     * @test_Strategy: start a job with item-count specified at a value greater than the read data set.  
+     * @test_Strategy: start a job with item-count specified as 3. skip-limit is set to 1000.
      *                  Application is configured to encounter an error on two separate processing actions, at which point
      *                  a skippable exception is thrown by the application. Batch Application enforces that the exceptions
      *                  were recognized as skippable.
-     *                  test that the job completes successfully.     
+     *                  test that the job completes successfully and that the application recognized the exception as skippable.     
      */
     @Test
     @org.junit.Test
@@ -816,11 +770,11 @@ public class ChunkTests {
      *             5.2.1 - Chunk, item-count, skip-limit
      *             5.2.1.4 - Exception Handling - skippable-exception-classes
      * 
-     * @test_Strategy: start a job with item-count specified at a value greater than the read data set.  
+     * @test_Strategy: start a job with item-count specified as 3. skip-limit set to 1000  
      *                  Application is configured to encounter an error on two separate writes, at which point
      *                  a skippable exception is thrown by the application. Batch Application enforces that the exceptions
      *                  were recognized as skippable.
-     *                  test that the job completes successfully.     
+     *                  test that the job completes successfully and that the application recognized the exceptions as skippable.
      */
     @Test
     @org.junit.Test
@@ -830,7 +784,7 @@ public class ChunkTests {
             Reporter.log("Create job parameters for execution #1:<p>");
             Properties jobParams = new Properties();
             Reporter.log("execution.number=1<p>");
-            Reporter.log("processrecord.fail=1,3<p>");
+            Reporter.log("writerecord.fail=1,3<p>");
             Reporter.log("app.arraysize=30<p>");
             jobParams.put("execution.number", "1");
             jobParams.put("writerecord.fail", "1,3");
@@ -844,7 +798,7 @@ public class ChunkTests {
             Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
             Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
             assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
-            assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+            assertWithMessage("Testing execution #1", MySkipWriteListener.GOOD_EXIT_STATUS, execution1.getExitStatus());
         } catch (Exception e) {
             handleException(METHOD, e);
         }

@@ -16,10 +16,9 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.api.SkipWriteListener;
+import javax.batch.api.SkipReadListener;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -28,8 +27,8 @@ import org.testng.Reporter;
 
 import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
-@javax.inject.Named("mySkipWriteListener")
-public class MySkipWriteListener implements SkipWriteListener {
+@javax.inject.Named("mySkipReaderExceedListener")
+public class MySkipReaderExceedListener implements SkipReadListener {
 
     @Inject
     JobContext jobCtx;
@@ -37,22 +36,30 @@ public class MySkipWriteListener implements SkipWriteListener {
     @Inject
     StepContext stepCtx;
 
-    private final static String sourceClass = MySkipWriteListener.class.getName();
+    private final static String sourceClass = MySkipReadListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    public static final String GOOD_EXIT_STATUS = "MySkipWriteListener: GOOD STATUS";
-    public static final String BAD_EXIT_STATUS = "MySkipWriteListener: BAD STATUS";
+    public static final String GOOD_EXIT_STATUS = "MySkipReadListener: GOOD STATUS";
+    public static final String BAD_EXIT_STATUS_INCORRECT_NUMBER_SKIPS = "MySkipReadListener: BAD STATUS_INCORRECT_NUMBER_SKIPS";
+    public static final String BAD_EXIT_STATUS_WRONG_EXCEPTION = "MySkipReadListener: BAD STATUS_WRONG_EXCEPTION";
 
+    int count = 0;
+    
     @Override
-    public void onSkipWriteItem(List items, Exception e) {
-        Reporter.log("In onSkipWriteItem()" + e + "<p>");
-
+    public void onSkipReadItem(Exception e) {
+        Reporter.log("In onSkipReadItem" + e + "<p>");
+        
+        count++;
+        
         if (e instanceof MyParentException) {
-        	Reporter.log("SKIPLISTENER: onSkipWriteItem, exception is an instance of: MyParentException<p>");
-            jobCtx.setExitStatus(GOOD_EXIT_STATUS);
-        } else {
-        	Reporter.log("SKIPLISTENER: onSkipWriteItem, exception is NOT an instance of: MyParentException<p>");
-            jobCtx.setExitStatus(BAD_EXIT_STATUS);
-        }
+        	if (count == 1){
+        		Reporter.log("SKIPLISTENER: onSkipReadItem, exception is an instance of: MyParentException and number of skips is equal to 1<p>");
+        		jobCtx.setExitStatus(GOOD_EXIT_STATUS);
+        	}
+        	else {
+        		Reporter.log("SKIPLISTENER: onSkipReadItem invoked more than expected and/or wrong exception skipped");
+                jobCtx.setExitStatus(BAD_EXIT_STATUS_INCORRECT_NUMBER_SKIPS);
+        	}
+        } 
     }
 }

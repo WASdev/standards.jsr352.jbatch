@@ -17,9 +17,9 @@
 package com.ibm.jbatch.container.impl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.Externalizable;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -32,12 +32,9 @@ import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.exception.JobRestartException;
 import javax.batch.runtime.JobInstance;
 
-
 import com.ibm.jbatch.container.AbortedBeforeStartException;
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.PartitionCollectorProxy;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
@@ -45,7 +42,9 @@ import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
 import com.ibm.jbatch.container.persistence.PersistentDataWrapper;
+import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.util.PartitionDataWrapper.PartitionEventType;
@@ -65,7 +64,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     protected RuntimeJobExecutionImpl jobExecutionImpl;
     protected JobInstance jobInstance;
 
-    protected StepContextImpl<?, ? extends Externalizable> stepContext;
+    protected StepContextImpl<?, ? extends Serializable> stepContext;
     protected Step step;
     protected StepStatus stepStatus;
     
@@ -77,9 +76,9 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 	protected PartitionCollectorProxy collectorProxy = null;
 	
-	protected static BatchKernelImpl batchKernel = (BatchKernelImpl) ServicesManagerImpl.getInstance().getService(ServiceType.BATCH_KERNEL_SERVICE);
+	protected static IBatchKernelService batchKernel = ServicesManagerImpl.getInstance().getBatchKernelService();
 	
-    protected static IJobIdManagementService _jobIdManagementService = (IJobIdManagementService)ServicesManagerImpl.getInstance().getService(ServiceType.JOB_ID_MANAGEMENT_SERVICE);
+    protected static IJobIdManagementService _jobIdManagementService = (IJobIdManagementService)ServicesManagerImpl.getInstance().getJobIdManagementService();
     
     protected TransactionManagerAdapter	transactionManager = null;
     
@@ -89,8 +88,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     
     
     
-    private static IJobStatusManagerService _jobStatusService = (IJobStatusManagerService) ServicesManagerImpl.getInstance().getService(
-            ServiceType.JOB_STATUS_MANAGEMENT_SERVICE);
+    private static IJobStatusManagerService _jobStatusService = (IJobStatusManagerService) ServicesManagerImpl.getInstance().getJobStatusManagerService();
 
     protected BaseStepControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Step step) {
         this.jobExecutionImpl = jobExecutionImpl;
@@ -122,12 +120,12 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		stepContext.addMetric(MetricImpl.MetricName.COMMITCOUNT, 0);
 		stepContext.addMetric(MetricImpl.MetricName.ROLLBACKCOUNT, 0);
 		
-		ITransactionManagementService transMgr = (ITransactionManagementService) ServicesManagerImpl.getInstance().getService(ServiceType.TRANSACTION_SERVICE);
+		ITransactionManagementService transMgr = ServicesManagerImpl.getInstance().getTransactionManagementService();
 		transactionManager = transMgr.getTransactionManager(stepContext);
     	
     }
     
-    public void setStepContext(StepContextImpl<?, ? extends Externalizable> stepContext) {
+    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
         this.stepContext = stepContext;
     }
 

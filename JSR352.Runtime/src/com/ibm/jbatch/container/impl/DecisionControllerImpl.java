@@ -17,6 +17,7 @@
 package com.ibm.jbatch.container.impl;
 
 import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -66,11 +67,8 @@ public class DecisionControllerImpl implements IExecutionElementController {
     }
 
     
-    public void setStepContext(StepContextImpl<?, ? extends Externalizable> stepContext) {
-        
-    	//throw new UnsupportedOperationException("Shouldn't be called on a decision.");
-    	this.stepContext = stepContext;
-        
+    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
+    	throw new UnsupportedOperationException("Shouldn't be called on a decision.");
     }
    
     public void setStepExecution(Flow flow, StepExecution stepExecution) {
@@ -116,12 +114,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
             throw new BatchContainerServiceException("Cannot create the decider [" + deciderId + "]", e);
         }
 
-        String exitStatus = null;
-        if(executionElement instanceof Split) {
-        	exitStatus = deciderProxy.decide(this.stepExecutions.toArray(new StepExecution[stepExecutions.size()]));
-        } else {
-        	exitStatus = deciderProxy.decide(this.stepExecutions.get(0));
-        }
+        String exitStatus = deciderProxy.decide(this.stepExecutions.toArray(new StepExecution[stepExecutions.size()]));
         
         return exitStatus;
 

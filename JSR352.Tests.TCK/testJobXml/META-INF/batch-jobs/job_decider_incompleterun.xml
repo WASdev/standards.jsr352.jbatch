@@ -27,7 +27,7 @@
 	</step>
 	<decision ref="deciderTestsDecider" id="decision1">
 		<properties>
-			<property value="StopSpecial" name="SpecialExitStatus" />
+			<property name="SpecialExitStatus" value="#{jobParameters['SpecialExitStatus']}"/>
 		</properties>
 		<next to="step2" on="?:Next*" />
 		<end exit-status="EndNormal" on="1:EndNormal" />

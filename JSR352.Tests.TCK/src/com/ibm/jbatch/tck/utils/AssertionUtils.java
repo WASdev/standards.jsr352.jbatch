@@ -53,15 +53,15 @@ public class AssertionUtils {
 		}
 	}
 	
-	static public void assertWithMessage(String message, int arg1, int arg2) {
-     boolean result = (arg1 == arg2);
+	static public void assertWithMessage(String message, int expected, int actual) {
+     boolean result = (expected == actual);
 		
 		if(!result)
 		{
 			if (message == null)
-				throw new AssertionError("Expected value: " + arg1 + ", but found value: " + arg2);
+				throw new AssertionError("Expected value: " + expected + ", but found value: " + actual);
 			else
-				throw new AssertionError(message + "; Expected value: " + arg1 + ", but found value: " + arg2);
+				throw new AssertionError(message + "; Expected value: " + expected + ", but found value: " + actual);
 		}
     }
 }

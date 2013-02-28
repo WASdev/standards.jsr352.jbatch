@@ -19,7 +19,7 @@
 	<step id="step1">
 		<listeners>
         	<listener ref="myCustomCheckpointListener"/>
-        	<listener ref="mySkipReadListener"/>
+        	<listener ref="mySkipReaderExceedListener"/>
     	</listeners>
 		<chunk item-count="31"
 		 skip-limit="1000">

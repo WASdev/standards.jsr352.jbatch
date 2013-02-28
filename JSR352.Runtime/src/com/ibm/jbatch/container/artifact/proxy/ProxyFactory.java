@@ -27,10 +27,9 @@ import javax.batch.api.PartitionCollector;
 import javax.batch.api.PartitionMapper;
 import javax.batch.api.PartitionReducer;
 
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.spi.services.ServiceType;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
 
@@ -43,8 +42,7 @@ public class ProxyFactory {
 
     private static ThreadLocal<InjectionReferences> injectionContext = new ThreadLocal<InjectionReferences>();
     
-    protected static IBatchArtifactFactory batchArtifactFactory = 
-        (IBatchArtifactFactory) servicesManager.getService(ServiceType.DELEGATING_ARTIFACT_FACTORY_SERVICE);
+    protected static IBatchArtifactFactory batchArtifactFactory = servicesManager.getDelegatingArtifactFactory();
 
     protected static Object loadArtifact(String id, InjectionReferences injectionReferences) {
         injectionContext.set(injectionReferences);

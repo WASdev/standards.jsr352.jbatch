@@ -19,7 +19,7 @@ package com.ibm.jbatch.container.impl;
 import java.util.Properties;
 
 import com.ibm.jbatch.spi.DatabaseConfigurationBean;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class BatchConfigImpl implements IBatchConfig {
 	

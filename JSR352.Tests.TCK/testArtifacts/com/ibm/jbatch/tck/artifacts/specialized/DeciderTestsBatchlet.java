@@ -33,12 +33,13 @@ public class DeciderTestsBatchlet extends AbstractBatchlet implements StatusCons
 	public final static String SPECIAL_VALUE = "25";
 	public final static String ACTUAL_VALUE = "actualValue";
 	public final static String ACTION = "action";
+	public final static String SPECIAL_EXIT_STATUS = "SpecialExitStatus";
 	
     private final static String sourceClass = DeciderTestsBatchlet.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
     @Inject
-    StepContext<String, ?> stepCtx;
+    StepContext<String, String> stepCtx;
 
     @Inject
     JobContext<Integer> jobCtx;
@@ -59,7 +60,7 @@ public class DeciderTestsBatchlet extends AbstractBatchlet implements StatusCons
     @Override
     public String process() {
     	if (action != null) {
-    		stepCtx.setTransientUserData(action);
+    		stepCtx.setPersistentUserData(action);
     	}
     	if (value1.equals(SPECIAL_VALUE)) {
     		after();

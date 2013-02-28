@@ -24,7 +24,15 @@
 				<fileset dir="lib">
 					<include name="**/*.jar"/>
 				</fileset>
-				<pathelement location="${javax.inject.jar}"/>
+				<fileset dir="${jsr352.impl.runtime}">
+					<include name="**/javax.batch.api.jar"/>
+				</fileset>
+				<fileset dir="${jsr352.impl.runtime}">
+					<include name="**/javax.inject.jar"/>
+				</fileset>
+				<fileset dir="artifacts">
+					<include name="**/jsr352-tck-SPI.jar"/>
+				</fileset>
 			</classpath>
 		</javac>
 	</target>
@@ -46,9 +54,11 @@
 		<testng mode="testng" dumpCommand="true" workingDir="." failureProperty="tests.failed" outputdir="${results}">
 			<classpath>
 				<pathelement path="tck-classes"/>
-				<pathelement location="${javax.inject.jar}"/>
 				<fileset dir="lib">
 					<include name="**/*.jar"/>
+				</fileset>
+				<fileset dir="artifacts">
+					<include name="**/jsr352-tck-SPI.jar"/>
 				</fileset>
 				<fileset dir="${jsr352.impl.runtime}">
 					<include name="**/*.jar"/>

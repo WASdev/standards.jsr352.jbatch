@@ -20,7 +20,6 @@ import javax.batch.annotation.BatchProperty;
 import javax.batch.api.Decider;
 import javax.batch.runtime.StepExecution;
 import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
 import com.ibm.jbatch.tck.artifacts.common.StatusConstants;
@@ -37,26 +36,25 @@ public class DeciderTestsDecider implements Decider<Object>, StatusConstants {
 	@Inject
     JobContext<Integer> jobCtx;
 
-    
-    @Inject
-    StepContext<String, ?> stepCtx;
-    
     @Inject    
     @BatchProperty(name=SPECIAL_EXIT_STATUS)
     String specialExitStatus;    
     
 	@Override
-	public String decide(StepExecution stepExecution) {	
-		String coreExitStatus = coreExitStatus();
+	public String decide(StepExecution<?>[] stepExecutions) {	
+		if (stepExecutions.length != 1) {
+			throw new IllegalStateException("Expecting stepExecutions array of size 1, found one of size = " + stepExecutions.length);
+		}
+		StepExecution<?> stepExec = stepExecutions[0];
+		String coreExitStatus = coreExitStatus(stepExec);
 		Integer count = jobCtx.getTransientUserData();
 		String retVal = count.toString() + ":" + coreExitStatus;
 		return retVal;
 	}
 	
-	
-	private String coreExitStatus() {		
-		String action = stepCtx.getTransientUserData();
-		String currentExitStatus = stepCtx.getExitStatus();
+	private String coreExitStatus(StepExecution<?> stepExec) {		
+		String action = (String)stepExec.getUserPersistentData();
+		String currentExitStatus = stepExec.getExitStatus();
 		
 		// "Normally" we just pass set 'normalExitStatus' as exit status.
 		if (currentExitStatus.equals(GOOD_STEP_EXIT_STATUS)) {
@@ -66,14 +64,5 @@ public class DeciderTestsDecider implements Decider<Object>, StatusConstants {
 			return specialExitStatus;
 		}		
 	}
-
-
-	@Override
-	public String decide(StepExecution[] stepExecutions) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
 	
 }

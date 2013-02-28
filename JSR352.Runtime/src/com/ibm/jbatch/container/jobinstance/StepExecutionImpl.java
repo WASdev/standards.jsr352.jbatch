@@ -16,7 +16,6 @@
 */
 package com.ibm.jbatch.container.jobinstance;
 
-import java.io.Externalizable;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -53,9 +52,9 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     
     private PartitionPlan plan = null;
     
-    private Externalizable persistentUserData = null;
+    private Serializable persistentUserData = null;
     
-    private StepContextImpl<?, ? extends Externalizable> stepContext = null;
+    private StepContextImpl<?, ? extends Serializable> stepContext = null;
     
     public StepExecutionImpl(long jobExecutionId, long stepExecutionId) {
     	this.jobExecutionId = jobExecutionId;
@@ -161,7 +160,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 	}
 
 	@Override
-	public Externalizable getUserPersistentData() {
+	public Serializable getUserPersistentData() {
 		if (stepContext != null){
 			return this.stepContext.getPersistentUserData();
 		}
@@ -216,7 +215,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
         this.writeSkipCount = writeSkipCnt;
     }  
     
-    public <T> void setStepContext(StepContextImpl<?, ? extends Externalizable> stepContext) {
+    public <T> void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
         this.stepContext = stepContext;
     }
     
@@ -240,7 +239,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     	this.endTime = endts;
     }
     
-    public void setpersistentUserData(Externalizable data){
+    public void setpersistentUserData(Serializable data){
     	this.persistentUserData = data;
     }
 

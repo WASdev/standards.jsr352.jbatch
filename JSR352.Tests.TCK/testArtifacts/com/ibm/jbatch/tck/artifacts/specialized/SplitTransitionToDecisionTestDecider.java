@@ -27,24 +27,10 @@ public class SplitTransitionToDecisionTestDecider implements Decider<Object>, St
 	public final static String DECIDER_EXIT_STATUS = "DECIDER_EXIT_STATUS";
 
 	@Override
-	public String decide(StepExecution stepExecution) throws Exception {
-		
-		// this method should be only invoked for flow transition to decision
-		return "INVALID_THIS_TEST_IS_FOR_SPLIT_NOT_FLOW";
-	}
-
-
-	@Override
 	public String decide(StepExecution[] stepExecutions) throws Exception {
 		
 		// <end exit-status="ThatsAllFolks" on="DECIDER_EXIT_STATUS*2" />
 		return DECIDER_EXIT_STATUS + "*" + stepExecutions.length;
 	}
 
-   
-	
-
-
-
-	
 }

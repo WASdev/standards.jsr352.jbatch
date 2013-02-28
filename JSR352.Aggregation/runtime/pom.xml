@@ -3,29 +3,35 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b06</version>
+        <version>1.0-b07</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch-runtime-all</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b11</version>
+    <version>1.0-b12</version>
 	<dependencies>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
 			<artifactId>com.ibm.jbatch-model</artifactId>
-			<version>1.0-b06</version>
+			<version>1.0-b07</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.ibm.jbatch</groupId>
+			<artifactId>com.ibm.jbatch-ri-spi</artifactId>
+			<version>1.0-b07</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
 			<artifactId>com.ibm.jbatch-tck-spi</artifactId>
-			<version>1.0-b06</version>
+			<version>1.0-b07</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
 			<artifactId>com.ibm.jbatch-runtime</artifactId>
-			<version>1.0-b07</version>
+			<version>1.0-b08</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -74,6 +80,7 @@
 								<excludes>
 									<exclude>javax.batch:javax.batch-api</exclude>
 									<exclude>javax.batch:javax.batch-annotation</exclude>
+									<exclude>com.ibm.jbatch:com.ibm.jbatch-ri-spi</exclude>
 								</excludes>	
 							</artifactSet>
 						</configuration>

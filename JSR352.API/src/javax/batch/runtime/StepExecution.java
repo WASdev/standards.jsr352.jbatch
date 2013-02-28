@@ -16,13 +16,13 @@
 */
 package javax.batch.runtime;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 
 
-public interface StepExecution<P extends Externalizable> {
+public interface StepExecution<P extends Serializable> {
 
     
 	/**

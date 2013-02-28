@@ -46,7 +46,7 @@ import com.ibm.jbatch.container.exception.PersistenceException;
 import com.ibm.jbatch.container.services.IPersistenceDataKey;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.status.JobStatus;
-import com.ibm.jbatch.spi.IBatchConfig;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenceManagerImpl implements
 		IPersistenceManagerService {

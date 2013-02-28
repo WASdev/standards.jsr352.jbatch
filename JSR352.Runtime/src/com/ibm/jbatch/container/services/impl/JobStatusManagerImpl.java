@@ -23,17 +23,16 @@ import java.util.logging.Logger;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
-import com.ibm.jbatch.container.config.ServicesManager;
-import com.ibm.jbatch.container.config.impl.ServicesManagerImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManager;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.container.status.JobStatusKey;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.status.StepStatusKey;
-import com.ibm.jbatch.spi.IBatchConfig;
-import com.ibm.jbatch.spi.services.ServiceType;
+import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class JobStatusManagerImpl implements IJobStatusManagerService {
 
@@ -216,7 +215,7 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
 
         ServicesManager sm = ServicesManagerImpl.getInstance();
 
-        _persistenceManager = (IPersistenceManagerService)sm.getService(ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
+        _persistenceManager = sm.getPersistenceManagerService();
 
         /*
         if(!_isInited ) {

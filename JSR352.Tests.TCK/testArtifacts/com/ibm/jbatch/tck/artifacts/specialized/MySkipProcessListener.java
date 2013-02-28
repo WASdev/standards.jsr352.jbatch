@@ -16,7 +16,6 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.batch.api.SkipProcessListener;
@@ -40,8 +39,8 @@ public class MySkipProcessListener implements SkipProcessListener {
     private final static String sourceClass = MySkipProcessListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
-    public static final String BAD_EXIT_STATUS = "BAD STATUS";
+    public static final String GOOD_EXIT_STATUS = "MySkipProcessListener: GOOD STATUS";
+    public static final String BAD_EXIT_STATUS = "MySkipProcessListener: BAD STATUS";
 
     @Override
     public void onSkipProcessItem(Object item, Exception e) {
