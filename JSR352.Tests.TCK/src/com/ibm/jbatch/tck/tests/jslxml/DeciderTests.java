@@ -62,21 +62,30 @@ public class DeciderTests implements StatusConstants {
 
     /*
 	 * @testName: testDeciderEndNormal
-	 * @assertion: Tests that decider can be configured via property
-	 *             Tests that results of previous step execution matter 
-	 *             Tests that JobContext can be utilized in decider (the same instance as that of the earlier steps).
+	 * @assertion: Tests that decision child elements: next, step, end, fail, all work as expected (by verifying batch status)
 	 *             Tests exit status globbing ('*' and '?') 
+	 *             Tests StepExecution from previous step passed to Decider
+	 *             Tests that decider can be configured via property
+	 *             Tests that JobContext can be utilized in decider (the same instance as that of the earlier steps).
 	 *             Tests setting of <stop>, <end>, <fail> @exit-status attribute value.
-	 * @test_Strategy: Tests 
-	                   1. Batchlet is coded to end with one of two different exit status values depending on @BatchProperty populated by job param set either to:
-	                         jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.NORMAL_VALUE);
-	                                OR
-	                         jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.SPECIAL_VALUE);
-	                   2. Decider 
-	                   3. JobContext utilized to adjust "core exit status" by prefixing the number of times the step has run.
-	                   4. Special globbing chars '*' and '?' are used in the @on values to test exit status globbing.
-	                   5. Test asserts specific exit status as well as batch status.  In addition to testing the overall test flow this 
-	                      tests the @exit-status attributes of fail, stop, end.
+	 *             
+	 * @test_Strategy: The test methods in this class have a tighter coupling than usual.  That's because they all use the
+	 *                 same artifacts, the same basic JSL, and the same basic <decision> element (with the same set of glob 
+	 *                 patterns). We set up different "branches" in the job execution sequence depending on exit status, 
+	 *                 (e.g. stop vs. fail, end with one exit status vs. another), and we take the various branches in the
+	 *                 various test methods.
+	 *                    
+	 *                 1. Batchlet is coded to end with one of two different exit status values depending on @BatchProperty populated by job param set either to:
+	 *                       jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.NORMAL_VALUE);
+	 *                              OR
+	 *                       jobParameters.setProperty(DeciderTestsBatchlet.ACTUAL_VALUE, DeciderTestsBatchlet.SPECIAL_VALUE);
+	 *                    Batch status is tested as well
+	 *                 2. Decider returns value based on configured property, step execution exit status, and job context transient data. 
+	 *                 3. JobContext utilized to adjust "core exit status" by prefixing the number of times the step has run.
+	 *                 4. Special globbing chars '*' and '?' are used in the @on values to test exit status globbing.
+	 *                 5. Test asserts specific exit status as well as batch status.  In addition to testing the overall test flow this 
+	 *                    tests the @exit-status attributes of fail, stop, end.
+	 *                    
 	 */
     @Test
     @org.junit.Test
@@ -121,8 +130,8 @@ public class DeciderTests implements StatusConstants {
     
     /*
 	 * @testName: testDeciderEndSpecial
-	 * @assertion: FIXME
-	 * @test_Strategy: FIXME
+	 * @assertion: see testDeciderEndNormal
+	 * @test_Strategy: see testDeciderEndNormal
 	 */
     @Test
     @org.junit.Test
@@ -159,8 +168,8 @@ public class DeciderTests implements StatusConstants {
     // See the first two test methods for an explanation of parameter values.
     /*
    	 * @testName: testDeciderStopNormal
-   	 * @assertion: FIXME
-   	 * @test_Strategy: FIXME
+   	 * @assertion: see testDeciderEndNormal
+   	 * @test_Strategy: see testDeciderEndNormal
    	 */
     @Test
     @org.junit.Test
@@ -198,8 +207,8 @@ public class DeciderTests implements StatusConstants {
     // See the first two test methods for an explanation of parameter values.
     /*
    	 * @testName: testDeciderStopSpecial
-   	 * @assertion: FIXME
-   	 * @test_Strategy: FIXME
+   	 * @assertion: see testDeciderEndNormal
+   	 * @test_Strategy: see testDeciderEndNormal
    	 */
     @Test
     @org.junit.Test
@@ -236,8 +245,8 @@ public class DeciderTests implements StatusConstants {
     // See the first two test methods for an explanation of parameter values.
     /*
    	 * @testName: testDeciderFailNormal
-   	 * @assertion: FIXME
-   	 * @test_Strategy: FIXME
+   	 * @assertion: see testDeciderEndNormal
+   	 * @test_Strategy: see testDeciderEndNormal
    	 */
     @Test
     @org.junit.Test
@@ -275,8 +284,8 @@ public class DeciderTests implements StatusConstants {
     // See the first two test methods for an explanation of parameter values.
     /*
    	 * @testName: testDeciderFailSpecial
-   	 * @assertion: FIXME
-   	 * @test_Strategy: FIXME
+   	 * @assertion: see testDeciderEndNormal
+   	 * @test_Strategy: see testDeciderEndNormal
    	 */
     @Test
     @org.junit.Test
@@ -312,8 +321,8 @@ public class DeciderTests implements StatusConstants {
     
     /*
    	 * @testName: testDeciderNextNormal
-   	 * @assertion: FIXME
-   	 * @test_Strategy: FIXME
+   	 * @assertion: see testDeciderEndNormal
+   	 * @test_Strategy: see testDeciderEndNormal
    	 */
     @Test
     @org.junit.Test
@@ -351,8 +360,8 @@ public class DeciderTests implements StatusConstants {
     
     /*
    	 * @testName: testDeciderNextSpecial
-   	 * @assertion: FIXME
-   	 * @test_Strategy: FIXME
+   	 * @assertion: see testDeciderEndNormal
+   	 * @test_Strategy: see testDeciderEndNormal
    	 */
     @Test
     @org.junit.Test
