@@ -70,6 +70,7 @@ public final class BatchSPIManager {
 		this.batchSecurityHelper = helper;
 	}
 	
+	private final byte[] databaseConfigurationCompleteLock = new byte[0];
 	private Boolean databaseConfigurationComplete = Boolean.FALSE;
     private DatabaseConfigurationBean dataBaseConfigurationBean = null;
 
@@ -82,7 +83,7 @@ public final class BatchSPIManager {
      */
 	public void registerDatabaseConfigurationBean(DatabaseConfigurationBean bean) 
 			throws DatabaseAlreadyInitializedException { 
-		synchronized (databaseConfigurationComplete) {
+		synchronized (databaseConfigurationCompleteLock) {
 			if (!databaseConfigurationComplete) {
 				this.dataBaseConfigurationBean = bean;
 			} else {
@@ -98,7 +99,7 @@ public final class BatchSPIManager {
 	 * @return The batch runtime database configuration, if set, or <b>null</b> if not set.
 	 */
 	public DatabaseConfigurationBean getFinalDatabaseConfiguration() {
-		synchronized (databaseConfigurationComplete) {
+		synchronized (databaseConfigurationCompleteLock) {
 			databaseConfigurationComplete = Boolean.TRUE;
 			return dataBaseConfigurationBean;
 		}

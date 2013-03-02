@@ -64,6 +64,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 	// Declared 'volatile' to allow use in double-checked locking.  This 'isInited'
 	// refers to whether the configuration has been hardened and possibly the
 	// first service impl loaded, not whether the instance has merely been instantiated.
+	private final byte[] isInitedLock = new byte[0];
 	private volatile Boolean isInited = Boolean.FALSE;
 
 	private DatabaseConfigurationBean databaseConfigBean = null;
@@ -75,7 +76,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 	private Map<String, Name> propertyNameTable = ServiceTypes.getServicePropertyNames();
 
 	// Registry of all current services
-	private ConcurrentHashMap<Name, IBatchServiceBase> serviceRegistry = new ConcurrentHashMap<Name, IBatchServiceBase>();
+	private final ConcurrentHashMap<Name, IBatchServiceBase> serviceRegistry = new ConcurrentHashMap<Name, IBatchServiceBase>();
 	
 	/**
 	 * Init doesn't actually load the service impls, which are still loaded lazily.   What it does is it
@@ -89,7 +90,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		}
 		// Use double-checked locking with volatile.
 		if (!isInited) {
-			synchronized (isInited) {
+			synchronized (isInitedLock) {
 				if (!isInited) {
 					logger.fine("--- Initializing ServicesManagerImpl ---");
 					batchRuntimeConfig = new BatchConfigImpl();
@@ -415,4 +416,5 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		}
 	}
 }
+
 
