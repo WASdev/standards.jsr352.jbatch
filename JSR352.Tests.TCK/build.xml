@@ -48,17 +48,14 @@
 	
 	<target name="run" depends="init" description="Runs the JSR352 TCK suite" >
 	
-		<!-- temporary step to extract files from jar.  job xml not currently being found when contents are in an archive -->
-		<unzip src="artifacts/jsr352-tck-impl.jar" dest="tck-classes"/>
-	
 		<testng mode="testng" dumpCommand="true" workingDir="." failureProperty="tests.failed" outputdir="${results}">
 			<classpath>
-				<pathelement path="tck-classes"/>
 				<fileset dir="lib">
 					<include name="**/*.jar"/>
 				</fileset>
 				<fileset dir="artifacts">
 					<include name="**/jsr352-tck-SPI.jar"/>
+					<include name="**/jsr352-tck-impl.jar"/>
 				</fileset>
 				<fileset dir="${jsr352.impl.runtime}">
 					<include name="**/*.jar"/>

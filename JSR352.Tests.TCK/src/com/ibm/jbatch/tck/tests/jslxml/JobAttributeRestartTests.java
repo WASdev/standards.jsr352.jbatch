@@ -91,7 +91,7 @@ public class JobAttributeRestartTests {
 				if(jobExec.getBatchStatus().equals(BatchStatus.STOPPED) && jobExec.getJobParameters().getProperty("restartable").equalsIgnoreCase("true")) {
 	
 					Reporter.log("restarting job");
-					JobExecution newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId());
+					JobExecution newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), jobParams);
 	
 					Reporter.log("Job Status = " + newJobExec.getBatchStatus());
 					assertWithMessage("Job completed", newJobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
@@ -145,7 +145,7 @@ public class JobAttributeRestartTests {
 					Reporter.log("restarting job, should fail because restartable is false");
 					JobExecution newJobExec = null;
 					try {
-						newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId());
+						newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), jobParams);
 					} catch (JobInstanceAlreadyCompleteException jiace) {
 						Reporter.log("JobInstanceAlreadyCompleteException = " + jiace.getLocalizedMessage());
 						assertWithMessage("Job Restart = false should throw JobRestartException NOT JobInstanceAlreadyCompleteException", false);

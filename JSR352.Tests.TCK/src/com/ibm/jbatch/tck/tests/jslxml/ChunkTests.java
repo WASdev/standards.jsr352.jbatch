@@ -310,7 +310,8 @@ public class ChunkTests {
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
             {
                 Reporter.log("Create job parameters for execution #2:<p>");
-                Properties jobParametersOverride = new Properties();
+                Properties jobParametersOverride = new Properties(jobParams);
+                
                 Reporter.log("execution.number=2<p>");
                 Reporter.log("app.arraysize=30<p>");
                 
@@ -430,7 +431,7 @@ public class ChunkTests {
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
             {
                 Reporter.log("Create job parameters for execution #2:<p>");
-                Properties jobParametersOverride = new Properties();
+                Properties jobParametersOverride = new Properties(jobParams);
                 Reporter.log("execution.number=2<p>");
                 Reporter.log("app.arraysize=30<p>");
                 Reporter.log("app.writepoints=9,13,15,20,22,27,30<p>");

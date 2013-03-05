@@ -19,6 +19,7 @@ package com.ibm.jbatch.tck.tests.jslxml;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -27,13 +28,13 @@ import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.tck.artifacts.specialized.MetricsStepListener;
-import com.ibm.jbatch.tck.utils.JobOperatorBridge;
-
 import org.junit.BeforeClass;
 import org.testng.Reporter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.ibm.jbatch.tck.artifacts.specialized.MetricsStepListener;
+import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
 public class MetricsTests {
 
@@ -616,6 +617,119 @@ public class MetricsTests {
 							metrics[i].getValue());
 				}
 			}
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	
+	/*
+	 * @testName: testMetricsCommitCount
+	 * 
+	 * @assertion: Section 7.1 Job Metrics - Commit Count
+	 * @test_Strategy: Batch Artifact read/process/writes a known number of items and all are committed - test that those commits are reflected in the commit count
+	 * 
+	 */
+	@Test
+	@org.junit.Test
+	public void testMetricsStepTimestamps() throws Exception {
+
+		String METHOD = "testMetricsCommitCount";
+
+		try {
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			jobParams.put("app.processFilterItem", "3");
+			Reporter.log("app.processFilterItem=3<p>");
+
+			Reporter.log("Locate job XML file: testMetricsCommitCount.xml<p>");
+			URL jobXMLURL = this.getClass().getResource(
+					"/testMetricsCommitCount.xml");
+
+			long time = System.currentTimeMillis();
+			Date ts = new Date(time);
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricsCommitCount",
+					jobParams);
+
+			Reporter.log("Obtaining StepExecutions for execution id: "
+					+ execution1.getExecutionId() + "<p>");
+			List<StepExecution> stepExecutions = jobOp
+					.getStepExecutions(execution1.getExecutionId());
+
+			StepExecution tempstep = null;
+			StepExecution step = null;
+			String stepNameTest = "step1CCM";
+
+			for (StepExecution stepEx : stepExecutions) {
+				if (stepNameTest.equals(stepEx.getName())) {
+					step = stepEx;
+				}
+			}
+
+			Reporter.log("execution #1 JobExecution getBatchStatus()="
+					+ execution1.getBatchStatus() + "<p>");
+			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
+					execution1.getBatchStatus());
+			
+			
+			assertWithMessage("Start time of step occurs after start time of test", ts.compareTo(step.getStartTime()) < 0);
+			assertWithMessage("End time of step occurs after start time of step", step.getEndTime().compareTo(step.getStartTime()) > 0);
+			assertWithMessage("End time of step occurs after start time of test", step.getEndTime().compareTo(ts) > 0);
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+	
+	/*
+	 * @testName: testMetricsCommitCount
+	 * 
+	 * @assertion: Section 7.1 Job Metrics - Commit Count
+	 * @test_Strategy: Batch Artifact read/process/writes a known number of items and all are committed - test that those commits are reflected in the commit count
+	 * 
+	 */
+	@Test
+	@org.junit.Test
+	public void testMetricsJobExecutionTimestamps() throws Exception {
+
+		String METHOD = "testMetricsCommitCount";
+
+		try {
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			jobParams.put("app.processFilterItem", "3");
+			Reporter.log("app.processFilterItem=3<p>");
+
+			Reporter.log("Locate job XML file: testMetricsCommitCount.xml<p>");
+			URL jobXMLURL = this.getClass().getResource(
+					"/testMetricsCommitCount.xml");
+
+			long time = System.currentTimeMillis();
+			Date ts = new Date(time);
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricsCommitCount",
+					jobParams);
+
+
+			
+			Reporter.log("execution #1 JobExecution getBatchStatus()="
+					+ execution1.getBatchStatus() + "<p>");
+			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
+					execution1.getBatchStatus());
+			
+			System.out.println("AJM: testcase start time: " + ts);
+			System.out.println("AJM: job create time: " + execution1.getCreateTime());
+			System.out.println("AJM: job start time: " + execution1.getStartTime());
+			System.out.println("AJM: job last updated time: " + execution1.getLastUpdatedTime());
+			System.out.println("AJM: job end time: " + execution1.getEndTime());
+			
+			assertWithMessage("Start time of job occurs after start time of test", ts.compareTo(execution1.getStartTime()) < 0);
+			assertWithMessage("Create time of job occurs before start time of job", execution1.getCreateTime().compareTo(execution1.getStartTime()) < 0);
+			assertWithMessage("End time of job occurs after start time of job", execution1.getEndTime().compareTo(execution1.getStartTime()) > 0);
+			assertWithMessage("Last Updated time of job occurs after start time of job", execution1.getLastUpdatedTime().compareTo(execution1.getStartTime()) > 0);
+			assertWithMessage("End time of job occurs after start time of test", execution1.getEndTime().compareTo(ts) > 0);
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}

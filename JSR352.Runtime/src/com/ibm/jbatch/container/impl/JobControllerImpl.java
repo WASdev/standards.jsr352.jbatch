@@ -259,8 +259,10 @@ public class JobControllerImpl implements IController {
                 long time = System.currentTimeMillis();
             	Timestamp updateTS = new Timestamp(time);
             	jobExecution.setLastUpdateTime(updateTS);
+            	jobExecution.setEndTime(updateTS);
                 if (persistenceService instanceof JDBCPersistenceManagerImpl){	
                 	persistenceService.jobExecutionStatusStringUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.EXIT_STATUS, jobContext.getExitStatus(), updateTS);
+                	persistenceService.jobExecutionTimestampUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.END_TIME, updateTS);
                 }                        
             } catch (Throwable t) {
                 if (logger.isLoggable(Level.WARNING)) {

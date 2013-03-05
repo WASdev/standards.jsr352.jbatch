@@ -18,6 +18,7 @@ package com.ibm.jbatch.container.services;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -103,9 +104,11 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
      * JOB OPERATOR ONLY METHODS
      */
     
-    public void jobOperatorCreateJobInstanceData(long key, String jobNameValue);
+    public void jobOperatorCreateJobInstanceData(long key, String jobNameValue, String apptag);
     
 	public int jobOperatorGetJobInstanceCount(String jobName);
+	
+	public HashMap jobOperatorGetJobInstanceData();
 	
 	public List<Long> jobOperatorgetJobInstanceIds(String jobName, int start, int count);
 
@@ -146,5 +149,9 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 
 	public StepExecution getStepExecutionObjQueryByStepID(long stepexecutionId);
 
-	public Set<Long> jobOperatorGetRunningExecutions(String jobName);	
+	public Set<Long> jobOperatorGetRunningExecutions(String jobName);
+	
+	public String getJobCurrentTag(long jobInstanceId);
+	
+	public void purge(String apptag);
 }

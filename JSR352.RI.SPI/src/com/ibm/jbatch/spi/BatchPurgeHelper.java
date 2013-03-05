@@ -17,24 +17,26 @@
 package com.ibm.jbatch.spi;
 
 /**
- * 
- * Implemented by the host environment to allow the 'jbatch' 352 RI to get 
- * the "current" tag (here a generalized term for something like the current
- * "application), and whether the tag is "admin"-authorized or not.
  *
+ * Implemented by the jbatch 352 RI to allow the host environment to
+ * instruct the RI to purge job repository entries associated with 
+ * a given "owner".
+ * 
  * @author skurz
  */
-public interface BatchSecurityHelper {
-	/**
-	 * @return The current "tag" (or "app name", generically speaking).
-	 */
-    public String getCurrentTag();
-    
+public interface BatchPurgeHelper {
+
     /**
+     * This method will purge all JobExecution, JobInstance, and job
+     * data "owned" by a given "tag".   Job purge only happens, however,
+     * if there are no other JobInstance(s) "owned" by other "tag"(s).
+     * 
+     * It does not guarantee a consistent view of the job repository,
+     * so this method should only be issued when no jobs are being executed
+     * "owned by" this tag.   If this type of external synchronization is not
+     * used, the behavior is undefined.
+     * 
      * @param tag A "tag" (or "app name", generically speaking).
-     * @return true if the "tag" is associated with an app recognized as 
-     *              authorized for administrator-level read permissions.
-     */
-    public boolean isAdmin(String tag);
-    
+     */ 
+    public void purgeOwnedRepositoryData(String tag);
 }

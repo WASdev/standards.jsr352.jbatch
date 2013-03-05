@@ -404,7 +404,7 @@ public class ParallelExecutionTests {
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 
             Reporter.log("Invoke restartJobAndWaitForResult with execution id: " + lastExecutionId + "<p>");
-            JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+            JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
             
             lastExecutionId = exec.getExecutionId();
             Reporter.log("execution #2 JobExecution getBatchStatus()=" + exec.getBatchStatus() + "<p>");

@@ -256,7 +256,7 @@ public class StepExecutionTests {
 	        
 	        //jobParameters.setProperty("force.failure" , "false");
 	        Reporter.log("Invoke restartJobAndWaitForResult with execution id: " + jobExec.getExecutionId() + "<p>");
-	        JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId());
+	        JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(),jobParameters);
 	        
 	        //This job should only have one step.
 	

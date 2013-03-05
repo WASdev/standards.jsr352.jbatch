@@ -18,6 +18,7 @@ package com.ibm.jbatch.container.jobinstance;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.batch.api.PartitionPlan;
 import javax.batch.operations.JobOperator.BatchStatus;
@@ -67,7 +68,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public Timestamp getEndTime() {
+    public Date getEndTime() {
         
     	if (stepContext != null){
     		return this.stepContext.getEndTimeTS();
@@ -93,7 +94,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     }
 
     @Override
-    public Timestamp getStartTime() {
+    public Date getStartTime() {
        	if (stepContext != null){
     		return this.stepContext.getStartTimeTS();
     	}

@@ -41,12 +41,15 @@ import com.ibm.jbatch.container.jobinstance.ParallelJobExecution;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.container.services.impl.JSEBatchSecurityHelper;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.tck.bridge.IJobEndCallbackService;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
+import com.ibm.jbatch.spi.BatchSPIManager;
+import com.ibm.jbatch.spi.BatchSecurityHelper;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 import com.ibm.jbatch.spi.services.IBatchThreadPoolService;
 import com.ibm.jbatch.spi.services.ParallelTaskResult;
@@ -66,6 +69,8 @@ public class BatchKernelImpl implements IBatchKernelService {
     private IJobEndCallbackService callbackService = null;
     
     private IPersistenceManagerService persistenceService = null;
+    
+    private BatchSecurityHelper batchSecurity = null;
 
     // TODO - assuming we have a IBatchConfig, maybe we should get size from
     // there.
@@ -76,6 +81,14 @@ public class BatchKernelImpl implements IBatchKernelService {
         callbackService = servicesManager.getJobCallbackService();
         persistenceService = servicesManager.getPersistenceManagerService();
     }
+
+	public BatchSecurityHelper getBatchSecurityHelper() {
+		batchSecurity = BatchSPIManager.getInstance().getBatchSecurityHelper();
+        if(batchSecurity == null) { 
+        	batchSecurity = new JSEBatchSecurityHelper();
+        }
+        return batchSecurity;
+	}
 
     public void init(IBatchConfig pgcConfig) throws BatchContainerServiceException {
 

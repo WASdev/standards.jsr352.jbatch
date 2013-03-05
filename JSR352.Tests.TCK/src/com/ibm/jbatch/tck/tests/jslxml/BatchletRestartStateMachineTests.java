@@ -103,7 +103,7 @@ public class BatchletRestartStateMachineTests {
 	        
 	        for (int i = 2; i < 6; i++) {
 	            String execString = new Integer(i).toString();
-	            Properties jobParametersOverride = new Properties();
+	            Properties jobParametersOverride = new Properties(jobParams);
 	            jobParametersOverride.put("execution.number", execString);
 	            Reporter.log("Invoke restartJobAndWaitForResult<p>");
 	            exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParametersOverride);
@@ -123,7 +123,7 @@ public class BatchletRestartStateMachineTests {
 	        
 	        // Last execution should succeed
 	        Reporter.log("Create Job parameters for Execution #6<p>");
-	        Properties jobParametersOverride = new Properties();
+	        Properties jobParametersOverride = new Properties(jobParams);
 	        jobParametersOverride.put("execution.number", "6");
 	        
 	        

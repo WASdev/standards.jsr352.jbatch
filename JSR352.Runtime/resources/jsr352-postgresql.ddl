@@ -28,7 +28,8 @@ CREATE TABLE CHECKPOINTDATA(
 
 CREATE TABLE JOBINSTANCEDATA(
   id		character varying (512),
-  name		character varying (512)
+  name		character varying (512), 
+  apptag VARCHAR(512)
 );
 
 CREATE TABLE EXECUTIONINSTANCEDATA(

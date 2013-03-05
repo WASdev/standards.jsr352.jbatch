@@ -3,13 +3,13 @@
   <parent>
     <artifactId>jbatch</artifactId>
     <groupId>javax.batch</groupId>
-    <version>1.0-b07</version>
+    <version>1.0-b13</version>
     <relativePath>../pom.xml/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>javax.batch</groupId>
   <artifactId>javax.batch-api-all</artifactId>
-  <version>1.0-b12</version>
+  <version>1.0-b13</version>
   <build>
     <plugins>
       <plugin>
@@ -22,6 +22,9 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <createSourcesJar>true</createSourcesJar>
+        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>

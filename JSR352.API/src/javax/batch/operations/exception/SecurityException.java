@@ -13,28 +13,31 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
-package com.ibm.jbatch.spi;
-
-/**
- * 
- * Implemented by the host environment to allow the 'jbatch' 352 RI to get 
- * the "current" tag (here a generalized term for something like the current
- * "application), and whether the tag is "admin"-authorized or not.
- *
- * @author skurz
  */
-public interface BatchSecurityHelper {
+package javax.batch.operations.exception;
+
+public class SecurityException extends Exception {
+
 	/**
-	 * @return The current "tag" (or "app name", generically speaking).
+	 * SecurityException is thrown when an user is not authorized to run a JobOperator method, such as
+	 * restart, stop, abandon, any getters, etc 
 	 */
-    public String getCurrentTag();
-    
-    /**
-     * @param tag A "tag" (or "app name", generically speaking).
-     * @return true if the "tag" is associated with an app recognized as 
-     *              authorized for administrator-level read permissions.
-     */
-    public boolean isAdmin(String tag);
-    
+	public SecurityException() {
+	}
+
+	public SecurityException(String message) {
+		super(message);
+	}
+
+	public SecurityException(Throwable cause) {
+		super(cause);
+	}
+
+	public SecurityException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+
+	private static final long serialVersionUID = 1L;
+
 }

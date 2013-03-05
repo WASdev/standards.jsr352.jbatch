@@ -164,17 +164,17 @@ public class InheritanceMergeTests {
 		String METHOD = testMethod;
 		
 		try {
-		Class<InheritanceMergeTests> clazz = InheritanceMergeTests.class;
+		
 		String target = String.valueOf(i);
 
 		Reporter.log("Read parent XML: " + "/inheritance/"+target+".Parent.xml<p>");
-		String parentXML = IOHelper.readJobXML(clazz.getResource("/inheritance/"+target+".Parent.xml").getFile());
+		String parentXML = IOHelper.readJobXML("inheritance/"+target+".Parent.xml");
 		
 		Reporter.log("Read child XML: " + "/inheritance/"+target+".Child.xml<p>");
-		String childXML = IOHelper.readJobXML(clazz.getResource("/inheritance/"+target+".Child.xml").getFile());
+		String childXML = IOHelper.readJobXML("inheritance/"+target+".Child.xml");
 		
 		Reporter.log("Read expectedMergedXML XML: " + "/inheritance/"+target+".Merged.xml<p>");
-		String expectedMergedXML = IOHelper.readJobXML(clazz.getResource("/inheritance/"+target+".Merged.xml").getFile());
+		String expectedMergedXML = IOHelper.readJobXML("inheritance/"+target+".Merged.xml");
 
 		String calculatedMergedXML;
 		if(jobFromStep)

@@ -87,15 +87,29 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 	@Override
 	public Date getCreateTime() {
 
-		
-		return createTime;
+		if (this.jobcontext == null) {
+
+			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl) {
+				createTime = ((JDBCPersistenceManagerImpl) _persistenceManagementService)
+						.jobOperatorQueryJobExecutionTimestamp(executionID,
+								JDBCPersistenceManagerImpl.CREATE_TIME);
+			}
+		}
+		return new Date(createTime.getTime());
 	}
 
 	@Override
 	public Date getEndTime() {
 
 		
-		return endTime;
+		if (this.jobcontext == null) {
+		
+			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
+				endTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.END_TIME);
+			}
+		}
+		
+		return new Date(endTime.getTime());
 	}
 
 	@Override
@@ -135,7 +149,16 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 		}
 		*/
 		
-		return updateTime;
+		if (this.jobcontext == null) {
+
+			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl) {
+				this.updateTime = ((JDBCPersistenceManagerImpl) _persistenceManagementService)
+						.jobOperatorQueryJobExecutionTimestamp(executionID,
+								JDBCPersistenceManagerImpl.UPDATE_TIME);
+			}
+		}
+
+		return new Date(this.updateTime.getTime());
 	}
 
 	@Override
@@ -148,7 +171,15 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 		}
 		*/
 		
-		return startTime;
+		
+		if (this.jobcontext == null) {
+		
+			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
+				startTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.START_TIME);
+			}
+		}
+		
+		return new Date(startTime.getTime());
 	}
 	
 	@Override

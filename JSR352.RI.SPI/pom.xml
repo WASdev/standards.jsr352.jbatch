@@ -3,20 +3,21 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b07</version>
+        <version>1.0-b13</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch-ri-spi</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b07</version>
+    <version>1.0-b13</version>
 	<dependencies>
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-api</artifactId>
-			<version>1.0-b07</version>
+			<version>1.0-b13</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
+
     <build>
         <plugins>
             <plugin>

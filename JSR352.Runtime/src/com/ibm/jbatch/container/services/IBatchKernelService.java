@@ -33,6 +33,7 @@ import com.ibm.jbatch.container.jobinstance.ParallelJobExecution;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
+import com.ibm.jbatch.spi.BatchSecurityHelper;
 import com.ibm.jbatch.spi.services.IBatchServiceBase;
 
 public interface IBatchKernelService extends IBatchServiceBase {
@@ -66,6 +67,8 @@ public interface IBatchKernelService extends IBatchServiceBase {
 	JobInstance getJobInstance(long instanceId);
 
 	List<StepExecution> getStepExecutions(long executionId);
+
+	BatchSecurityHelper getBatchSecurityHelper();
 
 	List<ParallelJobExecution> startParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties, LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue);
 

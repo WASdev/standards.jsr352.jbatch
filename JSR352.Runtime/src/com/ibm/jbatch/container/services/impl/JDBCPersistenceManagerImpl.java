@@ -32,6 +32,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -83,7 +84,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	private static final String CREATE_TAB_CHECKPOINTDATA = "CREATE TABLE CHECKPOINTDATA("
 			+ "id VARCHAR(512),obj BLOB)";
 	private static final String CREATE_TAB_JOBINSTANCEDATA = "CREATE TABLE JOBINSTANCEDATA("
-			+ "id VARCHAR(512), name VARCHAR(512))";
+			+ "id VARCHAR(512), name VARCHAR(512), apptag VARCHAR(512))";
 	private static final String CREATE_TAB_EXECUTIONINSTANCEDATA = "CREATE TABLE EXECUTIONINSTANCEDATA("
 			+ "id VARCHAR(512),"
 			+ "createtime TIMESTAMP,"
@@ -139,7 +140,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	private static final String DELETE_CHECKPOINTDATA = "delete from checkpointdata where id = ?";
 	
 	// JOB OPERATOR QUERIES
-	private static final String INSERT_JOBINSTANCEDATA = "insert into jobinstancedata values(?, ?)";
+	private static final String INSERT_JOBINSTANCEDATA = "insert into jobinstancedata values(?, ?, ?)";
 	
 	private static final String INSERT_EXECUTIONDATA = "insert into executionInstanceData values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 	
@@ -147,7 +148,8 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	
 	private static final String SELECT_JOBINSTANCEDATA_IDS = "select id from jobinstancedata where name = ?";
 	
-	private static final String SELECT_JOBINSTANCEDATA_NAMES = "select name from jobinstancedata";
+	private static final String SELECT_JOBINSTANCEDATA_NAMES = "select name from jobinstancedata where apptag = ?";
+	private static final String SELECT_JOBINSTANCEDATA_APPTAG = "select apptag from jobinstancedata where id = ?";
 	
 	public static final String START_TIME = "starttime";
 	public static final String CREATE_TIME = "createtime";
@@ -159,6 +161,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	public static final String JOBEXEC_ID = "jobexecid";
 	public static final String STEPEXEC_ID = "stepexecid";
 	public static final String STEPCONTEXT = "stepcontext";
+	public static final String APPTAG = "apptag";
 
 
     protected DataSource dataSource = null;
@@ -610,7 +613,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		logger.exiting(CLASSNAME, "executeInsert");
 	}
 	
-	private void executeJobInstanceDataInsert(long key, String jobName, String query){
+	private void executeJobInstanceDataInsert(long key, String jobName, String apptag, String query){
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ByteArrayOutputStream baos = null;
@@ -627,6 +630,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 
 			statement.setLong(1, key);
 			statement.setString(2, jobName);
+			statement.setString(3, apptag);
 			
 			statement.executeUpdate();
 			
@@ -937,31 +941,6 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		return data;	
 	}
 	
-	private List<Long> executeIDQuery(Object key, String query) {
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		List<Long> data = new ArrayList<Long>();
-	
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(query);
-			statement.setObject(1, key);
-			rs = statement.executeQuery();
-			while (rs.next()) {
-				long id = rs.getLong("id");
-				data.add(id);
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		}
-		finally {
-			cleanupConnection(conn, rs, statement);
-		}
-		
-		return data;	
-	}
-	
 	private Set<String> executeNameQuery(String query) {
 		Connection conn = null;
 		PreparedStatement statement = null;
@@ -1079,8 +1058,8 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	 */
 	
 	@Override
-    public void jobOperatorCreateJobInstanceData(long key, String Value){
-		this.executeJobInstanceDataInsert(key, Value, this.INSERT_JOBINSTANCEDATA);
+    public void jobOperatorCreateJobInstanceData(long key, String Value, String apptag){
+		this.executeJobInstanceDataInsert(key, Value, apptag, this.INSERT_JOBINSTANCEDATA);
 	}
 
 	
@@ -1103,7 +1082,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement(this.SELECT_JOBINSTANCEDATA_COUNT);
+			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_COUNT);
 			statement.setString(1, jobName);
 			rs = statement.executeQuery();
 			rs.next();
@@ -1122,8 +1101,28 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	@Override
 	public List<Long> jobOperatorgetJobInstanceIds(String jobName, int start,
 			int count) {
-		List<Long> data = executeIDQuery(jobName, SELECT_JOBINSTANCEDATA_IDS);
-		
+
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		List<Long> data = new ArrayList<Long>();
+	
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_IDS);
+			statement.setObject(1, jobName);
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				long id = rs.getLong("id");
+				data.add(id);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		}
+		finally {
+			cleanupConnection(conn, rs, statement);
+		}
+	
 		if (data.size() > 0){
 			try {
 				return data.subList(start, start+count);
@@ -1134,13 +1133,56 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		}
 		else return data;
 	}
+	
+	@Override
+	public HashMap jobOperatorGetJobInstanceData() {
+
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		HashMap data = new HashMap();
+	
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement("select distinct id, name from jobinstancedata");
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				long id = rs.getLong("id");
+				String name = rs.getString("name");
+				data.put(id, name);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		}
+		finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		
+		return data;
+	}
 
 
 	@Override
 	public Set<String> jobOperatorgetJobNames() {
 		
-		Set<String> data = executeNameQuery(SELECT_JOBINSTANCEDATA_NAMES);
-		
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		Set<String> data = new HashSet<String>();
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_NAMES);
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				String name = rs.getString("name");
+				data.add(name);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		}
+		finally {
+			cleanupConnection(conn, rs, statement);
+		}
 		return data;
 	}
 
@@ -1653,11 +1695,12 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("update executioninstancedata set " + statusToUpdate + " = ?, updatetime = ? where id = ?");
+			statement = conn.prepareStatement("update executioninstancedata set " + statusToUpdate + " = ?, updatetime = ?, createtime = ? where id = ?");
 			
 			statement.setString(1, statusString);
 			statement.setTimestamp(2, updatets);
-			statement.setLong(3, key);
+			statement.setTimestamp(3, updatets);
+			statement.setLong(4, key);
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
@@ -1691,11 +1734,12 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("update executioninstancedata set " + statusToUpdate + " = ?, updatetime = ? where id = ?");
+			statement = conn.prepareStatement("update executioninstancedata set " + statusToUpdate + " = ?, starttime = ?, updatetime = ? where id = ?");
 			
 			statement.setString(1, statusString);
 			statement.setTimestamp(2, updatets);
-			statement.setLong(3, key);
+			statement.setTimestamp(3, updatets);
+			statement.setLong(4, key);
 			
 			statement.executeUpdate();
 		} catch (SQLException e) {
@@ -1864,44 +1908,91 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		long executionId = 0;
-		long instanceId = 0;
-		Set<Long> instanceIds1 = new HashSet<Long>();
 		Set<Long> executionIds = new HashSet<Long>();
-		JobOperatorJobExecutionImpl jobEx = null;
-		ObjectInputStream objectIn = null;
 	
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select id from jobinstancedata where name = ?"); 
-			statement.setString(1, jobName);
+			statement = conn.prepareStatement("SELECT A.id FROM executioninstancedata AS A INNER JOIN jobinstancedata AS B ON A.jobinstanceid = B.id WHERE A.batchstatus = ? AND B.name = ?"); 
+			statement.setString(1, BatchStatus.STARTED.name());
+			statement.setString(2, jobName);
 			rs = statement.executeQuery();
 			while (rs.next()) {
-				instanceId = rs.getLong("id");
-				instanceIds1.add(instanceId);
+				executionIds.add(rs.getLong("id"));
 			}
-			statement = conn.prepareStatement("select id from executioninstancedata where jobinstanceid = ? and batchstatus = ?");
-			for (long instanceid : instanceIds1){
-				statement.setLong(1, instanceid);
-				statement.setString(2, BatchStatus.STARTED.name());
-				rs = statement.executeQuery();
-				while (rs.next()){
-					executionId = rs.getLong("id");
-				}
-				executionIds.add(executionId);
-			}
+
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
 		} finally {
-			if (objectIn != null) {
-				try {
-					objectIn.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
 			cleanupConnection(conn, rs, statement);
 		}
 		return executionIds;		
+	}
+	
+	@Override
+	public String getJobCurrentTag(long jobInstanceId) {
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		String apptag = null;
+		
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_APPTAG); 
+			statement.setLong(1, jobInstanceId);
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				apptag = rs.getString(APPTAG);
+			}
+
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		
+		return apptag;
+	}
+	
+	@Override
+	public void purge(String apptag) {
+		
+		logger.entering(CLASSNAME, "purge", apptag);
+		String deleteJobs = "DELETE FROM jobinstancedata WHERE apptag = ?";
+		String deleteJobExecutions = "DELETE FROM executioninstancedata " 
+				+ "WHERE id IN (" 
+				+ "SELECT B.id FROM jobinstancedata AS A INNER JOIN executioninstancedata AS B " 
+				+ "ON A.id = B.jobinstanceid " 
+				+ "WHERE A.apptag = ?)";
+		String deleteStepExecutions = "DELETE FROM stepexecutioninstancedata " 
+				+ "WHERE id IN ("
+				+ "SELECT C.id FROM jobinstancedata AS A INNER JOIN executioninstancedata AS B "
+				+ "ON A.id = B.jobinstanceid INNER JOIN stepexecutioninstancedata AS C "
+				+ "ON B.id = C.jobexecid "
+				+ "WHERE A.apptag = ?)";
+		
+		Connection conn = null;
+		PreparedStatement statement = null;
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement(deleteStepExecutions);
+			statement.setString(1, apptag);
+			statement.executeUpdate();
+			
+			statement = conn.prepareStatement(deleteJobExecutions);
+			statement.setString(1, apptag);
+			statement.executeUpdate();
+			
+			statement = conn.prepareStatement(deleteJobs);
+			statement.setString(1, apptag);
+			statement.executeUpdate();
+
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+
+			cleanupConnection(conn, null, statement);
+		}
+		logger.exiting(CLASSNAME, "purge");
+		
 	}
 }

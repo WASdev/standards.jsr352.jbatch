@@ -20,7 +20,7 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.testng.remote.RemoteTestNG"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="JSR352.Tests.TCK"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc}/JSR352.Tests.TCK/logging.properties -Djunit.jobOperator.sleep.time=900000 -Dderby.system.home=~/workspace/jsr352db"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc}/JSR352.Tests.TCK/logging.properties -Djunit.jobOperator.sleep.time=900000 -Dderby.system.home=../../jsr352db"/>
 <mapAttribute key="org.testng.eclipse.ALL_CLASS_METHODS"/>
 <listAttribute key="org.testng.eclipse.CLASS_TEST_LIST"/>
 <listAttribute key="org.testng.eclipse.GROUP_LIST"/>

@@ -16,9 +16,7 @@
 */
 package com.ibm.jbatch.container.jobinstance;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.Properties;
 
 import javax.batch.runtime.JobInstance;
@@ -33,14 +31,12 @@ public class JobInstanceImpl implements JobInstance, Serializable {
 	private long jobInstanceId = 0L;
     private String jobName = null;
     private String jobXML = null;
-    private Properties originalJobParameters = null;
-
+    
     private JobInstanceImpl() {        
     }
 
     public JobInstanceImpl(String jobXML, Properties jobParameters, long instanceId) {        
         this.jobXML = jobXML;
-        this.originalJobParameters = jobParameters;
         this.jobInstanceId = instanceId;        
     }
 
@@ -61,9 +57,6 @@ public class JobInstanceImpl implements JobInstance, Serializable {
         return jobXML;
     }
 
-    public Properties getOriginalJobParams() {        
-        return originalJobParameters;
-    }
 
     @Override
     public String toString() {        
@@ -75,15 +68,6 @@ public class JobInstanceImpl implements JobInstance, Serializable {
         buf.append(" jobXML: " + jobXML.subSequence(0, concatLen) + "...truncated ...\n");
         buf.append(" originalJobParameters: \n");
         String propsAsString = null;
-        try {
-            if (originalJobParameters != null) {
-                StringWriter sw = new StringWriter();
-                originalJobParameters.store(sw, null);
-                propsAsString = sw.toString();
-            }
-        } catch(IOException e) {
-            propsAsString = "<Corrupted>;";
-        }        
         buf.append(propsAsString);
         return buf.toString();
 

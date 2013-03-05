@@ -168,17 +168,9 @@ public class JobOperatorTests {
 	         Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
 		        Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 	         {
-	        	 Reporter.log("Create job parameters for execution #2:<p>");
-	             Properties jobParametersOverride = new Properties();
-	             Reporter.log("execution.number=2<p>");
-		    		Reporter.log("app.arraysize=30<p>");
-		    		Reporter.log("app.writepoints=10,15,20,25,30<p>");
-	             jobParametersOverride.put("execution.number", "2");
-	             jobParametersOverride.put("app.arraysize", "30");
-	             jobParametersOverride.put("app.writepoints", "10,15,20,25,30");
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             requestedJobInstance = jobOp.getJobInstance(exec.getInstanceId());
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			        Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
@@ -687,17 +679,9 @@ public class JobOperatorTests {
 		        Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 		        
 	         {
-	        	 Reporter.log("Create job parameters for execution #2:<p>");
-	             Properties jobParametersOverride = new Properties();
-	             Reporter.log("execution.number=2<p>");
-		    		Reporter.log("app.arraysize=30<p>");
-		    		Reporter.log("app.writepoints=10,15,20,25,30<p>");
-	             jobParametersOverride.put("execution.number", "2");
-	             jobParametersOverride.put("app.arraysize", "30");
-	             jobParametersOverride.put("app.writepoints", "10,15,20,25,30");
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	             JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             lastExecutionId = exec.getExecutionId();
 	             
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
@@ -772,17 +756,9 @@ public class JobOperatorTests {
 	         Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
 		        Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 	         {
-	        	 Reporter.log("Create job parameters for execution #2:<p>");
-	             Properties jobParametersOverride = new Properties();
-	             Reporter.log("execution.number=2<p>");
-		    		Reporter.log("app.arraysize=30<p>");
-		    		Reporter.log("app.writepoints=10,15,20,25,30<p>");
-	             jobParametersOverride.put("execution.number", "2");
-	             jobParametersOverride.put("app.arraysize", "30");
-	             jobParametersOverride.put("app.writepoints", "10,15,20,25,30");
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             requestedJobInstance = jobOp.getJobInstance(exec.getInstanceId());
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			        Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
@@ -808,7 +784,8 @@ public class JobOperatorTests {
  		
  	}
 	
-	@Test(enabled = false) @org.junit.Test @Ignore
+	@Test(enabled = false)
+	@org.junit.Test @Ignore
     public void testJobOperatorGetParametersException() throws Exception {
         String METHOD = "testJobOperatorGetParametersException";
         begin(METHOD);
@@ -847,17 +824,9 @@ public class JobOperatorTests {
 	         Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
 		     Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 	         {
-	        	 Reporter.log("Create job parameters for execution #2:<p>");
-	             Properties jobParametersOverride = new Properties();
-	             Reporter.log("execution.number=2<p>");
-		    	 Reporter.log("app.arraysize=30<p>");
-		    	 Reporter.log("app.writepoints=10,15,20,25,30<p>");
-	             jobParametersOverride.put("execution.number", "2");
-	             jobParametersOverride.put("app.arraysize", "30");
-	             jobParametersOverride.put("app.writepoints", "10,15,20,25,30");
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             lastExecutionId = exec.getExecutionId();
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			     Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
@@ -929,17 +898,9 @@ public class JobOperatorTests {
 	         JobExecution exec = null;
 	         
 	         {
-	        	 Reporter.log("Create job parameters for execution #2:<p>");
-	             Properties jobParametersOverride = new Properties();
-	             Reporter.log("execution.number=2<p>");
-		    	 Reporter.log("app.arraysize=30<p>");
-		    	 Reporter.log("app.writepoints=10,15,20,25,30<p>");
-	             jobParametersOverride.put("execution.number", "2");
-	             jobParametersOverride.put("app.arraysize", "30");
-	             jobParametersOverride.put("app.writepoints", "10,15,20,25,30");
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             lastExecutionId = exec.getExecutionId();
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			     Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
@@ -1214,17 +1175,9 @@ public class JobOperatorTests {
 	         JobExecution exec = null;
 	         
 	         {
-	        	 Reporter.log("Create job parameters for execution #2:<p>");
-	             Properties jobParametersOverride = new Properties();
-	             Reporter.log("execution.number=2<p>");
-	             Reporter.log("app.arraysize=30<p>");
-	 	         Reporter.log("app.writepoints=10,15,20,25,30<p>");
-	             jobParametersOverride.put("execution.number", "2");
-	             jobParametersOverride.put("app.arraysize", "30");
-	             jobParametersOverride.put("app.writepoints", "10,15,20,25,30");
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             lastExecutionId = exec.getExecutionId();
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			     Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
@@ -1295,18 +1248,9 @@ public class JobOperatorTests {
 	         JobExecution exec = null;
 	         
 	         {
-	        	 Reporter.log("Create job parameters for execution #2:<p>");
-	             Properties jobParametersOverride = new Properties();
-	             Reporter.log("execution.number=1<p>");
-		 	     Reporter.log("app.arraysize=30<p>");
-	 	         Reporter.log("app.writepoints=10,15,20,25,30<p>");
-
-	             jobParametersOverride.put("execution.number", "2");
-	             jobParametersOverride.put("app.arraysize", "30");
-	             jobParametersOverride.put("app.writepoints", "10,15,20,25,30");
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             lastExecutionId = exec.getExecutionId();
 	             
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");

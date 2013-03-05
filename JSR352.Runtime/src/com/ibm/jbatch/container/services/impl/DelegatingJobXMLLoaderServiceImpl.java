@@ -16,12 +16,9 @@
 */
 package com.ibm.jbatch.container.services.impl;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -96,16 +93,14 @@ public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
 	    
 	    String relativePath = PREFIX + id + ".xml";
 	    
-	    URL path = tccl.getResource(relativePath);
+	    InputStream stream = tccl.getResourceAsStream(relativePath);
 	    
-        if (path == null) {
-            throw new BatchContainerRuntimeException(new FileNotFoundException(
-                    "Cannot find an XML file under " + PREFIX + " with the following name " + id + ".xml"));
-        }
+	   if (stream == null) {
+           throw new BatchContainerRuntimeException(new FileNotFoundException(
+                   "Cannot find an XML file under " + PREFIX + " with the following name " + id + ".xml"));
+       }
 
-	    String xmlString = readJobXML(path.getPath());
-	    
-	    return xmlString;
+	    return readJobXML(stream);
 	    
     }
 
@@ -122,33 +117,23 @@ public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
 		return null;
 	}
 
-	
-    private static String readJobXML(String fileWithPath)  {
-
-        StringBuffer xmlBuffer = ( fileWithPath==null ? null : new StringBuffer() );
-                
-        try {
-        if ( !(fileWithPath==null) ) {
-            BufferedReader in = new BufferedReader(new FileReader(new File(fileWithPath)));
-            String input = in.readLine();
-            do {
-                if (input != null) {
-                    xmlBuffer.append(input);
-                    input = in.readLine();
-                }
-            } while (input!=null);
-            
-            in.close();
-        }
-        } catch (FileNotFoundException e) {
-            throw new BatchContainerServiceException("Could not find file " + fileWithPath);
+	private static String readJobXML(InputStream stream)  {
+		
+		StringBuffer out = new StringBuffer();
+		
+		try {
+	        byte[] b = new byte[4096];
+	        for (int i; (i = stream.read(b)) != -1;) {
+	            out.append(new String(b, 0, i));
+	        }
+		} catch (FileNotFoundException e) {
+			throw new BatchContainerServiceException(e);
         } catch (IOException e) {
             throw new BatchContainerServiceException(e);
         } 
-        
-        return ( xmlBuffer==null ? null : xmlBuffer.toString() );
-
-    }
+		
+        return out.toString();
+	}
 
 
     @Override

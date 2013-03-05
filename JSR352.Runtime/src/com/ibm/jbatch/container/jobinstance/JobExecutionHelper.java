@@ -38,6 +38,7 @@ import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.modelresolver.PropertyResolver;
 import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
+import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
@@ -64,6 +65,7 @@ public class JobExecutionHelper {
     
     private static IPersistenceManagerService _persistenceManagementService = 
     		servicesManager.getPersistenceManagerService();
+    private static IBatchKernelService _batchKernelService = servicesManager.getBatchKernelService();
 
     public static RuntimeJobExecutionImpl startJob(String jobXML, Properties jobParameters) throws JobStartException {
         long instanceId = _jobIdManagementService.getInstanceId();
@@ -91,7 +93,8 @@ public class JobExecutionHelper {
         Timestamp updatetime = new Timestamp(time); // what is the arg here?
         Timestamp endtime = null;
         Timestamp createtime = new Timestamp(time);
-        _persistenceManagementService.jobOperatorCreateJobInstanceData(instanceId, jobNavigator.getId());
+        String apptag = _batchKernelService.getBatchSecurityHelper().getCurrentTag();
+        _persistenceManagementService.jobOperatorCreateJobInstanceData(instanceId, jobNavigator.getId(), apptag);
         
         RuntimeJobExecutionImpl rtJobExec = new RuntimeJobExecutionImpl(jobNavigator, jobInstanceImpl, executionId);
         
@@ -119,7 +122,7 @@ public class JobExecutionHelper {
         return restartJob(executionId, null, false);
     }
     
-    public static RuntimeJobExecutionImpl restartJob(long executionId, Properties overrideJobParameters, boolean isPartitionedStep) throws JobRestartException {
+    public static RuntimeJobExecutionImpl restartJob(long executionId, Properties restartJobParameters, boolean isPartitionedStep) throws JobRestartException {
     	
     	// because of JobOp re-factor, restart now takes in an executionId
     	// this id must be that of the last execution for the jobinstance
@@ -141,21 +144,12 @@ public class JobExecutionHelper {
 
         long nextExecutionId = _jobIdManagementService.getExecutionId();
 
-        Properties originalJobParameters = jobInstance.getOriginalJobParams();
-
-        Properties mergedRestartJobParameters = new Properties(originalJobParameters);
         
-        if (overrideJobParameters != null) {
-            for (String key : overrideJobParameters.stringPropertyNames()) {
-                mergedRestartJobParameters.setProperty(key, overrideJobParameters.getProperty(key));
-            }
-        }
-                                                
         JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobInstance.getJobXML());
         
         //Resolve the merged restart properties for this job
         PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(isPartitionedStep);
-        propResolver.substituteProperties(jobModel, mergedRestartJobParameters);  
+        propResolver.substituteProperties(jobModel, restartJobParameters);  
         
         Navigator jobNavigator = NavigatorFactory.createJobNavigator(jobModel);
         
@@ -174,7 +168,7 @@ public class JobExecutionHelper {
         rtJobExec.setCreateTime(createtime);
         rtJobExec.setLastUpdateTime(updatetime);
         rtJobExec.setEndTime(endtime);
-        rtJobExec.setJobProperties(mergedRestartJobParameters);        
+        rtJobExec.setJobProperties(restartJobParameters);        
         
         createJobExecutionEntry(rtJobExec.getJobOperatorJobExecution());
         
@@ -212,7 +206,8 @@ public class JobExecutionHelper {
         Timestamp updatetime = new Timestamp(time); // what is the arg here?
         Timestamp endtime = null;
         Timestamp createtime = new Timestamp(time);
-        _persistenceManagementService.jobOperatorCreateJobInstanceData(instanceId, jobNavigator.getId());
+        String apptag = _batchKernelService.getBatchSecurityHelper().getCurrentTag();
+        _persistenceManagementService.jobOperatorCreateJobInstanceData(instanceId, jobNavigator.getId(), apptag);
         
         RuntimeJobExecutionImpl rtJobExec = new RuntimeJobExecutionImpl(jobNavigator, jobInstanceImpl, executionId);
         
@@ -242,16 +237,13 @@ public class JobExecutionHelper {
     	
     	long executionId = jobEx.getExecutionId();
     	long instanceId = jobEx.getInstanceId();
-    	Timestamp starttime = new Timestamp(0); // no valid value yet
-        Timestamp updatetime = new Timestamp(jobEx.getLastUpdatedTime().getTime()); // what is the arg here?
-        Timestamp endtime = new Timestamp(0); // no valid value yet?
-        Timestamp createtime = new Timestamp(jobEx.getCreateTime().getTime());
+    	Timestamp starttime = null;
+        Timestamp updatetime = null;
+        Timestamp endtime = null;
+        Timestamp createtime = null;
         Properties jobParameters = jobEx.getJobParameters();
         BatchStatus batchStatus = jobEx.getBatchStatus() == null ? BatchStatus.STARTING : jobEx.getBatchStatus();
         String exitstatus = jobEx.getExitStatus();
-        
-		//System.out.println("AJM: props = " + jobParameters.toString());
-
         
     	_persistenceManagementService.jobOperatorCreateExecutionData(executionId, starttime, updatetime, endtime, createtime, jobParameters, instanceId, batchStatus.name(), exitstatus);
     }

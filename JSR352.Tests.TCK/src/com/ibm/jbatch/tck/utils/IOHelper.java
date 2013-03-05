@@ -21,27 +21,37 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
-public class IOHelper {
 
+public class IOHelper {
+    
     public static String readJobXML(String fileWithPath) throws FileNotFoundException, IOException {
 
-        StringBuffer jobXMLBuffer = ( fileWithPath==null ? null : new StringBuffer() );
-        if ( !(fileWithPath==null) ) {
-            BufferedReader zin = new BufferedReader( new FileReader( new File(fileWithPath)));
-            String input = zin.readLine();
-            do {
-                if (input != null) {
-                	jobXMLBuffer.append(input);
-                    input = zin.readLine();
-                }
-            } while (input!=null);
+    	ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+    	InputStream stream = tccl.getResourceAsStream(fileWithPath);
+    	
+    	if (stream == null) {
+            throw new FileNotFoundException(
+                    "Cannot find " + fileWithPath);
         }
-        return ( jobXMLBuffer==null ? null : jobXMLBuffer.toString() );
 
+    	StringBuffer out = new StringBuffer();
+		try {
+		
+	        byte[] b = new byte[4096];
+	        for (int i; (i = stream.read(b)) != -1;) {
+	            out.append(new String(b, 0, i));
+	        }
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw e;
+		}
+		
+        return out.toString();
     }
     
 	public static void waitForBatchStatusOrTimeout(JobExecution jobExecution, BatchStatus batchStatus, long timeout) {

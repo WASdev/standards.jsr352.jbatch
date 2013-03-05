@@ -18,7 +18,11 @@ package com.ibm.jbatch.container.api.impl;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -35,14 +39,15 @@ import javax.batch.operations.exception.JobStartException;
 import javax.batch.operations.exception.NoSuchJobException;
 import javax.batch.operations.exception.NoSuchJobExecutionException;
 import javax.batch.operations.exception.NoSuchJobInstanceException;
+import javax.batch.operations.exception.SecurityException;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
-
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.spi.BatchSecurityHelper;
 import com.ibm.jbatch.spi.services.IJobXMLLoaderService;
 
 
@@ -88,7 +93,7 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public void abandon(JobExecution jobExecution)
-			throws NoSuchJobExecutionException, JobExecutionIsRunningException {
+			throws NoSuchJobExecutionException, JobExecutionIsRunningException, SecurityException {
 		// TODO Auto-generated method stub
 		
 		boolean abandoned = false;
@@ -103,63 +108,79 @@ public class JobOperatorImpl implements JobOperator {
 		if (jobEx == null){
 			throw new NoSuchJobInstanceException(null, "Job Execution: " + executionId + " not found");
 		}
-		
-		// for every job execution associated with the job
-		// if it is not in STARTED state, mark it as ABANDONED
-		//for (JobExecution jobEx : jobExecutions){
-			if (!jobEx.getBatchStatus().equals(BatchStatus.STARTED) || !jobEx.getBatchStatus().equals(BatchStatus.STARTING)){
-				// update table to reflect ABANDONED state
-		        long time = System.currentTimeMillis();
-		    	Timestamp timestamp = new Timestamp(time);
-				persistenceService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(jobEx.getExecutionId(), "batchstatus", BatchStatus.ABANDONED.name(), timestamp);
-			}
-			else {
-				// If one of the JobExecutions is still running, throw an exception
-				throw new JobExecutionIsRunningException(null, "Job Execution: " + executionId + " is still running");
-			}
-		//}
-		
+			
+		if (isAuthorized(jobEx.getInstanceId())) {
+			// for every job execution associated with the job
+			// if it is not in STARTED state, mark it as ABANDONED
+			//for (JobExecution jobEx : jobExecutions){
+				if (!jobEx.getBatchStatus().equals(BatchStatus.STARTED) || !jobEx.getBatchStatus().equals(BatchStatus.STARTING)){
+					// update table to reflect ABANDONED state
+			        long time = System.currentTimeMillis();
+			    	Timestamp timestamp = new Timestamp(time);
+					persistenceService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(jobEx.getExecutionId(), "batchstatus", BatchStatus.ABANDONED.name(), timestamp);
+				}
+				else {
+					// If one of the JobExecutions is still running, throw an exception
+					throw new JobExecutionIsRunningException(null, "Job Execution: " + executionId + " is still running");
+				}
+			//}
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
+		}
 	}
 
 	@Override
 	public List<JobExecution> getExecutions(JobInstance instance)
-			throws NoSuchJobInstanceException {
+			throws NoSuchJobInstanceException, SecurityException {
 		
-		List<JobExecution> executions = persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instance.getInstanceId());
-		if (executions.size() == 0){
-			throw new NoSuchJobInstanceException(null, "Job: " + instance.getJobName() + " has no executions");
+		List<JobExecution> executions = new ArrayList<JobExecution>();
+		
+		if (isAuthorized(instance.getInstanceId())) {
+			executions = persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instance.getInstanceId());
+			if (executions.size() == 0){
+				throw new NoSuchJobInstanceException(null, "Job: " + instance.getJobName() + " has no executions");
+			}
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
 		}
-		else{
-			return persistenceService.jobOperatorGetJobExecutionsByJobInstanceID(instance.getInstanceId());
-		}
+
+		return executions;
 	}
 
 	@Override
 	public JobExecution getJobExecution(long executionId)
-			throws NoSuchJobExecutionException {
+			throws NoSuchJobExecutionException, SecurityException {
 		
+		JobExecution theJobExecution = null;
 		JobExecution execution = persistenceService.jobOperatorGetJobExecution(executionId);
-		
 		if (execution == null){
 			throw new NoSuchJobExecutionException(null, "No job execution exists for job execution id: " + executionId);
 		}
-		else {
-			return batchKernel.getJobExecution(executionId);
+
+		if(isAuthorized(execution.getInstanceId())) {
+			theJobExecution = batchKernel.getJobExecution(executionId);
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
 		}
+
+		return theJobExecution;
 	}
 
 	@Override
 	public List<JobExecution> getJobExecutions(JobInstance instance)
-			throws NoSuchJobInstanceException {
+			throws NoSuchJobInstanceException, SecurityException {
+		List<JobExecution> executions = new ArrayList<JobExecution>();
 		
-		List<JobExecution> executions = persistenceService.jobOperatorGetJobExecutions(instance.getInstanceId());
-		
-		if (executions.size() == 0 ){
-			throw new NoSuchJobInstanceException(null, "Job: " + instance.getJobName() + " does not exist");
+		if (isAuthorized(instance.getInstanceId())) {
+			executions = persistenceService.jobOperatorGetJobExecutions(instance.getInstanceId());
+			if (executions.size() == 0 ){
+				throw new NoSuchJobInstanceException(null, "Job: " + instance.getJobName() + " does not exist");
+			}
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
 		}
-		else {
-			return persistenceService.jobOperatorGetJobExecutions(instance.getInstanceId());
-		}
+	
+		return executions;
 	}
 
 	@Override
@@ -173,7 +194,7 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public int getJobInstanceCount(String jobName) throws NoSuchJobException {
-		
+				
     	int jobInstanceCount = 0;
     	
     	jobInstanceCount = persistenceService.jobOperatorGetJobInstanceCount(jobName);
@@ -197,7 +218,10 @@ public class JobOperatorImpl implements JobOperator {
 			// for every job instance id
 			for (long id : instanceIds){
 				// get the job instance obj, add it to the list
-				jobInstances.add(batchKernel.getJobInstance(id));
+				JobInstance jobInstance = batchKernel.getJobInstance(id);
+				if(isAuthorized(jobInstance.getInstanceId())) {
+					jobInstances.add(jobInstance);	
+				}
 			}
 			// send the list of objs back to caller
 			return jobInstances;
@@ -207,21 +231,38 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public Set<String> getJobNames() {
-		return persistenceService.jobOperatorgetJobNames();
+		
+		Set<String> jobNames = new HashSet<String>();
+		HashMap data = persistenceService.jobOperatorGetJobInstanceData();
+		Iterator it = data.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry entry = (Map.Entry) it.next();
+			long instanceId = (Long) entry.getKey();
+			if(isAuthorized(instanceId)) {
+				String name = (String)entry.getValue();
+				jobNames.add(name);
+			}
+		}
+		return jobNames;
 	}
 
 	@Override
 	public Properties getParameters(JobInstance instance)
-			throws NoSuchJobExecutionException {
+			throws NoSuchJobExecutionException, SecurityException{
 		
-		Properties props = persistenceService.getParameters(instance.getInstanceId());
+		Properties props = null;
 		
-		if (props == null){
-			throw new NoSuchJobExecutionException(null, "");
+		if (isAuthorized(instance.getInstanceId())) {
+
+			props = persistenceService.getParameters(instance.getInstanceId());
+			if (props == null) {
+				throw new NoSuchJobExecutionException(null, "");
+			}
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
 		}
-		else {
-			return persistenceService.getParameters(instance.getInstanceId());
-		}
+
+		return props;
 	}
 
 	@Override
@@ -229,15 +270,19 @@ public class JobOperatorImpl implements JobOperator {
 			throws NoSuchJobException {
 		
 		List<JobExecution> jobExecutions = new ArrayList<JobExecution>();
-		
+
 		// get the jobexecution ids associated with this job name
 		Set<Long> executionIds = persistenceService.jobOperatorGetRunningExecutions(jobName);
 		
 		if (executionIds.size() > 0){
 			// for every job instance id
 			for (long id : executionIds){
-				// get the job instance obj, add it to the list
-				jobExecutions.add(batchKernel.getJobExecution(id));
+				
+				JobExecution jobEx = batchKernel.getJobExecution(id);
+				if(isAuthorized(jobEx.getInstanceId())) {
+					// get the job instance obj, add it to the list
+					jobExecutions.add(jobEx);	
+				}
 			}
 			// send the list of objs back to caller
 			return jobExecutions;
@@ -247,25 +292,40 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public List<StepExecution> getStepExecutions(long executionId)
-			throws NoSuchJobExecutionException {
+			throws NoSuchJobExecutionException, SecurityException {
 		
-		// now need to return a set of StepExecution Objs - 
-		return persistenceService.getStepExecutionIDListQueryByJobID(executionId);
+		List<StepExecution> stepExecutions = new ArrayList<StepExecution>();
+
+		JobExecution jobEx = batchKernel.getJobExecution(executionId);
+		if (isAuthorized(jobEx.getInstanceId())) {
+			stepExecutions = persistenceService.getStepExecutionIDListQueryByJobID(executionId);
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
+		}
+
+		return stepExecutions;
+		
 	}
 
 	@Override
 	public long restart(long executionId)
 			throws JobExecutionAlreadyCompleteException,
 			NoSuchJobExecutionException, JobExecutionNotMostRecentException,
-			JobRestartException {
+			JobRestartException, SecurityException {
+		
+		long newExecutionId = -1;
 		
         if (logger.isLoggable(Level.FINE)) {            
             logger.fine("Restarting job with instanceID: " + executionId);
         }
         
-        JobExecution execution = batchKernel.restartJob(executionId);
-        
-        long newExecutionId = execution.getExecutionId();
+		JobExecution jobEx = batchKernel.getJobExecution(executionId);
+		if (isAuthorized(jobEx.getInstanceId())) {
+			JobExecution execution = batchKernel.restartJob(executionId);
+	        newExecutionId = execution.getExecutionId();	
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
+		}
         
         if (logger.isLoggable(Level.FINE)) {            
             logger.fine("Restarted job with instanceID: " + executionId + ", and new executionID: " + newExecutionId);
@@ -275,19 +335,25 @@ public class JobOperatorImpl implements JobOperator {
 	}
 	
     @Override
-    public long restart(long instanceId, Properties jobParameters) throws JobInstanceAlreadyCompleteException,
-            NoSuchJobExecutionException, NoSuchJobException, JobRestartException {
+    public long restart(long executionId, Properties restartParameters) throws JobInstanceAlreadyCompleteException,
+            NoSuchJobExecutionException, NoSuchJobException, JobRestartException, SecurityException {
 
+    	long newExecutionId = -1;
+    	
         if (logger.isLoggable(Level.FINE)) {            
-            logger.fine("Restarting job with instanceID: " + instanceId);
+            logger.fine("Restarting job with instanceID: " + executionId);
         }
         
-        JobExecution execution = batchKernel.restartJob(instanceId, jobParameters);
-        
-        long newExecutionId = execution.getExecutionId();
+        JobExecution jobEx = batchKernel.getJobExecution(executionId);
+        if (isAuthorized(jobEx.getInstanceId())) {
+            JobExecution execution = batchKernel.restartJob(executionId, restartParameters);
+            newExecutionId = execution.getExecutionId();
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
+		}
         
         if (logger.isLoggable(Level.FINE)) {            
-            logger.fine("Restarted job with instanceID: " + instanceId + ", and new executionID: " + newExecutionId);
+            logger.fine("Restarted job with instanceID: " + executionId + ", and new executionID: " + newExecutionId);
         }
         
         return newExecutionId;
@@ -295,9 +361,34 @@ public class JobOperatorImpl implements JobOperator {
 	
 	@Override
 	public void stop(long executionId) throws NoSuchJobExecutionException,
-			JobExecutionNotRunningException {
+			JobExecutionNotRunningException, SecurityException {
 		
-		batchKernel.stopJob(executionId);
+		JobExecution jobEx = batchKernel.getJobExecution(executionId);
+		
+		if (isAuthorized(jobEx.getInstanceId())) {
+			batchKernel.stopJob(executionId);	
+		} else {
+			throw new SecurityException("The current user is not authorized to perform this operation");
+		}
+		
+	}
+		
+	@Override
+	public void purge(String apptag) {
+		
+		if (batchKernel.getBatchSecurityHelper().isAdmin(apptag)) {
+			persistenceService.purge(apptag);
+		}
 	}
 
+	private boolean isAuthorized(long instanceId) {
+		
+		String apptag = persistenceService.getJobCurrentTag(instanceId);
+		BatchSecurityHelper bsh = batchKernel.getBatchSecurityHelper();
+		if (bsh.isAdmin(apptag) || bsh.getCurrentTag().equals(apptag)) {
+			return true;
+		}
+		return false;
+	}
+	
 }

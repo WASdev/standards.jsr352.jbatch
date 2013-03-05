@@ -35,11 +35,21 @@ public final class BatchSPIManager {
 		return INSTANCE;
 	}
 
+	private BatchPurgeHelper batchPurgeHelper = null;
+	
 	private BatchSecurityHelper batchSecurityHelper = null;
+	
 	private ExecutorServiceProvider executorServiceProvider = null;
 
 	/**
-	 * @return The most recently set BatchSecurityHElper
+	 * @return The most recently set BatchPurgeHelper
+	 */
+	public BatchPurgeHelper getBatchPurgeHelper() {
+		return batchPurgeHelper;
+	}
+	
+	/**
+	 * @return The most recently set BatchSecurityHelper
 	 */
 	public BatchSecurityHelper getBatchSecurityHelper() {
 		return batchSecurityHelper;
@@ -54,13 +64,13 @@ public final class BatchSPIManager {
 
 	/**
 	 * May be called at any point and will be immediately reflected in the singleton,
-	 * i.e. getExecutorServiceProvider() will return this.
-	 * @param provider impl
+	 * i.e. getBatchSecurityHelper() will return this.
+	 * @param helper impl
 	 */
-	public void registerExecutorServiceProvider(ExecutorServiceProvider provider) {
-		this.executorServiceProvider = provider;
+	public void registerBatchPurgeHelper(BatchPurgeHelper helper) {
+		this.batchPurgeHelper = helper;
 	}
-
+	
 	/**
 	 * May be called at any point and will be immediately reflected in the singleton,
 	 * i.e. getBatchSecurityHelper() will return this.
@@ -70,9 +80,33 @@ public final class BatchSPIManager {
 		this.batchSecurityHelper = helper;
 	}
 	
+	/**
+	 * May be called at any point and will be immediately reflected in the singleton,
+	 * i.e. getExecutorServiceProvider() will return this.
+	 * @param provider impl
+	 */
+	public void registerExecutorServiceProvider(ExecutorServiceProvider provider) {
+		this.executorServiceProvider = provider;
+	}
+	
 	private final byte[] databaseConfigurationCompleteLock = new byte[0];
 	private Boolean databaseConfigurationComplete = Boolean.FALSE;
+	
     private DatabaseConfigurationBean dataBaseConfigurationBean = null;
+
+    /**
+     * This is not the method that the 352 RI will call to get the 
+     * final configuration, and lock off further updates.  This is just
+     * a normal getter which is more use while the configuration is still
+     * being set, before it is hardened.
+     * 
+     * @return the last-set DatabaseConfigurationBean
+     * 
+     * @see getFinalDatabaseConfiguration()
+     */
+	public DatabaseConfigurationBean getDataBaseConfigurationBean() {
+		return dataBaseConfigurationBean;
+	}
 
 	/**
      * This only will have an impact if the batch container has not already hardened its

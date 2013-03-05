@@ -3,12 +3,12 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b07</version>
+        <version>1.0-b13</version>
     </parent>
     <groupId>javax.batch</groupId>
     <artifactId>javax.batch-annotation</artifactId>
     <packaging>jar</packaging>
-	<version>1.0-b07</version>
+	<version>1.0-b13</version>
 
 	<dependencies>
 		<dependency>
@@ -24,6 +24,7 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
     <build>
         <plugins>
             <plugin>

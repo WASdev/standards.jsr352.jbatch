@@ -81,6 +81,7 @@ public class JobIdManagerImpl implements IJobIdManagementService {
 				}
 				catch (IOException ex){
 				  ex.printStackTrace();
+				  throw new RuntimeException(ex);
 				}
 		}
 		
@@ -102,6 +103,7 @@ public class JobIdManagerImpl implements IJobIdManagementService {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
     }
     

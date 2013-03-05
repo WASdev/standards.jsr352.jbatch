@@ -30,6 +30,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
@@ -330,7 +331,7 @@ public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenc
 
 
 	@Override
-	public void jobOperatorCreateJobInstanceData(long key, String jobNameValue) {
+	public void jobOperatorCreateJobInstanceData(long key, String jobNameValue, String apptag) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -404,6 +405,27 @@ public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenc
 	public Properties getParameters(long instanceId) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+
+	@Override
+	public String getJobCurrentTag(long jobInstanceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public HashMap jobOperatorGetJobInstanceData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void purge(String apptag) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
