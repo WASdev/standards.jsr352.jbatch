@@ -349,8 +349,7 @@ public class RetryHandler {
 
 	    String exClassName = e.getClass().getName();
 
-	    boolean retVal = ((_retryIncludeExceptions.isEmpty() || containsException(_retryIncludeExceptions, e)) &&
-                !containsException(_retryExcludeExceptions, e));
+	    boolean retVal = containsException(_retryIncludeExceptions, e) && !containsException(_retryExcludeExceptions, e);
 	    
 	    if(logger.isLoggable(Level.FINE)) 
 	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal + ": " + exClassName);

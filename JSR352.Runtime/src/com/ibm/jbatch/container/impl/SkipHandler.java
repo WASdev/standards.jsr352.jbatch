@@ -288,8 +288,7 @@ public class SkipHandler<T> {
 
 	    String exClassName = e.getClass().getName();
 
-	    boolean retVal = ((_skipIncludeExceptions.isEmpty() || containsSkippable(_skipIncludeExceptions, e)) &&
-	                      !containsSkippable(_skipExcludeExceptions, e));
+	    boolean retVal = containsSkippable(_skipIncludeExceptions, e) && !containsSkippable(_skipExcludeExceptions, e);
 
 	    if(logger.isLoggable(Level.FINE)) 
 	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal + ": " + exClassName);
