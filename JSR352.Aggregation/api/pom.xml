@@ -10,6 +10,13 @@
     <packaging>jar</packaging>
     <version>1.0-b14</version>
 
+	<repositories>
+	    <repository>
+	        <id>java.net-Public</id>
+	        <name>Maven Java Net Snapshots and Releases</name>
+	        <url>https://maven.java.net/content/groups/public/</url>
+	    </repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>javax.batch</groupId>
