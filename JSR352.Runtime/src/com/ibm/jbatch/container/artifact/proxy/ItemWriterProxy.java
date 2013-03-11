@@ -16,10 +16,10 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.List;
 
-import javax.batch.api.ItemWriter;
+import javax.batch.api.chunk.ItemWriter;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
@@ -32,7 +32,7 @@ public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWr
    }
 
     @Override
-    public Externalizable checkpointInfo() {
+    public Serializable checkpointInfo() {
         
         try {
             return this.delegate.checkpointInfo();
@@ -54,7 +54,7 @@ public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWr
     }
 
     @Override
-    public void open(Externalizable checkpoint) {
+    public void open(Serializable checkpoint) {
         
         try {
             this.delegate.open(checkpoint);

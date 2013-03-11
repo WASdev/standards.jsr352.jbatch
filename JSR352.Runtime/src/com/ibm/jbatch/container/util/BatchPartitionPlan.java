@@ -16,32 +16,29 @@
  */
 package com.ibm.jbatch.container.util;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.Properties;
 
-import javax.batch.api.PartitionPlan;
+import javax.batch.api.partition.PartitionPlan;
 
-public class BatchPartitionPlan implements PartitionPlan {
+public class BatchPartitionPlan implements PartitionPlan  {
 
 	private int partitionCount;
 	private int threadCount;
 	private Properties[] partitionProperties;
 	
-	public int getPartitionCount() {
+	public int getPartitions() {
 		return partitionCount;
 	}
 	
-	public void setPartitionCount(int partitionCount) {
+	public void setPartitions(int partitionCount) {
 		this.partitionCount = partitionCount;
 	}
 	
-	public int getThreadCount() {
+	public int getThreads() {
 		return threadCount;
 	}
 	
-	public void setThreadCount(int threadCount) {
+	public void setThreads(int threadCount) {
 		this.threadCount = threadCount;
 	}
 	
@@ -52,23 +49,17 @@ public class BatchPartitionPlan implements PartitionPlan {
 	public void setPartitionProperties(Properties[] partitionProperties) {
 		this.partitionProperties = partitionProperties;
 	}
-	
-	@Override
-	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
-		this.partitionCount = in.readInt();
-		this.threadCount = in.readInt();
-		this.partitionProperties = (Properties[])in.readObject();
 
+	@Override
+	public void setPartitionsOverride(boolean override) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-
-		out.writeInt(this.partitionCount);
-		out.writeInt(this.threadCount);
-		out.writeObject(this.partitionProperties);
-
+	public boolean getPartitionsOverride() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

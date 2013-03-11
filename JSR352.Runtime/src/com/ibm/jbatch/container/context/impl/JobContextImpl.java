@@ -49,6 +49,7 @@ public class JobContextImpl<T> implements JobContext<T> {
     
     public JobContextImpl(String id, JSLProperties jslProperties) {
     	this.id = id;
+    	this.batchStatus = BatchStatus.STARTING;
     	this.properties = convertJSProperties(jslProperties);
     }
     
@@ -81,7 +82,7 @@ public class JobContextImpl<T> implements JobContext<T> {
     }
 
 
-    public String getId() {
+    public String getJobName() {
         return id;
     }
 

@@ -42,13 +42,9 @@
 				<property name="app.arraysize" value="#{jobParameters['app.arraysize']}" />
    	         </properties>
 		 </writer>
-		 
-		<checkpoint-algorithm>
-			<properties>
-				<property name="item" value="9" />
-				<property name="time" value="20" />
-			</properties>	
-		</checkpoint-algorithm>
+		 <retryable-exception-classes>
+			<include class="com.ibm.jbatch.tck.artifacts.reusable.MyParentException"/>
+		</retryable-exception-classes>
 		<no-rollback-exception-classes>
 			<include class="com.ibm.jbatch.tck.artifacts.reusable.MyParentException"/>
 			<!-- <exclude class="jsr352.tck.reusable.MyChildException"/> -->

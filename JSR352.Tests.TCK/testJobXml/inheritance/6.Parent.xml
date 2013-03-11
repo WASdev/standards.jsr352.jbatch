@@ -17,8 +17,16 @@
 
 -->
 <step id="6.Parent" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
-	<properties><property name="prop" value="val"/></properties>
-	<listeners><listener ref="ref"/></listeners>
-	<chunk reader="r" processor="p" writer="w" buffer-size="1"/>
+	<properties>
+		<property name="prop" value="val"/>
+	</properties>
+	<listeners>
+	    <listener ref="ref"/>
+	</listeners>
+	<chunk reader="r" processor="p" writer="w" item-count="1">
+		 <reader ref="r"/>
+		 <processor ref="p"/>
+		 <writer ref="w"/>
+	</chunk>
 	<next on="a" to="b"/>
 </step>

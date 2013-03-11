@@ -48,7 +48,7 @@ public class SplitFlowTransitionLoopTestBatchlet extends AbstractBatchlet {
 		
 		// open file and save step id
 		if(tempFile != null && tempFile.trim().length() > 0) {
-			saveStepId(stepCtx.getId());
+			saveStepId(stepCtx.getStepName());
 		}
 				
 		return GOOD_EXIT_STATUS;

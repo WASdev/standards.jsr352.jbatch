@@ -18,10 +18,8 @@ package com.ibm.jbatch.container.modelresolver.impl;
 
 import java.util.Properties;
 
-
 import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
 import com.ibm.jbatch.jsl.model.Flow;
-import com.ibm.jbatch.jsl.model.Listener;
 import com.ibm.jbatch.jsl.model.Split;
 
 public class SplitPropertyResolverImpl extends AbstractPropertyResolver<Split> {
@@ -40,17 +38,6 @@ public class SplitPropertyResolverImpl extends AbstractPropertyResolver<Split> {
     	
         // Resolve all the properties defined for this step
         Properties currentProps = null;
-        if (split.getProperties() != null) {
-            currentProps = this.resolveElementProperties(split.getProperties().getPropertyList(), submittedProps, parentProps);
-        }
-
-        // Resolve Listener properties, this is list of listeners List<Listener>
-        if (split.getListeners() != null) {
-            for (final Listener listener : split.getListeners().getListenerList()) {
-                PropertyResolverFactory.createListenerPropertyResolver(this.isPartitionedStep).substituteProperties(listener, submittedProps, currentProps);
-            }
-        }
-        
         for (final Flow flow : split.getFlow()) {
         	PropertyResolverFactory.createFlowPropertyResolver(this.isPartitionedStep).substituteProperties(flow, submittedProps, currentProps);
         }

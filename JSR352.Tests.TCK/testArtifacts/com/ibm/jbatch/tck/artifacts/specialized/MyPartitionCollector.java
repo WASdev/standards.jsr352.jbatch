@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Externalizable;
 
-import javax.batch.api.PartitionCollector;
+import javax.batch.api.partition.PartitionCollector;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 

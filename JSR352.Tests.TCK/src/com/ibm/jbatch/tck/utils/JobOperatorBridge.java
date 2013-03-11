@@ -22,18 +22,17 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionIsRunningException;
+import javax.batch.operations.JobExecutionNotMostRecentException;
+import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobOperator;
-import javax.batch.operations.exception.JobExecutionAlreadyCompleteException;
-import javax.batch.operations.exception.JobExecutionIsRunningException;
-import javax.batch.operations.exception.JobExecutionNotMostRecentException;
-import javax.batch.operations.exception.JobExecutionNotRunningException;
-import javax.batch.operations.exception.JobInstanceAlreadyCompleteException;
-import javax.batch.operations.exception.JobRestartException;
-import javax.batch.operations.exception.JobStartException;
-import javax.batch.operations.exception.NoSuchJobException;
-import javax.batch.operations.exception.NoSuchJobExecutionException;
-import javax.batch.operations.exception.NoSuchJobInstanceException;
-import javax.batch.operations.exception.SecurityException;
+import javax.batch.operations.JobRestartException;
+import javax.batch.operations.JobStartException;
+import javax.batch.operations.NoSuchJobException;
+import javax.batch.operations.NoSuchJobExecutionException;
+import javax.batch.operations.NoSuchJobInstanceException;
+import javax.batch.operations.JobSecurityException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -60,23 +59,19 @@ public class JobOperatorBridge {
     //	return jobOp.getJobSteps(jobExecutionId);
     //}
     
-    public List<String> getJobNames() {
+    public List<String> getJobNames() throws JobSecurityException {
     	return new ArrayList(jobOp.getJobNames());
     }
     
-    public int getJobInstanceCount(String jobName) throws NoSuchJobException, SecurityException {
+    public int getJobInstanceCount(String jobName) throws NoSuchJobException, JobSecurityException {
     	return jobOp.getJobInstanceCount(jobName);
     }
     
-    public List<JobExecution> getRunningExecutions(String jobName) throws NoSuchJobException{
+    public List<Long> getRunningExecutions(String jobName) throws NoSuchJobException, JobSecurityException {
     	return jobOp.getRunningExecutions(jobName);
     }
     
-    public List<JobExecution> getExecutions(JobInstance instanceId) throws NoSuchJobInstanceException, SecurityException {
-    	return jobOp.getExecutions(instanceId);
-    }
-    
-    public List<JobExecution> getJobExecutions(JobInstance instanceId) throws NoSuchJobInstanceException, SecurityException {
+    public List<JobExecution> getJobExecutions(JobInstance instanceId) throws NoSuchJobInstanceException, JobSecurityException {
     	return jobOp.getJobExecutions(instanceId);
     }
     
@@ -84,7 +79,7 @@ public class JobOperatorBridge {
     //	return jobOp.getStepExecution(stepExecutionId);
     //}
     
-    public JobExecution restartJobAndWaitForResult(long executionId, Properties restartJobParameters) throws JobInstanceAlreadyCompleteException, NoSuchJobExecutionException, NoSuchJobException, JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, SecurityException {    	
+    public TCKJobExecutionWrapper restartJobAndWaitForResult(long executionId, Properties restartJobParameters) throws NoSuchJobExecutionException, NoSuchJobException, JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, JobSecurityException {    	
     	//throw new UnsupportedOperationException("Waiting for spec discussion to settle down regarding restart parameters.");
         // Register callback first in case job completes before we get control back 
         JobEndCallbackImpl callback = new JobEndCallbackImpl();
@@ -95,33 +90,23 @@ public class JobOperatorBridge {
         return jobExecutionResult(execID, callback);
     }
     
-    public JobExecution restartJobAndWaitForResult(long executionId) throws JobInstanceAlreadyCompleteException, NoSuchJobExecutionException, NoSuchJobException, JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, SecurityException {
-
-        // Register callback first in case job completes before we get control back 
-        JobEndCallbackImpl callback = new JobEndCallbackImpl();
-        
-        callbackMgr.registerJobEndCallback(callback);        
-        Long execID = (Long)jobOp.restart(executionId);        
-        
-        return jobExecutionResult(execID, callback);
-    }
-    
-    public void abandonJobInstance(JobExecution jobExecution) throws NoSuchJobInstanceException, JobExecutionIsRunningException, SecurityException {
+    public void abandonJobInstance(long executionId) throws NoSuchJobInstanceException, JobExecutionIsRunningException, JobSecurityException {
            
-        jobOp.abandon(jobExecution);        
+        jobOp.abandon(executionId);        
        
     }
 
-    public JobExecution startJobAndWaitForResult(String jobName) throws JobStartException, NoSuchJobExecutionException, SecurityException {
+    public TCKJobExecutionWrapper startJobAndWaitForResult(String jobName) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
         return startJobAndWaitForResult(jobName, null);
     }
 
-    public JobExecution startJobWithoutWaitingForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, SecurityException {
+    public TCKJobExecutionWrapper startJobWithoutWaitingForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
         Long execID = (Long)jobOp.start(jobName, jobParameters);
-        return jobOp.getJobExecution(execID);
+        JobExecution jobExecution = jobOp.getJobExecution(execID);
+        return new TCKJobExecutionWrapper(jobExecution, jobOp);
     }
     
-    public void stopJobWithoutWaitingForResult(long jobInstanceId) throws NoSuchJobExecutionException, JobExecutionNotRunningException, SecurityException {
+    public void stopJobWithoutWaitingForResult(long jobInstanceId) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException {
         jobOp.stop(jobInstanceId);
     }
             
@@ -129,7 +114,7 @@ public class JobOperatorBridge {
      * I haven't mentally proven it to myself but I'm assuming this can ONLY be used
      * after startJobWithoutWaitingForResult(), not after startJobAndWaitForResult().
      */
-    public JobExecution stopJobAndWaitForResult(JobExecution jobExecution) throws NoSuchJobExecutionException, JobExecutionNotRunningException, SecurityException {
+    public JobExecution stopJobAndWaitForResult(JobExecution jobExecution) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException {
         JobEndCallbackImpl callback = new JobEndCallbackImpl();
 
         long execID = jobExecution.getExecutionId();
@@ -139,7 +124,7 @@ public class JobOperatorBridge {
         return jobExecutionResult(execID, callback);
     }
 
-    public JobExecution startJobAndWaitForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, SecurityException {
+    public TCKJobExecutionWrapper startJobAndWaitForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
 
         JobEndCallbackImpl callback = new JobEndCallbackImpl();
 
@@ -151,15 +136,15 @@ public class JobOperatorBridge {
         
 
 
-    public Properties getParameters(JobInstance jobExecutionId) throws NoSuchJobInstanceException, SecurityException{
-    	return jobOp.getParameters(jobExecutionId);
+    public Properties getParameters(long executionId) throws NoSuchJobInstanceException, JobSecurityException{
+    	return jobOp.getParameters(executionId);
     }
     
-    public JobInstance getJobInstance(long instanceId) throws NoSuchJobExecutionException, SecurityException{
-    	return jobOp.getJobInstance(instanceId);
+    public JobInstance getJobInstance(long executionId) throws NoSuchJobExecutionException, JobSecurityException{
+    	return jobOp.getJobInstance(executionId);
     }
     
-    public JobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException, SecurityException{
+    public JobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException, JobSecurityException{
     	return jobOp.getJobExecution(executionId);
     }
     
@@ -202,7 +187,7 @@ public class JobOperatorBridge {
         }
     }
 
-    protected JobExecution jobExecutionResult(long execID, JobEndCallbackImpl callback) throws NoSuchJobExecutionException, SecurityException {
+    protected TCKJobExecutionWrapper jobExecutionResult(long execID, JobEndCallbackImpl callback) throws NoSuchJobExecutionException, JobSecurityException {
     	// First get the lock on the callback
         synchronized (callback) {          
         	// If this execution is already complete, then there's no need to wait
@@ -229,14 +214,15 @@ public class JobOperatorBridge {
         // debug to clean things up.
         callbackMgr.deregisterJobEndCallback(callback);
         
-        return jobOp.getJobExecution(execID);
+        JobExecution jobExecution = jobOp.getJobExecution(execID);
+        return new TCKJobExecutionWrapper(jobExecution, jobOp);
     }
     
-	public List<JobInstance> getJobInstances(String jobName, int start, int end) throws NoSuchJobException, SecurityException {
+	public List<JobInstance> getJobInstances(String jobName, int start, int end) throws NoSuchJobException, JobSecurityException {
 		return jobOp.getJobInstances(jobName, start, end);
 	}
 
-	public List<StepExecution> getStepExecutions(long executionId) throws NoSuchJobExecutionException, SecurityException {
+	public List<StepExecution<?>> getStepExecutions(long executionId) throws NoSuchJobExecutionException, JobSecurityException {
 		return jobOp.getStepExecutions(executionId);
 	}
 

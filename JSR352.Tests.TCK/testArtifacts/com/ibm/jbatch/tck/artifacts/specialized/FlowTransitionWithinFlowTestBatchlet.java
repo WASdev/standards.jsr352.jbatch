@@ -43,9 +43,9 @@ public class FlowTransitionWithinFlowTestBatchlet extends AbstractBatchlet {
 
 		TransitionListPersistent data = (TransitionListPersistent) jobCtx.getTransientUserData();
 		if( data != null) {
-			data.getTransitionList().add(stepCtx.getId());
+			data.getTransitionList().add(stepCtx.getStepName());
 		} else {
-			jobCtx.setTransientUserData(new TransitionListPersistent(stepCtx.getId()));
+			jobCtx.setTransientUserData(new TransitionListPersistent(stepCtx.getStepName()));
 		}
 		
 		String transitionList = ((TransitionListPersistent)jobCtx.getTransientUserData()).getTransitionList().toString();

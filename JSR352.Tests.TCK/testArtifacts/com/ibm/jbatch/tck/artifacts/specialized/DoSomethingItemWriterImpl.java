@@ -16,10 +16,10 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.List;
 
-import javax.batch.api.AbstractItemWriter;
+import javax.batch.api.chunk.AbstractItemWriter;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.CheckpointData;
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
@@ -29,7 +29,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 public class DoSomethingItemWriterImpl extends AbstractItemWriter<ReadRecord> {
 
 	@Override
-	public void open(Externalizable checkpointData) throws Exception {
+	public void open(Serializable checkpointData) throws Exception {
 		System.out.println("openWriter");
 	}
 	

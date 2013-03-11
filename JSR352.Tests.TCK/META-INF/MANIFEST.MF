@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Import-Package: com.ibm.jbatch.tck.spi,
  javax.batch.annotation,
  javax.batch.operations,
- javax.batch.operations.exception,
  javax.batch.runtime,
  javax.batch.runtime.context
 Require-Bundle: JSR352.API,

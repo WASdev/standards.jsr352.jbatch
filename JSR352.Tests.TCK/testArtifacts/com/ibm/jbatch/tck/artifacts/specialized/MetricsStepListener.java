@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractStepListener;
+import javax.batch.api.listener.AbstractStepListener;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
@@ -67,7 +67,7 @@ public class MetricsStepListener extends AbstractStepListener {
 		Metric[] metrics = stepCtx.getMetrics();
 		for (int i = 0; i < metrics.length; i++) {
 			if (RPWString.equals("READ")) {
-				if (metrics[i].getName().equals(Metric.MetricName.READCOUNT)) {
+				if (metrics[i].getType().equals(Metric.MetricType.READ_COUNT)) {
 					if (metrics[i].getValue() == 30) {
 
 						JobCtx.setExitStatus(GOOD_EXIT_STATUS_READ);
@@ -76,7 +76,7 @@ public class MetricsStepListener extends AbstractStepListener {
 					}
 				}
 			} else if (RPWString.equals("READ_SKIP")) {
-					if (metrics[i].getName().equals(Metric.MetricName.READSKIPCOUNT)) {
+					if (metrics[i].getType().equals(Metric.MetricType.READ_SKIP_COUNT)) {
 						if (metrics[i].getValue() == skipNum) {
 
 							JobCtx.setExitStatus(GOOD_EXIT_STATUS_READ);
@@ -85,7 +85,7 @@ public class MetricsStepListener extends AbstractStepListener {
 						}
 					}
 			} else if (RPWString.equals("PROCESS")) {
-				if (metrics[i].getName().equals(Metric.MetricName.PROCESSSKIPCOUNT)) {
+				if (metrics[i].getType().equals(Metric.MetricType.PROCESS_SKIP_COUNT)) {
 					if (metrics[i].getValue() == (skipNum)) {
 
 						JobCtx.setExitStatus(GOOD_EXIT_STATUS_PROCESS);
@@ -94,7 +94,7 @@ public class MetricsStepListener extends AbstractStepListener {
 					}
 				}
 			} else if (RPWString.equals("WRITE")) {
-				if (metrics[i].getName().equals(Metric.MetricName.WRITECOUNT)) {
+				if (metrics[i].getType().equals(Metric.MetricType.WRITE_COUNT)) {
 					if (metrics[i].getValue() == (30 - skipNum)) {
 
 						JobCtx.setExitStatus(GOOD_EXIT_STATUS);
@@ -104,7 +104,7 @@ public class MetricsStepListener extends AbstractStepListener {
 				}
 			
 		} else if (RPWString.equals("WRITE_SKIP")) {
-			if (metrics[i].getName().equals(Metric.MetricName.WRITESKIPCOUNT)) {
+			if (metrics[i].getType().equals(Metric.MetricType.WRITE_SKIPCOUNT)) {
 				if (metrics[i].getValue() == skipNum) {
 
 					JobCtx.setExitStatus(GOOD_EXIT_STATUS);

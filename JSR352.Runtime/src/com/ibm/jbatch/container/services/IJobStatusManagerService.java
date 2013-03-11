@@ -19,7 +19,6 @@ package com.ibm.jbatch.container.services;
 import java.util.List;
 
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.status.JobStatus;
@@ -32,7 +31,9 @@ public interface IJobStatusManagerService extends IBatchServiceBase {
 	 * This method creates an entry for a new job instance
 	 * 
 	 */
-	public JobStatus createJobStatus(JobInstance jobInstance, long firstJobExecutionId) throws BatchContainerServiceException;
+	public JobStatus createJobStatus(long jobInstanceId) throws BatchContainerServiceException;
+
+	public void updateJobStatus(JobStatus jobStatus);
 		
 	/**
      * Returns the JobStatus for a given jobInstance id
@@ -41,6 +42,8 @@ public interface IJobStatusManagerService extends IBatchServiceBase {
      * @throws BatchContainerServiceException
      */
     public abstract JobStatus getJobStatus(long jobInstanceId) throws BatchContainerServiceException;
+    
+    public abstract JobStatus getJobStatusFromExecutionId(long executionId) throws BatchContainerServiceException;
 
     public void updateJobBatchStatus(long jobInstanceId, BatchStatus batchStatus) throws BatchContainerServiceException;
     public void updateJobExecutionStatus(long jobInstanceId, BatchStatus batchStatus, String exitStatus) throws BatchContainerServiceException;
@@ -60,9 +63,9 @@ public interface IJobStatusManagerService extends IBatchServiceBase {
      * @param stepId
      * @throws BatchContainerServiceException
      */
-    public abstract void createStepStatus(long jobInstanceId, String stepId, StepStatus newStepStatus) throws BatchContainerServiceException;
+    public abstract StepStatus createStepStatus(long stepExecutionId) throws BatchContainerServiceException;
     
-    public abstract void updateEntireStepStatus(long jobInstanceId, String stepId, StepStatus newStepStatus) throws BatchContainerServiceException;
+    public abstract void updateStepStatus(long stepExecutionId, StepStatus newStepStatus) throws BatchContainerServiceException;
     
     /**
      * Returns a list of all jobstatus currently in the DB
@@ -78,8 +81,8 @@ public interface IJobStatusManagerService extends IBatchServiceBase {
      * @throws BatchContainerServiceException
      */
     public abstract StepStatus getStepStatus(long jobInstanceId, String stepId) throws BatchContainerServiceException ;
-    
-    
+
+
 	//------------------------------------------------------------------------------	
 
     /**

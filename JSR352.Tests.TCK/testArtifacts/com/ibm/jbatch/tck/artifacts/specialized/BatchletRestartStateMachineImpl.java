@@ -78,7 +78,7 @@ public class BatchletRestartStateMachineImpl extends AbstractBatchlet {
         
         int execNum = Integer.parseInt(executionNumberString);
 
-        String stepId = stepCtx.getId();
+        String stepId = stepCtx.getStepName();
         
         logger.fine(sourceClass + ".calculateExitStatus(), execution # = " + execNum + ", stepId = " + stepId);
         

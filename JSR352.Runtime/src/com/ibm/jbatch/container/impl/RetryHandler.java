@@ -147,28 +147,26 @@ public class RetryHandler {
 			if (chunk.getRetryableExceptionClasses() != null) {
 				if (chunk.getRetryableExceptionClasses().getIncludeList() != null) {
 					List<ExceptionClassFilter.Include> includes = chunk.getRetryableExceptionClasses().getIncludeList();
-					if (includes.size() > 1) {
-						String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
-						logger.severe(msg);
-						throw new IllegalArgumentException(msg);
-					} else if (includes.size() == 1) {
-						includeEx = includes.get(0).getClazz();
-						logger.finer("RETRYHANDLE: include: " + includeEx);
-					}  else {
+					for (ExceptionClassFilter.Include include : includes){
+						_retryIncludeExceptions.add(include.getClazz().trim());
+						logger.finer("RETRYHANDLE: include: " + include.getClazz().trim());
+					}
+					
+					if (_retryIncludeExceptions.size() == 0){
 						logger.finer("RETRYHANDLE: include element not present");
+
 					}
 				}
 				if (chunk.getRetryableExceptionClasses().getExcludeList() != null) {
 					List<ExceptionClassFilter.Exclude> excludes = chunk.getRetryableExceptionClasses().getExcludeList();
-					if (excludes.size() > 1) {
-						String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
-						logger.severe(msg);
-						throw new IllegalArgumentException(msg);
-					} else if (excludes.size() == 1) {
-						excludeEx = excludes.get(0).getClazz();
-						logger.finer("RETRYHANDLE: exclude: " + excludeEx);
-					}  else {
-						logger.finer("RETRYHANDLE: exclude element not present");
+					for (ExceptionClassFilter.Exclude exclude : excludes){
+						_retryExcludeExceptions.add(exclude.getClazz().trim());
+						logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
+					}
+					
+					if (_retryExcludeExceptions.size() == 0){
+						logger.finer("SKIPHANDLE: exclude element not present");
+
 					}
 				}
 			}
@@ -176,44 +174,30 @@ public class RetryHandler {
 			if (chunk.getNoRollbackExceptionClasses() != null) {
 				if (chunk.getNoRollbackExceptionClasses().getIncludeList() != null) {
 					List<ExceptionClassFilter.Include> includes = chunk.getNoRollbackExceptionClasses().getIncludeList();
-					if (includes.size() > 1) {
-						String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
-						logger.severe(msg);
-						throw new IllegalArgumentException(msg);
-					} else if (includes.size() == 1) {
-						includeExNoRB = includes.get(0).getClazz();
-						logger.finer("RETRYHANDLE: include no rollback: " + includeExNoRB);
-					}  else {
+					for (ExceptionClassFilter.Include include : includes){
+						_retryNoRBIncludeExceptions.add(include.getClazz().trim());
+						logger.finer("RETRYHANDLE: include: " + include.getClazz().trim());
+					}
+					
+					if (_retryNoRBIncludeExceptions.size() == 0){
 						logger.finer("RETRYHANDLE: include element not present");
+
 					}
 				}
 				if (chunk.getNoRollbackExceptionClasses().getExcludeList() != null) {
 					List<ExceptionClassFilter.Exclude> excludes = chunk.getNoRollbackExceptionClasses().getExcludeList();
-					if (excludes.size() > 1) {
-						String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
-						logger.severe(msg);
-						throw new IllegalArgumentException(msg);
-					} else if (excludes.size() == 1) {
-						excludeExNoRB = excludes.get(0).getClazz();
-						logger.finer("RETRYHANDLE: exclude no rollback: " + excludeExNoRB);
-					}  else {
-						logger.finer("RETRYHANDLE: include element not present");
+					for (ExceptionClassFilter.Exclude exclude : excludes){
+						_retryNoRBExcludeExceptions.add(exclude.getClazz().trim());
+						logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
+					}
+					
+					if (_retryNoRBExcludeExceptions.size() == 0){
+						logger.finer("SKIPHANDLE: exclude element not present");
+
 					}
 				}
 			}
 
-			if (includeEx != null) {
-				_retryIncludeExceptions.add(includeEx.trim());
-			}
-			if (excludeEx != null) {
-				_retryExcludeExceptions.add(excludeEx.trim());
-			}
-			if (includeExNoRB != null) {
-				_retryNoRBIncludeExceptions.add(includeExNoRB.trim());
-			}
-			if (excludeExNoRB != null) {
-				_retryNoRBExcludeExceptions.add(excludeExNoRB.trim());
-			}
 
 			if (logger.isLoggable(Level.FINE)) {
 				logger.logp(Level.FINE, className, mName,
@@ -348,9 +332,8 @@ public class RetryHandler {
 	    final String mName = "isRetryable";
 
 	    String exClassName = e.getClass().getName();
-
-	    boolean retVal = ((_retryIncludeExceptions.isEmpty() || containsException(_retryIncludeExceptions, e)) &&
-                !containsException(_retryExcludeExceptions, e));
+	    
+	    boolean retVal = containsException(_retryIncludeExceptions, e) && !containsException(_retryExcludeExceptions, e);
 	    
 	    if(logger.isLoggable(Level.FINE)) 
 	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal + ": " + exClassName);
@@ -364,12 +347,7 @@ public class RetryHandler {
 
 		  String exClassName = e.getClass().getName();
 		  
-		  boolean retVal = false;
-		  
-		  if(!_retryNoRBIncludeExceptions.isEmpty())
-		  {
-			  retVal = (containsException(_retryNoRBIncludeExceptions, e) && !containsException(_retryNoRBExcludeExceptions, e));
-		  }
+		  boolean retVal = containsException(_retryNoRBIncludeExceptions, e) && !containsException(_retryNoRBExcludeExceptions, e);
 			  
 		  if(logger.isLoggable(Level.FINE)) 
 		    logger.logp(Level.FINE, className, mName, mName + ": " + retVal + ": " + exClassName);
@@ -401,32 +379,6 @@ public class RetryHandler {
 
 	    return retVal;
 	  }
-
-	  /**
-	   * Check whether given exception is in retyable exception list 
-	   */
-	  private boolean containsRetryableNoRB(Set<String> retryList, Exception e)
-	  {
-	    final String mName = "containsRetryableNoRB";
-	    boolean retVal = false;
-
-	    for ( Iterator it = retryList.iterator(); it.hasNext(); ) {
-	        String exClassName = (String) it.next();   
-	        try {
-	        	if (retVal = Thread.currentThread().getContextClassLoader().loadClass(exClassName).isInstance(e))
-	        		break;
-	        } catch (ClassNotFoundException cnf) {
-	        	logger.logp(Level.FINE, className, mName, cnf.getLocalizedMessage());
-	        }
-	    }
-	    
-
-	    if(logger.isLoggable(Level.FINE)) 
-	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal );
-
-	    return retVal;
-	  }
-	  
 
 	  /**
 	   * Check if the retry limit has been reached.

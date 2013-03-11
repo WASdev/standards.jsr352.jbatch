@@ -16,10 +16,10 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemReader;
+import javax.batch.api.chunk.AbstractItemReader;
 import javax.inject.Inject;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.CheckpointData;
@@ -38,7 +38,7 @@ public class DoSomethingItemReaderImpl extends AbstractItemReader<ReadRecord> {
 		private int count = 0;
 		
 		@Override
-		public void open(Externalizable cpd) {
+		public void open(Serializable cpd) {
 			System.out.println("DoSomethingItemReaderImpl.openMe, count should be 0, actual value = " + count);
 			if (failImmediateString!=null){
 				failThrowEx = Boolean.parseBoolean(failImmediateString);

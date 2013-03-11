@@ -39,7 +39,7 @@ public class DirectoryJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
     
     
     @Override
-	public String loadJob(String id) {
+	public String loadJSL(String id) {
 	    
         
         String jobXML = loadJobFromDirectory(JOB_XML_PATH, id);
@@ -58,19 +58,6 @@ public class DirectoryJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
 	    return xmlString;
 	    
     }
-
-
-    @Override
-	public String loadStep(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String loadXJCL(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	
     private static String readJobXML(File fileWithPath)  {

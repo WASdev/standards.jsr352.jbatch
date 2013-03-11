@@ -25,6 +25,7 @@ import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -347,7 +348,7 @@ public class TransactionTests {
 	    	
 	
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran",jobParams);
+	        TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran",jobParams);
 	        long jobInstanceId = jobExec.getInstanceId();
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
@@ -414,7 +415,7 @@ public class TransactionTests {
             jobParams.put("expected.inventory", expectedInventory.toString());
 	    	
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_default",jobParams);
+	        TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_default",jobParams);
 	        long jobInstanceId = jobExec.getInstanceId();
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
@@ -466,7 +467,7 @@ public class TransactionTests {
 	    	
 	
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran",jobParams);
+	        TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran",jobParams);
 	        long jobInstanceId = jobExec.getInstanceId();
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
@@ -533,7 +534,7 @@ public class TransactionTests {
 	    	
 	
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_multiple_steps",jobParams);
+	        TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_multiple_steps",jobParams);
 	        long jobInstanceId = jobExec.getInstanceId();
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
@@ -586,7 +587,7 @@ public class TransactionTests {
 	    	
 	
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_multiple_steps-customCA",jobParams);
+	        TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_multiple_steps-customCA",jobParams);
 	        long jobInstanceId = jobExec.getInstanceId();
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");

@@ -300,6 +300,31 @@ public class ExecutionTests {
         	handleException(METHOD, e);
         }
     }
+    
+    /*
+   	 * @testName: testInvokeJobUsingTCCL
+   	 * @assertion: Section 10.5 Batch Artifact loading
+   	 * @test_Strategy: Implementation should attempt to load artifact using Thread Context Class Loader if implementation specific
+   	 * 	and archive loading are unable to find the specified artifact.
+   	 */
+       @Test
+       @org.junit.Test  
+       public void testInvokeJobUsingTCCL() throws Exception {
+           String METHOD = "testInvokeJobUsingTCCL";
+           begin(METHOD);
+           
+           try {
+           	Reporter.log("Run job using job XML file: test_artifact_load_classloader<p>");
+   	
+   	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
+   	        JobExecution jobExec = jobOp.startJobAndWaitForResult("test_artifact_load_classloader");
+   	
+   	        Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
+   	        assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+           } catch (Exception e) {
+           	handleException(METHOD, e);
+           }
+       }
 
     /*
    	 * @testName: testCheckpoint

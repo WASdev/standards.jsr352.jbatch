@@ -106,7 +106,7 @@ public class JobInheritanceTests {
 		Reporter.log("Invoke JobOperator.start for jobXml " + jobXml + "<p>");
 		Long executionId = jobOp.start(jobXml, null);
 		
-		Reporter.log(Long.toString(jobOp.getJobExecution(executionId).getInstanceId()) + "<p>");
+		Reporter.log(Long.toString(executionId) + "<p>");
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}

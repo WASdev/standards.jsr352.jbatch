@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemProcessListener;
+import javax.batch.api.chunk.listener.AbstractItemProcessListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 
@@ -34,8 +34,8 @@ public class MyItemProcessListenerImpl extends AbstractItemProcessListener<ReadR
 	int beforecounter = 1;
 	int aftercounter = 1;
 	
-	public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
-	public static final String BAD_EXIT_STATUS = "BAD STATUS";
+	public static final String GOOD_EXIT_STATUS = "MyItemProcessListenerImpl: GOOD STATUS";
+	public static final String BAD_EXIT_STATUS = "MyItemProcessListenerImpl: BAD STATUS";
 	
     @Inject 
     JobContext jobCtx; 
@@ -70,7 +70,8 @@ public class MyItemProcessListenerImpl extends AbstractItemProcessListener<ReadR
 	
 	@Override
 	public void onProcessError(ReadRecord input, Exception e) throws Exception {
-		logger.finer("In onProcessError(), input = " + input.getCount() + ", " + e);
+		logger.finer("In onProcessError(), input = " + e);
+		jobCtx.setExitStatus("MyItemProcessListenerImpl.onProcessError");
 	}
 	
 }

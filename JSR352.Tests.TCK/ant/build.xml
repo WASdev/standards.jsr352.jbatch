@@ -4,19 +4,22 @@
 	<property file="${imported.basedir}/imported.properties"/>
 	<property name="workspace.home.dir" value="${jsr352.tck.basedir}/../.."/>
 
-	<!-- NOTE: Set this prior to running the task to generate the java6 signature file -->
-	<property name="java6.home" value=""/>
+	<taskdef resource="testngtasks" classpath="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar"/>
 
-	<!-- NOTE: Set this prior to running the task to generate the java7 signature file -->
-	<property name="java7.home" value=""/>
+	<!-- NOTE: Set this to an Oracle jre prior to running the task to generate the sigtest signature file -->
+	<property name="sigtest.java.home" value=""/>
 	
 	<path id="build.classpath">
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar"/>
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar"/>
+		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/derby/lib/derby.jar"/>		
+		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/derby/lib/derbyclient.jar"/>	
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar"/>
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar"/>
 		<pathelement location="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>	
 		<pathelement location="${workspace.home.dir}/JSR352.Annotations/bin"/>
+		<pathelement location="${workspace.home.dir}/JSR352.Runtime/target/classes"/>
+		<pathelement location="${workspace.home.dir}/JSR352.RI.SPI/bin"/>
 		<pathelement location="${workspace.home.dir}/JSR352.API/bin"/>
 		<pathelement location="${workspace.home.dir}/JSR352.JobXML.Model/bin"/>
 		<pathelement location="${jsr352.tck.basedir}/../bin"/>
@@ -55,7 +58,6 @@
 	<target name="buildTCKZip" depends="mainTckBuild">
 		<mkdir dir="${jsr352.tck.basedir}/../tckZip"/>
 		<mkdir dir="${jsr352.tck.basedir}/../tckZip/doc"/>
-		<touch file="${jsr352.tck.basedir}/../tckZip/doc/TODO"/>
 		<mkdir dir="${jsr352.tck.basedir}/../tckZip/lib"/>
 		<mkdir dir="${jsr352.tck.basedir}/../dist"/>
 		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl-src.jar">
@@ -76,6 +78,7 @@
 		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-SPI.jar">
 			<fileset dir="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>
 		</jar>
+		<copy file="${jsr352.tck.basedir}/../doc/jsr352-tck-reference-guide.pdf" todir="${jsr352.tck.basedir}/../tckZip/doc"/>
 		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/LICENSE.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
 		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/NOTICE.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
 		<copy file="${jsr352.tck.basedir}/../build.xml" todir="${jsr352.tck.basedir}/../tckZip"/>
@@ -83,35 +86,22 @@
 		<copy file="${jsr352.tck.basedir}/../jsr352-tck.properties" todir="${jsr352.tck.basedir}/../tckZip"/>
 		<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-SE-suite.xml" tofile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl-suite.xml"/>
 		
-		<!--<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java6.sig" todir="${jsr352.tck.basedir}/../tckZip"/>
-		<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java7.sig" todir="${jsr352.tck.basedir}/../tckZip"/>-->
+		<copy file="${jsr352.tck.basedir}/../jsr352-api-sigtest.sig" todir="${jsr352.tck.basedir}/../tckZip/artifacts"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
 		<zip destfile="${jsr352.tck.basedir}/../dist/jsr352-tck.zip" basedir="${jsr352.tck.basedir}/../tckZip"/>
 	</target>
 
-
-	<!-- Generate sig file for Java 7 -->
-	<!-- Set the java7.home variable in this build.xml prior to running -->
-	<target name="generateSigFile7">
-		<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java7.sig"
-			package="javax.batch">
-			<classpath>
-				<pathelement location="${java7.home}/lib/rt.jar"/>
-				<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.jar"/>
-			</classpath>
-		</setup>
-	</target>
-
-	<!-- Generate sig file for Java 6 -->
-	<!-- Set the java6.home variable in this build.xml prior to running -->
-	<target name="generateSigFile6">
-		<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-tck-impl-sigtest-java6.sig"
+	<!-- Generate sig file -->
+	<target name="generateSigFile">
+		<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-api-sigtest.sig"
 				package="javax.batch">
 			<classpath>
-				<pathelement location="${java6.home}/lib/rt.jar;${java6.home}/lib/vm.jar;${java6.home}/lib/java.util.jar;${java6.home}/lib/annotation.jar"/>
-				<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.jar"/>
+				<pathelement location="${sigtest.java.home}/lib/rt.jar"/>
+				<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar"/>
+				<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.Combined.jar"/>
 			</classpath>
 		</setup>
 	</target>
@@ -123,6 +113,53 @@
 			<arg value="${jsr352.tck.basedir}/../testArtifactsBin/META-INF"/>
 			<classpath refid="build.classpath"/>
 		</java>
+	</target>
+
+	<target name="run-test-class" >
+
+		<echo>${workspace.home.dir}/../jsr352db</echo>
+		<condition property="classNameSpecified">
+	      <isset property="class.name" />
+	    </condition>
+	    <fail unless="classNameSpecified" message="class.name property not specified. Don't know which test class to run."/>
+	    <copy todir="${java.io.tmpdir}" file="${jsr352.tck.basedir}/testng-class.xml" overwrite="true">
+	      	<filterset>
+	        	<filter token="CLASS" value="${class.name}"/>
+	      	</filterset>
+	   	</copy>
+
+		<testng mode="testng" outputdir="${jsr352.tck.basedir}/test-output" classpathref="build.classpath" verbose="2">
+			<!-- <classfileset dir="${jsr352.tck.basedir}/../bin" includes="**/*.class" /> -->
+			<xmlfileset dir="${java.io.tmpdir}" includes="testng-class.xml" />
+			<jvmarg value="-Djava.util.logging.config.file=${jsr352.tck.basedir}/../logging.properties"/>
+			<jvmarg value="-Djunit.jobOperator.sleep.time=5000"/>
+			<jvmarg value="-Dderby.system.home=${dbhome}"/>
+		</testng>
+	</target>
+
+	<target name="run-test-method" >
+		<echo message="${dbhome}"/>
+		<condition property="propsSpecified">
+			<and>
+		      <isset property="class.name" />
+		      <isset property="test.name" />
+			</and>
+	    </condition>
+   		<fail unless="propsSpecified" message="class.name and/or test.name property not specified."/>
+	    <copy todir="${java.io.tmpdir}" file="${jsr352.tck.basedir}/testng-method.xml" overwrite="true">
+	      	<filterset>
+	        	<filter token="CLASS" value="${class.name}"/>
+	        	<filter token="TEST" value="${test.name}"/>
+	      	</filterset>
+	   	</copy>
+
+		<testng mode="testng" outputdir="${jsr352.tck.basedir}/test-output" classpathref="build.classpath" verbose="2">
+			<!-- <classfileset dir="${jsr352.tck.basedir}/../bin" includes="**/*.class" /> -->
+			<xmlfileset dir="${java.io.tmpdir}" includes="testng-method.xml" />
+			<jvmarg value="-Djava.util.logging.config.file=${jsr352.tck.basedir}/../logging.properties"/>
+			<jvmarg value="-Djunit.jobOperator.sleep.time=5000"/>
+			<jvmarg value="-Dderby.system.home=${dbhome}"/>
+		</testng>
 	</target>
 	
 	<target name="copy-batch-jobs">

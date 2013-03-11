@@ -134,35 +134,34 @@ public class JSLMerger {
 		Chunk merge = (new ObjectFactory()).createChunk();
 		
 		//merge chunks - 8 attributes
-		//FIXME: getCheckpointPolicy will never return null (defaults to "item"), can't check this
-//		merge.setCheckpointPolicy( (childChunk.getCheckpointPolicy() == null
-//				? parentChunk.getCheckpointPolicy()
-//				: childChunk.getCheckpointPolicy()));
-		//FIXME: getItemCount will never return null (defaults to 10), can't check this
-//		merge.setCommitInterval( (childChunk.getItemCount() == null
-//				? parentChunk.getItemCount()
-//				: childChunk.getItemCount()));
-		merge.setProcessor( (childChunk.getProcessor() == null
-				? parentChunk.getProcessor()
-				: childChunk.getProcessor()));
-		merge.setReader( (childChunk.getReader() == null
-				? parentChunk.getReader()
-				: childChunk.getReader()));
+		merge.setCheckpointPolicy( (childChunk.getCheckpointPolicy() == null
+				? parentChunk.getCheckpointPolicy()
+				: childChunk.getCheckpointPolicy()));
+		merge.setItemCount( (childChunk.getItemCount() == null
+				? parentChunk.getItemCount()
+				: childChunk.getItemCount()));
 		merge.setRetryLimit( (childChunk.getRetryLimit() == null
 				? parentChunk.getRetryLimit()
 				: childChunk.getRetryLimit()));
 		merge.setSkipLimit( (childChunk.getRetryLimit() == null
 				? parentChunk.getSkipLimit()
 				: childChunk.getSkipLimit()));
-		merge.setWriter( (childChunk.getWriter() == null
-				? parentChunk.getWriter()
-				: childChunk.getWriter()));
+
 		
 		
-		//merge chunks -  5 elements
+		//merge chunks -  8 elements
 		merge.setCheckpointAlgorithm( (childChunk.getCheckpointAlgorithm() == null
 				? parentChunk.getCheckpointAlgorithm()
 				: childChunk.getCheckpointAlgorithm()));
+        merge.setProcessor( (childChunk.getProcessor() == null
+                ? parentChunk.getProcessor()
+                : childChunk.getProcessor()));
+        merge.setReader( (childChunk.getReader() == null
+                ? parentChunk.getReader()
+                : childChunk.getReader()));
+        merge.setWriter( (childChunk.getWriter() == null
+                ? parentChunk.getWriter()
+                : childChunk.getWriter()));
 		merge.setSkippableExceptionClasses( (childChunk.getSkippableExceptionClasses() == null
 				? parentChunk.getSkippableExceptionClasses()
 				: childChunk.getSkippableExceptionClasses()));

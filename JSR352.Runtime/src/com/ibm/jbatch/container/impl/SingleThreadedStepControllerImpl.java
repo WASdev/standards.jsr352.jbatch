@@ -25,7 +25,7 @@ import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.artifact.proxy.StepListenerProxy;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.jsl.model.Collector;
 import com.ibm.jbatch.jsl.model.Property;
@@ -36,7 +36,7 @@ public abstract class SingleThreadedStepControllerImpl extends BaseStepControlle
     private final static String sourceClass = SingleThreadedStepControllerImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    protected SingleThreadedStepControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Step step) {
+    protected SingleThreadedStepControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Step step) {
         super(jobExecutionImpl, step);
 
     }

@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.api.AbstractCheckpointAlgorithm;
+import javax.batch.api.chunk.AbstractCheckpointAlgorithm;
 
 @javax.inject.Named("mySimpleCustomCheckpointAlgorithm")
 public class MySimpleCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {

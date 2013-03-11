@@ -31,7 +31,7 @@ public class ContextsGetIdJobContextTestBatchlet extends AbstractBatchlet {
 	@Override
 	public String process() throws Exception {
 
-		jobCtx.setExitStatus(jobCtx.getId());
+		jobCtx.setExitStatus(jobCtx.getJobName());
 		return GOOD_EXIT_STATUS;
 	}
 

@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import javax.batch.api.AbstractJobListener;
+import javax.batch.api.listener.AbstractJobListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 

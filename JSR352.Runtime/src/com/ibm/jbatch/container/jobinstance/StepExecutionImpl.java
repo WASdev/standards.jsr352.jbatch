@@ -19,8 +19,9 @@ package com.ibm.jbatch.container.jobinstance;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
-import javax.batch.api.PartitionPlan;
+import javax.batch.api.partition.PartitionPlan;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
@@ -46,6 +47,8 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     private Timestamp startTime = null;
     private long stepExecutionId = 0;
     private String stepName = null;
+    private String[] stepContainment = null;
+    
     long ExecutionId = 0;
 
     private long writeCount = 0;
@@ -74,12 +77,12 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     		return this.stepContext.getEndTimeTS();
     	}
     	else {
-    		return endTime;
+    		return new Date(endTime.getTime());
     	}
     }
 
     @Override
-    public long getJobExecutionId(){
+    public long getExecutionId(){
     	return this.jobExecutionId;
     }
     
@@ -99,7 +102,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     		return this.stepContext.getStartTimeTS();
     	}
     	else {
-    		return startTime;
+    		return new Date(startTime.getTime());
     	}
     }
 
@@ -108,7 +111,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
         StringBuffer buf = new StringBuffer();
 		buf.append("---------------------------------------------------------------------------------");
 		//buf.append("getStepName(): " + this.getStepName() + "\n");
-		buf.append("getJobExecutionId(): " + this.getJobExecutionId() + "\n");
+		buf.append("getExecutionId(): " + this.getExecutionId() + "\n");
 		//buf.append("getStepExecutionId(): " + this.getStepExecutionId() + "\n");			
 		//buf.append("getCommitCount(): " + this.getCommitCount() + "\n");
 		//buf.append("getFilterCount(): " + this.getFilterCount() + "\n");
@@ -136,14 +139,14 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 		}
 		else {
 			Metric[] metrics = new MetricImpl[8];
-			metrics[0] = new MetricImpl(MetricImpl.MetricName.READCOUNT, readCount);
-			metrics[1] = new MetricImpl(MetricImpl.MetricName.WRITECOUNT, writeCount);
-			metrics[2] = new MetricImpl(MetricImpl.MetricName.COMMITCOUNT, commitCount);
-			metrics[3] = new MetricImpl(MetricImpl.MetricName.ROLLBACKCOUNT, rollbackCount);
-			metrics[4] = new MetricImpl(MetricImpl.MetricName.READSKIPCOUNT, readSkipCount);
-			metrics[5] = new MetricImpl(MetricImpl.MetricName.PROCESSSKIPCOUNT, processSkipCount);
-			metrics[6] = new MetricImpl(MetricImpl.MetricName.FILTERCOUNT, filterCount);
-			metrics[7] = new MetricImpl(MetricImpl.MetricName.WRITESKIPCOUNT, writeSkipCount);
+			metrics[0] = new MetricImpl(MetricImpl.MetricType.READ_COUNT, readCount);
+			metrics[1] = new MetricImpl(MetricImpl.MetricType.WRITE_COUNT, writeCount);
+			metrics[2] = new MetricImpl(MetricImpl.MetricType.COMMIT_COUNT, commitCount);
+			metrics[3] = new MetricImpl(MetricImpl.MetricType.ROLLBACK_COUNT, rollbackCount);
+			metrics[4] = new MetricImpl(MetricImpl.MetricType.READ_SKIP_COUNT, readSkipCount);
+			metrics[5] = new MetricImpl(MetricImpl.MetricType.PROCESS_SKIP_COUNT, processSkipCount);
+			metrics[6] = new MetricImpl(MetricImpl.MetricType.FILTER_COUNT, filterCount);
+			metrics[7] = new MetricImpl(MetricImpl.MetricType.WRITE_SKIPCOUNT, writeSkipCount);
 			
 			return metrics;
 		}
@@ -201,7 +204,11 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     }
     
     public void setStepExecutionId(long stepexecID){
-    	this.ExecutionId = stepexecID;
+    	this.stepExecutionId = stepexecID;
+    }
+
+    public long getStepExecutionId() {
+        return this.stepExecutionId;
     }
         
     public void setStepName(String stepName) {
@@ -245,16 +252,9 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     }
 
 	@Override
-	public String getStepId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
+	public String getStepName() {
     	if (stepContext != null){
-    		return this.stepContext.getId();
+    		return this.stepContext.getStepName();
     	}
     	else {
     		return stepName;
@@ -268,4 +268,62 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 	public PartitionPlan getPlan() {
 		return plan;
 	}
+
+	@Override
+	public String[] getStepContainment() {
+		return this.stepContainment;
+	}
+
+    public void setStepContainment(String[] stepContainment) {
+        this.stepContainment = stepContainment;
+    }
+    
+    public static String getStepContainmentCSV(String[] stepContainment) {
+
+        if (stepContainment == null) {
+            return "";
+        }
+            
+        StringBuilder strBuilder = new StringBuilder();
+
+        for (int i = 0; i < stepContainment.length; i++) {
+            strBuilder.append(stepContainment[i]);
+
+            if (i < stepContainment.length - 1) {
+                strBuilder.append(",");
+            }
+
+        }
+
+        return strBuilder.toString();
+    }
+
+    public static String getStepContainmentCSV(List<String> stepContainment) {
+
+        if (stepContainment == null) {
+            return "";
+        }
+
+        StringBuilder strBuilder = new StringBuilder();
+
+        for (int i = 0; i < stepContainment.size(); i++) {
+            strBuilder.append(stepContainment.get(i));
+
+            if (i < stepContainment.size() - 1) {
+                strBuilder.append(",");
+            }
+
+        }
+        
+        return strBuilder.toString();
+    }
+    
+    public static String[] split(String stepContainmentCSV){
+        
+        if (stepContainmentCSV == null || "".equals(stepContainmentCSV)) {
+            return new String[0];
+        }
+        
+        return stepContainmentCSV.split(",");
+    }
 }

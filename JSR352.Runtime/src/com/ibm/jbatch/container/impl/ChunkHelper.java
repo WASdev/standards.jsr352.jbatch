@@ -17,20 +17,18 @@
 package com.ibm.jbatch.container.impl;
 
 import com.ibm.jbatch.jsl.model.Chunk;
-import com.ibm.jbatch.jsl.model.Property;
 
 public class ChunkHelper {
 
 	public static int getItemCount(Chunk chunk) {
-
 		String chunkSizeStr = chunk.getItemCount();
-		int size = 0;
+		int size = 10;
+		
 		if (chunkSizeStr != null && !chunkSizeStr.isEmpty()) {
 			size = Integer.valueOf(chunk.getItemCount());
-		} else {
-			// set default value
-			size = 10;
-		}
+		} 
+		
+		chunk.setItemCount(Integer.toString(size));
 		return size;
 	}
     
@@ -42,7 +40,23 @@ public class ChunkHelper {
 			timeLimit = Integer.valueOf(chunk.getTimeLimit());
 		} 
 		
+		chunk.setTimeLimit(Integer.toString(timeLimit));
 		return timeLimit;
+    }
+    
+    public static String getCheckpointPolicy(Chunk chunk) {
+		String checkpointPolicy = chunk.getCheckpointPolicy();
+		
+		if (checkpointPolicy != null && !checkpointPolicy.isEmpty()) {
+			if (!(checkpointPolicy.equals("item") || checkpointPolicy.equals("custom"))) {
+				throw new IllegalArgumentException("The only supported attributed values for 'checkpoint-policy' are 'item' and 'custom'.");				
+			}
+		} else {
+			checkpointPolicy = "item";
+		}
+		
+		chunk.setCheckpointPolicy(checkpointPolicy);
+		return checkpointPolicy;
     }
     
     public static int getSkipLimit(Chunk chunk) {
@@ -52,26 +66,5 @@ public class ChunkHelper {
     public static int getRetryLimit(Chunk chunk) {
     	return Integer.valueOf(chunk.getRetryLimit());
     }
-
-	public static Property getSkipIncludeClass() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public static Property getSkipExcludeClass() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public static Property getRetryIncludeClass() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public static Property getRetryExcludeClass() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-    
     
 }

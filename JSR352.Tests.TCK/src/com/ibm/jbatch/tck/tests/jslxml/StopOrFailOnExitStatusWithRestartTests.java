@@ -29,6 +29,7 @@ import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -92,7 +93,7 @@ public class StopOrFailOnExitStatusWithRestartTests {
 	        overrideJobParams.setProperty("run.indefinitely" , "true");
 	        
 	        Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_longrunning", overrideJobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_longrunning", overrideJobParams);
 	
 	        long execID = execution1.getExecutionId(); 
 	        Reporter.log("StopRestart: Started job with execId=" + execID + "<p>");
@@ -120,7 +121,7 @@ public class StopOrFailOnExitStatusWithRestartTests {
 	                
 	        
 	        Reporter.log("Invoke restartJobAndWaitForResult with executionId: " + execution1.getInstanceId() + "<p>");
-	        JobExecution execution2 = jobOp.restartJobAndWaitForResult(execution1.getExecutionId());
+	        JobExecution execution2 = jobOp.restartJobAndWaitForResult(execution1.getExecutionId(),overrideJobParams);
 	                        
 	        Reporter.log("execution #2 JobExecution getBatchStatus()="+execution2.getBatchStatus()+"<p>");
 	        assertWithMessage("If the restarted job hasn't completed yet then try increasing the sleep time.", 
@@ -148,8 +149,6 @@ public class StopOrFailOnExitStatusWithRestartTests {
 
         try {
         	Reporter.log("Locate job XML file: job_batchlet_longrunning.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_longrunning.xml");
-
 	
 	        Reporter.log("Create job parameters for execution #1:<p>");
 	        Properties jobParameters = new Properties();
@@ -157,7 +156,7 @@ public class StopOrFailOnExitStatusWithRestartTests {
 	        jobParameters.setProperty("throw.exc.on.number.3" , "true");  // JSL default is 'false'
 	
 	        Reporter.log("Invoke startJobAndWaitForResult");
-	        JobExecution firstJobExecution = jobOp.startJobAndWaitForResult("job_batchlet_longrunning", jobParameters);
+	        TCKJobExecutionWrapper firstJobExecution = jobOp.startJobAndWaitForResult("job_batchlet_longrunning", jobParameters);
 	        
 	        Reporter.log("Started job with execId=" + firstJobExecution.getExecutionId()+"<p>");       
 	
@@ -174,7 +173,7 @@ public class StopOrFailOnExitStatusWithRestartTests {
 	        overrideJobParams.setProperty("run.indefinitely" , "false");
 	      
 	        Reporter.log("Invoke restartJobAndWaitForResult with executionId: " + firstJobExecution.getInstanceId() + "<p>");
-	        JobExecution secondJobExecution = jobOp.restartJobAndWaitForResult(firstJobExecution.getExecutionId());
+	        JobExecution secondJobExecution = jobOp.restartJobAndWaitForResult(firstJobExecution.getExecutionId(),overrideJobParams);
 	        
 	        Reporter.log("execution #2 JobExecution getBatchStatus()="+secondJobExecution.getBatchStatus()+"<p>");
 	        assertWithMessage("If the restarted job hasn't completed yet then try increasing the sleep time.", 
@@ -226,7 +225,7 @@ public class StopOrFailOnExitStatusWithRestartTests {
 
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("batchletStopOnEndOn", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("batchletStopOnEndOn", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
@@ -240,16 +239,16 @@ public class StopOrFailOnExitStatusWithRestartTests {
 	
 	        {
 	        	Reporter.log("Create job parameters for execution #3:<p>");
-	            Properties jobParametersOverride = new Properties();
+	            Properties restartJobParameters = new Properties();
 	            Reporter.log("execution.number=2<p>");
 	    		Reporter.log("step1.stop=ES.STOP<p>");
 	    		Reporter.log("step1.next=ES.STEP1<p>");
-	            jobParametersOverride.setProperty("execution.number", "2");
-	            jobParametersOverride.setProperty("step1.stop", "ES.STOP");
-	            jobParametersOverride.setProperty("step1.next", "ES.STEP1");
+	            restartJobParameters.setProperty("execution.number", "2");
+	            restartJobParameters.setProperty("step1.stop", "ES.STOP");
+	            restartJobParameters.setProperty("step1.next", "ES.STEP1");
 	            Reporter.log("Invoke restartJobAndWaitForResult with executionId: " + lastExecutionId + "<p>");
 	            //JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId);
-	            JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	            TCKJobExecutionWrapper exec = jobOp.restartJobAndWaitForResult(lastExecutionId,restartJobParameters);
 	            lastExecutionId = exec.getExecutionId();
 	            Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 		        Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
@@ -261,20 +260,20 @@ public class StopOrFailOnExitStatusWithRestartTests {
 	
 	        {
 	        	Reporter.log("Create job parameters for execution #3:<p>");
-	            Properties jobParametersOverride = new Properties();
+	            Properties restartJobParameters = new Properties();
 	            Reporter.log("execution.number=3<p>");
 	    		Reporter.log("step1.stop=ES.STOP<p>");
 	    		Reporter.log("step1.next=ES.STEP1<p>");
 	    		Reporter.log("step2.fail=ES.FAIL<p>");
 	    		Reporter.log("step2.next=ES.STEP2<p>");
-	            jobParametersOverride.setProperty("execution.number", "3");
-	            jobParametersOverride.setProperty("step1.stop", "ES.STOP");
-	            jobParametersOverride.setProperty("step1.next", "ES.STEP1");
-	            jobParametersOverride.setProperty("step2.fail", "ES.FAIL");
-	            jobParametersOverride.setProperty("step2.next", "ES.STEP2");
+	            restartJobParameters.setProperty("execution.number", "3");
+	            restartJobParameters.setProperty("step1.stop", "ES.STOP");
+	            restartJobParameters.setProperty("step1.next", "ES.STEP1");
+	            restartJobParameters.setProperty("step2.fail", "ES.FAIL");
+	            restartJobParameters.setProperty("step2.next", "ES.STEP2");
 	            Reporter.log("Invoke restartJobAndWaitForResult with executionId: " + lastExecutionId + "<p>");
 	          //JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId);
-	            JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId);
+	            TCKJobExecutionWrapper exec = jobOp.restartJobAndWaitForResult(lastExecutionId,restartJobParameters);
 	            lastExecutionId = exec.getExecutionId();
 	            Reporter.log("execution #3 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 		        Reporter.log("execution #3 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");

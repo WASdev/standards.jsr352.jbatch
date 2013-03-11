@@ -21,11 +21,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.StepExecution;
-
 
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.DeciderProxy;
@@ -34,7 +33,7 @@ import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.util.ExecutionStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
@@ -47,7 +46,7 @@ import com.ibm.jbatch.jsl.model.Step;
 
 public class DecisionControllerImpl implements IExecutionElementController {
     
-    protected RuntimeJobExecutionImpl jobExecutionImpl; 
+    protected RuntimeJobExecutionHelper jobExecutionImpl; 
     
     protected StepContextImpl<?, ? extends Externalizable> stepContext;
     
@@ -61,7 +60,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
 	// it is the previous executable element before the decision
 	protected ExecutionElement executionElement = null;
     
-    public DecisionControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Decision decision) {
+    public DecisionControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Decision decision) {
         this.jobExecutionImpl = jobExecutionImpl;
         this.decision = decision;
     }
@@ -90,7 +89,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
    
 
     @Override
-    public String execute() throws Exception {
+    public String execute(List<String> containmentName) throws Exception {
 
         ExecutionStatus status = new ExecutionStatus();
 
@@ -127,7 +126,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
     }
 
     @Override
-    public void setAnalyzerQueue(LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue) {
+    public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
         //no-op
     }
 

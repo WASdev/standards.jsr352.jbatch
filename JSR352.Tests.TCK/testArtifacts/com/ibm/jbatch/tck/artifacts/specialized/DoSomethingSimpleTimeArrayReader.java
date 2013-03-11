@@ -16,10 +16,10 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemReader;
+import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
@@ -59,7 +59,7 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
 	int arraysize;
 		
 		@Override
-		public void open(Externalizable cpd) {
+		public void open(Serializable cpd) {
 						
 		    ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
 		    

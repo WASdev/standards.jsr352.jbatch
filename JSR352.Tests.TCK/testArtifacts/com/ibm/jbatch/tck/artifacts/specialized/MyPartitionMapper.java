@@ -19,8 +19,8 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.Properties;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.PartitionMapper;
-import javax.batch.api.PartitionPlan;
+import javax.batch.api.partition.PartitionMapper;
+import javax.batch.api.partition.PartitionPlan;
 import javax.inject.Inject;
 
 import com.ibm.jbatch.tck.artifacts.specialized.MyPartitionPlan;
@@ -64,7 +64,7 @@ public class MyPartitionMapper implements PartitionMapper {
 		}
 		
 		PartitionPlan partitionPlan = new MyPartitionPlan();
-		partitionPlan.setPartitionCount(numPartitions);
+		partitionPlan.setPartitions(numPartitions);
 		partitionPlan.setPartitionProperties(props);
 		
 		return partitionPlan;

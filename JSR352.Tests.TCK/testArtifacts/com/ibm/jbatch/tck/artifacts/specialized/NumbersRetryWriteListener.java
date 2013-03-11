@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.api.RetryWriteListener;
+import javax.batch.api.chunk.listener.RetryWriteListener;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 

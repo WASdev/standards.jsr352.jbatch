@@ -19,6 +19,8 @@ package com.ibm.jbatch.container.impl;
 import java.util.List;
 import java.util.Properties;
 
+import javax.batch.runtime.context.JobContext;
+
 
 import com.ibm.jbatch.container.jsl.CloneUtility;
 import com.ibm.jbatch.container.jsl.ControlElement;
@@ -37,7 +39,7 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used to build subjobs from splits.
      * 
      */
-    public static JSLJob buildSubJob(Long parentJobExecutionId, Split split, Flow flow, Properties[] subJobParameters) {
+    public static JSLJob buildSubJob(Long parentJobExecutionId, JobContext<?> jobContext, Split split, Flow flow, Properties[] subJobParameters) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
@@ -45,6 +47,11 @@ public class PartitionedStepBuilder {
         // Set the generated subjob id
         String subJobId = generateSubJobId(parentJobExecutionId, split.getId(), flow.getId());
         subJob.setId(subJobId);
+        
+        
+        //Copy all properties from parent JobContext to flow threads
+        subJob.setProperties(CloneUtility.javaPropsTojslProperties(jobContext.getProperties()));
+        
 
         //We don't need to do a deep copy here since each flow is already independent of all others, unlike in a partition
         //where one step instance can be executed with different properties on multiple threads.
@@ -59,14 +66,20 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used for partitioned steps.
      * 
      */
-    public static JSLJob buildSubJob(Long parentJobInstanceId, Step step, int partitionInstance) {
+    public static JSLJob buildSubJob(Long parentJobInstanceId, JobContext<?> jobContext, Step step, int partitionInstance) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
+        
 
         // Set the generated subjob id
         String subJobId = generateSubJobId(parentJobInstanceId, step.getId(), partitionInstance);
         subJob.setId(subJobId);
+        
+        
+        //Copy all properties from parent JobContext to partitioned step threads
+        subJob.setProperties(CloneUtility.javaPropsTojslProperties(jobContext.getProperties()));
+        
 
         // Add one step to job
         Step newStep = jslFactory.createStep();

@@ -16,14 +16,14 @@
  */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import javax.batch.api.AbstractItemReader;
+import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -54,7 +54,7 @@ public class InventoryReader extends AbstractItemReader<InventoryRecord> {
 	InventoryCheckpointData inventoryCheckpoint = new InventoryCheckpointData();
 	
 	
-	public void open(Externalizable cpd) throws NamingException {
+	public void open(Serializable cpd) throws NamingException {
 
 	    InventoryCheckpointData checkpointData = (InventoryCheckpointData)cpd;
 	    
@@ -114,7 +114,7 @@ public class InventoryReader extends AbstractItemReader<InventoryRecord> {
 
 
     @Override
-    public Externalizable checkpointInfo() throws Exception {
+    public Serializable checkpointInfo() throws Exception {
         logger.finer("InventoryReader.getInventoryCheckpoint() index = " +this.inventoryCheckpoint.getInventoryCount());
         
         return this.inventoryCheckpoint;

@@ -17,13 +17,14 @@
 package com.ibm.jbatch.container.impl;
 
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.api.CheckpointAlgorithm;
+import javax.batch.api.chunk.CheckpointAlgorithm;
 import javax.batch.operations.JobOperator.BatchStatus;
 
 
@@ -46,7 +47,7 @@ import com.ibm.jbatch.container.artifact.proxy.SkipWriteListenerProxy;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.persistence.CheckpointAlgorithmFactory;
 import com.ibm.jbatch.container.persistence.CheckpointData;
 import com.ibm.jbatch.container.persistence.CheckpointDataKey;
@@ -104,7 +105,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     long writeSkipCount = 0;
     boolean rollbackRetry = false;
 
-    public ChunkStepControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Step step) {
+    public ChunkStepControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Step step) {
         super(jobExecutionImpl, step);
         // TODO Auto-generated constructor stub
     }
@@ -209,7 +210,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
             if (status.isRollback()) {
                 theStatus.setRollback(true);
                 // inc rollbackCount
-                stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                 break;
             }
 
@@ -219,7 +220,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 if (status.isRollback()) {
                     theStatus.setRollback(true);
                     // inc rollbackCount
-                    stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                    stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                     break;
                 }
 
@@ -285,12 +286,18 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
             // the readerProxy "resultset"
             status.setFinished(itemRead == null);
             if (!status.isFinished()) {
-                stepContext.getMetric(MetricImpl.MetricName.READCOUNT).incValue();
+                stepContext.getMetric(MetricImpl.MetricType.READ_COUNT).incValue();
             }
         } catch (Exception e) {
         	stepContext.setException(e);
+        	for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
+                readListenerProxy.onReadError(e);
+            }
         	if(!rollbackRetry) {
         		if (retryReadException(e)) {
+        			for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
+                        readListenerProxy.onReadError(e);
+                    }
     				 // if not a rollback exception, just retry the current item
         			 if (!retryHandler.isRollbackException(e)) {
                          itemRead = readItem(status);
@@ -298,12 +305,12 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                          status.setRollback(true);
                          rollbackRetry = true;
                          // inc rollbackCount
-                         stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                         stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                      }
         		}
         		else if(skipReadException(e)) {
         			status.setSkipped(true);
-                    stepContext.getMetric(MetricImpl.MetricName.READSKIPCOUNT).incValue();
+                    stepContext.getMetric(MetricImpl.MetricType.READ_SKIP_COUNT).incValue();
 
         		}
         		else {
@@ -314,7 +321,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         		// coming from a rollback retry
         		if(skipReadException(e)) {
         			status.setSkipped(true);
-                    stepContext.getMetric(MetricImpl.MetricName.READSKIPCOUNT).incValue();
+                    stepContext.getMetric(MetricImpl.MetricType.READ_SKIP_COUNT).incValue();
 
         		}
         		else if (retryReadException(e)) {
@@ -324,7 +331,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                      else {
                          status.setRollback(true);
                          // inc rollbackCount
-                         stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                         stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                      }
         		}
         		else {
@@ -353,6 +360,11 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         logger.entering(sourceClass, "processItem", new Object[] { itemRead, status });
         Object processedItem = null;
 
+        // if no processor defined for this chunk
+        if (processorProxy == null){
+        	return itemRead;
+        }
+        
         try {
 
             // call process listeners before and after the actual process call
@@ -364,7 +376,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
             if (processedItem == null) {
                 // inc filterCount
-                stepContext.getMetric(MetricImpl.MetricName.FILTERCOUNT).incValue();
+                stepContext.getMetric(MetricImpl.MetricType.FILTER_COUNT).incValue();
                 status.setFiltered(true);
             }
 
@@ -372,7 +384,9 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 processListenerProxy.afterProcess(itemRead, processedItem);
             }
         } catch (Exception e) {
-        	
+        	for (ItemProcessListenerProxy processListenerProxy : itemProcessListeners) {
+                processListenerProxy.onProcessError(processedItem, e);
+            }
         	if(!rollbackRetry) {
         		if (retryProcessException(e, itemRead)) {
         			if (!retryHandler.isRollbackException(e)) {
@@ -384,7 +398,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         processedItem = processItem(itemRead, status);
                         if (processedItem == null) {
                             // inc filterCount
-                            stepContext.getMetric(MetricImpl.MetricName.FILTERCOUNT).incValue();
+                            stepContext.getMetric(MetricImpl.MetricType.FILTER_COUNT).incValue();
                             status.setFiltered(true);
                         }
 
@@ -395,12 +409,12 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         status.setRollback(true);
                         rollbackRetry = true;
                         // inc rollbackCount
-                        stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                        stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                     }
         		}
         		else if (skipProcessException(e, itemRead)) {
         			status.setSkipped(true);
-                    stepContext.getMetric(MetricImpl.MetricName.PROCESSSKIPCOUNT).incValue();
+                    stepContext.getMetric(MetricImpl.MetricType.PROCESS_SKIP_COUNT).incValue();
         		}
         		else {
                     throw new BatchContainerRuntimeException(e);
@@ -409,7 +423,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         	else {
         		if (skipProcessException(e, itemRead)) {
         			status.setSkipped(true);
-                    stepContext.getMetric(MetricImpl.MetricName.PROCESSSKIPCOUNT).incValue();
+                    stepContext.getMetric(MetricImpl.MetricType.PROCESS_SKIP_COUNT).incValue();
                  } else if (retryProcessException(e, itemRead)) {
         			if (!retryHandler.isRollbackException(e)) {
                         // call process listeners before and after the actual
@@ -420,7 +434,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         processedItem = processItem(itemRead, status);
                         if (processedItem == null) {
                             // inc filterCount
-                            stepContext.getMetric(MetricImpl.MetricName.FILTERCOUNT).incValue();
+                            stepContext.getMetric(MetricImpl.MetricType.FILTER_COUNT).incValue();
                             status.setFiltered(true);
                         }
 
@@ -431,10 +445,10 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         status.setRollback(true);
                         rollbackRetry = true;
                         // inc rollbackCount
-                        stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                        stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                     }
         		} else {
-                     throw new BatchContainerRuntimeException(e);
+        			throw new BatchContainerRuntimeException(e);
                  }
         	}
 
@@ -467,9 +481,12 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 for (ItemWriteListenerProxy writeListenerProxy : itemWriteListeners) {
                     writeListenerProxy.afterWrite(theChunk);
                 }
-                stepContext.getMetric(MetricImpl.MetricName.WRITECOUNT).incValueBy(theChunk.size());
+                stepContext.getMetric(MetricImpl.MetricType.WRITE_COUNT).incValueBy(theChunk.size());
             } catch (Exception e) {
             	this.stepContext.setException(e);
+            	for (ItemWriteListenerProxy writeListenerProxy : itemWriteListeners) {
+                    writeListenerProxy.onWriteError(theChunk, e);
+                }
             	if(!rollbackRetry)
             	{
             		if (retryWriteException(e, theChunk)) {
@@ -479,18 +496,18 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         	rollbackRetry = true;
                             status.setRollback(true);
                             // inc rollbackCount
-                            stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                            stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                         }
                     } else if (skipWriteException(e, theChunk)) {
-                        stepContext.getMetric(MetricImpl.MetricName.WRITESKIPCOUNT).incValueBy(1);
+                        stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIPCOUNT).incValueBy(1);
                     } else {
-                        throw new BatchContainerRuntimeException(e);
+                    	throw new BatchContainerRuntimeException(e);
                     }
             		
             	}
             	else {
             		if (skipWriteException(e, theChunk)) {
-                        stepContext.getMetric(MetricImpl.MetricName.WRITESKIPCOUNT).incValueBy(1);
+                        stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIPCOUNT).incValueBy(1);
                     } else if (retryWriteException(e, theChunk)) {
                         if (!retryHandler.isRollbackException(e)) {
                         	status.setRetry(true);
@@ -499,7 +516,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         	rollbackRetry = true;
                             status.setRollback(true);
                             // inc rollbackCount
-                            stepContext.getMetric(MetricImpl.MetricName.ROLLBACKCOUNT).incValue();
+                            stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                         }
                     } else {
                         throw new BatchContainerRuntimeException(e);
@@ -603,16 +620,16 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                     
                     if (collectorProxy != null) {
 
-                        Externalizable data = this.collectorProxy.collectPartitionData();
+                    	Serializable data = this.collectorProxy.collectPartitionData();
 
-                        if (this.analyzerQueue != null) {
+                        if (this.analyzerStatusQueue != null) {
                             // Invoke the partition analayzer at the end of each step if
                             // the step runs
 
                             PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
                             dataWrapper.setCollectorData(data);
                             dataWrapper.setEventType(PartitionEventType.ANALYZE_COLLECTOR_DATA);
-                            analyzerQueue.add(dataWrapper);
+                            analyzerStatusQueue.add(dataWrapper);
                         }
 
                     }                                        
@@ -626,11 +643,11 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         
                         transactionManager.commit();
                         // increment commitCount
-                        stepContext.getMetric(MetricImpl.MetricName.COMMITCOUNT).incValue();
+                        stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
                         break;
                     } else {
                         // increment commitCount
-                        stepContext.getMetric(MetricImpl.MetricName.COMMITCOUNT).incValue();
+                        stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
                     }
 
                 }
@@ -661,26 +678,26 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         } finally {
             if (collectorProxy != null) {
 
-                Externalizable data = this.collectorProxy.collectPartitionData();
+            	Serializable data = this.collectorProxy.collectPartitionData();
 
-                if (this.analyzerQueue != null) {
+                if (this.analyzerStatusQueue != null) {
                     // Invoke the partition analayzer at the end of each step if
                     // the step runs
 
                     PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
                     dataWrapper.setCollectorData(data);
                     dataWrapper.setEventType(PartitionEventType.ANALYZE_COLLECTOR_DATA);
-                    analyzerQueue.add(dataWrapper);
+                    analyzerStatusQueue.add(dataWrapper);
                 }
 
             }
 
-            if (this.analyzerQueue != null) {
+            if (this.analyzerStatusQueue != null) {
                 PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
                 dataWrapper.setBatchStatus(stepStatus.getBatchStatus());
                 dataWrapper.setExitStatus(stepStatus.getExitStatus());
                 dataWrapper.setEventType(PartitionEventType.ANALYZE_STATUS);
-                analyzerQueue.add(dataWrapper);
+                analyzerStatusQueue.add(dataWrapper);
             }
         }
 
@@ -708,6 +725,10 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         if (logger.isLoggable(Level.FINE))
             logger.entering(sourceClass, sourceMethod);
 
+        int itemCount = ChunkHelper.getItemCount(chunk);
+        int timeInterval = ChunkHelper.getTimeLimit(chunk);
+        String checkpointPolicy = ChunkHelper.getCheckpointPolicy(chunk);
+        
         ItemReader itemReader = chunk.getReader();
         List<Property> itemReaderProps = itemReader.getProperties() == null ? null : itemReader.getProperties().getPropertyList();
         try {
@@ -724,20 +745,22 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         }
 
         ItemProcessor itemProcessor = chunk.getProcessor();
-        List<Property> itemProcessorProps = itemProcessor.getProperties() == null ? null : itemProcessor.getProperties().getPropertyList();
-        try {
+        if (itemProcessor != null){
+        	List<Property> itemProcessorProps = itemProcessor.getProperties() == null ? null : itemProcessor.getProperties().getPropertyList();
+        	try {
 
-            InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, 
-                    itemProcessorProps);
+        		InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, 
+        				itemProcessorProps);
 
-            processorProxy = ProxyFactory.createItemProcessorProxy(itemProcessor.getRef(), injectionRef, stepContext);
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Created ItemProcessorProxy for " + itemProcessor.getRef());
-            }
-        } catch (ArtifactValidationException e) {
-            throw new BatchContainerServiceException("Cannot create the ItemProcessor [" + itemProcessor.getRef() + "]", e);
+        		processorProxy = ProxyFactory.createItemProcessorProxy(itemProcessor.getRef(), injectionRef, stepContext);
+        		if (logger.isLoggable(Level.FINE)) {
+        			logger.fine("Created ItemProcessorProxy for " + itemProcessor.getRef());
+        		}
+        	} catch (ArtifactValidationException e) {
+        		throw new BatchContainerServiceException("Cannot create the ItemProcessor [" + itemProcessor.getRef() + "]", e);
+        	}
         }
-
+        
         ItemWriter itemWriter = chunk.getWriter();
         List<Property> itemWriterProps = itemWriter.getProperties() == null ? null : itemWriter.getProperties().getPropertyList();
         try {
@@ -766,15 +789,12 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
             checkpointProxy = CheckpointAlgorithmFactory.getCheckpointAlgorithmProxy(step, injectionRef, stepContext);
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Created CheckpointAlgorithmProxy for policy [" + chunk.getCheckpointPolicy() + "]");
+                logger.fine("Created CheckpointAlgorithmProxy for policy [" + checkpointPolicy + "]");
             }
         } catch (ArtifactValidationException e) {
             throw new BatchContainerServiceException("Cannot create the CheckpointAlgorithm for policy [" + chunk.getCheckpointPolicy()
                     + "]", e);
         }
-
-        int itemCount = ChunkHelper.getItemCount(chunk);
-        int timeInterval = ChunkHelper.getTimeLimit(chunk);
 
         InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, 
                 null);

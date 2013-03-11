@@ -16,11 +16,11 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.List;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.ItemWriter;
+import javax.batch.api.chunk.ItemWriter;
 import javax.inject.Inject;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.ArrayIndexCheckpointData;
@@ -49,7 +49,7 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 	int [] writePoints;
 	
 	@Override
-	public void open(Externalizable cpd) throws Exception {
+	public void open(Serializable cpd) throws Exception {
 		System.out.println("openWriter");
 		
 		ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;

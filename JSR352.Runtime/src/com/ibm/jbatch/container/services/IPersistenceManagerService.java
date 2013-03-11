@@ -23,11 +23,17 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
+import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.PersistenceException;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
+import com.ibm.jbatch.container.jsl.Navigator;
+import com.ibm.jbatch.container.status.JobStatus;
+import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.spi.services.IBatchServiceBase;
 
 public interface IPersistenceManagerService extends IBatchServiceBase {
@@ -129,23 +135,23 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts);
 	
-	public void stepExecutionCreateStepExecutionData(String stepExecutionKey, long jobExecutionID, StepContextImpl stepContext);
+	public void stepExecutionCreateStepExecutionData(String stepExecutionKey, long jobExecutionID, StepContextImpl stepContext, List<String> containment);
 	
 	//public long stepExecutionQueryID(String key);
 	
-	public List<StepExecution> getStepExecutionIDListQueryByJobID(long execid);
+	public List<StepExecution<?>> getStepExecutionIDListQueryByJobID(long execid);
 	
 	public void jobOperatorUpdateBatchStatusWithUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
 	
 	public void jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
 	
-	public JobExecution jobOperatorGetJobExecution(long jobExecutionId);
+	public IJobExecution jobOperatorGetJobExecution(long jobExecutionId);
 
-	public List<JobExecution> jobOperatorGetJobExecutionsByJobInstanceID(long jobInstanceID);
+	public List<IJobExecution> jobOperatorGetJobExecutionsByJobInstanceID(long jobInstanceID);
 
 	public Properties getParameters(long instanceId);
 
-	public List<JobExecution> jobOperatorGetJobExecutions(long jobInstanceId);
+	public List<IJobExecution> jobOperatorGetJobExecutions(long jobInstanceId);
 
 	public StepExecution getStepExecutionObjQueryByStepID(long stepexecutionId);
 
@@ -154,4 +160,115 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	public String getJobCurrentTag(long jobInstanceId);
 	
 	public void purge(String apptag);
+	
+	public List<JobStatus> getJobStatusFromExecution(long executionId);
+	
+	public long getJobInstanceIdByExecutionId(long executionId);
+	
+	// JOBINSTANCEDATA
+	/**
+	 * Creates a JobIntance
+	 * 
+	 * @param name the job id from job.xml
+	 * @param apptag the application tag that owns this job
+	 * @param jobXml the resolved job xml
+	 * @param jobParameters parameters used for this job
+	 * @return the job instance
+	 */
+	public JobInstance createJobInstance(String name, String apptag, String jobXml, Properties jobParameters);
+	
+	// EXECUTIONINSTANCEDATA
+	/**
+	 * Create a JobExecution
+	 * 
+	 * @param jobNavigator resolved job navigator
+	 * @param jobInstance the parent job instance
+	 * @param jobParameters the parent job instance parameters
+	 * @param jobContext the job context for this job execution
+	 * @return the RuntimeJobExecutionHelper class for this JobExecution
+	 */
+	public RuntimeJobExecutionHelper createJobExecution(Navigator jobNavigator, JobInstance jobInstance, Properties jobParameters, JobContextImpl jobContext);
+	
+	// STEPEXECUTIONINSTANCEDATA
+	/**
+	 * Create a StepExecution
+	 * 
+	 * @param jobExecId the parent JobExecution id
+	 * @param stepContext the step context for this step execution
+	 * @return the StepExecution
+	 */
+	public StepExecutionImpl createStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment);
+	
+	/**
+	 * Update a StepExecution
+	 * 
+	 * @param jobExecId the parent JobExecution id
+	 * @param stepContext the step context for this step execution
+	 */
+	public void updateStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment);
+	
+
+	
+	// JOB_STATUS
+	/**
+	 * Create a JobStatus
+	 * 
+	 * @param jobInstanceId the parent job instance id
+	 * @return the JobStatus
+	 */
+	public JobStatus createJobStatus(long jobInstanceId);
+	
+	/**
+	 * Get a JobStatus
+	 * 
+	 * @param instanceId the parent job instance id
+	 * @return the JobStatus
+	 */
+	public JobStatus getJobStatus(long instanceId);
+	
+	/**
+	 * Update a JobStatus
+	 * 
+	 * @param instanceId the parent job instance id
+	 * @param jobStatus the job status to be updated
+	 */
+	public void updateJobStatus(long instanceId, JobStatus jobStatus);
+	
+	// STEP_STATUS
+	/**
+	 * Create a StepStatus
+	 * 
+	 * @param stepExecId the parent step execution id
+	 * @return the StepStatus
+	 */
+	public StepStatus createStepStatus(long stepExecId);
+	
+	/**
+	 * Get a StepStatus
+	 * 
+	 * The parent job instance id and this step name from the job xml
+	 * are used to determine if the current step execution have previously run.
+	 * 
+	 * @param instanceId the parent job instance id
+	 * @param stepName the step name
+	 * @return the StepStatus
+	 */
+	public StepStatus getStepStatus(long instanceId, String stepName);
+	
+	/**
+	 * Update a StepStatus
+	 * 
+	 * @param stepExecutionId the parent step execution id
+	 * @param stepStatus the step status to be updated
+	 */
+	public void updateStepStatus(long stepExecutionId, StepStatus stepStatus);
+	
+	
+	/**
+	 * Get the application name from an execution id.
+	 * 
+	 * @param jobExecutionId the job execution id
+	 * @return the application name
+	 */
+	public String getTagName(long jobExecutionId);
 }

@@ -22,8 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+import javax.batch.operations.JobStartException;
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.operations.exception.JobStartException;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;

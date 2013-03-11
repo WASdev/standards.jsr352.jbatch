@@ -18,6 +18,13 @@ package com.ibm.jbatch.spi;
 
 import java.util.concurrent.ExecutorService;
 
+/**
+ * 
+ * Provides an ExecutorService managed by the provider to the caller.
+ */
 public interface ExecutorServiceProvider {
+	/**
+	 * @return ExecutorService
+	 */
 	public ExecutorService getExecutorService();
 }

@@ -22,4 +22,16 @@ import com.ibm.jbatch.tck.artifacts.common.AbstractPartitionPlan;
 @javax.inject.Named("myPartitionPlan")
 public class MyPartitionPlan extends AbstractPartitionPlan {
 
+	@Override
+	public void setPartitionsOverride(boolean override) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean getPartitionsOverride() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

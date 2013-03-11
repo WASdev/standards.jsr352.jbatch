@@ -16,6 +16,7 @@
 */
 package com.ibm.jbatch.container.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -126,48 +127,70 @@ public class SkipHandler<T> {
 	      _skipIncludeExceptions = new HashSet<String>();
 	      _skipExcludeExceptions = new HashSet<String>();
 
-	      boolean done = false;
-	      String includeEx = null;
-	      String excludeEx = null;
+	      //boolean done = false;
+	      List<String> includeEx = new ArrayList<String>();
+	      List<String> excludeEx = new ArrayList<String>();
 	      
 			if (chunk.getSkippableExceptionClasses() != null) {
 				if (chunk.getSkippableExceptionClasses().getIncludeList() != null) {
 					List<ExceptionClassFilter.Include> includes = chunk.getSkippableExceptionClasses().getIncludeList();
-					if (includes.size() > 1) {
-						String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
-						logger.severe(msg);
-						throw new IllegalArgumentException(msg);
-					} else if (includes.size() == 1) {
-						includeEx = includes.get(0).getClazz();
-						logger.finer("SKIPHANDLE: include: " + includeEx);
-					}  else {
-						logger.finer("SKIPHANDLE: include element not present");
+					
+					for (ExceptionClassFilter.Include include : includes){
+						_skipIncludeExceptions.add(include.getClazz().trim());
+						logger.finer("SKIPHANDLE: include: " + include.getClazz().trim());
 					}
+					
+					if (_skipIncludeExceptions.size() == 0){
+						logger.finer("SKIPHANDLE: include element not present");
+
+					}
+					
+					//if (includes.size() > 1) {
+					//	String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
+					//	logger.severe(msg);
+					//	throw new IllegalArgumentException(msg);
+					//} else if (includes.size() == 1) {
+					//	includeEx = includes.get(0).getClazz();
+					//	logger.finer("SKIPHANDLE: include: " + includeEx);
+					//}  else {
+					//	logger.finer("SKIPHANDLE: include element not present");
+					//}
 				}
 			}
 			
 			if (chunk.getSkippableExceptionClasses() != null) {
 				if (chunk.getSkippableExceptionClasses().getExcludeList() != null) {
 					List<ExceptionClassFilter.Exclude> excludes = chunk.getSkippableExceptionClasses().getExcludeList();
-					if (excludes.size() > 1) {
-						String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
-						logger.severe(msg);
-						throw new IllegalArgumentException(msg);
-					} else if (excludes.size() == 1) {
-						excludeEx = excludes.get(0).getClazz();
-						logger.finer("SKIPHANDLE: exclude: " + excludeEx);
-					}  else {
-						logger.finer("SKIPHANDLE: exclude element not present");
+					
+					for (ExceptionClassFilter.Exclude exclude : excludes){
+						_skipExcludeExceptions.add(exclude.getClazz().trim());
+						logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
 					}
+					
+					if (_skipExcludeExceptions.size() == 0){
+						logger.finer("SKIPHANDLE: exclude element not present");
+
+					}
+					
+					//if (excludes.size() > 1) {
+					//	String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
+					//	logger.severe(msg);
+					//	throw new IllegalArgumentException(msg);
+					//} else if (excludes.size() == 1) {
+					//	excludeEx = excludes.get(0).getClazz();
+					//	logger.finer("SKIPHANDLE: exclude: " + excludeEx);
+					//}  else {
+					//	logger.finer("SKIPHANDLE: exclude element not present");
+					//}
 				}
 			}
 
-			if (includeEx != null)
-				_skipIncludeExceptions.add(includeEx.trim());
-			if (excludeEx != null)
-				_skipExcludeExceptions.add(excludeEx.trim());
+			//if (includeEx != null)
+			//	_skipIncludeExceptions.add(includeEx.trim());
+			//if (excludeEx != null)
+			//	_skipExcludeExceptions.add(excludeEx.trim());
 
-			done = (includeEx == null && excludeEx == null);
+			//done = (includeEx == null && excludeEx == null);
 
 			if (logger.isLoggable(Level.FINE))
 				logger.logp(Level.FINE, className, mName,
@@ -288,8 +311,7 @@ public class SkipHandler<T> {
 
 	    String exClassName = e.getClass().getName();
 
-	    boolean retVal = ((_skipIncludeExceptions.isEmpty() || containsSkippable(_skipIncludeExceptions, e)) &&
-	                      !containsSkippable(_skipExcludeExceptions, e));
+	    boolean retVal = containsSkippable(_skipIncludeExceptions, e) && !containsSkippable(_skipExcludeExceptions, e);
 
 	    if(logger.isLoggable(Level.FINE)) 
 	      logger.logp(Level.FINE, className, mName, mName + ": " + retVal + ": " + exClassName);

@@ -16,35 +16,34 @@
 */
 package com.ibm.jbatch.tck.artifacts.reusable;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.batch.api.AbstractBatchlet;
 
 
 @javax.inject.Named("myParallelSubJobsExitStatusBatchlet")
 public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
     
-    private volatile static int count = 1;
+    private volatile static AtomicInteger count = new AtomicInteger(1);
     
     public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
     
-    private static final Object countLock = new Object();
-
-    public void incrementCount() {
-        synchronized (countLock) {
-            count++;
-        }
-    }
 	
 	@Override
 	public String process() throws Exception {	
 		System.out.println("Running batchlet process(): " + count);
 		
-		incrementCount();
+		count.incrementAndGet();
+		
+		//Get the last thread to start to sleep the longest so we can show it's exit status is the one that is
+		//picked up.
+		if (count.get() == 11) {
+		    Thread.sleep(1000);
+		}
 		
 		String returnString = "VERY GOOD INVOCATION " + count;
 		return returnString;
 		
-		//return GOOD_EXIT_STATUS;
-				
 	}
 	
 	@Override

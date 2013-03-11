@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractCheckpointAlgorithm;
+import javax.batch.api.chunk.AbstractCheckpointAlgorithm;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 

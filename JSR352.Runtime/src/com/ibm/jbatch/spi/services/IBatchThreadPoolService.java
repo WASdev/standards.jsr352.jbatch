@@ -13,38 +13,45 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.spi.services;
 
-
 /*
-* The ExecutorService provides the capability to run tasks asynchronously.
-* The instances of the Executor service are not managed by the ServicesManager cache
-* each invocation of ServicesManager.getExecutorService() returns a new instance of this 
-* service. The caller is responsible for shutting down the service when work is completed
-* 
-*/
+ * The ExecutorService provides the capability to run tasks asynchronously.
+ * The instances of the Executor service are not managed by the ServicesManager cache
+ * each invocation of ServicesManager.getExecutorService() returns a new instance of this 
+ * service. The caller is responsible for shutting down the service when work is completed
+ * 
+ */
 public interface IBatchThreadPoolService extends IBatchServiceBase {
 
+    /**
+     * (Required) Runs the given task. A task is usually short lived
+     * 
+     * @param work
+     *            The task to execute
+     * @param config
+     *            Optional configuration to customize the execution. The
+     *            Container always passes a null value. Typically used when
+     *            other user plugins wish to use the ExecutorService to execute
+     *            tasks.
+     */
 
-	/**
-	 * (Required) Runs the given task. A task is usually short lived
-	 * @param work The task to execute
-     * @param config Optional configuration to customize the execution.
-     *  The Container always passes a null value. 
-     *  Typically used when other user plugins wish to use the ExecutorService to execute tasks.
-	 */
+    public void executeTask(Runnable work, Object config);
 
-	public void executeTask(Runnable work, Object config);
-
-	
-	/**
+    /**
      * Runs the given task. A task is usually short lived
-     * @param work The task to execute
-     * @param config Optional configuration to customize the execution.
-     *  The Container always passes a null value. 
-     *  Typically used when other user plugins wish to use the ExecutorService to execute tasks.
+     * 
+     * @param work
+     *            The task to execute
+     * @param config
+     *            Optional configuration to customize the execution. The
+     *            Container always passes a null value. Typically used when
+     *            other user plugins wish to use the ExecutorService to execute
+     *            tasks.
      */
 
     public ParallelTaskResult executeParallelTask(Runnable work, Object config);
+
+
 }

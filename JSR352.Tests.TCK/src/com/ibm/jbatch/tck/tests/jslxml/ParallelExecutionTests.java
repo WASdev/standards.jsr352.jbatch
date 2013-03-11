@@ -31,6 +31,7 @@ import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
 
 import org.junit.BeforeClass;
 import org.testng.Reporter;
@@ -120,7 +121,7 @@ public class ParallelExecutionTests {
 	        Reporter.log("JobExecution getBatchStatus()="+jobExecution.getBatchStatus()+"<p>");
 	        assertObjEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 	        
-	        List<StepExecution> stepExecutions = jobOp.getStepExecutions(jobExecution.getExecutionId());
+	        List<StepExecution<?>> stepExecutions = jobOp.getStepExecutions(jobExecution.getExecutionId());
 	        
 	        for (StepExecution stepEx : stepExecutions) {
 		        assertObjEquals("VERY GOOD INVOCATION 11", stepEx.getExitStatus());
@@ -187,7 +188,7 @@ public class ParallelExecutionTests {
      * restart and run to completion.
    	 */
     @Test
-    @org.junit.Test
+    @org.junit.Test()
     public void testStopRestartRunningPartitionedStep() throws Exception {
         String METHOD = "testStopRestartRunningPartitionedStep";
         begin(METHOD);
@@ -388,7 +389,7 @@ public class ParallelExecutionTests {
             Reporter.log("Locate job XML file: chunkrestartPartitionedCheckpt10.xml<p>");
 
             Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-            JobExecution execution1 = jobOp.startJobAndWaitForResult("chunkrestartPartitionedCheckpt10", jobParams);
+            TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunkrestartPartitionedCheckpt10", jobParams);
             
             Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
             Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
@@ -404,7 +405,7 @@ public class ParallelExecutionTests {
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 
             Reporter.log("Invoke restartJobAndWaitForResult with execution id: " + lastExecutionId + "<p>");
-            JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
+            TCKJobExecutionWrapper exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
             
             lastExecutionId = exec.getExecutionId();
             Reporter.log("execution #2 JobExecution getBatchStatus()=" + exec.getBatchStatus() + "<p>");

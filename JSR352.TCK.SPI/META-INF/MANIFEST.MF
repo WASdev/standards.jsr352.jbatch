@@ -4,6 +4,5 @@ Bundle-Name: SPI
 Bundle-SymbolicName: JSR352.TCK.SPI
 Bundle-Version: 1.0.0.qualifier
 Import-Package: javax.batch.operations,
- javax.batch.runtime,
- javax.batch.operations.exception
+ javax.batch.runtime
 Export-Package: com.ibm.jbatch.tck.spi

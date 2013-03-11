@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.reusable;
 import javax.batch.api.AbstractBatchlet;
 
 
-@javax.inject.Named("myBatchlet")
+@javax.inject.Named("myBatchletImpl")
 public class MyBatchletImpl extends AbstractBatchlet {
     
     private volatile static int count = 1;

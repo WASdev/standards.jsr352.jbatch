@@ -19,23 +19,21 @@ package com.ibm.jbatch.tck.tests.jslxml;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.batch.operations.NoSuchJobException;
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.operations.exception.NoSuchJobException;
-import javax.batch.operations.exception.NoSuchJobInstanceException;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.testng.Reporter;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -100,8 +98,6 @@ public class JobOperatorTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_1step.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_1step.xml");
-
 	
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_1step");
@@ -150,11 +146,10 @@ public class JobOperatorTests {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
 
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
@@ -163,15 +158,13 @@ public class JobOperatorTests {
 	        
 	         long jobInstanceId = execution1.getInstanceId();
 	         long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
-	         JobInstance requestedJobInstance = null;
+	         TCKJobExecutionWrapper exec = null;
 	         Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
 		        Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 	         {
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
 	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
-	             requestedJobInstance = jobOp.getJobInstance(exec.getInstanceId());
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			        Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
 			        Reporter.log("execution #2 Job instance id="+exec.getInstanceId()+"<p>");
@@ -199,8 +192,6 @@ public class JobOperatorTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_longrunning.xml<p>");
-	        URL jobXMLURL = ExecutionTests.class.getResource("/job_batchlet_longrunning.xml");
-
 	        
 	        Reporter.log("Create job parameters for execution #1:<p>");
 	        Properties jobParameters = new Properties();
@@ -241,14 +232,12 @@ public class JobOperatorTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_1step.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_1step.xml");
-
 	
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_1step");
 	        
 	        Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-	        List<StepExecution> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
+	        List<StepExecution<?>> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
 	        
 	        assertObjEquals(1, stepExecutions.size());
 	        
@@ -283,14 +272,12 @@ public class JobOperatorTests {
 		
 		try {
 			Reporter.log("Locate job XML file: job_batchlet_4steps.xml<p>");
-			URL jobXMLURL = this.getClass().getResource("/job_batchlet_4steps.xml");
-
 			
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_4steps");
 	
 			 Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution<?>> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
 			assertObjEquals(4, stepExecutions.size());
 			
 			
@@ -334,14 +321,12 @@ public class JobOperatorTests {
 		
 		try {
 			Reporter.log("Locate job XML file: job_batchlet_4steps.xml<p>");
-			URL jobXMLURL = this.getClass().getResource("/job_batchlet_4steps.xml");
-
 			
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_4steps");
 			assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			
-			jobOp.abandonJobInstance(jobExec);
+			jobOp.abandonJobInstance(jobExec.getExecutionId());
 			
 			assertObjEquals(BatchStatus.ABANDONED, jobExec.getBatchStatus());
 						
@@ -389,10 +374,9 @@ public class JobOperatorTests {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
@@ -458,11 +442,9 @@ public class JobOperatorTests {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
@@ -529,11 +511,9 @@ public class JobOperatorTests {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
@@ -586,16 +566,9 @@ public class JobOperatorTests {
     public void testJobOpgetJobInstancesException() throws Exception {
         String METHOD = "testJobOpgetJobInstancesException";
         begin(METHOD);
-       
-        try {
-	        int countTrackerBEFORE = 0;
-	        
-	        try {
-	        	countTrackerBEFORE = jobOp.getJobInstanceCount("ChunkStopOnEndOn");
-	        } catch (NoSuchJobException e) {
-	        	// Can continue.
-	        }
-	        
+
+		try {
+
 	        Reporter.log("Create job parameters for execution #1:<p>");
 	        Properties jobParams = new Properties();
 	        Reporter.log("execution.number=1<p>");
@@ -611,21 +584,14 @@ public class JobOperatorTests {
 	        
 	        
 	        Reporter.log("Locate job XML file: /chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
 	        assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
 	        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
-	        
-	         long jobInstanceId = execution1.getInstanceId();
-	        //TODO - we think this will change so we restart by instanceId, for now the draft spec
-	        // says to restart by execution Id.
-	        long lastExecutionId = execution1.getExecutionId();
 	        
 	        List<JobInstance> jobIds = null;
 	        
@@ -639,70 +605,6 @@ public class JobOperatorTests {
     		handleException(METHOD, e);
     	}
  
-    }
- 
-	@Test(enabled = false) @org.junit.Test @Ignore
-    public void testJobOperatorGetExecutionsException() throws Exception {
-        String METHOD = "testInvokeJobWithStopElement";
-        begin(METHOD);
-        
-        try {
-        	Reporter.log("Create job parameters for execution #1:<p>");
-	        Properties jobParams = new Properties();
-	        Reporter.log("execution.number=1<p>");
-    		Reporter.log("readrecord.fail=12<p>");
-    		Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
-    		Reporter.log("app.next.writepoints=10,15,20,25,30<p>");
-    		Reporter.log("app.commitinterval=5<p>");
-	        jobParams.put("execution.number", "1");
-	        jobParams.put("readrecord.fail", "12");
-	        jobParams.put("app.arraysize", "30");
-	        jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
-	        jobParams.put("app.next.writepoints", "10,15,20,25,30");
-	        jobParams.put("app.commitinterval", "5");
-	        
-	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
-	        
-	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-	        assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
-	        assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getExitStatus());
-	        
-	         long jobInstanceId = execution1.getInstanceId();
-	         long lastExecutionId = execution1.getExecutionId();
-	         Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
-		        Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
-		        
-	         {
-	        
-	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             JobExecution exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
-	             lastExecutionId = exec.getExecutionId();
-	             
-	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
-			     Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
-			     Reporter.log("execution #2 Job instance id="+exec.getInstanceId()+"<p>");
-	             assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, exec.getBatchStatus());
-	             assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, exec.getExitStatus());
-	             assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
-	         }
-	         
-	         try {
-	        	 List<JobExecution> instances = jobOp.getExecutions(null);
-	         }
-	         catch (Exception e){
-	        	 Reporter.log("Testing for NoSuchJobInstanceException obj, got: " + e.getClass() + "<p>");
-	        	 assertWithMessage("Exception caught is an instanceof NoSuchJobInstanceException", e instanceof NoSuchJobInstanceException);
-	         }
-        } catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
-      
     }
     
 	/*
@@ -738,11 +640,9 @@ public class JobOperatorTests {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
@@ -751,15 +651,13 @@ public class JobOperatorTests {
 	        
 	         long jobInstanceId = execution1.getInstanceId();
 	         long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
-	         JobInstance requestedJobInstance = null;
+	         TCKJobExecutionWrapper exec = null;
 	         Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
 		        Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
 	         {
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
 	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
-	             requestedJobInstance = jobOp.getJobInstance(exec.getInstanceId());
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			        Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
 			        Reporter.log("execution #2 Job instance id="+exec.getInstanceId()+"<p>");
@@ -768,7 +666,7 @@ public class JobOperatorTests {
 	             assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
 	         }
 	         
-	         Properties jobprops = jobOp.getParameters(requestedJobInstance);
+	         Properties jobprops = jobOp.getParameters(exec.getExecutionId());
 	         jobprops.toString();
 	 		
 	         Reporter.log("Testing retrieval of a Properties obj, got: " + jobprops.getClass() + "<p>");
@@ -778,142 +676,6 @@ public class JobOperatorTests {
 	 		Reporter.log("newprops: " + newprops.toString() + "<p>");
 	 		Reporter.log("Testing retrieval of a Properties obj, got: " + newprops.getClass() + "<p>");
 	 		assertWithMessage("Testing retrieval of a Properties obj", newprops instanceof Properties);
-        } catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
- 		
- 	}
-	
-	@Test(enabled = false)
-	@org.junit.Test @Ignore
-    public void testJobOperatorGetParametersException() throws Exception {
-        String METHOD = "testJobOperatorGetParametersException";
-        begin(METHOD);
-        
-        try {
-        	Reporter.log("Create job parameters for execution #1:<p>");
-	        Properties jobParams = new Properties();
-	        Reporter.log("execution.number=1<p>");
-    		Reporter.log("readrecord.fail=12<p>");
-    		Reporter.log("app.arraysize=30<p>");
-    		Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
-    		Reporter.log("app.next.writepoints=10,15,20,25,30<p>");
-    		Reporter.log("app.commitinterval=5<p>");
-	        jobParams.put("execution.number", "1");
-	        jobParams.put("readrecord.fail", "12");
-	        jobParams.put("app.arraysize", "30");
-	        jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
-	        jobParams.put("app.next.writepoints", "10,15,20,25,30");
-	        jobParams.put("app.commitinterval", "5");
-	        
-	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
-	        
-	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-	        assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
-	        assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getExitStatus());
-	        
-	         long jobInstanceId = execution1.getInstanceId();
-	         long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
-	         Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
-		     Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
-	         {
-	        
-	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
-	             lastExecutionId = exec.getExecutionId();
-	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
-			     Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
-			     Reporter.log("execution #2 Job instance id="+exec.getInstanceId()+"<p>");
-	             assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, exec.getBatchStatus());
-	             assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, exec.getExitStatus());
-	             assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
-	         }
-	  	
-	 		try{
-	 			Properties newprops = jobOp.getParameters(null);
-	 		}
-	 		catch (Exception e){
-	 			Reporter.log("Testing that exception caught is an instanceof NoSuchJobInstanceException, got: " + e.getClass() + "<p>");
-	 			assertWithMessage("Exception caught is an instanceof NoSuchJobInstanceException", e instanceof NoSuchJobInstanceException);
-	 		}
-        } catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
- 		
- 	}
-	
-	/*
-	 * @testName: testJobOperatorGetJobInstance
-	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstance
-	 * @test_Strategy: Start a job, which is configured to fail. Restart the same job which is configured to complete successfully.
-	 *                 Retrieve the Job Instance object for the known job instance id. Test that the object retrieved is an instance of JobInstance
-	 *                 
-	 * @throws Exception 
-	 * 
-	 */
-	@Test  
-	@org.junit.Test
-    public void testJobOperatorGetJobInstance() throws Exception {
-        String METHOD = "testJobOperatorGetJobInstance";
-        begin(METHOD);
-        
-        try {
-        	Reporter.log("Create job parameters for execution #1:<p>");
-	        Properties jobParams = new Properties();
-	        Reporter.log("execution.number=1<p>");
-    		Reporter.log("readrecord.fail=12<p>");
-    		Reporter.log("app.arraysize=30<p>");
-    		Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
-    		Reporter.log("app.next.writepoints=10,15,20,25,30<p>");
-    		Reporter.log("app.commitinterval=5<p>");
-	        jobParams.put("execution.number", "1");
-	        jobParams.put("readrecord.fail", "12");
-	        jobParams.put("app.arraysize", "30");
-	        jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
-	        jobParams.put("app.next.writepoints", "10,15,20,25,30");
-	        jobParams.put("app.commitinterval", "5");
-	        
-	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
-	        
-	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-	        assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
-	        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
-	        
-	         long jobInstanceId = execution1.getInstanceId();
-	         long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
-	         
-	         {
-	        
-	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
-	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
-	             lastExecutionId = exec.getExecutionId();
-	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
-			     Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
-			     Reporter.log("execution #2 Job instance id="+exec.getInstanceId()+"<p>");
-	             assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, exec.getBatchStatus());
-	             assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
-	             assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
-	         }
-	         
-	         JobInstance jobInstance = jobOp.getJobInstance(jobInstanceId);
-	         Reporter.log("Job name = " + jobInstance.getJobName() + "<p>");
-	         Reporter.log("Testing retrieval of the JobInstance obj<p>");
-	 		assertWithMessage("Testing retrieval of the JobInstance obj", jobInstance instanceof JobInstance);
         } catch (Exception e) {
     		handleException(METHOD, e);
     	}
@@ -933,145 +695,136 @@ public class JobOperatorTests {
 	 */
 	@Test  
 	@org.junit.Test
-    public void testJobOperatorGetJobInstances() throws Exception {
-        String METHOD = "testJobOperatorGetJobInstances";
-        begin(METHOD);
-        
-        try {
-        	Reporter.log("Create job parameters for execution #1:<p>");
-	        Properties jobParams = new Properties();
-	        Reporter.log("execution.number=1<p>");
-    		Reporter.log("readrecord.fail=31<p>");
-    		Reporter.log("app.arraysize=30<p>");
-    		Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
-    		Reporter.log("app.commitinterval=5<p>");
-	        jobParams.put("execution.number", "1");
-	        jobParams.put("readrecord.fail", "31");
-	        jobParams.put("app.arraysize", "30");
-	        jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
-	        jobParams.put("app.commitinterval", "5");
-	        
-	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
+	public void testJobOperatorGetJobInstances() throws Exception {
+		String METHOD = "testJobOperatorGetJobInstances";
+		begin(METHOD);
 
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
-	        
-	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-	        assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
-	        assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
-	        
-	        Reporter.log("Create job parameters for execution #2:<p>");
-	        jobParams = new Properties();
-	        Reporter.log("execution.number=2<p>");
-	        Reporter.log("readrecord.fail=31<p>");
-	    	 Reporter.log("app.arraysize=30<p>");
-	    	 Reporter.log("app.writepoints=10,15,20,25,30<p>");
-	    	 Reporter.log("app.commitinterval=5<p>");
-	        jobParams.put("execution.number", "1");
-	        jobParams.put("readrecord.fail", "31");
-	        jobParams.put("app.arraysize", "30");
-	        jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
-	        jobParams.put("app.commitinterval", "5");
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult for execution #2<p>");
-	        JobExecution execution2 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
-	        Reporter.log("execution #2 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-	        Reporter.log("execution #2 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-	        assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, execution2.getBatchStatus());
-	        assertWithMessage("Testing execution #2", "COMPLETED", execution2.getExitStatus());
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult for execution #2<p>");
-	        JobExecution execution3 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
-	        Reporter.log("execution #3 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-	        Reporter.log("execution #3 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-	        assertWithMessage("Testing execution #3", BatchStatus.COMPLETED, execution3.getBatchStatus());
-	        assertWithMessage("Testing execution #3", "COMPLETED", execution3.getExitStatus());
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult for execution #2<p>");
-	        JobExecution execution4 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
-	        Reporter.log("execution #4 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-	        Reporter.log("execution #4 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-	        assertWithMessage("Testing execution #4", BatchStatus.COMPLETED, execution4.getBatchStatus());
-	        assertWithMessage("Testing execution #4", "COMPLETED", execution4.getExitStatus());
-	         
-	         List <JobInstance> jobInstances012 = jobOp.getJobInstances("chunksize5commitinterval5",0,3);
-	         List <JobInstance> jobInstances123 = jobOp.getJobInstances("chunksize5commitinterval5",1,3);
-	         
-	         for (int i=0; i<3; i++){
-	        	 System.out.println("AJM: instance id012["+i+"] = " + jobInstances012.get(i).getInstanceId());
-	        	 System.out.println("AJM: instance id123["+i+"] = " + jobInstances123.get(i).getInstanceId());
-	         }
-	         
-	         assertWithMessage("job instances should not be equal", jobInstances012.get(0).getInstanceId()!=jobInstances123.get(0).getInstanceId()); 
-	         assertWithMessage("job instances should be equal", jobInstances012.get(1).getInstanceId()==jobInstances123.get(0).getInstanceId()); 
-	         assertWithMessage("job instances should be equal", jobInstances012.get(2).getInstanceId()==jobInstances123.get(1).getInstanceId()); 
-	         assertWithMessage("job instances should not be equal", jobInstances012.get(2).getInstanceId()!=jobInstances123.get(2).getInstanceId()); 
+		try {
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			Reporter.log("execution.number=1<p>");
+			Reporter.log("readrecord.fail=31<p>");
+			Reporter.log("app.arraysize=30<p>");
+			Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
+			Reporter.log("app.commitinterval=5<p>");
+			jobParams.put("execution.number", "1");
+			jobParams.put("readrecord.fail", "31");
+			jobParams.put("app.arraysize", "30");
+			jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
+			jobParams.put("app.commitinterval", "5");
 
-	         
-	         
-	         Reporter.log("Size of jobInstancesList = " + jobInstances012.size() + "<p>");
-	         Reporter.log("Testing retrieval of the JobInstances list<p>");
-	 		assertWithMessage("Testing retrieval of the JobInstances list", jobInstances012.size() > 0);
-         } catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
- 		
- 	}
-	
+			Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+			JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+
+			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
+			assertWithMessage("Testing execution #1", "COMPLETED", execution1.getExitStatus());
+
+			Reporter.log("Create job parameters for execution #2:<p>");
+			jobParams = new Properties();
+			Reporter.log("execution.number=2<p>");
+			Reporter.log("readrecord.fail=31<p>");
+			Reporter.log("app.arraysize=30<p>");
+			Reporter.log("app.writepoints=10,15,20,25,30<p>");
+			Reporter.log("app.commitinterval=5<p>");
+			jobParams.put("execution.number", "1");
+			jobParams.put("readrecord.fail", "31");
+			jobParams.put("app.arraysize", "30");
+			jobParams.put("app.writepoints", "0,5,10,15,20,25,30");
+			jobParams.put("app.commitinterval", "5");
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #2<p>");
+			JobExecution execution2 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+			Reporter.log("execution #2 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("execution #2 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, execution2.getBatchStatus());
+			assertWithMessage("Testing execution #2", "COMPLETED", execution2.getExitStatus());
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #2<p>");
+			JobExecution execution3 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+			Reporter.log("execution #3 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("execution #3 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing execution #3", BatchStatus.COMPLETED, execution3.getBatchStatus());
+			assertWithMessage("Testing execution #3", "COMPLETED", execution3.getExitStatus());
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #2<p>");
+			JobExecution execution4 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+			Reporter.log("execution #4 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("execution #4 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing execution #4", BatchStatus.COMPLETED, execution4.getBatchStatus());
+			assertWithMessage("Testing execution #4", "COMPLETED", execution4.getExitStatus());
+
+			List <JobInstance> jobInstances012 = jobOp.getJobInstances("chunksize5commitinterval5",0,3);
+			List <JobInstance> jobInstances123 = jobOp.getJobInstances("chunksize5commitinterval5",1,3);
+
+			for (int i=0; i<3; i++){
+				System.out.println("AJM: instance id012["+i+"] = " + jobInstances012.get(i).getInstanceId());
+				System.out.println("AJM: instance id123["+i+"] = " + jobInstances123.get(i).getInstanceId());
+			}
+
+			assertWithMessage("job instances should not be equal", jobInstances012.get(0).getInstanceId()!=jobInstances123.get(0).getInstanceId()); 
+			assertWithMessage("job instances should be equal", jobInstances012.get(1).getInstanceId()==jobInstances123.get(0).getInstanceId()); 
+			assertWithMessage("job instances should be equal", jobInstances012.get(2).getInstanceId()==jobInstances123.get(1).getInstanceId()); 
+			assertWithMessage("job instances should not be equal", jobInstances012.get(2).getInstanceId()!=jobInstances123.get(2).getInstanceId()); 
+
+
+
+			Reporter.log("Size of jobInstancesList = " + jobInstances012.size() + "<p>");
+			Reporter.log("Testing retrieval of the JobInstances list<p>");
+			assertWithMessage("Testing retrieval of the JobInstances list", jobInstances012.size() > 0);
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+
+	}
+
 	/*
-	 * @testName: testJobOperatorGetRunningJobInstances
+	 * @testName: testJobOperatorGetRunningJobExecutions
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstances
-	 * @test_Strategy: start a job which will ensure at least one job instance known to the runtime. Job will be long running. Testcase does not wait for job to complete.
-	 *                 Retrieve a list of job instance ids for the job name just started that are in running state. Ensure that at least one Job Instance is returned
+	 * @assertion: Section 7.7.9 Job Operator - getRunningExecutions
+	 * @test_Strategy: start a job which will ensure at least one job execution is known to the runtime. Job will be long running. Testcase does not wait for job to complete.
+	 *                 Retrieve a list of JobExecution(s) for the job name just started that are in running state. Ensure that at least one JobExecution is returned
 	 *                 Test that 
 	 * @throws Exception
 	 * 
 	 */
 	@Test
 	@org.junit.Test
-    public void testJobOperatorGetRunningJobExecutions() throws Exception {
-        String METHOD = "testJobOperatorGetRunningJobInstances";
-        begin(METHOD);
-        
-        try {
-        	Reporter.log("Create job parameters for execution #1:<p>");
-	        Properties jobParams = new Properties();
-	        Reporter.log("app.timeinterval=10000<p>");
-	        jobParams.put("app.timeinterval", "10000");
-	        
-	        Reporter.log("Locate job XML file: job_batchlet_step_listener.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_step_listener.xml");
+	public void testJobOperatorGetRunningJobExecutions() throws Exception {
+		String METHOD = "testJobOperatorGetRunningJobExecutions";
+		begin(METHOD);
 
-	        
-	        Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParams);
-	        
-	         //long jobInstanceId = execution1.getInstanceId();
-	         //long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
-	         
-	         
-			Properties jobParametersOverride = new Properties();
-			jobParametersOverride.put("app.timeinterval", "10000");
-	
+		try {
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			Reporter.log("app.timeinterval=10000<p>");
+			jobParams.put("app.timeinterval", "10000");
+
+			Reporter.log("Locate job XML file: job_batchlet_step_listener.xml<p>");
+
+			Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
+			JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParams);
+
+			Properties restartJobParameters = new Properties();
+			restartJobParameters.put("app.timeinterval", "10000");
 			Reporter.log("Invoke startJobWithoutWaitingForResult<p>");
-			exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParametersOverride);
-	         
-	         List<JobExecution> jobExecutions = jobOp.getRunningExecutions("job_batchlet_step_listener");
-	         assertWithMessage("Found job instances in the RUNNING state", jobExecutions.size() > 0);
-	         
-        } catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
- 		
- 	}
-	
+			
+			JobExecution exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", restartJobParameters);
+
+			List<Long> jobExecutions = jobOp.getRunningExecutions("job_batchlet_step_listener");
+			assertWithMessage("Found job instances in the RUNNING state", jobExecutions.size() > 0);
+
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+
+	}
+
 	/*
-	 * @testName: testJobOperatorGetRunningJobInstancesExeception
+	 * @testName: testJobOperatorGetRunningJobInstancesException
 	 * 
 	 * @assertion: Section 7.7.9 Job Operator - getJobInstances
 	 * @test_Strategy: start a job which will ensure at least one job instance known to the runtime. Job will be long running. Testcase does not wait for job to complete.
@@ -1082,33 +835,31 @@ public class JobOperatorTests {
 	 */
 	@Test
 	@org.junit.Test
-    public void testJobOperatorGetRunningJobExecutionsExeception() throws Exception {
-        String METHOD = "testJobOperatorGetRunningJobInstancesExeception";
-        begin(METHOD);
-        
-        try {
-        	Reporter.log("Create job parameters for execution #1:<p>");
-	        Properties jobParams = new Properties();
-	        Reporter.log("app.timeinterval=10000<p>");
-	        jobParams.put("app.timeinterval", "10000");
-	        
-	        Reporter.log("Locate job XML file: job_batchlet_step_listener.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_step_listener.xml");
+	public void testJobOperatorGetRunningJobInstancesException() throws Exception {
+		String METHOD = "testJobOperatorGetRunningJobInstancesException";
+		begin(METHOD);
 
-	        
-	        Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParams);
-	        
-	         //long jobInstanceId = execution1.getInstanceId();
-	         //long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
-	         
-	         
-			Properties jobParametersOverride = new Properties();
-			jobParametersOverride.put("app.timeinterval", "10000");
-	
+		try {
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			Reporter.log("app.timeinterval=10000<p>");
+			jobParams.put("app.timeinterval", "10000");
+
+			Reporter.log("Locate job XML file: job_batchlet_step_listener.xml<p>");
+
+			Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
+			JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParams);
+
+			//long jobInstanceId = execution1.getInstanceId();
+			//long lastExecutionId = execution1.getExecutionId();
+			JobExecution exec = null;
+
+
+			Properties restartJobParameters = new Properties();
+			restartJobParameters.put("app.timeinterval", "10000");
+
 			Reporter.log("Invoke startJobWithoutWaitingForResult");
-			exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParametersOverride);
+			exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", restartJobParameters);
 			//lastExecutionId = exec.getExecutionId();
 
 			try {
@@ -1119,12 +870,11 @@ public class JobOperatorTests {
 				Reporter.log("Test that exception caught is an instanceof NoSuchJobExecutionException<p>");
 				assertWithMessage("Exception caught is an instanceof NoSuchJobExecutionException", e instanceof NoSuchJobException);
 			}
-        } catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
-         
- 	}
-	
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+
+	}
 	/*
 	 * @testName: testJobOperatorGetJobExecution
 	 * 
@@ -1138,19 +888,19 @@ public class JobOperatorTests {
 	 */
 	@Test 
 	@org.junit.Test
-    public void testJobOperatorGetJobExecution() throws Exception {
-        String METHOD = "testJobOperatorGetJobExecution";
+	public void testJobOperatorGetJobExecution() throws Exception {
+		String METHOD = "testJobOperatorGetJobExecution";
         begin(METHOD);
         
         try {
         	Reporter.log("Create job parameters for execution #1:<p>");
 	        Properties jobParams = new Properties();
 	        Reporter.log("execution.number=1<p>");
-	        Reporter.log("readrecord.fail=12<p>");
-	        Reporter.log("app.arraysize=30<p>");
-	        Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
-	        Reporter.log("app.next.writepoints=10,15,20,25,30<p>");
-	        Reporter.log("app.commitinterval=5<p>");
+    		Reporter.log("readrecord.fail=12<p>");
+    		Reporter.log("app.arraysize=30<p>");
+    		Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
+    		Reporter.log("app.next.writepoints=10,15,20,25,30<p>");
+    		Reporter.log("app.commitinterval=5<p>");
 	        jobParams.put("execution.number", "1");
 	        jobParams.put("readrecord.fail", "12");
 	        jobParams.put("app.arraysize", "30");
@@ -1159,11 +909,9 @@ public class JobOperatorTests {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
 
-	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
@@ -1172,7 +920,7 @@ public class JobOperatorTests {
 	        
 	         long jobInstanceId = execution1.getInstanceId();
 	         long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
+	         TCKJobExecutionWrapper exec = null;
 	         
 	         {
 	        
@@ -1186,17 +934,17 @@ public class JobOperatorTests {
 	             assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
 	             assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
 	         }
-	         
-	         Reporter.log("Testing retrieval of a JobExecution obj");
-	         JobExecution jobEx = jobOp.getJobExecution(lastExecutionId);
-	         Reporter.log("Status retreived from JobExecution obj: " + jobEx.getBatchStatus() + "<p>");
-	 		assertWithMessage("Testing retrieval of a JobExecution obj", jobEx instanceof JobExecution);
-        } catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
- 		
- 	}
-	
+
+			Reporter.log("Testing retrieval of a JobExecution obj");
+			JobExecution jobEx = jobOp.getJobExecution(lastExecutionId);
+			Reporter.log("Status retreived from JobExecution obj: " + jobEx.getBatchStatus() + "<p>");
+			assertWithMessage("Testing retrieval of a JobExecution obj", jobEx instanceof JobExecution);
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+
+	}
+
 	/*
 	 * @testName: testJobOperatorGetJobExecutions
 	 * 
@@ -1210,8 +958,8 @@ public class JobOperatorTests {
 	 */
 	@Test 
 	@org.junit.Test
-    public void testJobOperatorGetJobExecutions() throws Exception {
-        String METHOD = "testJobOperatorGetJobExecutions";
+	public void testJobOperatorGetJobExecutions() throws Exception {
+		String METHOD = "testJobOperatorGetJobExecutions";
         begin(METHOD);
         
         try {
@@ -1231,28 +979,25 @@ public class JobOperatorTests {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
 	        
 	        Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 	        Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
 	        assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
 	        assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
 	        
-	         long jobInstanceId = execution1.getInstanceId();
-	         JobInstance jobInstance = jobOp.getJobInstance(jobInstanceId);
 	         long lastExecutionId = execution1.getExecutionId();
-	         JobExecution exec = null;
+	         JobInstance jobInstance = jobOp.getJobInstance(lastExecutionId);
+	         long jobInstanceId = jobInstance.getInstanceId();
+	         TCKJobExecutionWrapper exec = null;
 	         
 	         {
 	        
 	             Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + lastExecutionId + "<p>");
 	             exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
 	             lastExecutionId = exec.getExecutionId();
-	             
 	             Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
 			     Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
 			     Reporter.log("execution #2 Job instance id="+exec.getInstanceId()+"<p>");
@@ -1260,7 +1005,7 @@ public class JobOperatorTests {
 	             assertWithMessage("Testing execution #2", "COMPLETED", exec.getExitStatus());
 	             assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
 	         }
-	         
+
 	         Reporter.log("Testing retrieval of a Properties obj<p>");
 	         List<JobExecution> jobExecutions = jobOp.getJobExecutions(jobInstance);
 	         assertWithMessage("Testing list size of JobExecutions", jobExecutions.size() == 2);
@@ -1281,8 +1026,6 @@ public class JobOperatorTests {
 	    	
 	        String METHOD = "testJobOp";
 	        begin(METHOD);
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_4steps.xml");
-
 
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
 	        
@@ -1305,13 +1048,13 @@ public class JobOperatorTests {
     	
     	
 		Reporter.log("---------------------------");
-		Reporter.log("getStepName(): " + step.getName() + " - ");
-		Reporter.log("getJobExecutionId(): " + step.getJobExecutionId() + " - ");
+		Reporter.log("getStepName(): " + step.getStepName() + " - ");
+		Reporter.log("getJobExecutionId(): " + step.getExecutionId() + " - ");
 		//System.out.print("getStepExecutionId(): " + step.getStepExecutionId() + " - ");
 		Metric[] metrics = step.getMetrics();
 		
 		for (int i = 0; i < metrics.length; i++) {
-			Reporter.log(metrics[i].getName() + ": " + metrics[i].getValue() + " - ");
+			Reporter.log(metrics[i].getType() + ": " + metrics[i].getValue() + " - ");
 		}
 		
 		Reporter.log("getStartTime(): " + step.getStartTime() + " - ");

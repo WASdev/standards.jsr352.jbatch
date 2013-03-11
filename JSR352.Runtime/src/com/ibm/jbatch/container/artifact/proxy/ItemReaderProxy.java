@@ -16,9 +16,9 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
-import javax.batch.api.ItemReader;
+import javax.batch.api.chunk.ItemReader;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
@@ -33,7 +33,7 @@ public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemRe
     }
 
     @Override
-    public Externalizable checkpointInfo() {
+    public Serializable checkpointInfo() {
         
         try {
             return this.delegate.checkpointInfo();
@@ -55,7 +55,7 @@ public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemRe
     }
 
     @Override
-    public void open(Externalizable checkpoint) {
+    public void open(Serializable checkpoint) {
         
         try {
             this.delegate.open(checkpoint);

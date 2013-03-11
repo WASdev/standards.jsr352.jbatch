@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.ItemProcessor;
+import javax.batch.api.chunk.ItemProcessor;
 
 public class ItemProcessorProxy  extends AbstractProxy<ItemProcessor> implements ItemProcessor {
 

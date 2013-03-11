@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.api.CheckpointAlgorithm;
+import javax.batch.api.chunk.CheckpointAlgorithm;
 
 public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
 

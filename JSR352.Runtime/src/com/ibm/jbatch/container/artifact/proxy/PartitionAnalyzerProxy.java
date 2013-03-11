@@ -16,9 +16,10 @@
  */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
-import javax.batch.api.PartitionAnalyzer;
+import javax.batch.api.partition.PartitionAnalyzer;
+import javax.batch.operations.JobOperator.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
@@ -30,7 +31,7 @@ public class PartitionAnalyzerProxy extends AbstractProxy<PartitionAnalyzer> imp
     }
 
     @Override
-    public synchronized void analyzeCollectorData(Externalizable data) {
+    public synchronized void analyzeCollectorData(Serializable data) {
         
         try {
             this.delegate.analyzeCollectorData(data);
@@ -41,7 +42,7 @@ public class PartitionAnalyzerProxy extends AbstractProxy<PartitionAnalyzer> imp
     }
 
     @Override
-    public synchronized void analyzeStatus(String batchStatus, String exitStatus) {
+    public synchronized void analyzeStatus(BatchStatus batchStatus, String exitStatus) {
         
         try {
             this.delegate.analyzeStatus(batchStatus, exitStatus);

@@ -20,17 +20,17 @@ import javax.batch.runtime.Metric;
 
 public class MetricImpl implements Metric {
 	
-	private MetricName name;
+	private MetricType name;
 	
 	private long value;
 	
-	public MetricImpl(MetricName name, long value) {
+	public MetricImpl(MetricType name, long value) {
 		this.name = name;
 		this.value = value;
 	}
 	
 	@Override
-	public MetricName getName() {
+	public MetricType getType() {
 		return name;
 	}
 

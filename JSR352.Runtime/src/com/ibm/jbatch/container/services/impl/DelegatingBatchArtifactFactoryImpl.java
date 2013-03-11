@@ -85,10 +85,25 @@ public class DelegatingBatchArtifactFactoryImpl implements IBatchArtifactFactory
 		Object loadedArtifact = artifactMap.getArtifactById(batchId);
 
 		if (loadedArtifact == null) {
-			throw new IllegalArgumentException("Could not load any artifacts with batch id=" + batchId);
+			if (logger.isLoggable(Level.FINER)) {
+	            logger.log(Level.FINER, "Artifact not found in batch.xml, trying classloader");
+	        }
+			
+			
+			try {
+				Class<?> artifactClass = Thread.currentThread().getContextClassLoader().loadClass(batchId);
+				
+				if(artifactClass != null)
+					loadedArtifact = artifactClass.newInstance();
+			} catch (ClassNotFoundException e) {
+				throw new BatchContainerRuntimeException("Tried but failed to load artifact with id: " + batchId, e);
+			} catch (InstantiationException e) {
+				throw new BatchContainerRuntimeException("Tried but failed to load artifact with id: " + batchId, e);
+			} catch (IllegalAccessException e) {
+				throw new BatchContainerRuntimeException("Tried but failed to load artifact with id: " + batchId, e);
+			}
 		}
 
-		
 		DependencyInjectionUtility.injectReferences(loadedArtifact, ProxyFactory.getInjectionReferences());
 		
 		if (logger.isLoggable(Level.FINER)) {

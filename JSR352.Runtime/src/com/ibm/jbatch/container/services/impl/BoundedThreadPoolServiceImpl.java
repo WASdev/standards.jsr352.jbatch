@@ -39,7 +39,7 @@ public class BoundedThreadPoolServiceImpl extends AbstractThreadPoolServiceImpl 
 	private String defaultMaxThreadPoolSize = "5";
 	int idleThreadTimeout = 900; //threadPoolConfig.getIdleThreadTimeout();
 	int maxQueueSize = 4096; //threadPoolConfig.getMaxQueueSize();
-	int minThreadPoolSize = 2; // threadPoolConfig.getMinThreadPoolSize();
+	int minThreadPoolSize = 3; // threadPoolConfig.getMinThreadPoolSize();
 	
 	@Override
 	public void init(IBatchConfig batchConfig)
@@ -69,5 +69,7 @@ public class BoundedThreadPoolServiceImpl extends AbstractThreadPoolServiceImpl 
 		
 		if(logger.isLoggable(Level.FINER)) { logger.exiting(sourceClass, method);	}
 	}
+
+
 
 }

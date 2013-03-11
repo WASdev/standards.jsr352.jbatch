@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.CheckpointAlgorithm;
+import javax.batch.api.chunk.CheckpointAlgorithm;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.persistence.ItemCheckpointAlgorithm;

@@ -170,14 +170,14 @@ public class MetricsTests {
 					MetricsStepListener.GOOD_EXIT_STATUS_READ,
 					execution1.getExitStatus());
 			
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 			
 			StepExecution step = null;
 			String stepNameTest = "step1";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -191,8 +191,8 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals(Metric.MetricName.READSKIPCOUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
+				if (metrics[i].getType().equals(Metric.MetricType.READ_SKIP_COUNT)) {
+					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
 					assertWithMessage(
 							"Testing the read skip count for execution #1", 4L,
 							metrics[i].getValue());
@@ -247,14 +247,14 @@ public class MetricsTests {
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
 			
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 			
 			StepExecution step = null;
 			String stepNameTest = "step1";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -268,8 +268,8 @@ public class MetricsTests {
 
 			Reporter.log("Testing the write skip count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals(Metric.MetricName.WRITESKIPCOUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
+				if (metrics[i].getType().equals(Metric.MetricType.WRITE_SKIPCOUNT)) {
+					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
 					assertWithMessage(
 							"Testing the write skip count for execution #1", 3L,
 							metrics[i].getValue());
@@ -326,14 +326,14 @@ public class MetricsTests {
 					MetricsStepListener.GOOD_EXIT_STATUS_PROCESS,
 					execution1.getExitStatus());
 			
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 			
 			StepExecution step = null;
 			String stepNameTest = "step1";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -347,8 +347,8 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals(Metric.MetricName.PROCESSSKIPCOUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
+				if (metrics[i].getType().equals(Metric.MetricType.PROCESS_SKIP_COUNT)) {
+					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
 					assertWithMessage(
 							"Testing the read count for execution #1", 2L,
 							metrics[i].getValue());
@@ -398,14 +398,14 @@ public class MetricsTests {
 			Reporter.log("execution #1 JobExecution getExitStatus()="
 					+ execution1.getExitStatus() + "<p>");
 			
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 			
 			StepExecution step = null;
 			String stepNameTest = "step1Metric";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -419,8 +419,8 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals(Metric.MetricName.READCOUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
+				if (metrics[i].getType().equals(Metric.MetricType.READ_COUNT)) {
+					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
 					assertWithMessage(
 							"Testing the read count for execution #1", 9L,
 							metrics[i].getValue());
@@ -462,14 +462,14 @@ public class MetricsTests {
 			Reporter.log("execution #1 JobExecution getExitStatus()="
 					+ execution1.getExitStatus() + "<p>");
 			
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 			
 			StepExecution step = null;
 			String stepNameTest = "step1Metric";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -483,8 +483,8 @@ public class MetricsTests {
 
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals(Metric.MetricName.WRITECOUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getName());
+				if (metrics[i].getType().equals(Metric.MetricType.WRITE_COUNT)) {
+					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
 					assertWithMessage(
 							"Testing the write count for execution #1", 9L,
 							metrics[i].getValue());
@@ -528,7 +528,7 @@ public class MetricsTests {
 
 			Reporter.log("Obtaining StepExecutions for execution id: "
 					+ execution1.getExecutionId() + "<p>");
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution tempstep = null;
@@ -536,7 +536,7 @@ public class MetricsTests {
 			String stepNameTest = "step1FM";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -549,7 +549,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the filter count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals(Metric.MetricName.FILTERCOUNT)) {
+				if (metrics[i].getType().equals(Metric.MetricType.FILTER_COUNT)) {
 					assertWithMessage(
 							"Testing the filter count for execution #1", 1L,
 							metrics[i].getValue());
@@ -590,7 +590,7 @@ public class MetricsTests {
 
 			Reporter.log("Obtaining StepExecutions for execution id: "
 					+ execution1.getExecutionId() + "<p>");
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution tempstep = null;
@@ -598,7 +598,7 @@ public class MetricsTests {
 			String stepNameTest = "step1CCM";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -611,7 +611,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the commit count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getName().equals(Metric.MetricName.COMMITCOUNT)) {
+				if (metrics[i].getType().equals(Metric.MetricType.COMMIT_COUNT)) {
 					assertWithMessage(
 							"Testing the commit count for execution #1", 4L,
 							metrics[i].getValue());
@@ -624,10 +624,12 @@ public class MetricsTests {
 
 	
 	/*
-	 * @testName: testMetricsCommitCount
+	 * @testName: testMetricsStepTimestamps
 	 * 
 	 * @assertion: Section 7.1 Job Metrics - Commit Count
-	 * @test_Strategy: Batch Artifact read/process/writes a known number of items and all are committed - test that those commits are reflected in the commit count
+	 * @test_Strategy: test case records a point in time and starts a job which contains a step. test that the step start time
+	 *                 occurs after the test case point in time. test that the step end time occurs after the step start time. 
+	 *                 test that the step end time occurs after the test case point in time.
 	 * 
 	 */
 	@Test
@@ -655,7 +657,7 @@ public class MetricsTests {
 
 			Reporter.log("Obtaining StepExecutions for execution id: "
 					+ execution1.getExecutionId() + "<p>");
-			List<StepExecution> stepExecutions = jobOp
+			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution tempstep = null;
@@ -663,7 +665,7 @@ public class MetricsTests {
 			String stepNameTest = "step1CCM";
 
 			for (StepExecution stepEx : stepExecutions) {
-				if (stepNameTest.equals(stepEx.getName())) {
+				if (stepNameTest.equals(stepEx.getStepName())) {
 					step = stepEx;
 				}
 			}
@@ -673,6 +675,9 @@ public class MetricsTests {
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
 			
+			System.out.println("AJM: testcase start time: " + ts);
+			System.out.println("AJM: step start time: " + step.getStartTime());
+			System.out.println("AJM: step end time: " + step.getEndTime());
 			
 			assertWithMessage("Start time of step occurs after start time of test", ts.compareTo(step.getStartTime()) < 0);
 			assertWithMessage("End time of step occurs after start time of step", step.getEndTime().compareTo(step.getStartTime()) > 0);
@@ -683,10 +688,13 @@ public class MetricsTests {
 	}
 	
 	/*
-	 * @testName: testMetricsCommitCount
+	 * @testName: testMetricsJobExecutionTimestamps
 	 * 
 	 * @assertion: Section 7.1 Job Metrics - Commit Count
-	 * @test_Strategy: Batch Artifact read/process/writes a known number of items and all are committed - test that those commits are reflected in the commit count
+	 * @test_Strategy: test starts a job. Test that the start time of the testcase occurs before the start time  of the job.
+	 *                 test that the job create time occurs before the job start time. test that the job end time occurs
+	 *                 after the job start time. test that the last status update time occurs after the job start time.
+	 *                 test that the job end time occurs after the testcase start time.
 	 * 
 	 */
 	@Test

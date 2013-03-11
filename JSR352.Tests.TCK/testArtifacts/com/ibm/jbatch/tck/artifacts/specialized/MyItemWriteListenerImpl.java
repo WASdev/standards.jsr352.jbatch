@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemWriteListener;
+import javax.batch.api.chunk.listener.AbstractItemWriteListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 
@@ -34,8 +34,8 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteReco
 	int beforecounter = 1;
 	int aftercounter = 1;
 	
-	public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
-	public static final String BAD_EXIT_STATUS = "BAD STATUS";
+	public static final String GOOD_EXIT_STATUS = "MyItemWriteListener: GOOD STATUS";
+	public static final String BAD_EXIT_STATUS = "MyItemWriteListener: BAD STATUS";
 	
     @Inject 
     JobContext jobCtx; 
@@ -75,6 +75,7 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteReco
     @Override
     public void onWriteError(List<WriteRecord> items, Exception e) throws Exception {
         logger.finer("In onWriteError()" + e);
+        jobCtx.setExitStatus("MyItemWriteListenerImpl.onWriteError");
     }
 	
 }

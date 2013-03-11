@@ -35,7 +35,7 @@ public class ContextsGetIdStepContextTestBatchlet extends AbstractBatchlet {
 	@Override
 	public String process() throws Exception {
 
-		jobCtx.setExitStatus(stepCtx.getId());
+		jobCtx.setExitStatus(stepCtx.getStepName());
 		return GOOD_EXIT_STATUS;
 	}
 

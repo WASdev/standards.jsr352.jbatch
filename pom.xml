@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>javax.batch</groupId>
     <artifactId>jbatch</artifactId>
-    <version>1.0-b13</version>
+    <version>1.0-b14</version>
     <packaging>pom</packaging>
 	<name>JSR-352 RI</name>
 	<description>

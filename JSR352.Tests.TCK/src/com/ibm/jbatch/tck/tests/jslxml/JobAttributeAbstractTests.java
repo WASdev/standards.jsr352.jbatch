@@ -22,8 +22,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+import javax.batch.operations.JobStartException;
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.operations.exception.JobStartException;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
@@ -37,8 +37,6 @@ import org.testng.annotations.Test;
 public class JobAttributeAbstractTests {
 
 	private JobOperatorBridge jobOp = null;
-	
-	private static final String JOB_FILE = "job_attributes_test";
 	
 	/**
 	 * @testName: testJobAttributeAbstractTrue
@@ -55,14 +53,10 @@ public class JobAttributeAbstractTests {
 		String METHOD = "testJobAttributeAbstractTrue";
 		
 		try {
-		
-			Properties jobParams = new Properties();
-			jobParams.setProperty("abstract", "true");
-	
 			JobExecution jobExec = null;
 			Reporter.log("starting job, should fail because abstract is true");
 			try {
-				jobExec = jobOp.startJobAndWaitForResult(JOB_FILE, jobParams);
+				jobExec = jobOp.startJobAndWaitForResult("job_attributes_abstract_true_test", null);
 			} catch (JobStartException jse) {
 				
 				Reporter.log("JobStartException = " + jse.getLocalizedMessage());
@@ -90,11 +84,8 @@ public class JobAttributeAbstractTests {
 		String METHOD = "testJobAttributeAbstractFalse";
 		
 		try {
-			Properties jobParams = new Properties();
-			jobParams.setProperty("abstract", "false");
-	
 			Reporter.log("starting job");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult(JOB_FILE, jobParams);
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_attributes_abstract_false_test", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
 			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));

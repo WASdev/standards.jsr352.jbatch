@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemReadListener;
+import javax.batch.api.chunk.listener.AbstractItemReadListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 
@@ -34,8 +34,8 @@ public class MyItemReadListenerImpl extends AbstractItemReadListener<ReadRecord>
 	int beforecounter = 1;
 	int aftercounter = 1;
 	
-	public static final String GOOD_EXIT_STATUS = "GOOD STATUS";
-	public static final String BAD_EXIT_STATUS = "BAD STATUS";
+	public static final String GOOD_EXIT_STATUS = "MyItemReadListenerImpl: GOOD STATUS";
+	public static final String BAD_EXIT_STATUS = "MyItemReadListenerImpl: BAD STATUS";
 	
     @Inject 
     JobContext jobCtx; 
@@ -67,5 +67,6 @@ public class MyItemReadListenerImpl extends AbstractItemReadListener<ReadRecord>
 	@Override
 	public void onReadError(Exception e) throws Exception {
 		logger.finer("In onReadRerror() " + e);
+		jobCtx.setExitStatus("MyItemReadListenerImpl.onReadError");
 	}
 }

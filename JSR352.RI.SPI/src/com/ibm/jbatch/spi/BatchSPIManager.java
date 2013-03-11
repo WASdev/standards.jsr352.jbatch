@@ -35,17 +35,17 @@ public final class BatchSPIManager {
 		return INSTANCE;
 	}
 
-	private BatchPurgeHelper batchPurgeHelper = null;
+	private BatchJobUtil batchJobUtil = null;
 	
 	private BatchSecurityHelper batchSecurityHelper = null;
 	
 	private ExecutorServiceProvider executorServiceProvider = null;
 
 	/**
-	 * @return The most recently set BatchPurgeHelper
+	 * @return The most recently set BatchJobUtil
 	 */
-	public BatchPurgeHelper getBatchPurgeHelper() {
-		return batchPurgeHelper;
+	public BatchJobUtil getBatchJobUtil() {
+		return batchJobUtil;
 	}
 	
 	/**
@@ -64,11 +64,11 @@ public final class BatchSPIManager {
 
 	/**
 	 * May be called at any point and will be immediately reflected in the singleton,
-	 * i.e. getBatchSecurityHelper() will return this.
+	 * i.e. getBatchJobUtil() will return this.
 	 * @param helper impl
 	 */
-	public void registerBatchPurgeHelper(BatchPurgeHelper helper) {
-		this.batchPurgeHelper = helper;
+	public void registerBatchJobUtil(BatchJobUtil helper) {
+		this.batchJobUtil = helper;
 	}
 	
 	/**

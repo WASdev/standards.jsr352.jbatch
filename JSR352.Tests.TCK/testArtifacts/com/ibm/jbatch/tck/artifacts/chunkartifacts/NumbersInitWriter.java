@@ -16,13 +16,13 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.batch.api.AbstractItemWriter;
+import javax.batch.api.chunk.AbstractItemWriter;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -36,7 +36,7 @@ public class NumbersInitWriter extends AbstractItemWriter<NumbersRecord> {
 	
 	protected DataSource dataSource = null;
 	
-	public void open(Externalizable cpd) throws NamingException {
+	public void open(Serializable cpd) throws NamingException {
 		InitialContext ctx = new InitialContext();
 		dataSource = (DataSource) ctx.lookup(RetryConnectionHelper.jndiName);
 	}

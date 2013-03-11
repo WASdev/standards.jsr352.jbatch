@@ -18,10 +18,10 @@ package com.ibm.jbatch.spi.services;
 
 public interface IJobXMLLoaderService extends IBatchServiceBase{
 
-	public String loadXJCL(String id);
-	
-	String loadJob(String id);
-	
-	String loadStep(String id);
-	
+
+    /*
+     * Load an XML document as a String given the JSL id.
+     */
+	String loadJSL(String id);
+
 }

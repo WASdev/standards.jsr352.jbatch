@@ -40,7 +40,7 @@ public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
     
     
     @Override
-	public String loadJob(String id) {
+	public String loadJSL(String id) {
 	    
         String method = "loadJob";
         
@@ -49,7 +49,7 @@ public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
         String jobXML = null;
 
         if (!preferredJobXmlLoader.getClass().equals(this.getClass())) {
-            jobXML = preferredJobXmlLoader.loadJob(id);
+            jobXML = preferredJobXmlLoader.loadJSL(id);
         } else {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "No preferred job xml loader is detected in configuration");
@@ -104,18 +104,6 @@ public class DelegatingJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
 	    
     }
 
-
-    @Override
-	public String loadStep(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String loadXJCL(String id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	private static String readJobXML(InputStream stream)  {
 		

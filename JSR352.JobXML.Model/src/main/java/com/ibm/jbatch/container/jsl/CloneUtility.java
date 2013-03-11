@@ -16,6 +16,7 @@
  */
 package com.ibm.jbatch.container.jsl;
 
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -265,4 +266,33 @@ public class CloneUtility {
         return props;
 
     }
+    
+    /**
+     * Creates a new JSLProperties list from a java.util.Properties
+     * object.
+     * 
+     * @param xmlProperties
+     * @return
+     */
+    public static JSLProperties javaPropsTojslProperties(final Properties javaProps) {
+
+        JSLProperties newJSLProps = jslFactory.createJSLProperties();
+        
+
+        Enumeration<?> keySet = javaProps.propertyNames();
+        
+        while (keySet.hasMoreElements()) {
+            String key = (String)keySet.nextElement();
+            String value = javaProps.getProperty(key);
+            
+            Property newProperty = jslFactory.createProperty();
+            newProperty.setName(key);
+            newProperty.setValue(value);
+            newJSLProps.getPropertyList().add(newProperty);
+        }
+        
+        return newJSLProps;
+
+    }
+    
 }

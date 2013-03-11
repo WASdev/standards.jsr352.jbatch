@@ -22,7 +22,7 @@ import javax.batch.runtime.StepExecution;
 import com.ibm.jbatch.tck.artifacts.common.StatusConstants;
 
 @javax.inject.Named
-public class FlowTransitionToDecisionTestDecider implements Decider<Object>, StatusConstants {
+public class FlowTransitionToDecisionTestDecider implements Decider, StatusConstants {
 	
 	public final static String DECIDER_EXIT_STATUS = "DECIDER_EXIT_STATUS";
 

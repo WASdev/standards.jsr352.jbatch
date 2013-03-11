@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 
 
-import javax.batch.api.ItemProcessor;
+import javax.batch.api.chunk.ItemProcessor;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 

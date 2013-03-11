@@ -26,27 +26,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.api.Batchlet;
-import javax.batch.api.CheckpointAlgorithm;
-import javax.batch.api.ChunkListener;
 import javax.batch.api.Decider;
-import javax.batch.api.ItemProcessListener;
-import javax.batch.api.ItemProcessor;
-import javax.batch.api.ItemReadListener;
-import javax.batch.api.ItemReader;
-import javax.batch.api.ItemWriteListener;
-import javax.batch.api.ItemWriter;
-import javax.batch.api.JobListener;
-import javax.batch.api.PartitionAnalyzer;
-import javax.batch.api.PartitionCollector;
-import javax.batch.api.PartitionMapper;
-import javax.batch.api.PartitionReducer;
-import javax.batch.api.RetryProcessListener;
-import javax.batch.api.RetryReadListener;
-import javax.batch.api.RetryWriteListener;
-import javax.batch.api.SkipProcessListener;
-import javax.batch.api.SkipReadListener;
-import javax.batch.api.SkipWriteListener;
-import javax.batch.api.StepListener;
+import javax.batch.api.chunk.CheckpointAlgorithm;
+import javax.batch.api.chunk.ItemProcessor;
+import javax.batch.api.chunk.ItemReader;
+import javax.batch.api.chunk.ItemWriter;
+import javax.batch.api.chunk.listener.ChunkListener;
+import javax.batch.api.chunk.listener.ItemProcessListener;
+import javax.batch.api.chunk.listener.ItemReadListener;
+import javax.batch.api.chunk.listener.ItemWriteListener;
+import javax.batch.api.chunk.listener.RetryProcessListener;
+import javax.batch.api.chunk.listener.RetryReadListener;
+import javax.batch.api.chunk.listener.RetryWriteListener;
+import javax.batch.api.chunk.listener.SkipProcessListener;
+import javax.batch.api.chunk.listener.SkipReadListener;
+import javax.batch.api.chunk.listener.SkipWriteListener;
+import javax.batch.api.listener.JobListener;
+import javax.batch.api.listener.StepListener;
+import javax.batch.api.partition.PartitionAnalyzer;
+import javax.batch.api.partition.PartitionCollector;
+import javax.batch.api.partition.PartitionMapper;
+import javax.batch.api.partition.PartitionReducer;
 
 public class BatchXMLGenerator {
     

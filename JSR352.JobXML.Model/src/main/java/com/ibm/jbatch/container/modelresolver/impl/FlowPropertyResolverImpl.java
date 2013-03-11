@@ -18,12 +18,10 @@ package com.ibm.jbatch.container.modelresolver.impl;
 
 import java.util.Properties;
 
-
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
 import com.ibm.jbatch.jsl.model.Decision;
 import com.ibm.jbatch.jsl.model.Flow;
-import com.ibm.jbatch.jsl.model.Listener;
 import com.ibm.jbatch.jsl.model.Split;
 import com.ibm.jbatch.jsl.model.Step;
 
@@ -41,19 +39,8 @@ public class FlowPropertyResolverImpl extends AbstractPropertyResolver<Flow>  {
     	flow.setId(this.replaceAllProperties(flow.getId(), submittedProps, parentProps));
     	flow.setNextFromAttribute(this.replaceAllProperties(flow.getNextFromAttribute(), submittedProps, parentProps));
     	
-        // Resolve all the properties defined for this step
         Properties currentProps = null;
-        if (flow.getProperties() != null) {
-            currentProps = this.resolveElementProperties(flow.getProperties().getPropertyList(), submittedProps, parentProps);
-        }
-    	
-        // Resolve Listener properties, this is list of listeners List<Listener>
-        if (flow.getListeners() != null) {
-            for (final Listener listener : flow.getListeners().getListenerList()) {
-                PropertyResolverFactory.createListenerPropertyResolver(this.isPartitionedStep).substituteProperties(listener, submittedProps, currentProps);
-            }
-        }
-        
+
         for (final ExecutionElement next : flow.getExecutionElements()) {
             if (next instanceof Step) {
                 PropertyResolverFactory.createStepPropertyResolver(this.isPartitionedStep).substituteProperties((Step)next, submittedProps, currentProps);

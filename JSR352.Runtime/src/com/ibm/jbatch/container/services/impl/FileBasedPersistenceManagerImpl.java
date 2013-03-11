@@ -38,15 +38,21 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
+import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.exception.PersistenceException;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
+import com.ibm.jbatch.container.jsl.Navigator;
+import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IPersistenceDataKey;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.status.JobStatus;
+import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenceManagerImpl implements
@@ -339,13 +345,13 @@ public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenc
 
 	@Override
 	public void stepExecutionCreateStepExecutionData(String stepExecutionKey,
-			long jobExecutionID, StepContextImpl stepContext) {
+			long jobExecutionID, StepContextImpl stepContext, List<String> stepContainment) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public JobExecution jobOperatorGetJobExecution(long jobExecutionId) {
+	public IJobExecution jobOperatorGetJobExecution(long jobExecutionId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -367,14 +373,14 @@ public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenc
 	}
 
 	@Override
-	public List<JobExecution> jobOperatorGetJobExecutionsByJobInstanceID(
+	public List<IJobExecution> jobOperatorGetJobExecutionsByJobInstanceID(
 			long jobInstanceID) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public List<JobExecution> jobOperatorGetJobExecutions(long jobInstanceId) {
+	public List<IJobExecution> jobOperatorGetJobExecutions(long jobInstanceId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -388,7 +394,7 @@ public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenc
 
 
 	@Override
-	public List<StepExecution> getStepExecutionIDListQueryByJobID(long execid) {
+	public List<StepExecution<?>> getStepExecutionIDListQueryByJobID(long execid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -426,6 +432,100 @@ public class FileBasedPersistenceManagerImpl  extends AbstractMapBasedPersistenc
 	public void purge(String apptag) {
 		// TODO Auto-generated method stub
 		
+	}
+
+
+	@Override
+	public List<JobStatus> getJobStatusFromExecution(long executionId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public long getJobInstanceIdByExecutionId(long executionId) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+	@Override
+	public JobInstance createJobInstance(String name, String apptag,
+			String jobXml, Properties jobParameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public RuntimeJobExecutionHelper createJobExecution(Navigator jobNavigator,
+			JobInstance jobInstance, Properties jobParameters,
+			JobContextImpl jobContext) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public JobStatus createJobStatus(long jobInstanceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public JobStatus getJobStatus(long instanceId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void updateJobStatus(long instanceId, JobStatus jobStatus) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public StepStatus createStepStatus(long stepExecId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public StepStatus getStepStatus(long instanceId, String stepName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void updateStepStatus(long stepExecutionId, StepStatus stepStatus) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+    @Override
+    public StepExecutionImpl createStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    @Override
+    public void updateStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+	@Override
+	public String getTagName(long jobExecutionId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

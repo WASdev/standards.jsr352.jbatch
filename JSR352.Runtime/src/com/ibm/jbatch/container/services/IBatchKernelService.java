@@ -19,18 +19,17 @@ package com.ibm.jbatch.container.services;
 import java.util.List;
 import java.util.Properties;
 import java.util.Stack;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
-import javax.batch.operations.exception.JobExecutionNotRunningException;
-import javax.batch.operations.exception.JobRestartException;
-import javax.batch.operations.exception.JobStartException;
-import javax.batch.operations.exception.NoSuchJobExecutionException;
-import javax.batch.runtime.JobExecution;
+import javax.batch.operations.JobExecutionNotRunningException;
+import javax.batch.operations.JobRestartException;
+import javax.batch.operations.JobStartException;
+import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.container.jobinstance.ParallelJobExecution;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.spi.BatchSecurityHelper;
@@ -38,25 +37,25 @@ import com.ibm.jbatch.spi.services.IBatchServiceBase;
 
 public interface IBatchKernelService extends IBatchServiceBase {
 
-	JobExecution getJobExecution(long executionId);
+	IJobExecution getJobExecution(long executionId);
 
 	StepExecution getStepExecution(long stepExecutionId);
 
 	//AJM: void setJobExecution(Long executionID, JobExecution execution);
 
-	JobExecution restartJob(long executionID) throws JobRestartException;
+	IJobExecution restartJob(long executionID) throws JobRestartException;
 
-	JobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException;
+	IJobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException;
 
-	JobExecution startJob(String jobXML) throws JobStartException;
+	IJobExecution startJob(String jobXML) throws JobStartException;
 
-	JobExecution startJob(String jobXML, Properties jobParameters) throws JobStartException;
+	IJobExecution startJob(String jobXML, Properties jobParameters) throws JobStartException;
 
 	void stopJob(long executionID) throws NoSuchJobExecutionException, JobExecutionNotRunningException;
 
 	// should be removed once props are gone JobExecution restartJob(long jobInstanceId);
 
-	void jobExecutionDone(RuntimeJobExecutionImpl jobExecution);
+	void jobExecutionDone(RuntimeJobExecutionHelper jobExecution);
 
 	//List<StepExecution> getJobSteps(long jobExecutionId);
 
@@ -66,12 +65,29 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
 	JobInstance getJobInstance(long instanceId);
 
-	List<StepExecution> getStepExecutions(long executionId);
+	List<StepExecution<?>> getStepExecutions(long executionId);
 
 	BatchSecurityHelper getBatchSecurityHelper();
 
-	List<ParallelJobExecution> startParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties, LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue);
+    List<BatchWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
+            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
+            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment) throws JobRestartException, JobStartException;
 
-	List<ParallelJobExecution> restartParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties, LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue)
-			throws JobRestartException;
+    List<BatchWorkUnit> buildRestartableParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
+            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
+            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment) throws JobRestartException;
+
+    void startGeneratedJob(BatchWorkUnit batchWork);
+
+    void restartGeneratedJob(BatchWorkUnit batchWork) throws JobRestartException;
+
+    BatchWorkUnit buildNewBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
+            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
+            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment) throws JobStartException;
+
+    BatchWorkUnit buildRestartableBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
+            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
+            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment) throws JobRestartException;
+
+
 }

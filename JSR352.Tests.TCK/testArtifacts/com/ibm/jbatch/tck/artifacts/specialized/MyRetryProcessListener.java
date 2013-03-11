@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.api.RetryProcessListener;
+import javax.batch.api.chunk.listener.RetryProcessListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 

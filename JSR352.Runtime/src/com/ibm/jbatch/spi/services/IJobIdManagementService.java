@@ -17,13 +17,18 @@
 package com.ibm.jbatch.spi.services;
 
 
+/**
+ * Used to generate job instance, job execution and step execution id
+ *
+ * @deprecated use {@link com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl()} instead.  
+ */
 public interface IJobIdManagementService extends IBatchServiceBase {
-
-	public void init(IBatchConfig pgcConfig);
-		
-	public void shutdown() ;
-
-	public long getInstanceId();
-	public long getExecutionId();
-	public long getStepExecutionId();
+//
+//	public void init(IBatchConfig pgcConfig);
+//		
+//	public void shutdown() ;
+//
+//	public long getInstanceId();
+//	public long getExecutionId();
+//	public long getStepExecutionId();
 }

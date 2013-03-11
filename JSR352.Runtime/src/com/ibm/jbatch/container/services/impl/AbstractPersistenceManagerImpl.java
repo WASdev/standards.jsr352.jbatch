@@ -128,7 +128,6 @@ public abstract class AbstractPersistenceManagerImpl  implements IPersistenceMan
     protected abstract void _deleteJobStatus(JobStatusKey key) ;
     
     protected abstract void _deleteCheckpointData(CheckpointDataKey key) ;
-    
 
 
 

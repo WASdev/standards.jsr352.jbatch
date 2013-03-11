@@ -15,9 +15,10 @@
  * limitations under the License.
 */
 package com.ibm.jbatch.container;
-
+import java.io.Serializable;
+import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
@@ -29,9 +30,9 @@ public interface IExecutionElementController extends IController {
     /*
      * @return exitStatus
      */
-    public String execute() throws AbortedBeforeStartException, Exception;
+    public String execute(List<String> containmentName) throws AbortedBeforeStartException, Exception;
     
-    public void setStepContext(StepContextImpl<?, ?> stepContext);
+    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext);
     
     //TODO implement these in the controllers
     //public void registerListeners(List<Listener> listeners);
@@ -40,9 +41,8 @@ public interface IExecutionElementController extends IController {
     
     //public void registerAnalyzers(List<Collector> collectors);
     
-    public void setAnalyzerQueue(LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue);
+    public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue);
 
-	public void setSubJobExitStatusQueue(
-			Stack<String> subJobExitStatusQueue);
+	public void setSubJobExitStatusQueue(Stack<String> subJobExitStatusQueue);
         
 }

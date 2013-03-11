@@ -16,9 +16,9 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
-import javax.batch.api.PartitionCollector;
+import javax.batch.api.partition.PartitionCollector;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
@@ -31,7 +31,7 @@ public class PartitionCollectorProxy extends AbstractProxy<PartitionCollector> i
     }
 
     @Override
-    public Externalizable collectPartitionData() {
+    public Serializable collectPartitionData() {
         
         try {
             return this.delegate.collectPartitionData();

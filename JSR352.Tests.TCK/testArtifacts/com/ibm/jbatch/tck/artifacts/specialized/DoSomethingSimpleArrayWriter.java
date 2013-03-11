@@ -16,11 +16,11 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.List;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemWriter;
+import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
@@ -61,7 +61,7 @@ public class DoSomethingSimpleArrayWriter extends AbstractItemWriter<ReadRecord>
 	int checkpointPosition;
 	
 	@Override
-	public void open(Externalizable cpd) throws Exception {
+	public void open(Serializable cpd) throws Exception {
 		System.out.println("openWriter");
 		
 	       MyPersistentRestartUserData myData = null;

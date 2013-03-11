@@ -16,10 +16,10 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemReader;
+import javax.batch.api.chunk.AbstractItemReader;
 import javax.inject.Inject;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.ArrayIndexCheckpointData;
@@ -59,7 +59,7 @@ public class SkipReader extends AbstractItemReader<ReadRecord> {
 
 
     @Override
-    public void open(Externalizable cpd) {
+    public void open(Serializable cpd) {
 
         if (!readrecordfailNumberString.equals("null")) {
             String[] readFailPointsStrArr = readrecordfailNumberString.split(",");

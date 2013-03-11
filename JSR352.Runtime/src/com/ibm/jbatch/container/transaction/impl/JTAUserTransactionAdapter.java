@@ -57,6 +57,7 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 			userTran = (UserTransaction) ctxt.lookup(jndiLookup);
 			logger.fine("JNDI user transaction manager found");
 		} catch (NamingException ne) {
+            logger.severe("Caught exception: " + ne.getMessage() + " looking up user transaction at JNDI location:  " + jndiLookup);
 			throw new TransactionManagementException(ne);
 		}
 		logger.exiting(CLASSNAME, "init");

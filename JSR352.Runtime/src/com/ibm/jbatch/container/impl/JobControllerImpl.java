@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Stack;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,8 +41,7 @@ import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
-import com.ibm.jbatch.container.jobinstance.ParallelJobExecution;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.jsl.ControlElement;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.Navigator;
@@ -51,6 +50,7 @@ import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.Decision;
 import com.ibm.jbatch.jsl.model.End;
@@ -71,18 +71,20 @@ public class JobControllerImpl implements IController {
     private IJobStatusManagerService jobStatusService = null;
     private IPersistenceManagerService persistenceService = null;
 
-    private RuntimeJobExecutionImpl jobExecution = null;
+    private RuntimeJobExecutionHelper jobExecution = null;
 
     private final JobContextImpl<?> jobContext;
     private final Navigator<JSLJob> jobNavigator;
     private final String jobId;
 
-    private LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue;
+    private BlockingQueue<PartitionDataWrapper> analyzerQueue;
     private Stack<String> subJobExitStatusQueue;
 
 	private ListenerFactory listenerFactory = null;
     
     private final long jobInstanceId;
+    
+    private List<String> containment = null;
 
     //
     // The currently executing controller, this will only be set to the 
@@ -91,9 +93,10 @@ public class JobControllerImpl implements IController {
     private volatile IExecutionElementController currentStoppableElementController = null;
 
 
-    public JobControllerImpl(RuntimeJobExecutionImpl jobExecution) {
+    public JobControllerImpl(RuntimeJobExecutionHelper jobExecution, List<String> containment) {
         this.jobExecution = jobExecution;
         this.jobContext = jobExecution.getJobContext();
+        this.containment = containment;
         jobNavigator = jobExecution.getJobNavigator();
         jobId = jobNavigator.getId();
         //AJM: jobContext = new JobContextImpl(jobId); // TODO - is this the right id?
@@ -221,9 +224,7 @@ public class JobControllerImpl implements IController {
             PrintWriter pw = new PrintWriter(sw);
             t.printStackTrace(pw);
             
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine(CLASSNAME + ": caught exception/error: " + t.getMessage() + " : Stack trace: " + sw.toString());
-            }
+            logger.severe(CLASSNAME + ": caught exception/error: " + t.getMessage() + " : Stack trace: " + sw.toString());
             
             updateJobBatchStatus(BatchStatus.FAILED);
 
@@ -394,7 +395,15 @@ public class JobControllerImpl implements IController {
             this.currentStoppableElementController = elementController;
             String executionElementExitStatus = null;
             try {
-                executionElementExitStatus = elementController.execute();
+                //we need to create a new copy of the containment list to pass around because we
+                //don't want to modify the original containment list, since it can get reused
+                //multiple times
+                ArrayList<String> currentContainment = null;
+                if (containment != null) {
+                    currentContainment = new ArrayList<String>();
+                    currentContainment.addAll(containment);
+                }
+                executionElementExitStatus = elementController.execute(currentContainment);
             } catch (AbortedBeforeStartException e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Execution failed before even getting to execute execution element = " + currentExecutionElement.getId());
@@ -520,10 +529,10 @@ public class JobControllerImpl implements IController {
 		List<StepExecution> stepExecutions = new ArrayList<StepExecution>();
 		if(previousElementController != null) {
 			SplitControllerImpl controller = (SplitControllerImpl)previousElementController;
-			for (ParallelJobExecution parallelJob : controller.getParallelJobExecs()) {
+			for (BatchWorkUnit batchWorkUnit : controller.getParallelJobExecs()) {
 				                			
 				StepExecution lastStepExecution = null;
-				List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(parallelJob.getJobExecution().getExecutionId());
+				List<StepExecution<?>> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(batchWorkUnit.getJobExecutionImpl().getExecutionId());
 				for (StepExecution stepExecution : stepExecs) {
 					lastStepExecution = stepExecution;
 				}
@@ -535,9 +544,9 @@ public class JobControllerImpl implements IController {
 
 	private StepExecution getLastStepExecution(Step last) {
 		StepExecution lastStepExecution = null;
-		List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(jobExecution.getExecutionId());
+		List<StepExecution<?>> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(jobExecution.getExecutionId());
 		for (StepExecution stepExecution : stepExecs) {
-			if(last.getId().equals(stepExecution.getName())) {
+			if(last.getId().equals(stepExecution.getStepName())) {
 				lastStepExecution = stepExecution;
 			}
 		}
@@ -626,7 +635,7 @@ public class JobControllerImpl implements IController {
         
     }
 
-    public void setAnalyzerQueue(LinkedBlockingQueue<PartitionDataWrapper> analyzerQueue) {
+    public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
         this.analyzerQueue = analyzerQueue;
     }
     

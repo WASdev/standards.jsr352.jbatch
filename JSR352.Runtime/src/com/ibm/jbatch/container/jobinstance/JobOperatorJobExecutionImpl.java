@@ -23,15 +23,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
+import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.spi.TaggedJobExecution;
 
-public class JobOperatorJobExecutionImpl implements JobExecution {
+public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExecution {
 
     private final static String sourceClass = JobOperatorJobExecutionImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
@@ -134,12 +135,6 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 
 	}
 
-	// keep?
-	public long getInstanceId() {
-		// TODO Auto-generated method stub
-		return instanceID;
-	}
-
 	@Override
 	public Date getLastUpdatedTime() {
 		// if and only if we are accessing the JDBC impl, get the requested timestamp
@@ -227,8 +222,19 @@ public class JobOperatorJobExecutionImpl implements JobExecution {
 		startTime = ts;
 	}
 	
-	public void setJobProperties(Properties jProps){
+	public void setJobParameters(Properties jProps){
 		jobProperties = jProps;
+	}
+
+	@Override
+	public String getJobName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getTagName() {
+		return _persistenceManagementService.getTagName(executionID);
 	}
 
 }

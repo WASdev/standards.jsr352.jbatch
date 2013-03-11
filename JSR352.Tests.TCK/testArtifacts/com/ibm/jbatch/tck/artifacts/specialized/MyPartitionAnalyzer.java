@@ -16,9 +16,9 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
-import javax.batch.api.AbstractPartitionAnalyzer;
+import javax.batch.api.partition.AbstractPartitionAnalyzer;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
@@ -42,14 +42,14 @@ public class MyPartitionAnalyzer extends AbstractPartitionAnalyzer {
 	StepContext stepCtx;
 	
 	@Override 
-	public void analyzeCollectorData(Externalizable data) throws Exception {
+	public void analyzeCollectorData(Serializable data) throws Exception {
 		
 		analyzedData = analyzedData  + ((ExternalizableString)data).getString() + "A";
 		 
 	}
 	
 	@Override 
-	public void analyzeStatus(String batchStatus, String exitStatus)throws Exception {
+	public void analyzeStatus(BatchStatus batchStatus, String exitStatus)throws Exception {
 	    analyzedStatus = analyzedStatus  + "S";
 	    
 	    //If this method is called the partition is complete. So we should expect analyzedData to 

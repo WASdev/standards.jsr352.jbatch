@@ -16,8 +16,8 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.PartitionMapper;
-import javax.batch.api.PartitionPlan;
+import javax.batch.api.partition.PartitionMapper;
+import javax.batch.api.partition.PartitionPlan;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 

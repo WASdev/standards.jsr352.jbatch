@@ -22,15 +22,12 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.operations.exception.JobRestartException;
-import javax.batch.operations.exception.JobStartException;
-import javax.batch.runtime.JobExecution;
+import javax.batch.operations.JobRestartException;
+import javax.batch.operations.JobStartException;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
-
-import com.ibm.jbatch.container.context.impl.StepContextImpl;
+import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.jsl.ModelResolverFactory;
 import com.ibm.jbatch.container.jsl.ModelSerializer;
 import com.ibm.jbatch.container.jsl.ModelSerializerFactory;
@@ -39,6 +36,7 @@ import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.modelresolver.PropertyResolver;
 import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
 import com.ibm.jbatch.container.services.IBatchKernelService;
+import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
@@ -46,7 +44,7 @@ import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.jsl.model.JSLJob;
-import com.ibm.jbatch.spi.services.IJobIdManagementService;
+import com.ibm.jbatch.jsl.model.JSLProperties;
 
 public class JobExecutionHelper {
 
@@ -57,9 +55,6 @@ public class JobExecutionHelper {
 
     private static ServicesManager servicesManager = ServicesManagerImpl.getInstance();
 
-    private static IJobIdManagementService _jobIdManagementService = 
-    		servicesManager.getJobIdManagementService();
-
     private static IJobStatusManagerService _jobStatusManagerService = 
     		servicesManager.getJobStatusManagerService();
     
@@ -67,203 +62,124 @@ public class JobExecutionHelper {
     		servicesManager.getPersistenceManagerService();
     private static IBatchKernelService _batchKernelService = servicesManager.getBatchKernelService();
 
-    public static RuntimeJobExecutionImpl startJob(String jobXML, Properties jobParameters) throws JobStartException {
-        long instanceId = _jobIdManagementService.getInstanceId();
-        long executionId = _jobIdManagementService.getExecutionId();
 
-        JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobXML); 
-        
-        JobInstanceImpl jobInstanceImpl = new JobInstanceImpl(jobXML, jobParameters, instanceId);                
+    private static Navigator getResolvedJobNavigator(String jobXml, Properties jobParameters, boolean isPartitionedStep) {
 
-        //Resolve the properties for this job
-        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(false);
+        JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobXml); 
+        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(isPartitionedStep);
         propResolver.substituteProperties(jobModel, jobParameters);
-        
-        Navigator jobNavigator = NavigatorFactory.createJobNavigator(jobModel);       
 
-        validateAbstractJobDoNotStart(jobModel);
-        
-        jobInstanceImpl.setJobName(jobNavigator.getId());                                
-
-        _jobStatusManagerService.createJobStatus(jobInstanceImpl, executionId);
-                
-        long time = System.currentTimeMillis();
-        // register jobName in the jobop job information table
-        Timestamp starttime = null; // what is the arg here?
-        Timestamp updatetime = new Timestamp(time); // what is the arg here?
-        Timestamp endtime = null;
-        Timestamp createtime = new Timestamp(time);
-        String apptag = _batchKernelService.getBatchSecurityHelper().getCurrentTag();
-        _persistenceManagementService.jobOperatorCreateJobInstanceData(instanceId, jobNavigator.getId(), apptag);
-        
-        RuntimeJobExecutionImpl rtJobExec = new RuntimeJobExecutionImpl(jobNavigator, jobInstanceImpl, executionId);
-        
-        //perhaps this start time timestamping should be defered to the jobcontroller
-        rtJobExec.setStartTime(starttime);
-        rtJobExec.setCreateTime(createtime);
-        rtJobExec.setLastUpdateTime(updatetime);
-        rtJobExec.setEndTime(endtime);
-        rtJobExec.setJobProperties(jobParameters);
-        
-        createJobExecutionEntry(rtJobExec.getJobOperatorJobExecution());
-        
-        return rtJobExec;
+        return NavigatorFactory.createJobNavigator(jobModel);
     }
 
-	private static void validateAbstractJobDoNotStart(JSLJob jobModel)
-			throws JobStartException {
-		if (jobModel.getAbstract() != null && jobModel.getAbstract().equalsIgnoreCase("true")) {
-        	throw new JobStartException("An abstract job is NOT executable.");
-        }
-	}
+    private static String getJobXml(JSLJob jobModel) {
+        ModelSerializer<JSLJob> serializer = ModelSerializerFactory.createJobModelSerializer();
+        return serializer.serializeModel(jobModel);
+    }
 
-    public static RuntimeJobExecutionImpl restartJob(long executionId) throws JobRestartException {
+    private static JobContextImpl getJobContext(Navigator jobNavigator) {
+        JSLProperties jslProperties = new JSLProperties();
+        if(jobNavigator.getJSL() != null && jobNavigator.getJSL() instanceof JSLJob) {
+            jslProperties = ((JSLJob)jobNavigator.getJSL()).getProperties();
+        }
+        return new JobContextImpl(jobNavigator.getId(), jslProperties); 
+    }
+
+    private static JobInstance getNewJobInstance(String name, String jobXml, Properties jobParameters) {
+        String apptag = _batchKernelService.getBatchSecurityHelper().getCurrentTag();
+        return _persistenceManagementService.createJobInstance(name, apptag, jobXml, jobParameters);
+    }
+
+    private static RuntimeJobExecutionHelper getNewJobExecution(Navigator jobNavigator, JobInstance jobInstance, Properties jobParameters, JobContextImpl jobContext) {
+        return _persistenceManagementService.createJobExecution(jobNavigator, jobInstance, jobParameters, jobContext);
+    }
+
+    private static JobStatus createNewJobStatus(long instanceId) {
+        return _jobStatusManagerService.createJobStatus(instanceId);
+    }
+
+    private static void validateAbstractJobDoNotStart(JSLJob jobModel)
+            throws JobStartException {
+        if (jobModel.getAbstract() != null && jobModel.getAbstract().equalsIgnoreCase("true")) {
+            throw new JobStartException("An abstract job is NOT executable.");
+        }
+    }
+
+    private static void validateRestartableFalseJobsDoNotRestart(JSLJob jobModel)
+            throws JobRestartException {
+        if (jobModel.getRestartable() != null && jobModel.getRestartable().equalsIgnoreCase("false")) {
+            throw new JobRestartException("Job Restartable attribute is false, Job cannot be restarted.");
+        }
+    }
+    
+    public static RuntimeJobExecutionHelper startJob(String jobXML, Properties jobParameters) throws JobStartException {
+        logger.entering(CLASSNAME, "startJob", new Object[]{jobXML, jobParameters});
+
+        JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobXML); 
+
+        RuntimeJobExecutionHelper jobExecution = startJob(jobModel, jobParameters, false);
+
+        logger.exiting(CLASSNAME, "startJob", jobExecution);
+
+        return jobExecution;
+    }
+
+    public static RuntimeJobExecutionHelper startJob(JSLJob jobModel, Properties jobParameters, boolean isPartitionedStep) throws JobStartException{
+
+        logger.entering(CLASSNAME, "startJob", new Object[]{jobModel, jobParameters, isPartitionedStep});
+
+        validateAbstractJobDoNotStart(jobModel);
+
+        String jobXML = getJobXml(jobModel);
+
+        Navigator jobNavigator = getResolvedJobNavigator(jobXML, jobParameters, isPartitionedStep);
+
+        JobContextImpl jobContext = getJobContext(jobNavigator);
+
+        JobInstance jobInstance = getNewJobInstance(jobNavigator.getId(), jobXML, jobParameters);
+
+        RuntimeJobExecutionHelper jobExecution = getNewJobExecution(jobNavigator, jobInstance, jobParameters, jobContext);
+
+        JobStatus jobStatus = createNewJobStatus(jobInstance.getInstanceId());
+        jobStatus.setJobInstance(jobInstance);
+        _jobStatusManagerService.updateJobStatus(jobStatus);
+        
+        logger.exiting(CLASSNAME, "startJob", jobExecution);
+        return jobExecution;
+    }
+
+
+    public static RuntimeJobExecutionHelper restartJob(long executionId) throws JobRestartException {
     	
         return restartJob(executionId, null, false);
     }
     
-    public static RuntimeJobExecutionImpl restartJob(long executionId, Properties restartJobParameters, boolean isPartitionedStep) throws JobRestartException {
-    	
-    	// because of JobOp re-factor, restart now takes in an executionId
-    	// this id must be that of the last execution for the jobinstance
-    	// TODO: ensure that this fact is enforced somewhere
-    	// must go from executionId to a jobInstanceId to do restart
-    	JobExecution jobEx = _persistenceManagementService.jobOperatorGetJobExecution(executionId);
-    	long jobInstanceId = jobEx.getInstanceId();
+    public static RuntimeJobExecutionHelper restartJob(long executionId, Properties restartJobParameters, boolean isPartitionedStep) throws JobRestartException {
+
+    	long jobInstanceId = _persistenceManagementService.getJobInstanceIdByExecutionId(executionId);
     	
         JobStatus jobStatus = _jobStatusManagerService.getJobStatus(jobInstanceId);
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("On restartJob with jobInstance Id = " + jobInstanceId + " , found JobStatus: " + jobStatus );            
+            logger.fine("On restartJob with jobInstance Id = " + jobInstanceId + " , found JobStatus: " + jobStatus ); 
         }
 
         JobInstanceImpl jobInstance = jobStatus.getJobInstance();
 
-        //TODO - check that original job ended in restartable state and that it's restartable.
-        // Don't get a new execution id until we do this check.
-
-        long nextExecutionId = _jobIdManagementService.getExecutionId();
-
-        
+        Navigator jobNavigator = getResolvedJobNavigator(jobInstance.getJobXML(), restartJobParameters, isPartitionedStep);
         JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobInstance.getJobXML());
-        
-        //Resolve the merged restart properties for this job
-        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(isPartitionedStep);
-        propResolver.substituteProperties(jobModel, restartJobParameters);  
-        
-        Navigator jobNavigator = NavigatorFactory.createJobNavigator(jobModel);
-        
-		validateRestartableFalseJobsDoNotRestart(jobModel);
-        
-        _jobStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), nextExecutionId);        
-        long time = System.currentTimeMillis();
-        Timestamp starttime = null; // what is the arg here?
-        Timestamp updatetime = new Timestamp(time); // what is the arg here?
-        Timestamp endtime = null;
-        Timestamp createtime = new Timestamp(time);
-//        _persistenceManagementService.jobOperatorCreateJobInstanceData(jobInstanceId, jobNavigator.getId());
+        validateRestartableFalseJobsDoNotRestart(jobModel);
 
-        RuntimeJobExecutionImpl rtJobExec = new RuntimeJobExecutionImpl(jobNavigator, jobInstance, nextExecutionId, jobStatus.getRestartOn());
-        rtJobExec.setStartTime(starttime);
-        rtJobExec.setCreateTime(createtime);
-        rtJobExec.setLastUpdateTime(updatetime);
-        rtJobExec.setEndTime(endtime);
-        rtJobExec.setJobProperties(restartJobParameters);        
+        JobContextImpl jobContext = getJobContext(jobNavigator);
         
-        createJobExecutionEntry(rtJobExec.getJobOperatorJobExecution());
+        RuntimeJobExecutionHelper jobExecution = getNewJobExecution(jobNavigator, jobInstance, restartJobParameters, jobContext);
         
-        return rtJobExec;
-    }
-
-	private static void validateRestartableFalseJobsDoNotRestart(JSLJob jobModel)
-			throws JobRestartException {
-		if (jobModel.getRestartable() != null && jobModel.getRestartable().equalsIgnoreCase("false")) {
-			throw new JobRestartException("Job Restartable attribute is false, Job cannot be restarted.");
-		}
-	}
-
-    public static RuntimeJobExecutionImpl startJob(JSLJob jobModel, Properties jobParameters, boolean isPartitionedStep) {
-        long instanceId = _jobIdManagementService.getInstanceId();
-        long executionId = _jobIdManagementService.getExecutionId();
-
-        ModelSerializer<JSLJob> serializer = ModelSerializerFactory.createJobModelSerializer();
-        String jobXML = serializer.serializeModel(jobModel);
-        JobInstanceImpl jobInstanceImpl = new JobInstanceImpl(jobXML, jobParameters, instanceId);                
-
-        //Resolve the properties for this job
-        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(isPartitionedStep);
-        propResolver.substituteProperties(jobModel, jobParameters);
+        _jobStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), jobExecution.getExecutionId());        
         
-        Navigator jobNavigator = NavigatorFactory.createJobNavigator(jobModel);       
-
-        jobInstanceImpl.setJobName(jobNavigator.getId());                                
-
-        _jobStatusManagerService.createJobStatus(jobInstanceImpl, executionId);
-                
-        long time = System.currentTimeMillis();
-        // register jobName in the jobop job information table
-        Timestamp starttime = null; // what is the arg here?
-        Timestamp updatetime = new Timestamp(time); // what is the arg here?
-        Timestamp endtime = null;
-        Timestamp createtime = new Timestamp(time);
-        String apptag = _batchKernelService.getBatchSecurityHelper().getCurrentTag();
-        _persistenceManagementService.jobOperatorCreateJobInstanceData(instanceId, jobNavigator.getId(), apptag);
-        
-        RuntimeJobExecutionImpl rtJobExec = new RuntimeJobExecutionImpl(jobNavigator, jobInstanceImpl, executionId);
-        
-        //perhaps this start time timestamping should be defered to the jobcontroller
-        rtJobExec.setStartTime(starttime);
-        rtJobExec.setCreateTime(createtime);
-        rtJobExec.setLastUpdateTime(updatetime);
-        rtJobExec.setEndTime(endtime);
-        rtJobExec.setJobProperties(jobParameters);
-        
-        createJobExecutionEntry(rtJobExec.getJobOperatorJobExecution());
-        
-        return rtJobExec;
-
-    }
+        return jobExecution;
+    }    
     
-    public static void persistStepExecution(long jobExecutionInstanceID, StepContextImpl stepContext){
-    	
-    	String stepExecutionKey = getJobStepExecId(jobExecutionInstanceID, stepContext.getStepExecutionId());
-
-		
-    	_persistenceManagementService.stepExecutionCreateStepExecutionData(stepExecutionKey, jobExecutionInstanceID, stepContext);
-    	
-    }
-    
-    public static void createJobExecutionEntry(JobExecution jobEx){
-    	
-    	long executionId = jobEx.getExecutionId();
-    	long instanceId = jobEx.getInstanceId();
-    	Timestamp starttime = null;
-        Timestamp updatetime = null;
-        Timestamp endtime = null;
-        Timestamp createtime = null;
-        Properties jobParameters = jobEx.getJobParameters();
-        BatchStatus batchStatus = jobEx.getBatchStatus() == null ? BatchStatus.STARTING : jobEx.getBatchStatus();
-        String exitstatus = jobEx.getExitStatus();
-        
-    	_persistenceManagementService.jobOperatorCreateExecutionData(executionId, starttime, updatetime, endtime, createtime, jobParameters, instanceId, batchStatus.name(), exitstatus);
-    }
-    
-    public static void updateJobExecutionEntry(JobExecution jobEx){
-    	
-    	long executionId = jobEx.getExecutionId();
-    	long instanceId = jobEx.getInstanceId();
-    	Timestamp starttime = new Timestamp(jobEx.getStartTime().getTime()); // what is the arg here?
-        Timestamp updatetime = new Timestamp(jobEx.getLastUpdatedTime().getTime()); // what is the arg here?
-        Timestamp endtime = new Timestamp(jobEx.getEndTime().getTime());
-        Timestamp createtime = new Timestamp(jobEx.getCreateTime().getTime());
-        Properties jobParameters = jobEx.getJobParameters();
-        BatchStatus batchStatus = jobEx.getBatchStatus();
-        String exitstatus = jobEx.getExitStatus();
-        
-    	_persistenceManagementService.jobOperatorCreateExecutionData(executionId, starttime, updatetime, endtime, createtime, jobParameters, instanceId, batchStatus.name(), exitstatus);
-    }
-    
-    public static JobExecution getPersistedJobOperatorJobExecution(long jobExecutionId) {
+    public static IJobExecution getPersistedJobOperatorJobExecution(long jobExecutionId) {
     	
     	if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
     		return _persistenceManagementService.jobOperatorGetJobExecution(jobExecutionId);
@@ -312,7 +228,7 @@ public class JobExecutionHelper {
     	return _persistenceManagementService.getStepExecutionObjQueryByStepID(stepexecutionId);
     }
     
-    public static List<StepExecution> getstepExecutionIDInfoList(long jobexecutionId){
+    public static List<StepExecution<?>> getstepExecutionIDInfoList(long jobexecutionId){
     	return _persistenceManagementService.getStepExecutionIDListQueryByJobID(jobexecutionId);
     }
     
@@ -320,16 +236,10 @@ public class JobExecutionHelper {
 //    	return _persistenceManagementService.getStepExecutionQueryID(key);
 //    }
     
-    /*
-     * creates unique key to get StepExecution
-     */
-    private static String getJobStepExecId(long jobExecutionId, long stepExecutionId) {
-    	return String.valueOf(jobExecutionId) + ':' + String.valueOf(stepExecutionId);
-    }
-    
-    public static JobInstance getJobInstance(long instanceId){
-    	JobStatus jobStatus = _jobStatusManagerService.getJobStatus(instanceId);
+    public static JobInstance getJobInstance(long executionId){
+    	JobStatus jobStatus = _jobStatusManagerService.getJobStatusFromExecutionId(executionId);
     	JobInstanceImpl jobInstance = jobStatus.getJobInstance();
     	return jobInstance;
     }
 }
+    

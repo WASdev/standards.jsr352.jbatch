@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemReader;
+import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -133,7 +133,7 @@ public class InventoryCachedConnReader extends AbstractItemReader<InventoryRecor
 
 	//InventoryCheckpointData
     @Override
-    public void open(Externalizable cpd) throws Exception {
+    public void open(Serializable cpd) throws Exception {
         InventoryCheckpointData checkpointData = (InventoryCheckpointData)cpd;
         
         forcedFailCount = Integer.parseInt(forcedFailCountProp);

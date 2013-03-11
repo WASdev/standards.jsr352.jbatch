@@ -72,7 +72,7 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
     }
 
     @Override
-    public String getId() {
+    public String getStepName() {
         return stepId;
     }
 
@@ -81,12 +81,12 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
         return metrics.values().toArray(new Metric[0]);
     }
     
-    public MetricImpl getMetric(MetricImpl.MetricName metricName) {
-        return (MetricImpl)metrics.get(metricName.name());
+    public MetricImpl getMetric(MetricImpl.MetricType metricType) {
+        return (MetricImpl)metrics.get(metricType.name());
     }
     
-    public void addMetric(MetricImpl.MetricName metricName, long value) {
-    	metrics.putIfAbsent(metricName.name(), new MetricImpl(metricName, value));
+    public void addMetric(MetricImpl.MetricType metricType, long value) {
+    	metrics.putIfAbsent(metricType.name(), new MetricImpl(metricType, value));
     }
 
     @Override
@@ -99,7 +99,6 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
         return properties;
     }
 
-    @Override
     public T getTransientUserData() {
         return transientUserData;
     }
@@ -108,14 +107,14 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
     public void setExitStatus(String status) {
         this.exitStatus = status;
         if (logger.isLoggable(Level.FINER)) {
-            logger.log(Level.FINER, "Exit status set to: " + status + " for step id:" + getId());
+            logger.log(Level.FINER, "Exit status set to: " + status + " for step id:" + getStepName());
         }
     }
 
     public void setBatchStatus(BatchStatus status) {
         this.batchStatus = status;
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Batch status set to: " + status + " for step id:" + getId());
+            logger.log(Level.FINE, "Batch status set to: " + status + " for step id:" + getStepName());
         }
     }
 
@@ -125,7 +124,6 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
 
     }
 
-    @Override
     public void setTransientUserData(T data) {
         transientUserData = data;        
     }

@@ -25,7 +25,7 @@ import javax.inject.Inject;
 import com.ibm.jbatch.tck.artifacts.common.StatusConstants;
 
 @javax.inject.Named
-public class DeciderTestsDecider implements Decider<Object>, StatusConstants {
+public class DeciderTestsDecider implements Decider, StatusConstants {
 	
 	public final static String SPECIAL_EXIT_STATUS = "SpecialExitStatus";
 

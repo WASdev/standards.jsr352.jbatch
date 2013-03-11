@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
@@ -29,9 +28,7 @@ import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.JobStatus;
-import com.ibm.jbatch.container.status.JobStatusKey;
 import com.ibm.jbatch.container.status.StepStatus;
-import com.ibm.jbatch.container.status.StepStatusKey;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class JobStatusManagerImpl implements IJobStatusManagerService {
@@ -50,33 +47,38 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
     }
 
     @Override
-    public JobStatus createJobStatus(JobInstance jobInstance, long firstJobExecutionId) throws BatchContainerServiceException {
-        String method = "createJobStatus";
-        if(logger.isLoggable(Level.FINER)) { logger.entering(CLASSNAME, method, " jobid: " + jobInstance.getInstanceId());}
-
-        JobStatus jobStatus = new JobStatus(jobInstance);
-        jobStatus.setLatestExecutionId(firstJobExecutionId);        
-
-        _persistenceManager.createData(IPersistenceManagerService.JOB_STATUS_STORE_ID,
-                new JobStatusKey(jobInstance.getInstanceId()), jobStatus);           
-
-        if(logger.isLoggable(Level.FINER)) { logger.exiting(CLASSNAME, method);}
-
+    public JobStatus createJobStatus(long jobInstanceId) throws BatchContainerServiceException {
+       JobStatus jobStatus = null;
+        jobStatus = _persistenceManager.createJobStatus(jobInstanceId);
         return jobStatus;
     }
 
     @Override
     public JobStatus getJobStatus(long jobInstanceId) throws BatchContainerServiceException {
+        JobStatus jobStatus = null;
+        jobStatus = _persistenceManager.getJobStatus(jobInstanceId);
+        return jobStatus;
+    }
+    
+    @Override
+    public void updateJobStatus(JobStatus jobStatus) {
+        persistJobStatus(jobStatus.getJobInstanceId(), jobStatus);
+    }
+    
+    @Override
+    public JobStatus getJobStatusFromExecutionId(long executionId) throws BatchContainerServiceException {
         JobStatus retVal = null;
-        List<?> data = _persistenceManager.getData(IPersistenceManagerService.JOB_STATUS_STORE_ID,
-                new JobStatusKey(jobInstanceId));
+        //List<?> data = _persistenceManager.getData(IPersistenceManagerService.JOB_STATUS_STORE_ID,
+        //        new JobStatusKey(jobInstanceId));
+        
+        List<?> data = _persistenceManager.getJobStatusFromExecution(executionId);
 
         if (data == null) { 
-            throw new IllegalStateException("Null entry for JobInstance: " + jobInstanceId);
+            throw new IllegalStateException("Null entry for JobInstance associated with execution id: " + executionId);
         } else if (data.size()==0) {
-            throw new IllegalStateException("Empty entry for JobInstance: " + jobInstanceId);
+            throw new IllegalStateException("Empty entry for JobInstance associated with execution id: " + executionId);
         } else if (data.size()!=1) {
-            throw new IllegalStateException("Should only be one entry for JobInstance: " + jobInstanceId);
+            throw new IllegalStateException("Should only be one entry for JobInstance associated with execution id: " + executionId);
         } else {
             try {
                 retVal = (JobStatus)data.get(0);
@@ -130,15 +132,12 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
     }
 
     private void persistJobStatus(long jobInstanceId, JobStatus newJobStatus) throws BatchContainerServiceException {       
-        _persistenceManager.updateData(IPersistenceManagerService.JOB_STATUS_STORE_ID,
-                new JobStatusKey(jobInstanceId), newJobStatus);
-
+        _persistenceManager.updateJobStatus(jobInstanceId, newJobStatus);
     }
 
     @Override
-    public void createStepStatus(long jobInstanceId, String stepId, StepStatus newStepStatus) throws BatchContainerServiceException {        
-        _persistenceManager.createData(IPersistenceManagerService.STEP_STATUS_STORE_ID,
-                new StepStatusKey(jobInstanceId, stepId), newStepStatus);            
+    public StepStatus createStepStatus(long stepExecutionId) throws BatchContainerServiceException {        
+        return _persistenceManager.createStepStatus(stepExecutionId);
     }
 
     @Override
@@ -147,34 +146,17 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
      */
     public StepStatus getStepStatus(long jobInstanceId, String stepId) throws BatchContainerServiceException {
         String method = "getStepStatus";
-        if(logger.isLoggable(Level.FINER)) { logger.entering(CLASSNAME, method, " jobid: " + jobInstanceId + ", stepId: " + stepId);}
+        logger.entering(CLASSNAME, method, new Object[] {jobInstanceId, stepId});
 
-        StepStatus retVal = null;
-        List<?> data = _persistenceManager.getData(IPersistenceManagerService.STEP_STATUS_STORE_ID,
-                new StepStatusKey(jobInstanceId, stepId));
-        if (data.size() == 0) {
-            if(logger.isLoggable(Level.FINER)) { logger.exiting(CLASSNAME, method, "No step status found in store."); }
-            return null;
-        }
-        if (data.size() > 1) {
-            if(logger.isLoggable(Level.FINER)) { logger.exiting(CLASSNAME, method, "Found more than 1 (number=" + data.size() + ") StepStatus in store.");}
-            throw new IllegalStateException("Should only be one entry for job/step with JobInstance: " + jobInstanceId + 
-                    ", and step id = " + stepId);
-        } else {
-            try {
-                retVal = (StepStatus)data.get(0);                            
-            } catch (ClassCastException e) {
-                throw new IllegalStateException("Expected JobStatus but found" + data.get(0)); 
-            }
-        }
-        if(logger.isLoggable(Level.FINER)) { logger.exiting(CLASSNAME, method, "Found step status in store: " + retVal);}
-        return retVal;
+        StepStatus stepStatus = _persistenceManager.getStepStatus(jobInstanceId, stepId);
+
+        logger.exiting(CLASSNAME, method, stepStatus);
+        return stepStatus;
     }
 
     @Override 
-    public void updateEntireStepStatus(long jobInstanceId, String stepId, StepStatus newStepStatus) {
-        _persistenceManager.updateData(IPersistenceManagerService.STEP_STATUS_STORE_ID,
-                new StepStatusKey(jobInstanceId, stepId), newStepStatus);
+    public void updateStepStatus(long stepExecutionId, StepStatus newStepStatus) {
+        _persistenceManager.updateStepStatus(stepExecutionId, newStepStatus);
     }
 
 

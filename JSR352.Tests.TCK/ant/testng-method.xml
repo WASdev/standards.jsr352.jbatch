@@ -1,0 +1,12 @@
+<suite name="Single Method Suite">
+   <test name="Single Method Test">
+      <classes>
+         <class name="@CLASS@">
+         	<methods>
+         		<exclude name=".*" />
+         		<include name="@TEST@" />
+         	</methods>
+         </class>
+      </classes>
+   </test>
+</suite>

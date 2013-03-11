@@ -20,7 +20,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryRecord;
 
 
 @javax.inject.Named("inventoryProcessor")
-public class InventoryProcessor implements javax.batch.api.ItemProcessor<InventoryRecord, InventoryRecord>{
+public class InventoryProcessor implements javax.batch.api.chunk.ItemProcessor<InventoryRecord, InventoryRecord>{
 
 	
 	@Override

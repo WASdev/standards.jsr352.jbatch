@@ -18,7 +18,7 @@ package com.ibm.jbatch.spi.services;
 
 /**
  * We have this interface so that we do not try to load the 
- * Java EE UserTransaction in a JSE environment
+ * Java EE UserTransaction in an SE environment
  */
 public interface TransactionManagerAdapter {
 	/**

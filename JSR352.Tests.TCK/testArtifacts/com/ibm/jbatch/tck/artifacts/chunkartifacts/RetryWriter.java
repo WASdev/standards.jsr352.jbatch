@@ -16,14 +16,14 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemWriter;
+import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
@@ -67,7 +67,7 @@ public class RetryWriter extends AbstractItemWriter<NumbersRecord> {
 	int count = 1;
 	
 	@Override
-	public void open(Externalizable cpd) throws NamingException {
+	public void open(Serializable cpd) throws NamingException {
 		InitialContext ctx = new InitialContext();
 		dataSource = (DataSource) ctx.lookup(RetryConnectionHelper.jndiName);
 	}

@@ -4,7 +4,10 @@ Bundle-Name: API
 Bundle-SymbolicName: JSR352.API
 Bundle-Version: 1.0.0.qualifier
 Export-Package: javax.batch.api,
+ javax.batch.api.chunk,
+ javax.batch.api.chunk.listener,
+ javax.batch.api.listener,
+ javax.batch.api.partition,
  javax.batch.operations,
- javax.batch.operations.exception,
  javax.batch.runtime,
  javax.batch.runtime.context

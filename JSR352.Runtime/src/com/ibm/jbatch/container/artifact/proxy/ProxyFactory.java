@@ -17,15 +17,15 @@
 package com.ibm.jbatch.container.artifact.proxy;
 
 import javax.batch.api.Batchlet;
-import javax.batch.api.CheckpointAlgorithm;
 import javax.batch.api.Decider;
-import javax.batch.api.ItemProcessor;
-import javax.batch.api.ItemReader;
-import javax.batch.api.ItemWriter;
-import javax.batch.api.PartitionAnalyzer;
-import javax.batch.api.PartitionCollector;
-import javax.batch.api.PartitionMapper;
-import javax.batch.api.PartitionReducer;
+import javax.batch.api.chunk.CheckpointAlgorithm;
+import javax.batch.api.chunk.ItemProcessor;
+import javax.batch.api.chunk.ItemReader;
+import javax.batch.api.chunk.ItemWriter;
+import javax.batch.api.partition.PartitionAnalyzer;
+import javax.batch.api.partition.PartitionCollector;
+import javax.batch.api.partition.PartitionMapper;
+import javax.batch.api.partition.PartitionReducer;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;

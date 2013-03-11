@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.impl;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,7 +28,7 @@ import com.ibm.jbatch.container.artifact.proxy.BatchletProxy;
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionImpl;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.util.PartitionDataWrapper.PartitionEventType;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
@@ -44,7 +44,7 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
     
     private BatchletProxy batchletProxy;
 
-    public BatchletStepControllerImpl(RuntimeJobExecutionImpl jobExecutionImpl, Step step) {
+    public BatchletStepControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Step step) {
         super(jobExecutionImpl, step);
     }
 
@@ -101,26 +101,26 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
     	} finally {
             if (collectorProxy != null) {
 
-                Externalizable data = this.collectorProxy.collectPartitionData();
+            	Serializable data = this.collectorProxy.collectPartitionData();
 
-                if (this.analyzerQueue != null) {
+                if (this.analyzerStatusQueue != null) {
                     // Invoke the partition analayzer at the end of each step if
                     // the step runs
 
                     PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
                     dataWrapper.setCollectorData(data);
                     dataWrapper.setEventType(PartitionEventType.ANALYZE_COLLECTOR_DATA);
-                    analyzerQueue.add(dataWrapper);
+                    analyzerStatusQueue.add(dataWrapper);
                 }
 
             }
 
-            if (this.analyzerQueue != null) {
+            if (this.analyzerStatusQueue != null) {
                 PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
                 dataWrapper.setBatchStatus(stepStatus.getBatchStatus());
                 dataWrapper.setExitStatus(stepStatus.getExitStatus());
                 dataWrapper.setEventType(PartitionEventType.ANALYZE_STATUS);
-                analyzerQueue.add(dataWrapper);
+                analyzerStatusQueue.add(dataWrapper);
             }
         }
         

@@ -28,6 +28,8 @@ public class JobStatus implements Serializable, Cloneable{
 
     private JobInstance jobInstance;
 
+    private long jobInstanceId;
+
     private String currentStepId;
 
     private BatchStatus batchStatus;  // Might be nice to know.
@@ -46,14 +48,27 @@ public class JobStatus implements Serializable, Cloneable{
     //private int restartCount;
 
     private String restartOn;
+
+    public JobStatus(long jobInstanceId) {
+        this.jobInstanceId = jobInstanceId;
+    }
     
     public JobStatus(JobInstance jobInstance) {
         this.batchStatus = BatchStatus.STARTING;
         //this.restartCount = 0;
        // this.updateCount = 0;  
         this.jobInstance = jobInstance;
+        this.jobInstanceId = jobInstance.getInstanceId();
     }
 
+    public long getJobInstanceId() {
+        return this.jobInstanceId;
+    }
+
+    public void setJobInstance(JobInstance jobInstance) {
+        this.jobInstance = jobInstance;
+    }
+    
     public JobInstanceImpl getJobInstance() {
         return (JobInstanceImpl)jobInstance;
     }

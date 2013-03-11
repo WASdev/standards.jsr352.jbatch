@@ -22,14 +22,14 @@ import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 import java.util.Properties;
 
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.runtime.JobExecution;
-
-import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
 import org.junit.BeforeClass;
 import org.testng.Reporter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
 
 public class BatchletRestartStateMachineTests {
     
@@ -84,7 +84,7 @@ public class BatchletRestartStateMachineTests {
 	        Reporter.log("Locate job XML file: batchletRestartStateMachine.xml<p>");
 	        
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
-	        JobExecution execution1 = jobOp.startJobAndWaitForResult("batchletRestartStateMachine", jobParams);
+	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("batchletRestartStateMachine", jobParams);
 	        
 	        Reporter.log("EXPECTED Execution #1 JobExecution getBatchStatus()=STOPPED<p>");
 	        Reporter.log("ACTUAL Execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
@@ -99,14 +99,14 @@ public class BatchletRestartStateMachineTests {
 	        // says to restart by execution Id.
 	        long lastExecutionId = execution1.getExecutionId();
 	        
-	        JobExecution exec = null;
+	        TCKJobExecutionWrapper exec = null;
 	        
 	        for (int i = 2; i < 6; i++) {
 	            String execString = new Integer(i).toString();
-	            Properties jobParametersOverride = new Properties(jobParams);
-	            jobParametersOverride.put("execution.number", execString);
+	            Properties restartJobParameters = new Properties(jobParams);
+	            restartJobParameters.put("execution.number", execString);
 	            Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	            exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParametersOverride);
+	            exec = jobOp.restartJobAndWaitForResult(lastExecutionId, restartJobParameters);
 	            lastExecutionId = exec.getExecutionId();
 	            
 		        Reporter.log("EXPECTED Execution #" + i + " JobExecution getBatchStatus()=STOPPED<p>");
@@ -123,13 +123,13 @@ public class BatchletRestartStateMachineTests {
 	        
 	        // Last execution should succeed
 	        Reporter.log("Create Job parameters for Execution #6<p>");
-	        Properties jobParametersOverride = new Properties(jobParams);
-	        jobParametersOverride.put("execution.number", "6");
+	        Properties restartJobParameters = new Properties(jobParams);
+	        restartJobParameters.put("execution.number", "6");
 	        
 	        
 	        lastExecutionId = exec.getExecutionId();
 	        Reporter.log("Invoking restartJobAndWaitForResult for Execution #6<p>");
-	        exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParametersOverride);
+	        exec = jobOp.restartJobAndWaitForResult(lastExecutionId, restartJobParameters);
 	        
 	        Reporter.log("EXPECTED Execution #6 JobExecution getBatchStatus()=COMPLETED<p>");
 	        Reporter.log("EXPECTED Execution #6 JobExecution getExitStatus()=EXECUTION.6<p>");

@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.PartitionReducer;
+import javax.batch.api.partition.PartitionReducer;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 

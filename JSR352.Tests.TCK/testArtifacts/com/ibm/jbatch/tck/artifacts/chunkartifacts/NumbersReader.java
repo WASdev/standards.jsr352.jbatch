@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractItemReader;
+import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -67,7 +67,7 @@ public class NumbersReader extends AbstractItemReader<NumbersRecord> {
 	
 	NumbersCheckpointData numbersCheckpoint = new NumbersCheckpointData();
 	
-	public void open(Externalizable cpd) throws NamingException {
+	public void open(Serializable cpd) throws NamingException {
 		
 	    NumbersCheckpointData numbersCheckpointData = (NumbersCheckpointData)cpd;
 	    
@@ -144,7 +144,7 @@ public class NumbersReader extends AbstractItemReader<NumbersRecord> {
 	}
 
 	@Override
-	 public Externalizable checkpointInfo() throws Exception {
+	 public Serializable checkpointInfo() throws Exception {
 		 NumbersCheckpointData _chkptData = new  NumbersCheckpointData();
 		_chkptData.setCount(readerIndex);
 		stepCtx.getProperties().setProperty("checkpoint.index", Integer.toString(readerIndex));

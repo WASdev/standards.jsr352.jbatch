@@ -1,7 +1,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import javax.batch.annotation.BatchProperty;
-import javax.batch.api.AbstractChunkListener;
+import javax.batch.api.chunk.listener.AbstractChunkListener;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;

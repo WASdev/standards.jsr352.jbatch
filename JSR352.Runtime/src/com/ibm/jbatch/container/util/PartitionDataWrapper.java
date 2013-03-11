@@ -1,12 +1,12 @@
 package com.ibm.jbatch.container.util;
 
-import java.io.Externalizable;
+import java.io.Serializable;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 
 public class PartitionDataWrapper {
     
-    private Externalizable collectorData;
+    private Serializable collectorData;
 
     private BatchStatus batchStatus;
     
@@ -16,7 +16,7 @@ public class PartitionDataWrapper {
 
     public enum PartitionEventType { ANALYZE_COLLECTOR_DATA,
         ANALYZE_STATUS,
-        STEP_FINISHED;
+        STEP_ALREADY_COMPLETED;
     }
     
     public BatchStatus getBatchstatus() {
@@ -35,11 +35,11 @@ public class PartitionDataWrapper {
         this.exitStatus = exitStatus;
     }
 
-    public Externalizable getCollectorData() {
+    public Serializable getCollectorData() {
         return collectorData;
     }
 
-    public void setCollectorData(Externalizable collectorData) {
+    public void setCollectorData(Serializable collectorData) {
         this.collectorData = collectorData;
     }
 

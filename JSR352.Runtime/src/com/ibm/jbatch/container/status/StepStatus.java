@@ -20,7 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Externalizable;
 import java.io.Serializable;
 
-import javax.batch.api.PartitionPlan;
+import javax.batch.api.partition.PartitionPlan;
 import javax.batch.operations.JobOperator.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
@@ -34,14 +34,14 @@ public class StepStatus implements Serializable {
      */
     private static final long serialVersionUID = 1L;
 
-    private String stepId;
+    private long stepId;
     private BatchStatus batchStatus;
     private String exitStatus;
     private int startCount;    
     private PersistentDataWrapper persistentUserData;
     private PartitionPlan plan;
     
-    public StepStatus(String stepId) {
+    public StepStatus(long stepId) {
         this.startCount = 1;
         this.stepId = stepId;
         this.batchStatus = BatchStatus.STARTING;
@@ -64,7 +64,7 @@ public class StepStatus implements Serializable {
         return buf.toString();
     }
 
-    public String getStepId() {
+    public long getStepId() {
         return stepId;
     }
 
