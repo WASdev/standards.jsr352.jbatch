@@ -25,6 +25,7 @@ import javax.inject.Inject;
 
 import org.testng.Reporter;
 
+import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 @javax.inject.Named("mySkipProcessListener")
@@ -39,13 +40,18 @@ public class MySkipProcessListener implements SkipProcessListener {
     private final static String sourceClass = MySkipProcessListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    public static final String GOOD_EXIT_STATUS = "MySkipProcessListener: GOOD STATUS";
+    public static final String GOOD_EXIT_STATUS = "MySkipProcessListener: GOOD STATUS, GOOD OBJ PASSED";
     public static final String BAD_EXIT_STATUS = "MySkipProcessListener: BAD STATUS";
 
     @Override
     public void onSkipProcessItem(Object item, Exception e) {
         Reporter.log("In onSkipProcessItem()" + e + "<p>");
 
+        ReadRecord input = (ReadRecord)item;
+        
+		if (item != null){
+			logger.finer("In onSkipProcessItem(), item count = " + input.getCount());
+        
         if (e instanceof MyParentException) {
         	Reporter.log("SKIPLISTENER: onSkipProcessItem, exception is an instance of: MyParentException<p>");
             jobCtx.setExitStatus(GOOD_EXIT_STATUS);
@@ -53,5 +59,6 @@ public class MySkipProcessListener implements SkipProcessListener {
         	Reporter.log("SKIPLISTENER: onSkipProcessItem, exception is NOT an instance of: MyParentException<p>");
             jobCtx.setExitStatus(BAD_EXIT_STATUS);
         }
+		}
     }
 }

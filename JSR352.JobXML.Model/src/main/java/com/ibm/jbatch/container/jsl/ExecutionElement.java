@@ -27,6 +27,6 @@ import java.util.List;
  */
 public interface ExecutionElement {
     String getId();
-    List<ControlElement> getControlElements();
+    List<TransitionElement> getControlElements();
 }
 

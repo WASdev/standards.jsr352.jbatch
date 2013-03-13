@@ -73,11 +73,11 @@ public class CloneUtility {
     	return newJSLProps;
     }
 
-    public static void cloneControlElements(List<ControlElement> controlElements, List<ControlElement> newControlElements) {
+    public static void cloneControlElements(List<TransitionElement> controlElements, List<TransitionElement> newControlElements) {
         
         newControlElements.clear();
         
-        for (ControlElement controlElement : controlElements) {
+        for (TransitionElement controlElement : controlElements) {
             if (controlElement instanceof End){
                 End endElement = (End)controlElement;
                 End newEnd = jslFactory.createEnd();

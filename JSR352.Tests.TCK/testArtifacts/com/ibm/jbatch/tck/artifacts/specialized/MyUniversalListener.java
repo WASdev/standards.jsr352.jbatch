@@ -28,7 +28,6 @@ public class MyUniversalListener implements JobListener, StepListener {
     
     @Inject 
     private JobContext jobCtx = null; 
-
     
     @Inject    
     @BatchProperty(name="app.timeinterval")
@@ -38,8 +37,6 @@ public class MyUniversalListener implements JobListener, StepListener {
     
     @Override 
     public void beforeJob() {
-    	timeinterval = Integer.parseInt(timeintervalString);
-    	
         String cur = jobCtx.getExitStatus();
         String status = (cur == null ? "BeforeJob" : cur + "BeforeJob");
         jobCtx.setExitStatus(status);
@@ -53,6 +50,7 @@ public class MyUniversalListener implements JobListener, StepListener {
     
     @Override 
     public void beforeStep() {
+    	timeinterval = Integer.parseInt(timeintervalString);
         String cur = jobCtx.getExitStatus();
         jobCtx.setExitStatus(cur + "BeforeStep");
     }

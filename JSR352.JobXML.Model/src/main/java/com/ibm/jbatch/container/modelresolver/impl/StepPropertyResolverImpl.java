@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.modelresolver.impl;
 
 import java.util.Properties;
 
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
 import com.ibm.jbatch.jsl.model.Listener;
 import com.ibm.jbatch.jsl.model.Step;
@@ -62,7 +62,7 @@ public class StepPropertyResolverImpl extends AbstractPropertyResolver<Step> {
         }
         
         if (step.getControlElements() != null) {
-            for (final ControlElement controlElement : step.getControlElements()) {
+            for (final TransitionElement controlElement : step.getControlElements()) {
                 PropertyResolverFactory.createControlElementPropertyResolver(this.isPartitionedStep).substituteProperties(controlElement, submittedProps, currentProps);
             }
         }

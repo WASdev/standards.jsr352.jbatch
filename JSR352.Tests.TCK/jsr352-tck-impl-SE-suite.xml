@@ -4,7 +4,6 @@
 	<test name="JSR352 TCK SE">
       <packages>
          <package name="com.ibm.jbatch.tck.tests.jslxml" />
-         <package name="com.ibm.jbatch.tck.tests.xmlinheritance" />
       </packages>
 	</test>
 </suite>

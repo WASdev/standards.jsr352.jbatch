@@ -25,6 +25,7 @@ public class BatchPartitionPlan implements PartitionPlan  {
 	private int partitionCount;
 	private int threadCount;
 	private Properties[] partitionProperties;
+	private boolean partitionsOverride;
 	
 	public int getPartitions() {
 		return partitionCount;
@@ -52,14 +53,12 @@ public class BatchPartitionPlan implements PartitionPlan  {
 
 	@Override
 	public void setPartitionsOverride(boolean override) {
-		// TODO Auto-generated method stub
-		
+		this.partitionsOverride = override;
 	}
 
 	@Override
 	public boolean getPartitionsOverride() {
-		// TODO Auto-generated method stub
-		return false;
+	    return this.partitionsOverride;
 	}
 
 }

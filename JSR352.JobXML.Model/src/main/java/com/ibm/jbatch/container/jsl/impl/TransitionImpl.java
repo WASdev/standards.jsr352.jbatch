@@ -16,13 +16,13 @@
 */
 package com.ibm.jbatch.container.jsl.impl;
 
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.Transition;
 
 public class TransitionImpl implements Transition {
 
-    private ControlElement controlElement;
+    private TransitionElement controlElement;
     private ExecutionElement executionElement;
     
     public TransitionImpl() {
@@ -30,7 +30,7 @@ public class TransitionImpl implements Transition {
     }
 
     @Override
-    public ControlElement getControlElement() {
+    public TransitionElement getControlElement() {
         return controlElement;
     }
 
@@ -40,7 +40,7 @@ public class TransitionImpl implements Transition {
     }
     
     @Override
-    public void setControlElement(ControlElement controlElement) {
+    public void setControlElement(TransitionElement controlElement) {
         this.controlElement = controlElement;
     }
     

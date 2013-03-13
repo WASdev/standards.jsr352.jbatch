@@ -21,7 +21,6 @@ package com.ibm.jbatch.tck.tests.jslxml;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -86,8 +85,6 @@ public class ParallelExecutionTests {
         
         try {
 	        Reporter.log("Locate job XML file: job_partitioned_1step.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_partitioned_1step.xml");
-
 	
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
 	        JobExecution jobExecution = jobOp.startJobAndWaitForResult("job_partitioned_1step");
@@ -112,8 +109,6 @@ public class ParallelExecutionTests {
         
         try {
 	        Reporter.log("Locate job XML file: job_partitioned_1step.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_partitioned_1step_exitStatusTest.xml");
-
 	
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
 	        JobExecution jobExecution = jobOp.startJobAndWaitForResult("job_partitioned_1step_exitStatusTest");
@@ -150,8 +145,6 @@ public class ParallelExecutionTests {
         
         try {
 	        Reporter.log("Locate job XML file: job_batchlet_longrunning_partitioned.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_longrunning_partitioned.xml");
-
 	
 	        Object waitObj = new Object();
 	        
@@ -195,8 +188,6 @@ public class ParallelExecutionTests {
         
         try {
 	        Reporter.log("Locate job XML file: job_batchlet_longrunning_partitioned.xml<p>");
-	        URL jobXMLURL = ParallelExecutionTests.class.getResource("/job_batchlet_longrunning_partitioned.xml");
-
 	
 	        Object waitObj = new Object();
 	        
@@ -244,8 +235,6 @@ public class ParallelExecutionTests {
         
         try {
 	        Reporter.log("Locate job XML file: job_split_batchlet_4steps.xml<p>");
-	    	URL jobXMLURL = this.getClass().getResource("/job_split_batchlet_4steps.xml");
-
 	
 	    	Reporter.log("Invoke startJobAndWaitForResult<p>");
 	    	JobExecution execution = jobOp.startJobAndWaitForResult("job_split_batchlet_4steps");
@@ -278,8 +267,6 @@ public class ParallelExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_partitioned_artifacts.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_partitioned_artifacts.xml");
-
 	
 	        Object waitObj = new Object();
 	        
@@ -323,8 +310,6 @@ public class ParallelExecutionTests {
         
         try {
 	        Reporter.log("Locate job XML file: job_partitioned_artifacts.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_partitioned_artifacts.xml");
-
 	
 	        Object waitObj = new Object();
 	        

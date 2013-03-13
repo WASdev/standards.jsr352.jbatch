@@ -22,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.jsl.Transition;
@@ -67,7 +67,7 @@ public class FlowNavigatorImpl implements Navigator<Flow> {
             // Nothing special to do in this case.
         }
 
-        List<ControlElement> controlElements = currentElem.getControlElements();
+        List<TransitionElement> controlElements = currentElem.getControlElements();
 
         if (nextExecutionElement == null && controlElements.isEmpty()) {
             if (logger.isLoggable(Level.FINE))
@@ -81,10 +81,10 @@ public class FlowNavigatorImpl implements Navigator<Flow> {
             return returnTransition;
         } else if (controlElements.size() > 0) {
 
-            Iterator<ControlElement> iterator = controlElements.iterator();
+            Iterator<TransitionElement> iterator = controlElements.iterator();
             while (iterator.hasNext()) {
 
-                ControlElement elem = iterator.next();
+                TransitionElement elem = iterator.next();
 
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(method + " Trying to match next control element: " + elem);
@@ -129,7 +129,7 @@ public class FlowNavigatorImpl implements Navigator<Flow> {
                             logger.fine(method + " , match to " + exitStatusToMatch + ". Continue to step "
                                     + nextExecutionElement.getId());
 
-                        // No point setting the ControlElement in the transition.
+                        // No point setting the TransitionElement in the transition.
                         returnTransition.setNextExecutionElement(nextExecutionElement);
                         return returnTransition;
                     }

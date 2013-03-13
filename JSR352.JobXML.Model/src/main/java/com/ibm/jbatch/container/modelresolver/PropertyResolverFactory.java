@@ -17,7 +17,7 @@
 package com.ibm.jbatch.container.modelresolver;
 
 
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.modelresolver.impl.AnalyzerPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.BatchletPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.CheckpointAlgorithmPropertyResolverImpl;
@@ -82,7 +82,7 @@ public class PropertyResolverFactory {
         return new ChunkPropertyResolverImpl(isPartitionedStep);
     }
     
-    public static PropertyResolver<ControlElement> createControlElementPropertyResolver(boolean isPartitionedStep) {
+    public static PropertyResolver<TransitionElement> createControlElementPropertyResolver(boolean isPartitionedStep) {
         return new ControlElementPropertyResolverImpl(isPartitionedStep);
     }
 

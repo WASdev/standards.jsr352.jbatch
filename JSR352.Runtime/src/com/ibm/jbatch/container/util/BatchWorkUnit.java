@@ -50,14 +50,16 @@ public class BatchWorkUnit implements Runnable {
 	private boolean notifyCallbackWhenDone;
 	
 	private List<String> containment = null;
+	
+	private RuntimeJobExecutionHelper rootJobExecution = null;
 
 	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionHelper jobExecutionImpl) {
-		this(batchKernel, jobExecutionImpl, null, null, null, null, true);
+		this(batchKernel, jobExecutionImpl, null, null, null, null, jobExecutionImpl, true);
 	}
 
     public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionHelper jobExecutionImpl,
             BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
-            BlockingQueue<BatchWorkUnit> completedThreadQueue, List<String> containment,
+            BlockingQueue<BatchWorkUnit> completedThreadQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution,
             boolean notifyCallbackWhenDone) {
         this.setBatchKernel(batchKernel);
         this.setJobExecutionImpl(jobExecutionImpl);
@@ -66,8 +68,18 @@ public class BatchWorkUnit implements Runnable {
         this.setCompletedThreadQueue(completedThreadQueue);
         this.setNotifyCallbackWhenDone(notifyCallbackWhenDone);
         this.setContainment(containment);
+        
+        //if root is null we don't want to find the children on a query
+        //this is only for partitioned steps since the partitioned steps are only seen internally
+        //externally it is still considered only 1 step
+        if (rootJobExecution == null) {
+            this.setRootJobExecution(jobExecutionImpl);
+        } else {
+            this.setRootJobExecution(rootJobExecution);
+        }
+        
 
-        controller = new JobControllerImpl(this.getJobExecutionImpl(), this.containment);
+        controller = new JobControllerImpl(this.getJobExecutionImpl(), this.containment, this.rootJobExecution);
         controller.setAnalyzerQueue(this.analyzerQueue);
         controller.setSubJobExitStatusQueue(subJobExitStatusQueue);
 
@@ -203,6 +215,14 @@ public class BatchWorkUnit implements Runnable {
 
     public void setContainment(List<String> containment) {
         this.containment = containment;
+    }
+
+    public RuntimeJobExecutionHelper getRootJobExecution() {
+        return rootJobExecution;
+    }
+
+    public void setRootJobExecution(RuntimeJobExecutionHelper rootJobExecution) {
+        this.rootJobExecution = rootJobExecution;
     }
 
 }

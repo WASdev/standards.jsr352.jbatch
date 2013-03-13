@@ -858,8 +858,9 @@ public class ChunkTests {
      * @test_Strategy: start a job with item-count specified as 3. skip-limit is set to 1000.
      *                  Application is configured to encounter an error on two separate processing actions, at which point
      *                  a skippable exception is thrown by the application. Batch Application enforces that the exceptions
-     *                  were recognized as skippable.
-     *                  test that the job completes successfully and that the application recognized the exception as skippable.     
+     *                  were recognized as skippable. Batch Application also ensures that the item being processed is passed to the skip listener.
+     *                  test that the job completes successfully and that the application recognized the exception as skippable 
+     *                  and that the item was passed to the skip listener.     
      */
     @Test
     @org.junit.Test
@@ -900,8 +901,9 @@ public class ChunkTests {
      * @test_Strategy: start a job with item-count specified as 3. skip-limit set to 1000  
      *                  Application is configured to encounter an error on two separate writes, at which point
      *                  a skippable exception is thrown by the application. Batch Application enforces that the exceptions
-     *                  were recognized as skippable.
-     *                  test that the job completes successfully and that the application recognized the exceptions as skippable.
+     *                  were recognized as skippable. Batch Application also ensures that the item being processed is passed to the skip listener.
+     *                  test that the job completes successfully and that the application recognized the exceptions as skippable
+     *                  and that the item was passed to the skip listener.
      */
     @Test
     @org.junit.Test

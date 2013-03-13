@@ -35,7 +35,7 @@ import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.jsl.NavigatorFactory;
@@ -84,7 +84,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 
    
     @Override
-    public String execute(List<String> containment) throws AbortedBeforeStartException {
+    public String execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException {
         final String methodName = "execute";
         if (logger.isLoggable(Level.FINE)) {
             logger.entering(CLASSNAME, methodName);
@@ -95,7 +95,7 @@ public class FlowControllerImpl implements IExecutionElementController {
             // --------------------
             // The same as a simple Job. Loop to complete all steps and decisions in the flow.
             // --------------------
-            doExecutionLoop(flowNavigator, containment);
+            doExecutionLoop(flowNavigator, containment, rootJobExecution);
 
             return "FLOW_CONTROLLER_RETURN_VALUE";
 
@@ -143,7 +143,7 @@ public class FlowControllerImpl implements IExecutionElementController {
     	
     }
 
-    private void doExecutionLoop(Navigator<Flow> flowNavigator, List<String> containment) throws Exception {
+    private void doExecutionLoop(Navigator<Flow> flowNavigator, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
         final String methodName = "doExecutionLoop";
 
         ExecutionElement currentExecutionElement = null;
@@ -249,7 +249,7 @@ public class FlowControllerImpl implements IExecutionElementController {
                     flowContainment.addAll(containment);
                 }
                 flowContainment.add(flow.getId());
-                executionElementExitStatus = elementController.execute(flowContainment);
+                executionElementExitStatus = elementController.execute(flowContainment, rootJobExecution);
             } catch (AbortedBeforeStartException e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Execution failed before even getting to execute execution element = " + currentExecutionElement.getId());
@@ -291,7 +291,7 @@ public class FlowControllerImpl implements IExecutionElementController {
                 }
             } else if (nextTransition.getControlElement() != null) {
                 // TODO - update job status mgr
-                ControlElement controlElem = nextTransition.getControlElement();
+                TransitionElement controlElem = nextTransition.getControlElement();
 
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " , Looping through to next control element=" + controlElem);

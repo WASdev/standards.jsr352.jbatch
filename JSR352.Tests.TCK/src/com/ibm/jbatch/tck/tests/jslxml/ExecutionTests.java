@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 
-import java.net.URL;
+
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -76,8 +76,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_1step.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_1step.xml");
-
 	
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_1step");
@@ -102,8 +100,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_2steps.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_2steps.xml");
-
 	        
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_2steps");
@@ -128,8 +124,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_4steps.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_4steps.xml");
-
 	        
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_4steps");
@@ -154,8 +148,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_nextElement.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_nextElement.xml");
-
 	        
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_nextElement");
@@ -180,8 +172,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_failElement.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_failElement.xml");
-
 	        
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_failElement");
@@ -208,8 +198,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_stopElement.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_stopElement.xml");
-
 	        
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_stopElement");
@@ -234,8 +222,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_endElement.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_endElement.xml");
-
 	        
 	        Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_endElement");
@@ -262,8 +248,6 @@ public class ExecutionTests {
     	
     	try {
     		Reporter.log("Locate job XML file: job_chunk_simple.xml<p>");
-	    	URL jobXMLURL = ExecutionTests.class.getResource("/job_chunk_simple.xml");
-
 	    	
 	    	Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	    	JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_simple");
@@ -288,8 +272,6 @@ public class ExecutionTests {
     	
     	try {
     		Reporter.log("Locate job XML file: job_chunk_full_attributes.xml<p>");
-	    	URL jobXMLURL = this.getClass().getResource("/job_chunk_full_attributes.xml");
-
 	    	
 	    	Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	    	JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_full_attributes");
@@ -339,8 +321,6 @@ public class ExecutionTests {
     	
     	try {
     		Reporter.log("Locate job XML file: job_chunk_checkpoint.xml<p>");
-	    	URL jobXMLURL = this.getClass().getResource("/job_chunk_checkpoint.xml");
-
 	    	
 	    	Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	    	JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_checkpoint");
@@ -365,8 +345,6 @@ public class ExecutionTests {
     	
     	try {
     		Reporter.log("Locate job XML file: job_flow_batchlet_4steps.xml<p>");
-	    	URL jobXMLURL = this.getClass().getResource("/job_flow_batchlet_4steps.xml");
-
 	    	
 	    	Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 	    	JobExecution jobExec = jobOp.startJobAndWaitForResult("job_flow_batchlet_4steps");
@@ -394,8 +372,6 @@ public class ExecutionTests {
         
         try {
         	Reporter.log("Locate job XML file: job_batchlet_longrunning.xml<p>");
-	        URL jobXMLURL = ExecutionTests.class.getResource("/job_batchlet_longrunning.xml");
-
 	        
 	        Reporter.log("Create job parameters for execution #1:<p>");
 	        Properties jobParameters = new Properties();

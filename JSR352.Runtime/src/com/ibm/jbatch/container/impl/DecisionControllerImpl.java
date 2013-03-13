@@ -89,7 +89,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
    
 
     @Override
-    public String execute(List<String> containmentName) throws Exception {
+    public String execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
 
         ExecutionStatus status = new ExecutionStatus();
 

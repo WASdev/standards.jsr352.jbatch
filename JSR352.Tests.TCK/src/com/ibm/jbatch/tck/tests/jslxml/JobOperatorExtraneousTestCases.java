@@ -18,7 +18,6 @@ package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
-import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -100,8 +99,6 @@ public class JobOperatorExtraneousTestCases {
 	        jobParams.put("app.commitinterval", "5");
 	        
 	        Reporter.log("Locate job XML file: chunksize5commitinterval5.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/chunksize5commitinterval5.xml");
-
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunksize5commitinterval5", jobParams);
@@ -151,8 +148,6 @@ public class JobOperatorExtraneousTestCases {
 	    	
 	        String METHOD = "testJobOp";
 	        begin(METHOD);
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_4steps.xml");
-
 
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult(jobXML);
 	        

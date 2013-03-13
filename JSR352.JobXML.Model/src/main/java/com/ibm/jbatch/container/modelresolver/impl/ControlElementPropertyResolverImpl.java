@@ -19,20 +19,20 @@ package com.ibm.jbatch.container.modelresolver.impl;
 import java.util.Properties;
 
 
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.jsl.model.End;
 import com.ibm.jbatch.jsl.model.Fail;
 import com.ibm.jbatch.jsl.model.Next;
 import com.ibm.jbatch.jsl.model.Stop;
 
-public class ControlElementPropertyResolverImpl extends AbstractPropertyResolver<ControlElement> {
+public class ControlElementPropertyResolverImpl extends AbstractPropertyResolver<TransitionElement> {
 
     public ControlElementPropertyResolverImpl(boolean isPartitionStep) {
 		super(isPartitionStep);
 	}
 
 	@Override
-    public ControlElement substituteProperties(final ControlElement controlElement, final Properties submittedProps,
+    public TransitionElement substituteProperties(final TransitionElement controlElement, final Properties submittedProps,
             final Properties parentProps) {
 
         if (controlElement instanceof End) {

@@ -24,7 +24,7 @@ package com.ibm.jbatch.container.jsl;
  * to make a common XSD base type just to have this in the model.
  */
 
-public interface ControlElement {
+public interface TransitionElement {
     
     public String getOn();
     

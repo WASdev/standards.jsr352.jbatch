@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import org.testng.Reporter;
 
+import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 @javax.inject.Named("mySkipWriteListener")
@@ -40,14 +41,27 @@ public class MySkipWriteListener implements SkipWriteListener {
     private final static String sourceClass = MySkipWriteListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
-    public static final String GOOD_EXIT_STATUS = "MySkipWriteListener: GOOD STATUS";
+    public static final String GOOD_EXIT_STATUS = "MySkipWriteListener: GOOD STATUS, GOOD OBJS PASSED IN";
     public static final String BAD_EXIT_STATUS = "MySkipWriteListener: BAD STATUS";
 
     @Override
     public void onSkipWriteItem(List items, Exception e) {
         Reporter.log("In onSkipWriteItem()" + e + "<p>");
+        ReadRecord input = null;
+        boolean inputOK = false;
+        
+        for (Object obj : items) {
+        	input = (ReadRecord)obj;
+            
+    		if (obj != null){
+    			logger.finer("In onSkipProcessItem(), item count = " + input.getCount());
+    			inputOK = true;
+    		}
+    		
+    		
+        }
 
-        if (e instanceof MyParentException) {
+        if (e instanceof MyParentException && inputOK) {
         	Reporter.log("SKIPLISTENER: onSkipWriteItem, exception is an instance of: MyParentException<p>");
             jobCtx.setExitStatus(GOOD_EXIT_STATUS);
         } else {

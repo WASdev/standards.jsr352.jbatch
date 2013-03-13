@@ -19,7 +19,6 @@ package com.ibm.jbatch.tck.tests.jslxml;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -84,8 +83,6 @@ public class StopOrFailOnExitStatusWithRestartTests {
 
         try {
         	Reporter.log("Locate job XML file: job_batchlet_longrunning.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/job_batchlet_longrunning.xml");
-
 	
 	        Reporter.log("Create job parameters for execution #1:<p>");
 	        Properties overrideJobParams = new Properties();
@@ -221,8 +218,6 @@ public class StopOrFailOnExitStatusWithRestartTests {
 	        jobParams.setProperty("step2.next", "ES.XXX");
 	        
 	        Reporter.log("Locate job XML file: batchletStopOnEndOn.xml<p>");
-	        URL jobXMLURL = this.getClass().getResource("/batchletStopOnEndOn.xml");
-
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult");
 	        TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("batchletStopOnEndOn", jobParams);

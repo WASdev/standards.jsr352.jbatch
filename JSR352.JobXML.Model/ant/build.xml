@@ -64,7 +64,7 @@
 	
 	<!-- 
 	     The goal here is to have a set of JAXBs implement a common interface (the one that the property from the 
-	     containing Job specifies:  com.ibm.jbatch.container.jsl.ControlElement.
+	     containing Job specifies:  com.ibm.jbatch.container.jsl.TransitionElement.
 	     Though it seems like there is a way to do this   
 	       http://confluence.highsource.org/display/J2B/Inheritance+plugin
 	     I'm not sure if the IBM JDK version of the JAXB RI is extensible in this way, and don't want to create a 
@@ -75,12 +75,12 @@
 	     So we'll fix up by hand.-->  
 	     
 	<!--
-	replace="/\*\*\\n\*\n Modified post-XJC-gen by custom build logic in order to deal with the\n\* fact that JAXB does not make it easy to generate\\n* elements implementing a common interface.\n\*/	public class \1 implements com.ibm.jbatch.container.jsl.ControlElement \{">
+	replace="/\*\*\\n\*\n Modified post-XJC-gen by custom build logic in order to deal with the\n\* fact that JAXB does not make it easy to generate\\n* elements implementing a common interface.\n\*/	public class \1 implements com.ibm.jbatch.container.jsl.TransitionElement \{">
 	-->
-	<target name="AddControlElement.Intf.ToJAXBs">
+	<target name="AddTransitionElement.Intf.ToJAXBs">
 		<replaceregexp 
 		  match="public class (.*) \{"
-		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* since we can't seem to get JAXB's XJC to generate ${line.separator} \* elements implementing a common interface. ${line.separator} \*${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.jbatch.container.jsl.ControlElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.jbatch.container.jsl.ControlElement \{">  
+		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* since we can't seem to get JAXB's XJC to generate ${line.separator} \* elements implementing a common interface. ${line.separator} \*${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.jbatch.container.jsl.TransitionElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.jbatch.container.jsl.TransitionElement \{">  
 		               
 			<fileset dir="${generate.dir}">
 				<include name="**/End.java"/>
@@ -92,7 +92,7 @@
 		
 	</target>
 
-	<target name="addInterfaces" depends="AddExecutionElement.Intf.ToJAXBs, AddControlElement.Intf.ToJAXBs"/>
+	<target name="addInterfaces" depends="AddExecutionElement.Intf.ToJAXBs, AddTransitionElement.Intf.ToJAXBs"/>
 	<target name="generate" depends="generateJAXB, addInterfaces, addToStrings"/>
 	
 	<macrodef name="appendToString">

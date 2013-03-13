@@ -19,7 +19,6 @@ package com.ibm.jbatch.tck.tests.jslxml;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Properties;
 
 import javax.batch.runtime.JobExecution;
@@ -79,7 +78,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property: property.junit.propName=myProperty1<p>");
             System.setProperty("property.junit.propName", "myProperty1");
@@ -114,7 +112,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property: property.junit.propName=myProperty2<p>");
             System.setProperty("property.junit.propName", "myProperty2");
@@ -148,7 +145,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Create job parameters for execution #1:<p>");
             Properties jobParameters = new Properties();
@@ -190,7 +186,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property:property.junit.propName=javaDefaultValueProp<p>");
             System.setProperty("property.junit.propName", "javaDefaultValueProp");
@@ -224,7 +219,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property:property.junit.propName=property4<p>");
             System.setProperty("property.junit.propName", "property4");
@@ -257,7 +251,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property:property.junit.propName=myProperty4<p>");
             System.setProperty("property.junit.propName", "myProperty4");
@@ -290,7 +283,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property:property.junit.propName=batchletProp<p>");
             System.setProperty("property.junit.propName", "batchletProp");
@@ -325,7 +317,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property:property.junit.propName=defaultPropName1<p>");
             System.setProperty("property.junit.propName", "defaultPropName1");
@@ -364,7 +355,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Set system property:property.junit.propName=defaultPropName2<p>");
             System.setProperty("property.junit.propName", "defaultPropName2");
@@ -402,7 +392,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Create job parameters for execution #1:<p>");
             Properties jobParameters = new Properties();
@@ -444,7 +433,6 @@ public class PropertySubstitutionTests {
 
         try {
             Reporter.log("Locate job XML file: job_properties2.xml<p>");
-            URL jobXMLURL = this.getClass().getResource("/job_properties2.xml");
 
             Reporter.log("Create job parameters for execution #1:<p>");
             Properties jobParameters = new Properties();

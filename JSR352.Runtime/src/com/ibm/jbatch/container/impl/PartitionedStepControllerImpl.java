@@ -104,17 +104,19 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 	}
 
 	private PartitionPlan generatePartitionPlan() {
-	       // Determine the number of partitions
+	    // Determine the number of partitions
 
 
         PartitionPlan plan = null;
+        PartitionPlan previousPlan = null;
         final PartitionMapper partitionMapper = step.getPartition().getMapper();
 
         //from persisted plan from previous run
         if (stepStatus.getPlan() != null) {
-            plan = stepStatus.getPlan();
+            previousPlan = stepStatus.getPlan();
+        }
             
-        } else if (partitionMapper != null) { //from partition mapper
+        if (partitionMapper != null) { //from partition mapper
 
             PartitionMapperProxy partitionMapperProxy;
 
@@ -135,18 +137,26 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
                                 + partitionMapper.getRef() + "]", e);
             }
 
+            
             PartitionPlan mapperPlan = partitionMapperProxy.mapPartitions();
             
+            //Set up the new partition plan
             plan = new BatchPartitionPlan();
+            plan.setPartitionsOverride(mapperPlan.getPartitionsOverride());
             
-            plan.setPartitions(mapperPlan.getPartitions());
+            //When true is specified, the partition count from the current run
+            //is used and all results from past partitions are discarded.
+            if (mapperPlan.getPartitionsOverride() || previousPlan == null){
+                plan.setPartitions(mapperPlan.getPartitions());
+            } else {
+                plan.setPartitions(previousPlan.getPartitions());
+            }
             
             if (mapperPlan.getThreads() == 0) {
-                plan.setThreads(mapperPlan.getPartitions());
+                plan.setThreads(plan.getPartitions());
             } else {
                 plan.setThreads(mapperPlan.getThreads());    
             }
-            
             
             plan.setPartitionProperties(mapperPlan.getPartitionProperties());
 
@@ -163,7 +173,6 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
             int numPartitions = Integer.MIN_VALUE;
             int numThreads;
             Properties[] partitionProps = null;
-            
             
             if (partitionsAttr != null) {
                 try {
@@ -229,6 +238,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
             plan.setPartitions(numPartitions);
             plan.setThreads(numThreads);
             plan.setPartitionProperties(partitionProps);
+            plan.setPartitionsOverride(false); //FIXME what is the default for a static plan??
             
         }
         
@@ -248,6 +258,19 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 	    
 		//persist the partition plan so on restart we have the same plan to reuse
 		stepStatus.setPlan(plan);
+		
+		/* When true is specified, the partition count from the current run
+		* is used and all results from past partitions are discarded. Any
+		* resource cleanup or back out of work done in the previous run is the
+		* responsibility of the application. The PartitionReducer artifact's
+		* rollbackPartitionedStep method is invoked during restart before any
+		* partitions begin processing to provide a cleanup hook.
+		*/
+        if (plan.getPartitionsOverride()) {
+            if (this.partitionReducerProxy != null) {
+                this.partitionReducerProxy.rollbackPartitionedStep();
+            }
+        }
 		
 		
 		if (logger.isLoggable(Level.FINE)) {
@@ -280,23 +303,22 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			}
 	
 			// Then build all the subjobs but do not start them yet
-			if (stepStatus.getStartCount() > 1) {
-				parallelBatchWorkUnits = batchKernel.buildRestartableParallelJobs(subJobs, partitionProperties, analyzerQueue, subJobExitStatusQueue, completedWorkQueue, this.containment);
+			if (stepStatus.getStartCount() > 1 && !!!plan.getPartitionsOverride()) {
+				parallelBatchWorkUnits = batchKernel.buildRestartableParallelJobs(subJobs, partitionProperties, analyzerQueue, subJobExitStatusQueue, completedWorkQueue, this.containment, null);
 				
 			} else {
-				parallelBatchWorkUnits = batchKernel.buildNewParallelJobs(subJobs, partitionProperties, analyzerQueue, subJobExitStatusQueue, completedWorkQueue, this.containment);
+				parallelBatchWorkUnits = batchKernel.buildNewParallelJobs(subJobs, partitionProperties, analyzerQueue, subJobExitStatusQueue, completedWorkQueue, this.containment, null);
 				
 			}
 
 		}
 		
-
 		//Start up to to the max num we are allowed from the num threads attribute
 		Iterator<BatchWorkUnit> iterator = parallelBatchWorkUnits.iterator();
 		for (int i=0; i < this.threads && iterator.hasNext(); i++ ) {
 		    
 		    //start or restart a subjob
-            if (stepStatus.getStartCount() > 1) {
+            if (stepStatus.getStartCount() > 1 && !!!plan.getPartitionsOverride()) {
                 batchKernel.restartGeneratedJob(iterator.next());
             } else {
                 batchKernel.startGeneratedJob(iterator.next());

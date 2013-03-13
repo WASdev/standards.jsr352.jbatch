@@ -92,7 +92,7 @@ public class SplitControllerImpl implements IExecutionElementController {
     }
 
     @Override
-    public String execute(List<String> containment) throws AbortedBeforeStartException, JobRestartException, JobStartException {
+    public String execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException, JobRestartException, JobStartException {
         String sourceMethod = "execute";
         if (logger.isLoggable(Level.FINER)) {
             logger.entering(sourceClass, sourceMethod);
@@ -123,9 +123,9 @@ public class SplitControllerImpl implements IExecutionElementController {
             for (JSLJob job : subJobs) {
                 int count = batchKernel.getJobInstanceCount(job.getId());
                 if (count == 0) {
-                    parallelBatchWorkUnits.add(batchKernel.buildNewBatchWorkUnit(job, null, null, null, completedWorkQueue, splitContainment));
+                    parallelBatchWorkUnits.add(batchKernel.buildNewBatchWorkUnit(job, null, null, null, completedWorkQueue, splitContainment, rootJobExecution));
                 } else if (count == 1) {
-                    parallelBatchWorkUnits.add(batchKernel.buildRestartableBatchWorkUnit(job, null, null, null, completedWorkQueue, splitContainment));
+                    parallelBatchWorkUnits.add(batchKernel.buildRestartableBatchWorkUnit(job, null, null, null, completedWorkQueue, splitContainment, rootJobExecution));
                 } else {
                     throw new IllegalStateException("There is an inconsistency somewhere in the internal subjob creation");
                 }

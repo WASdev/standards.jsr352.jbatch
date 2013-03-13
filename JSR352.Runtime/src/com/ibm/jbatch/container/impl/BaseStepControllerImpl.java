@@ -75,6 +75,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     protected Stack<String> subJobExitStatusQueue = null;
 
     protected List<String> containment = null;
+    protected RuntimeJobExecutionHelper rootJobExecution = null;
 
 	protected PartitionCollectorProxy collectorProxy = null;
 	
@@ -130,7 +131,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     }
 
     @Override
-    public String execute(List<String> containment) throws AbortedBeforeStartException  {
+    public String execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException  {
            
         Throwable throwable = null;
         
@@ -140,6 +141,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
         }
         
         this.containment = containment;
+        this.rootJobExecution = rootJobExecution;
         
         try {
             RunOnRestart rc = preInvokeStep();
@@ -310,11 +312,11 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     	Timestamp endTS = new Timestamp(time);
         stepContext.setEndTime(endTS);
         
-        _persistenceManagementService.updateStepExecution(jobExecutionImpl.getExecutionId(), stepContext, this.containment);
+        _persistenceManagementService.updateStepExecution(rootJobExecution.getExecutionId(), stepContext, this.containment);
     }
 
-    private StepExecutionImpl getNewStepExecution(long jobExecutionId, StepContextImpl stepContext) {
-        return _persistenceManagementService.createStepExecution(jobExecutionId, stepContext, this.containment);
+    private StepExecutionImpl getNewStepExecution(long rootJobExecutionId, StepContextImpl stepContext) {
+        return _persistenceManagementService.createStepExecution(rootJobExecutionId, stepContext, this.containment);
     }
 
     protected RunOnRestart preInvokeStep() {
@@ -328,7 +330,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
         if (stepStatus == null) {
 
             // create new step execution
-            StepExecutionImpl stepExecution = getNewStepExecution(jobExecutionImpl.getExecutionId(), stepContext);
+            StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
             // create new step status for this run
             stepStatus = _jobStatusService.createStepStatus(stepExecution.getStepExecutionId());
             ((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
@@ -338,6 +340,10 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
             // is a restart and we need to get the previously persisted data
             ((StepContextImpl) stepContext).setPersistentUserData(stepStatus.getPersistentUserData());
             if (runOnRestart()) {
+                // create new step execution
+                StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
+                
+                ((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
                 stepStatus.incrementStartCount();
             } else {
                 return RunOnRestart.ALREADY_COMPLETE;
@@ -436,4 +442,6 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     public void setSubJobExitStatusQueue(Stack<String> subJobExitStatusQueue) {
         this.subJobExitStatusQueue = subJobExitStatusQueue;
     }
+    
+
 }

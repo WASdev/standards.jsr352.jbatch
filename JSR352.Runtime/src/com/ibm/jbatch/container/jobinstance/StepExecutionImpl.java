@@ -49,8 +49,6 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     private String stepName = null;
     private String[] stepContainment = null;
     
-    long ExecutionId = 0;
-
     private long writeCount = 0;
     private long writeSkipCount = 0;
     

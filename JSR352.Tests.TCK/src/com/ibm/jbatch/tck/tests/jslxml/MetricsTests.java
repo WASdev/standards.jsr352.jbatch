@@ -18,7 +18,6 @@ package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -103,9 +102,6 @@ public class MetricsTests {
 			jobParams.put("app.next.writepoints", "7,14,21,28,30");
 
 			Reporter.log("Locate job XML file: testChunkMetrics.xml<p>");
-			URL jobXMLURL = this.getClass()
-					.getResource("/testChunkMetrics.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testChunkMetrics",
@@ -152,9 +148,6 @@ public class MetricsTests {
 			jobParams.put("ReadProcessWrite", "READ_SKIP");
 
 			Reporter.log("Locate job XML file: testMetricsSkipCount.xml<p>");
-			URL jobXMLURL = this.getClass().getResource(
-					"/testMetricsSkipCount.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricsSkipCount",
@@ -232,9 +225,6 @@ public class MetricsTests {
 			jobParams.put("ReadProcessWrite", "WRITE_SKIP");
 
 			Reporter.log("Locate job XML file: testMetricsSkipWriteCount.xml<p>");
-			URL jobXMLURL = this.getClass().getResource(
-					"/testMetricsSkipWriteCount.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricsSkipWriteCount",
@@ -308,9 +298,6 @@ public class MetricsTests {
 			jobParams.put("ReadProcessWrite", "PROCESS");
 
 			Reporter.log("Locate job XML file: testMetricsSkipCount.xml<p>");
-			URL jobXMLURL = this.getClass().getResource(
-					"/testMetricsSkipCount.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricsSkipCount",
@@ -386,9 +373,6 @@ public class MetricsTests {
 			jobParams.put("app.arraysize", "30");
 		
 			Reporter.log("Locate job XML file: testChunkMetrics.xml<p>");
-			URL jobXMLURL = this.getClass()
-					.getResource("/testMetricCount.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricCount",
@@ -450,9 +434,6 @@ public class MetricsTests {
 			Properties jobParams = new Properties();
 		
 			Reporter.log("Locate job XML file: testChunkMetrics.xml<p>");
-			URL jobXMLURL = this.getClass()
-					.getResource("/testMetricCount.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricCount",
@@ -518,9 +499,6 @@ public class MetricsTests {
 			Reporter.log("app.processFilterItem=3<p>");
 
 			Reporter.log("Locate job XML file: testMetricsFilterCount.xml<p>");
-			URL jobXMLURL = this.getClass().getResource(
-					"/testMetricsFilterCount.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricsFilterCount",
@@ -580,9 +558,6 @@ public class MetricsTests {
 			Reporter.log("app.processFilterItem=3<p>");
 
 			Reporter.log("Locate job XML file: testMetricsCommitCount.xml<p>");
-			URL jobXMLURL = this.getClass().getResource(
-					"/testMetricsCommitCount.xml");
-
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobAndWaitForResult("testMetricsCommitCount",
@@ -645,9 +620,6 @@ public class MetricsTests {
 			Reporter.log("app.processFilterItem=3<p>");
 
 			Reporter.log("Locate job XML file: testMetricsCommitCount.xml<p>");
-			URL jobXMLURL = this.getClass().getResource(
-					"/testMetricsCommitCount.xml");
-
 			long time = System.currentTimeMillis();
 			Date ts = new Date(time);
 
@@ -710,8 +682,6 @@ public class MetricsTests {
 			Reporter.log("app.processFilterItem=3<p>");
 
 			Reporter.log("Locate job XML file: testMetricsCommitCount.xml<p>");
-			URL jobXMLURL = this.getClass().getResource(
-					"/testMetricsCommitCount.xml");
 
 			long time = System.currentTimeMillis();
 			Date ts = new Date(time);

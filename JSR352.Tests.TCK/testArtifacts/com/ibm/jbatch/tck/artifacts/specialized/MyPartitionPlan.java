@@ -23,14 +23,7 @@ import com.ibm.jbatch.tck.artifacts.common.AbstractPartitionPlan;
 public class MyPartitionPlan extends AbstractPartitionPlan {
 
 	@Override
-	public void setPartitionsOverride(boolean override) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public boolean getPartitionsOverride() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

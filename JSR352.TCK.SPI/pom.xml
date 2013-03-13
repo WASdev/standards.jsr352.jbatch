@@ -3,17 +3,17 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b14</version>
+        <version>1.0-b15</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch-tck-spi</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b14</version>
+    <version>1.0-b15</version>
 	<dependencies>
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-api</artifactId>
-			<version>1.0-b14</version>
+			<version>1.0-b15</version>
 		</dependency>
 	</dependencies>
 

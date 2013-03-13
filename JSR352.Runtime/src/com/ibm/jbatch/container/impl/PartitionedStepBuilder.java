@@ -23,7 +23,7 @@ import javax.batch.runtime.context.JobContext;
 
 
 import com.ibm.jbatch.container.jsl.CloneUtility;
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.ObjectFactory;
@@ -34,6 +34,7 @@ import com.ibm.jbatch.jsl.model.Step;
 
 public class PartitionedStepBuilder {
 
+	public static final String JOB_ID_SEPARATOR = "_";  // Must be permissible in NCName
     /*
      * Build a generated job with only one flow in it to submit to the
      * BatchKernel. This is used to build subjobs from splits.
@@ -102,7 +103,7 @@ public class PartitionedStepBuilder {
         	newStep.setChunk(CloneUtility.cloneChunk(step.getChunk()));
         }
         
-        List<ControlElement> newControlElements = newStep.getControlElements();
+        List<TransitionElement> newControlElements = newStep.getControlElements();
         CloneUtility.cloneControlElements(step.getControlElements(), newControlElements);
         
         newStep.setListeners(CloneUtility.cloneListeners(step.getListeners()));
@@ -156,10 +157,11 @@ public class PartitionedStepBuilder {
      */
     private static String generateSubJobId(Long parentJobInstanceId, String splitId, String flowId) {
 
-        StringBuilder strBuilder = new StringBuilder(parentJobInstanceId.toString());
-        strBuilder.append(':');
+        StringBuilder strBuilder = new StringBuilder(JOB_ID_SEPARATOR);
+        strBuilder.append(parentJobInstanceId.toString());
+        strBuilder.append(JOB_ID_SEPARATOR);
         strBuilder.append(splitId);
-        strBuilder.append(':');
+        strBuilder.append(JOB_ID_SEPARATOR);
         strBuilder.append(flowId);
 
         return strBuilder.toString();
@@ -178,10 +180,11 @@ public class PartitionedStepBuilder {
      */
     private static String generateSubJobId(Long parentJobInstanceId, String stepId, int partitionInstance) {
 
-        StringBuilder strBuilder = new StringBuilder(parentJobInstanceId.toString());
-        strBuilder.append(':');
+        StringBuilder strBuilder = new StringBuilder(JOB_ID_SEPARATOR);
+        strBuilder.append(parentJobInstanceId.toString());
+        strBuilder.append(JOB_ID_SEPARATOR);
         strBuilder.append(stepId);
-        strBuilder.append(':');
+        strBuilder.append(JOB_ID_SEPARATOR);
         strBuilder.append(partitionInstance);
 
         return strBuilder.toString();

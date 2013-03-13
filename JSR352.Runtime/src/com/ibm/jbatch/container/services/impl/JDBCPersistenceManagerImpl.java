@@ -505,18 +505,18 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		Connection connection = null;
 		
 		if(!batchConfig.isJ2seMode()) {
-			logger.fine("J2EE mode, getting connection from data source");
+			logger.finer("J2EE mode, getting connection from data source");
 			connection = dataSource.getConnection();
-			logger.fine("autocommit="+connection.getAutoCommit());
+			logger.finer("autocommit="+connection.getAutoCommit());
 		} else {
 			try {
 				Class.forName(driver);
 			} catch (ClassNotFoundException e) {
 				throw new PersistenceException(e);
 			}
-			logger.log(Level.FINE, "JSE mode, getting connection from {0}", url);
+			logger.log(Level.FINER, "JSE mode, getting connection from {0}", url);
 			connection = DriverManager.getConnection(url, userId, pwd);
-			logger.fine("autocommit="+connection.getAutoCommit());
+			logger.finer("autocommit="+connection.getAutoCommit());
 		}
 		setSchemaOnConnection(connection);
 		
@@ -533,9 +533,9 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		Connection connection = null;
 		
 		if(!batchConfig.isJ2seMode()) {
-			logger.fine("J2EE mode, getting connection from data source");
+			logger.finer("J2EE mode, getting connection from data source");
 			connection = dataSource.getConnection();
-			logger.fine("autocommit="+connection.getAutoCommit());
+			logger.finer("autocommit="+connection.getAutoCommit());
 		} else {
 			try {
 				Class.forName(driver);
@@ -549,9 +549,9 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 				
 				throw new PersistenceException(e);
 			}
-			logger.log(Level.FINE, "JSE mode, getting connection from {0}", url);
+			logger.log(Level.FINER, "JSE mode, getting connection from {0}", url);
 			connection = DriverManager.getConnection(url, userId, pwd);
-			logger.fine("autocommit="+connection.getAutoCommit());
+			logger.finer("autocommit="+connection.getAutoCommit());
 		}
 		logger.exiting(CLASSNAME, "getConnection", connection);
 		return connection;
@@ -1921,9 +1921,10 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("SELECT A.jobexecid FROM executioninstancedata AS A INNER JOIN jobinstancedata AS B ON A.jobinstanceid = B.jobinstanceid WHERE A.batchstatus = ? AND B.name = ?"); 
+			statement = conn.prepareStatement("SELECT A.jobexecid FROM executioninstancedata AS A INNER JOIN jobinstancedata AS B ON A.jobinstanceid = B.jobinstanceid WHERE A.batchstatus IN (?,?) AND B.name = ?"); 
 			statement.setString(1, BatchStatus.STARTED.name());
-			statement.setString(2, jobName);
+			statement.setString(2, BatchStatus.STARTING.name());
+			statement.setString(3, jobName);
 			rs = statement.executeQuery();
 			while (rs.next()) {
 				executionIds.add(rs.getLong("jobexecid"));
@@ -2190,7 +2191,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#createStepExecution(long, com.ibm.jbatch.container.context.impl.StepContextImpl)
 	 */
 	@Override
-	public StepExecutionImpl createStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment) {
+	public StepExecutionImpl createStepExecution(long rootJobExecId, StepContextImpl stepContext, List<String> containment) {
 		StepExecutionImpl stepExecution = null;
 		String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
 		String exitStatus = stepContext.getExitStatus();
@@ -2230,7 +2231,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		}
 		Serializable persistentData = stepContext.getPersistentUserData();
 
-		stepExecution = createStepExecution(jobExecId, batchStatus, exitStatus, stepName, stepContainmentCSV, readCount, 
+		stepExecution = createStepExecution(rootJobExecId, batchStatus, exitStatus, stepName, stepContainmentCSV, readCount, 
 			writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime,
 			endTime, persistentData);
 
@@ -2238,11 +2239,11 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	}
 
 
-	private StepExecutionImpl createStepExecution(long jobExecId,  String batchStatus, String exitStatus, String stepName, String stepContainmentCSV, long readCount, 
+	private StepExecutionImpl createStepExecution(long rootJobExecId,  String batchStatus, String exitStatus, String stepName, String stepContainmentCSV, long readCount, 
 		long writeCount, long commitCount, long rollbackCount, long readSkipCount, long processSkipCount, long filterCount,
 		long writeSkipCount, Timestamp startTime, Timestamp endTime, Serializable persistentData) {
 
-		logger.entering(CLASSNAME, "createStepExecution", new Object[] {jobExecId, batchStatus, exitStatus, stepName, readCount, 
+		logger.entering(CLASSNAME, "createStepExecution", new Object[] {rootJobExecId, batchStatus, exitStatus, stepName, readCount, 
 			writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime,
 			endTime, persistentData});
 
@@ -2257,7 +2258,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-			statement.setLong(1, jobExecId);
+			statement.setLong(1, rootJobExecId);
 			statement.setString(2, batchStatus);
 			statement.setString(3, exitStatus);
 			statement.setString(4, stepName);
@@ -2278,7 +2279,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 			rs = statement.getGeneratedKeys();
 			if(rs.next()) {
 				long stepExecutionId = rs.getLong(1);
-				stepExecution = new StepExecutionImpl(jobExecId, stepExecutionId);
+				stepExecution = new StepExecutionImpl(rootJobExecId, stepExecutionId);
         		stepExecution.setStepName(stepName);
 			}
 		} catch (SQLException e) {
@@ -2297,7 +2298,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#updateStepExecution(long, com.ibm.jbatch.container.context.impl.StepContextImpl)
 	 */
 	@Override
-	public void updateStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment) {
+	public void updateStepExecution(long rootJobExecId, StepContextImpl stepContext, List<String> containment) {
 		long stepExecutionId = stepContext.getStepExecutionId();
 		String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
 		String exitStatus = stepContext.getExitStatus();
@@ -2337,7 +2338,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		}
 		Serializable persistentData = stepContext.getPersistentUserData();
 
-		updateStepExecution(stepExecutionId, jobExecId, batchStatus, exitStatus, stepName, stepContainmentCSV, readCount, 
+		updateStepExecution(stepExecutionId, rootJobExecId, batchStatus, exitStatus, stepName, stepContainmentCSV, readCount, 
 			writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, 
 			writeSkipCount, startTime, endTime, persistentData);
 

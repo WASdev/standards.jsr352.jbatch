@@ -42,7 +42,7 @@ import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
-import com.ibm.jbatch.container.jsl.ControlElement;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.jsl.Transition;
@@ -79,12 +79,10 @@ public class JobControllerImpl implements IController {
 
     private BlockingQueue<PartitionDataWrapper> analyzerQueue;
     private Stack<String> subJobExitStatusQueue;
-
 	private ListenerFactory listenerFactory = null;
-    
     private final long jobInstanceId;
-    
     private List<String> containment = null;
+    private RuntimeJobExecutionHelper rootJobExecution = null;
 
     //
     // The currently executing controller, this will only be set to the 
@@ -93,10 +91,11 @@ public class JobControllerImpl implements IController {
     private volatile IExecutionElementController currentStoppableElementController = null;
 
 
-    public JobControllerImpl(RuntimeJobExecutionHelper jobExecution, List<String> containment) {
+    public JobControllerImpl(RuntimeJobExecutionHelper jobExecution, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) {
         this.jobExecution = jobExecution;
         this.jobContext = jobExecution.getJobContext();
         this.containment = containment;
+        this.rootJobExecution = rootJobExecution;
         jobNavigator = jobExecution.getJobNavigator();
         jobId = jobNavigator.getId();
         //AJM: jobContext = new JobContextImpl(jobId); // TODO - is this the right id?
@@ -403,7 +402,7 @@ public class JobControllerImpl implements IController {
                     currentContainment = new ArrayList<String>();
                     currentContainment.addAll(containment);
                 }
-                executionElementExitStatus = elementController.execute(currentContainment);
+                executionElementExitStatus = elementController.execute(currentContainment, this.rootJobExecution);
             } catch (AbortedBeforeStartException e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Execution failed before even getting to execute execution element = " + currentExecutionElement.getId());
@@ -456,7 +455,7 @@ public class JobControllerImpl implements IController {
                 }
             } else if (nextTransition.getControlElement() != null) {
                 // TODO - update job status mgr
-                ControlElement controlElem = nextTransition.getControlElement();
+                TransitionElement controlElem = nextTransition.getControlElement();
 
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " , Looping through to next control element=" + controlElem);

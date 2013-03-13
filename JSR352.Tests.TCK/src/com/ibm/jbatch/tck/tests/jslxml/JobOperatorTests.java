@@ -808,12 +808,17 @@ public class JobOperatorTests {
 			Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParams);
 
-			Properties restartJobParameters = new Properties();
-			restartJobParameters.put("app.timeinterval", "10000");
+			Properties newJobParameters = new Properties();
+			newJobParameters.put("app.timeinterval", "10000");
 			Reporter.log("Invoke startJobWithoutWaitingForResult<p>");
 			
-			JobExecution exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", restartJobParameters);
+			JobExecution exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", newJobParameters);
 
+			// Sleep to give the runtime the chance to start the job.  The job has a delay built into the stepListener afterStep() 
+			// so we aren't worried about the job finishing early leaving zero running executions.
+	        Reporter.log("Thread.sleep(1000)");
+	        Thread.sleep(1000);
+	        
 			List<Long> jobExecutions = jobOp.getRunningExecutions("job_batchlet_step_listener");
 			assertWithMessage("Found job instances in the RUNNING state", jobExecutions.size() > 0);
 

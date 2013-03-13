@@ -21,6 +21,7 @@ import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 
 public interface IExecutionElementController extends IController {
@@ -30,7 +31,7 @@ public interface IExecutionElementController extends IController {
     /*
      * @return exitStatus
      */
-    public String execute(List<String> containmentName) throws AbortedBeforeStartException, Exception;
+    public String execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException, Exception;
     
     public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext);
     

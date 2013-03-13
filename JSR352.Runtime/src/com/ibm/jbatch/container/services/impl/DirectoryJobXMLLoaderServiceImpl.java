@@ -34,7 +34,7 @@ public class DirectoryJobXMLLoaderServiceImpl implements IJobXMLLoaderService {
     private final static Logger logger = Logger.getLogger(DelegatingBatchArtifactFactoryImpl.class.getName());
     private final static String CLASSNAME = DirectoryJobXMLLoaderServiceImpl.class.getName();
     
-    public static final String JOB_XML_DIR_PROP = "javax.batch.jobs.dir";
+    public static final String JOB_XML_DIR_PROP = "com.ibm.jbatch.jsl.directory";
     public static final String JOB_XML_PATH = System.getProperty(JOB_XML_DIR_PROP);
     
     

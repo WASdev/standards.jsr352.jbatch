@@ -69,7 +69,7 @@
 				<xs:element name="step" type="jsl:Step" />
 			</xs:choice>
 		</xs:sequence>
-		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="id" use="required" type="xs:ID" />
 		<xs:attribute name="parent" use="optional" type="xs:string" />
 		<xs:attribute name="abstract" use="optional" type="xs:string" />
 		<xs:attribute name="restartable" use="optional" type="xs:string" />
@@ -97,9 +97,9 @@
 		<xs:sequence>
 			<xs:element name="flow" type="jsl:Flow" minOccurs="0"
 				maxOccurs="unbounded" />
-			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+			<xs:group ref="jsl:TransitionElements" minOccurs="0" maxOccurs="unbounded" />
 		</xs:sequence>
-		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="id" use="required" type="xs:ID" />
 		<xs:attribute name="next" use="optional" type="xs:string" />
 	</xs:complexType>
 
@@ -111,22 +111,20 @@
 				<xs:element name="split" type="jsl:Split" />
 				<xs:element name="step" type="jsl:Step" />
 			</xs:choice>
-			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+			<xs:group ref="jsl:TransitionElements" minOccurs="0" maxOccurs="unbounded" />
 		</xs:sequence>
-		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="id" use="required" type="xs:ID" />
 		<xs:attribute name="next" use="optional" type="xs:string" />
 	</xs:complexType>
 
-	<xs:group name="ControlElements">
+	<xs:group name="TransitionElements">
 		<xs:annotation>
 			<xs:documentation>
 				This grouping provides allows for the reuse of the
 				'end', 'fail', 'next', 'stop' element sequences which
 				may appear at the end of a 'step', 'flow', 'split' or 'decision'.
-				The term 'ControlElements' does not formally appear in the spec, it is
-				a schema convenience. Another good name might be "transition
-				elements", though that might wrongly only signify transitioning via
-				'next' to another step rather than ending, failing, or stopping.
+				The term 'TransitionElements' does not formally appear in the spec, it is
+				a schema convenience.			
 			</xs:documentation>
 		</xs:annotation>
 		<xs:choice>
@@ -141,9 +139,9 @@
 		<xs:sequence>
 			<xs:element name="properties" type="jsl:Properties"
 				minOccurs="0" maxOccurs="1" />
-			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+			<xs:group ref="jsl:TransitionElements" minOccurs="0" maxOccurs="unbounded" />
 		</xs:sequence>
-		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="id" use="required" type="xs:ID" />
 		<xs:attribute name="ref" use="required" type="jsl:artifactRef" />
 	</xs:complexType>
 
@@ -216,9 +214,9 @@
 			</xs:choice>
 			<xs:element name="partition" type="jsl:Partition"
 				minOccurs="0" maxOccurs="1" />
-			<xs:group ref="jsl:ControlElements" minOccurs="0" maxOccurs="unbounded" />
+			<xs:group ref="jsl:TransitionElements" minOccurs="0" maxOccurs="unbounded" />
 		</xs:sequence>
-		<xs:attribute name="id" use="required" type="xs:string" />
+		<xs:attribute name="id" use="required" type="xs:ID" />
 		<xs:attribute name="start-limit" use="optional" type="xs:string" />
 		<xs:attribute name="allow-start-if-complete" use="optional"
 			type="xs:string" />

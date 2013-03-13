@@ -135,7 +135,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts);
 	
-	public void stepExecutionCreateStepExecutionData(String stepExecutionKey, long jobExecutionID, StepContextImpl stepContext, List<String> containment);
+	public void stepExecutionCreateStepExecutionData(String stepExecutionKey, long rootExecutionID, StepContextImpl stepContext, List<String> containment);
 	
 	//public long stepExecutionQueryID(String key);
 	

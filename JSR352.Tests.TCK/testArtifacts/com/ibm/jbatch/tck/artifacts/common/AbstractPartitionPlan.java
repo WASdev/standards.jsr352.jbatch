@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.tck.artifacts.common;
 
 import java.util.Properties;
@@ -22,31 +22,44 @@ import javax.batch.api.partition.PartitionPlan;
 
 public abstract class AbstractPartitionPlan implements PartitionPlan {
 
-	private int partitionCount;
-	private int threadCount;
-	private Properties[] partitionProperties;
-	
-	public int getPartitions() {
-		return partitionCount;
-	}
-	
-	public void setPartitions(int partitionCount) {
-		this.partitionCount = partitionCount;
-	}
-	
-	public int getThreads() {
-		return threadCount;
-	}
-	
-	public void setThreads(int threadCount) {
-		this.threadCount = threadCount;
-	}
-	
-	public Properties[] getPartitionProperties() {
-		return partitionProperties;
-	}
-	
-	public void setPartitionProperties(Properties[] partitionProperties) {
-		this.partitionProperties = partitionProperties;
-	}
+    private int partitionCount;
+    private int threadCount;
+    private Properties[] partitionProperties;
+
+    private boolean partitionOverrides = false;
+
+    public int getPartitions() {
+        return partitionCount;
+    }
+
+    public void setPartitions(int partitionCount) {
+        this.partitionCount = partitionCount;
+    }
+
+    public int getThreads() {
+        return threadCount;
+    }
+
+    public void setThreads(int threadCount) {
+        this.threadCount = threadCount;
+    }
+
+    public Properties[] getPartitionProperties() {
+        return partitionProperties;
+    }
+
+    public void setPartitionProperties(Properties[] partitionProperties) {
+        this.partitionProperties = partitionProperties;
+    }
+
+    public boolean getPartitionOverrides() {
+        return partitionOverrides;
+    }
+
+
+    public void setPartitionsOverride(boolean override) {
+        this.partitionOverrides = override;
+    }
+    
+
 }

@@ -38,7 +38,7 @@ public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
 		//Get the last thread to start to sleep the longest so we can show it's exit status is the one that is
 		//picked up.
 		if (count.get() == 11) {
-		    Thread.sleep(1000);
+		    Thread.sleep(2000);
 		}
 		
 		String returnString = "VERY GOOD INVOCATION " + count;

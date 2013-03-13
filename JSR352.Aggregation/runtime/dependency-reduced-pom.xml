@@ -3,13 +3,13 @@
   <parent>
     <artifactId>jbatch</artifactId>
     <groupId>javax.batch</groupId>
-    <version>1.0-b14</version>
+    <version>1.0-b15</version>
     <relativePath>../pom.xml/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.jbatch</groupId>
   <artifactId>com.ibm.jbatch-runtime-all</artifactId>
-  <version>1.0-b14</version>
+  <version>1.0-b15</version>
   <build>
     <resources>
       <resource>
@@ -65,11 +65,18 @@
       </plugin>
     </plugins>
   </build>
+  <repositories>
+    <repository>
+      <id>java.net-Public</id>
+      <name>Maven Java Net Snapshots and Releases</name>
+      <url>https://maven.java.net/content/groups/public/</url>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>com.ibm.jbatch</groupId>
       <artifactId>com.ibm.jbatch-ri-spi</artifactId>
-      <version>1.0-b14</version>
+      <version>1.0-b15</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

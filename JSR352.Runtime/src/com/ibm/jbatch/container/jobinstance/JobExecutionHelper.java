@@ -16,6 +16,7 @@
 */
 package com.ibm.jbatch.container.jobinstance;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -224,7 +225,7 @@ public class JobExecutionHelper {
     	_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, failedTs);
     }
     
-    public static StepExecution getStepExecutionIDInfo(long stepexecutionId){
+    public static StepExecution<? extends Serializable> getStepExecutionIDInfo(long stepexecutionId){
     	return _persistenceManagementService.getStepExecutionObjQueryByStepID(stepexecutionId);
     }
     
