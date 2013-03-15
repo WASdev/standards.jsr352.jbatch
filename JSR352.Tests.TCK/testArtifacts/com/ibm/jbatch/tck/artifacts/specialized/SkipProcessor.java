@@ -16,6 +16,8 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.logging.Logger;
+
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
@@ -26,6 +28,8 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 @javax.inject.Named("skipProcessor")
 public class SkipProcessor implements ItemProcessor<ReadRecord, ReadRecord> {
+	
+	private final static Logger logger = Logger.getLogger(SkipProcessor.class.getName());
 	
     @Inject    
     @BatchProperty(name="execution.number")
@@ -60,7 +64,7 @@ public class SkipProcessor implements ItemProcessor<ReadRecord, ReadRecord> {
 				failnum[0] = -1;
 			}
 			inited = true;
-			System.out.println("AJM: PROCESSOR - failnum = " + failnum);
+			logger.fine("AJM: PROCESSOR - failnum = " + failnum);
 		}
 		
 		if (threwSkipException){
@@ -69,13 +73,13 @@ public class SkipProcessor implements ItemProcessor<ReadRecord, ReadRecord> {
 			threwSkipException = false;
 		}
 		
-		System.out.println("AJM: PROCESSOR: failnum = " + failnum);
-		System.out.println("AJM: PROCESSOR: processIteration = " + processIteration);
+		logger.fine("AJM: PROCESSOR: failnum = " + failnum);
+		logger.fine("AJM: PROCESSOR: processIteration = " + processIteration);
 		
 		ReadRecord processedRecord = null;
 		
 		if (isFailnum(processIteration)){
-			System.out.println("READ: got the fail num..." + failnum);
+			logger.fine("READ: got the fail num..." + failnum);
 			threwSkipException = true;
 			throw new MyParentException("fail on purpose on idx = " + failnum);
 		}

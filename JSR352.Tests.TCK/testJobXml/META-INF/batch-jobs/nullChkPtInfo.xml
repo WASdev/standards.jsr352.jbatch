@@ -15,8 +15,11 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="job1" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
-	<step id="step1" >
-		<batchlet ref="myBatchletImpl" />
+<job id="chunksizeDEFAULTcommitIntervalDEFAULT" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
+	<step id="step1">
+		<chunk>
+		 <reader ref="nullChkPtInfoReader"/>
+		 <writer ref="nullChkPtInfoWriter"/>
+		</chunk>	
 	</step>
 </job>

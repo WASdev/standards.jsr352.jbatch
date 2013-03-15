@@ -1,12 +1,54 @@
 
+CREATE TABLE IF NOT EXISTS JOBINSTANCEDATA(
+  jobinstanceid   BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  name    VARCHAR(512), 
+  apptag VARCHAR(512)
+);
+
+CREATE TABLE IF NOT EXISTS EXECUTIONINSTANCEDATA(
+  jobexecid     BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  jobinstanceid BIGINT,
+  createtime  TIMESTAMP,
+  starttime   TIMESTAMP,
+  endtime   TIMESTAMP,
+  updatetime  TIMESTAMP,
+  parameters  BLOB,
+  batchstatus   VARCHAR(512),
+  exitstatus    VARCHAR(512),
+  CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES JOBINSTANCEDATA (jobinstanceid)
+  );
+  
+CREATE TABLE IF NOT EXISTS STEPEXECUTIONINSTANCEDATA(
+  stepexecid    BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  jobexecid BIGINT,
+  batchstatus       VARCHAR(512),
+  exitstatus      VARCHAR(512),
+  stepname        VARCHAR(512),
+  stepcontainmentcsv VARCHAR(512),
+  readcount         INT,
+  writecount        INT,
+  commitcount       INT,
+  rollbackcount     INT,
+  readskipcount     INT,
+  processskipcount  INT,
+  filtercount       INT,
+  writeskipcount    INT,
+  startTime           TIMESTAMP,
+  endTime             TIMESTAMP,
+  persistentData    BLOB,
+  CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES EXECUTIONINSTANCEDATA (jobexecid)
+);  
+
 CREATE TABLE IF NOT EXISTS JOBSTATUS (
-  id		BIGINT,
-  obj		BLOB
+  id		BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  obj   BLOB,
+  CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES JOBINSTANCEDATA (jobinstanceid) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS STEPSTATUS(
-  id		VARCHAR(512),
-  obj		BLOB
+  id		BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT, 
+  obj   BLOB,
+  CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES STEPEXECUTIONINSTANCEDATA (stepexecid) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS CHECKPOINTDATA(
@@ -14,41 +56,4 @@ CREATE TABLE IF NOT EXISTS CHECKPOINTDATA(
   obj		BLOB
 );
 
-CREATE TABLE IF NOT EXISTS JOBINSTANCEDATA(
-  id		VARCHAR(512),
-  name		VARCHAR(512), 
-  apptag VARCHAR(512)
-);
-
-CREATE TABLE IF NOT EXISTS EXECUTIONINSTANCEDATA(
-  id			VARCHAR(512),
-  createtime	TIMESTAMP,
-  starttime		TIMESTAMP,
-  endtime		TIMESTAMP,
-  updatetime	TIMESTAMP,
-  parameters	BLOB,
-  jobinstanceid	VARCHAR(512),
-  batchstatus		VARCHAR(512),
-  exitstatus		VARCHAR(512)
-  );
-  
-CREATE TABLE IF NOT EXISTS STEPEXECUTIONINSTANCEDATA(
-	id			VARCHAR(512),
-	jobexecid	VARCHAR(512),
-	stepexecid			VARCHAR(512),
-	batchstatus         VARCHAR(512),
-    exitstatus			VARCHAR(512),
-    stepname			VARCHAR(512),
-	readcount			VARCHAR(512),
-	writecount			VARCHAR(512),
-	commitcount         VARCHAR(512),
-	rollbackcount		VARCHAR(512),
-	readskipcount		VARCHAR(512),
-	processskipcount	VARCHAR(512),
-	filtercount			VARCHAR(512),
-	writeskipcount		VARCHAR(512),
-	startTime           TIMESTAMP,
-	endTime             TIMESTAMP,
-	persistentData		BLOB
-);  
   

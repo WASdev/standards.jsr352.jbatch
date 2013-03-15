@@ -52,8 +52,6 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
 	void stopJob(long executionID) throws NoSuchJobExecutionException, JobExecutionNotRunningException;
 
-	// should be removed once props are gone JobExecution restartJob(long jobInstanceId);
-
 	void jobExecutionDone(RuntimeJobExecutionHelper jobExecution);
 
 	int getJobInstanceCount(String jobName);

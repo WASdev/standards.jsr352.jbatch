@@ -40,27 +40,23 @@ import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.tck.spi.JobEndCallbackManager;
 
-
 public class JobOperatorBridge {
 
-    //private JobOperator jobOp = ServiceGateway.getServices().getJobOperator();
+	public static final String DEFAULT_JOB_OPERATOR_SLEEP_TIME = "60000";
+	
     private JobOperator jobOp = BatchRuntime.getJobOperator();
     private JobEndCallbackManager callbackMgr = ServiceGateway.getServices().getCallbackManager();
 
     private Set<Long> completedExecutions = new HashSet<Long>();
 
-    private int sleepTime = Integer.parseInt(System.getProperty("junit.jobOperator.sleep.time", "900000"));
+    private int sleepTime = Integer.parseInt(System.getProperty("junit.jobOperator.sleep.time", DEFAULT_JOB_OPERATOR_SLEEP_TIME));
 
     public JobOperatorBridge() {
         super();        
     }
     
-    //public List<StepExecution> getJobSteps(long jobExecutionId) {
-    //	return jobOp.getJobSteps(jobExecutionId);
-    //}
-    
     public List<String> getJobNames() throws JobSecurityException {
-    	return new ArrayList(jobOp.getJobNames());
+    	return new ArrayList<String>(jobOp.getJobNames());
     }
     
     public int getJobInstanceCount(String jobName) throws NoSuchJobException, JobSecurityException {
@@ -155,16 +151,16 @@ public class JobOperatorBridge {
 
     private class JobEndCallbackImpl implements com.ibm.jbatch.tck.spi.JobEndCallback {
     	
+    	private JobEndCallbackImpl() {
+    		super();
+    	}
+    	
     	// The wrapper around long is chosen so that 'null' clearly signifies 'unset',
     	// since '0' does not.
-    	private Long execIdObj = null;
+    	private Long executionIdObj = null;
 
-		public Long getExecIdObj() {
-			return execIdObj;
-		}
-
-		public void setExecIdObj(Long execIdObj) {
-			this.execIdObj = execIdObj;
+		public void setExecutionId(Long executionId) {
+			this.executionIdObj = executionId;
 		}
 
 		@Override
@@ -175,8 +171,8 @@ public class JobOperatorBridge {
                 // If we have set an execution id into the callback,
                 // then only wake up the sleep if we have matched the
                 // execution id.
-                if (execIdObj != null) {
-                	if (execIdObj.longValue() == jobExecutionId) {
+                if (executionIdObj != null) {
+                	if (executionIdObj.longValue() == jobExecutionId) {
                 		this.notify();
                 	}
                 } 
@@ -185,6 +181,20 @@ public class JobOperatorBridge {
                 // with an already-set execution id.
             }
         }
+
+		@Override
+		public JobOperator getJobOperator() {
+			// from outer class
+			return jobOp;
+		}
+
+		@Override
+		public long getExecutionId() {
+			if (executionIdObj == null) {
+				throw new IllegalStateException("Shouldn't use this impl before set with execution Id.");
+			}
+			return executionIdObj;
+		}
     }
 
     protected TCKJobExecutionWrapper jobExecutionResult(long execID, JobEndCallbackImpl callback) throws NoSuchJobExecutionException, JobSecurityException {
@@ -194,7 +204,7 @@ public class JobOperatorBridge {
             if (!completedExecutions.contains(execID)) {
             	// While we have the lock we'll associate this callback with the execution id
             	// so we can only get notified when this particular execution id completes.
-            	callback.setExecIdObj(new Long(execID));
+            	callback.setExecutionId(execID);
                 try {
                     callback.wait(sleepTime);
                 } catch (InterruptedException e) {

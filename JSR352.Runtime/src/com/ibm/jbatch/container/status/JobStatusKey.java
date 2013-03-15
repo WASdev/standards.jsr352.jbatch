@@ -16,9 +16,7 @@
 */
 package com.ibm.jbatch.container.status;
 
-import com.ibm.jbatch.container.services.IPersistenceDataKey;
-
-public class JobStatusKey implements IPersistenceDataKey {
+public class JobStatusKey {
 	
 	private long jobInstanceId;		
 
@@ -26,17 +24,14 @@ public class JobStatusKey implements IPersistenceDataKey {
 		this.jobInstanceId = jobInstanceId;
 	}
 	
-	public long getJobInstanceId() {
+	/**
+	 * Note this is the only getter method, to enforce consistency
+	 * in getting the instance ID as key.
+	 * 
+	 * @return jobInstanceId
+	 */
+	public long getDatabaseKey() {
 		return jobInstanceId;
-	}
-	
-	public void setJobInstanceId(long jobInstanceId) {		
-		this.jobInstanceId = jobInstanceId;
-	}
-	
-	@Override
-	public Long getKeyPrimitive() {
-		return new Long(jobInstanceId);
 	}
 	
 	public String toString() {		

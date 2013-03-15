@@ -17,7 +17,6 @@
 package com.ibm.jbatch.container.status;
 
 import java.io.ByteArrayInputStream;
-import java.io.Externalizable;
 import java.io.Serializable;
 
 import javax.batch.api.partition.PartitionPlan;
@@ -34,16 +33,16 @@ public class StepStatus implements Serializable {
      */
     private static final long serialVersionUID = 1L;
 
-    private long stepId;
+    private long stepExecutionId;
     private BatchStatus batchStatus;
     private String exitStatus;
     private int startCount;    
     private PersistentDataWrapper persistentUserData;
     private PartitionPlan plan;
     
-    public StepStatus(long stepId) {
+    public StepStatus(long stepExecutionId) {
         this.startCount = 1;
-        this.stepId = stepId;
+        this.stepExecutionId = stepExecutionId;
         this.batchStatus = BatchStatus.STARTING;
     }
     
@@ -58,14 +57,17 @@ public class StepStatus implements Serializable {
     @Override
     public String toString() {        
         StringBuffer buf = new StringBuffer();
-        buf.append("stepId: " + stepId);        
+        buf.append("stepExecutionId: " + stepExecutionId);        
         buf.append(",batchStatus: " + batchStatus);
+        buf.append(",exitStatus: " + exitStatus);
         buf.append(",startCount: " + startCount);
+        buf.append(",persistentUserData: " + persistentUserData);
+        buf.append(",plan: " + plan);
         return buf.toString();
     }
 
-    public long getStepId() {
-        return stepId;
+    public long getStepExecutionId() {
+        return stepExecutionId;
     }
 
     public int getStartCount() {
@@ -88,16 +90,16 @@ public class StepStatus implements Serializable {
         this.persistentUserData = persistentUserData;
     }
 
-    public Externalizable getPersistentUserData() {
+    public Serializable getPersistentUserData() {
         byte[] persistentToken = this.persistentUserData.getPersistentDataBytes();
         ByteArrayInputStream persistentByteArrayInputStream = new ByteArrayInputStream(persistentToken);
         TCCLObjectInputStream persistentOIS = null;
 
-        Externalizable persistentObject = null;
+        Serializable persistentObject = null;
         
         try {
             persistentOIS = new TCCLObjectInputStream(persistentByteArrayInputStream);
-            persistentObject = (Externalizable) persistentOIS.readObject();
+            persistentObject = (Serializable)persistentOIS.readObject();
         } catch (Exception e) {
             throw new BatchContainerRuntimeException(e);
         }

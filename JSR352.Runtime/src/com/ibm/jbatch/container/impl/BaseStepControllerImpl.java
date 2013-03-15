@@ -178,9 +178,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
             PrintWriter pw = new PrintWriter(sw);
             t.printStackTrace(pw);
             
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine(sourceClass + ": caught exception/error: " + t.getMessage() + " : Stack trace: " + sw.toString());
-            }
+            logger.warning(sourceClass + ": caught exception/error: " + t.getMessage() + " : Stack trace: " + sw.toString());
             
             // If null, this says that the preInvoke failed before we even got
             // into the 'starting' state,
@@ -188,6 +186,9 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
             // step having executed.
             if (stepContext.getBatchStatus() != null) {
                 stepContext.setBatchStatus(BatchStatus.FAILED);
+                logger.fine(sourceClass + ": setting step BatchStatus to FAILED");
+            } else {
+                logger.fine(sourceClass + ": no step BatchStatus to set");
             }
         } finally {
             //CALL ANALYZER AND LOGICALTX and listeners
@@ -199,7 +200,10 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
             }
         }
 
+        // Again, the purpose of this distinction is to not count against the start-limit.
+        // It's arguable if we should make such a distinction but we do indeed.
         if (stepContext.getBatchStatus() == null) {
+            logger.warning("Aborting before start for stepId=" + step.getId());
             throw new AbortedBeforeStartException("Thrown for stepId=" + step.getId());
         } else if (throwable != null) {
             throw new RuntimeException("Wrappering earlier uncaught exception: ", throwable);
@@ -243,7 +247,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     protected void statusStarting() {
         stepStatus.setBatchStatus(BatchStatus.STARTING);
         _jobStatusService.updateJobCurrentStep(jobInstance.getInstanceId(), step.getId());
-        _jobStatusService.updateStepStatus(stepStatus.getStepId(), stepStatus);
+        _jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
         stepContext.setBatchStatus(BatchStatus.STARTING);
         long time = System.currentTimeMillis();
     	Timestamp startTS = new Timestamp(time);
@@ -252,19 +256,19 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
     protected void statusStarted() {
         stepStatus.setBatchStatus(BatchStatus.STARTED);
-        _jobStatusService.updateStepStatus(stepStatus.getStepId(), stepStatus);
+        _jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
         stepContext.setBatchStatus(BatchStatus.STARTED);
     }
     
     protected void statusStopped() {
         stepStatus.setBatchStatus(BatchStatus.STOPPED);
-        _jobStatusService.updateStepStatus(stepStatus.getStepId(), stepStatus);
+        _jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
         stepContext.setBatchStatus(BatchStatus.STOPPED);
     }
 
     protected void statusCompleted() {
         stepStatus.setBatchStatus(BatchStatus.COMPLETED);
-        _jobStatusService.updateStepStatus(stepStatus.getStepId(), stepStatus);
+        _jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
         stepContext.setBatchStatus(BatchStatus.COMPLETED);
     }
     
@@ -305,7 +309,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
         stepStatus.setPersistentUserData(new PersistentDataWrapper(persistentBAOS.toByteArray()));
         stepStatus.setExitStatus(stepContext.getExitStatus());
-        _jobStatusService.updateStepStatus(stepStatus.getStepId(), stepStatus);
+        _jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
         
         // set the end time metric before flushing
         long time = System.currentTimeMillis();
@@ -324,7 +328,6 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
         if (logger.isLoggable(Level.FINER)) {
             logger.finer("In preInvokeStep() with stepContext =  " + this.stepContext);
         }
-
 
         this.stepStatus = _jobStatusService.getStepStatus(jobInstance.getInstanceId(), step.getId());
         if (stepStatus == null) {

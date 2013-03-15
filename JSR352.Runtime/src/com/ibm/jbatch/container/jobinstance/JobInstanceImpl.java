@@ -64,11 +64,8 @@ public class JobInstanceImpl implements JobInstance, Serializable {
         StringBuffer buf = new StringBuffer();
         buf.append(" jobName: " + jobName);
         buf.append(" jobInstance id: " + jobInstanceId);
-        int concatLen = jobXML.length() > 200 ? 200 : jobXML.length();
+        int concatLen = jobXML.length() > 300 ? 300 : jobXML.length();
         buf.append(" jobXML: " + jobXML.subSequence(0, concatLen) + "...truncated ...\n");
-        buf.append(" originalJobParameters: \n");
-        String propsAsString = null;
-        buf.append(propsAsString);
         return buf.toString();
 
     }

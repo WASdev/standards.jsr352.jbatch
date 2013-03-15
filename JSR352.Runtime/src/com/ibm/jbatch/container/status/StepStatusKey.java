@@ -16,35 +16,38 @@
 */
 package com.ibm.jbatch.container.status;
 
-import com.ibm.jbatch.container.services.IPersistenceDataKey;
-
-public class StepStatusKey implements IPersistenceDataKey {
+public class StepStatusKey {
 	
 	private long _jobInstanceId;
+	
+	/**
+	 * Not public since we don't want the instance id getter public,
+	 * Only for use in trace.
+	 * 
+	 * @return 
+	 */
+	private String getStepId() {
+		return _stepId;
+	}
+
 	private String _stepId;
 	
 	public StepStatusKey(long jobInstanceId, String stepId) {		
 		_jobInstanceId = jobInstanceId;
 		_stepId = stepId;
 	}
-	public long getJobId() {
-		return _jobInstanceId;
-	}
-	public void setJobId(long id) {
-		_jobInstanceId = id;
-	}
-	public String getStepId() {
-		return _stepId;
-	}
-	public void setStepId(String id) {
-		_stepId = id;
-	}
 	
-	public String getKeyPrimitive() {
-	    return Long.toString(_jobInstanceId) + ":" + _stepId;
+	/**
+	 * Note this is the only getter method, to enforce consistency
+	 * in getting the instance ID as key.
+	 * 
+	 * @return jobInstanceId
+	 */
+	public long getDatabaseKey() {
+		return _jobInstanceId;
 	}
 	
 	public String toString() {		
-		return getKeyPrimitive();
+	    return Long.toString(_jobInstanceId) + ":" + getStepId();
 	}
 }

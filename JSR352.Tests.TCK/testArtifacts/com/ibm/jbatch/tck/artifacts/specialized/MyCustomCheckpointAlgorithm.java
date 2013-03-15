@@ -63,7 +63,7 @@ public class MyCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {
 	    MyPersistentRestartUserData myData = null;
         if ((myData = stepCtx.getPersistentUserData()) != null) {        	
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
-        	System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+        	logger.fine("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
         	writePointsString = stepCtx.getPersistentUserData().getNextWritePoints();
         } else {        
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, nextWritePointsString));
@@ -74,7 +74,7 @@ public class MyCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {
 	   
 		for (int i = 0; i<writePointsStrArr.length; i++){
 			writePoints[i] = Integer.parseInt(writePointsStrArr[i]);
-			System.out.println("CUSTOMCHKPT: writePoints[" + i + "] = " + writePoints[i]);
+			logger.fine("CUSTOMCHKPT: writePoints[" + i + "] = " + writePoints[i]);
 		}
 		
 		threshold = writePoints[checkpointIterations];
@@ -98,9 +98,9 @@ public class MyCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {
     	   writePoints = new int[writePointsString.length()];
     	   
     		for (int i = 0; i<writePointsStrArr.length; i++){
-    			System.out.println("CUSTOMCHKPT: writePointsStrArr[" + i + "] = " + writePointsStrArr[i]);
+    			logger.fine("CUSTOMCHKPT: writePointsStrArr[" + i + "] = " + writePointsStrArr[i]);
     			writePoints[i] = Integer.parseInt(writePointsStrArr[i]);
-    			System.out.println("CUSTOMCHKPT: writePoints[" + i + "] = " + writePoints[i]);
+    			logger.fine("CUSTOMCHKPT: writePoints[" + i + "] = " + writePoints[i]);
     		}
     		
     		threshold = writePoints[checkpointIterations];

@@ -18,27 +18,27 @@ package com.ibm.jbatch.tck.utils;
 
 public class AssertionUtils {
 	
-	static public void assertObjEquals(Object arg1, Object arg2) {
-		assertWithMessage(null, arg1, arg2);
+	static public void assertObjEquals(Object expected, Object actual) {
+		assertWithMessage(null, expected, actual);
 	}
 
-	static public void assertWithMessage(String message, Object arg1, Object arg2)
+	static public void assertWithMessage(String message, Object expected, Object actual)
 	{
-	    if (arg1 == null && arg2 == null) {
+	    if (expected == null && actual == null) {
 	        return;
 	    }
-		if (arg1 == null && arg2 != null) {
+		if (expected == null && actual != null) {
 			if (message == null)
-				throw new AssertionError("Expected 'null' but found value: " + arg2);
+				throw new AssertionError("Expected 'null' but found value: " + actual);
 			else
-				throw new AssertionError(message + "; Expected 'null' but found value: " + arg2);
+				throw new AssertionError(message + "; Expected 'null' but found value: " + actual);
 		} 
-		else if (!arg1.equals(arg2)) 
+		else if (!expected.equals(actual)) 
 		{
 			if (message == null)
-				throw new AssertionError("Expected value: " + arg1 + ", but found value: " + arg2);
+				throw new AssertionError("Expected value: " + expected + ", but found value: " + actual);
 			else
-				throw new AssertionError(message + "; Expected value: " + arg1 + ", but found value: " + arg2);
+				throw new AssertionError(message + "; Expected value: " + expected + ", but found value: " + actual);
 		}
 	}
 	

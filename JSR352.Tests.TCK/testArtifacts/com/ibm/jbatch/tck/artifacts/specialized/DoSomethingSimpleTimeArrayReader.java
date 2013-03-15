@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
@@ -30,6 +31,8 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 @javax.inject.Named("doSomethingSimpleTimeArrayReader")
 public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRecord> {
 		
+	private final static Logger logger = Logger.getLogger(DoSomethingSimpleTimeArrayReader.class.getName());
+	
 	private int count = 0;
 	private int[] readerDataArray;
 	private int idx;
@@ -82,7 +85,7 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
 				// position at index held in the cpd
 				idx = checkpointData.getCurrentIndex() + 1; 
 			}
-			System.out.println("READ: starting at index: " + idx);
+			logger.fine("READ: starting at index: " + idx);
 		}
 		
 		@Override
@@ -101,7 +104,7 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
 			}
 						
 			if (idx == failnum-1){
-				System.out.println("READ: got the fail num..." + failnum);
+				logger.fine("READ: got the fail num..." + failnum);
 				throw new Exception("fail on purpose on idx = " + failnum);
 			}
 			count = count + 1;
@@ -114,8 +117,8 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
 		@Override
 		public ArrayIndexCheckpointData checkpointInfo() {
 			
-			System.out.println("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
-			System.out.println("READ: in getCPD idx : " + idx);
+			logger.fine("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
+			logger.fine("READ: in getCPD idx : " + idx);
 			
 		    return _cpd;   
 		}

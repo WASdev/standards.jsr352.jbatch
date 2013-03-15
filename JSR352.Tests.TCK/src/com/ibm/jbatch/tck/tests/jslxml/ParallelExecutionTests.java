@@ -118,7 +118,7 @@ public class ParallelExecutionTests {
 	        
 	        List<StepExecution<?>> stepExecutions = jobOp.getStepExecutions(jobExecution.getExecutionId());
 	        
-	        for (StepExecution stepEx : stepExecutions) {
+	        for (StepExecution<?> stepEx : stepExecutions) {
 		        assertObjEquals("VERY GOOD INVOCATION 11", stepEx.getExitStatus());
 	        }
 	        
@@ -146,8 +146,6 @@ public class ParallelExecutionTests {
         try {
 	        Reporter.log("Locate job XML file: job_batchlet_longrunning_partitioned.xml<p>");
 	
-	        Object waitObj = new Object();
-	        
 	        Reporter.log("Create job parameters<p>");
 	        Properties overrideJobParams = new Properties();
 	        Reporter.log("run.indefinitely=true<p>");
@@ -189,8 +187,6 @@ public class ParallelExecutionTests {
         try {
 	        Reporter.log("Locate job XML file: job_batchlet_longrunning_partitioned.xml<p>");
 	
-	        Object waitObj = new Object();
-	        
 	        Reporter.log("Create job parameters<p>");
 	        Properties overrideJobParams = new Properties();
 	        Reporter.log("run.indefinitely=true<p>");
@@ -212,14 +208,14 @@ public class ParallelExecutionTests {
 	        Reporter.log("run.indefinitely=false<p>");
 	        overrideJobParams.setProperty("run.indefinitely" , "false");
 	        
-	        Reporter.log("Invoke restartJobAndWaitForResul<p>");
+	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
 	        JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(origJobExecution.getExecutionId(), overrideJobParams);
 	        
 	        Reporter.log("JobExecution getBatchStatus()="+restartedJobExec.getBatchStatus()+"<p>");
 	        assertObjEquals(BatchStatus.COMPLETED, restartedJobExec.getBatchStatus());
         } catch (Exception e) {
     		handleException(METHOD, e);
-    	}
+    	} 
     }
     
     /*
@@ -268,8 +264,6 @@ public class ParallelExecutionTests {
         try {
         	Reporter.log("Locate job XML file: job_partitioned_artifacts.xml<p>");
 	
-	        Object waitObj = new Object();
-	        
 	        Reporter.log("Create Job parameters for Execution #1<p>");
 	        Properties jobParams = new Properties();
 	        Reporter.log("numPartitionsProp=3<p>");
@@ -311,8 +305,6 @@ public class ParallelExecutionTests {
         try {
 	        Reporter.log("Locate job XML file: job_partitioned_artifacts.xml<p>");
 	
-	        Object waitObj = new Object();
-	        
 	        Reporter.log("Create Job parameters for Execution #1<p>");
 	        Properties jobParams = new Properties();
 	        Reporter.log("numPartitionsProp=3<p>");

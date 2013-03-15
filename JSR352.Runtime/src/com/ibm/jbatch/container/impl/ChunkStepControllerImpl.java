@@ -851,7 +851,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
         _persistenceManagerService = servicesManager.getPersistenceManagerService();
         readerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "READER");
-        List<?> data = _persistenceManagerService.getData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK);
+        List<?> data = _persistenceManagerService.getCheckpointData(readerChkptDK);
         try {
 
             // check for data in backing store
@@ -879,7 +879,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         }
 
         writerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "WRITER");
-        data = _persistenceManagerService.getData(IPersistenceManagerService.CHECKPOINT_STORE_ID, writerChkptDK);
+        data = _persistenceManagerService.getCheckpointData(writerChkptDK);
 
         try {
             // check for data in backing store
@@ -1007,7 +1007,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     private void positionReaderAtCheckpoint() {
         _persistenceManagerService = servicesManager.getPersistenceManagerService();
         readerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "READER");
-        List<?> data = _persistenceManagerService.getData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK);
+        List<?> data = _persistenceManagerService.getCheckpointData(readerChkptDK);
 
         CheckpointData readerData = null;
 
@@ -1040,7 +1040,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     private void positionWriterAtCheckpoint() {
         _persistenceManagerService = servicesManager.getPersistenceManagerService();
         writerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "WRITER");
-        List<?> data = _persistenceManagerService.getData(IPersistenceManagerService.CHECKPOINT_STORE_ID, writerChkptDK);
+        List<?> data = _persistenceManagerService.getCheckpointData(writerChkptDK);
 
         CheckpointData writerData = null;
 

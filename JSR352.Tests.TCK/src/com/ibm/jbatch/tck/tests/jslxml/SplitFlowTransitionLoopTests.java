@@ -116,7 +116,7 @@ public class SplitFlowTransitionLoopTests {
     		
     		InputStream in = new FileInputStream(tempFile);
     	    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-    	    String line = reader.readLine();
+    	    String line = reader.readLine(); 
     	    assertWithMessage("checking if temp file was written", line != null);
     	    while (line != null) {
     	        assertWithMessage("Split Flow transitioning step match", stepsInJob.contains(line));
@@ -125,7 +125,7 @@ public class SplitFlowTransitionLoopTests {
     		Reporter.log("deleting temp file");
     		tempFile.delete();
 			
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
     	} catch (Exception e) {
     		handleException(METHOD, e);

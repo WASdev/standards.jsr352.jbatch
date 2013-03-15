@@ -62,12 +62,12 @@ public class SplitTransitioningTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_step", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("Split transitioned to step", jobExec.getExitStatus().equals("step1"));
+			assertWithMessage("Split transitioned to step", "step1", jobExec.getExitStatus());
 			
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
 		} catch (Exception e) {
-    		handleException(METHOD, e);
+    		handleException(METHOD, e); 
     	}
 	}
 	
@@ -122,7 +122,7 @@ public class SplitTransitioningTests {
 			
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("Job should have failed because of out of scope execution elements.", jobExec.getBatchStatus().equals(BatchStatus.FAILED));
+			assertWithMessage("Job should have failed because of out of scope execution elements.", BatchStatus.FAILED, jobExec.getBatchStatus());
     	} catch (Exception e) {
     		handleException(METHOD, e);
     	}
@@ -158,8 +158,8 @@ public class SplitTransitioningTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_decision", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("Job Exit Status is from decider", jobExec.getExitStatus().equals(exitStatus));
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("Job Exit Status is from decider", exitStatus, jobExec.getExitStatus());
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
 		} catch (Exception e) {
     		handleException(METHOD, e);

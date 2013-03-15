@@ -129,7 +129,7 @@ public class CheckpointManager {
 			readerChkptData.setRestartToken(readerChkptBA.toByteArray());
 			readerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, "READER");
 			
-			_persistenceManagerService.updateData(IPersistenceManagerService.CHECKPOINT_STORE_ID, readerChkptDK, readerChkptData);
+			_persistenceManagerService.updateCheckpointData(readerChkptDK, readerChkptData);
 			
 			writerOOS = new ObjectOutputStream(writerChkptBA);
 			writerOOS.writeObject(writerProxy.checkpointInfo());
@@ -138,7 +138,7 @@ public class CheckpointManager {
 			writerChkptData.setRestartToken(writerChkptBA.toByteArray());
 			writerChkptDK = new CheckpointDataKey(jobInstanceID, stepId, "WRITER");
 
-			_persistenceManagerService.updateData(IPersistenceManagerService.CHECKPOINT_STORE_ID, writerChkptDK, writerChkptData);
+			_persistenceManagerService.updateCheckpointData(writerChkptDK, writerChkptData);
 			
 		}
 		catch (Exception ex){

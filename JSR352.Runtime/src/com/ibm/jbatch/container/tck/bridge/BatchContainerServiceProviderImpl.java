@@ -19,18 +19,11 @@ package com.ibm.jbatch.container.tck.bridge;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.tck.spi.BatchContainerServiceProvider;
-import com.ibm.jbatch.tck.spi.JSLInheritanceMerger;
 import com.ibm.jbatch.tck.spi.JobEndCallbackManager;
 
 public class BatchContainerServiceProviderImpl implements BatchContainerServiceProvider {
 
     private ServicesManager servicesManager = ServicesManagerImpl.getInstance();
-
-	@Override
-	public JSLInheritanceMerger getJSLInheritanceMerger() {
-		//stateless merger, new up instead of fetching from ServicesManager
-		return new BatchContainerJSLMerger();
-	}
 
 	/* (non-Javadoc)
 	 * @see com.ibm.batch.tck.spi.BatchContainerServiceProvider#getCallbackManager()

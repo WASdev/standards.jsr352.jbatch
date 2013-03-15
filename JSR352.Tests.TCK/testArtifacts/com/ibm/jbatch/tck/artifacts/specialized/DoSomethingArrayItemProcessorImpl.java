@@ -18,6 +18,8 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 
 
+import java.util.logging.Logger;
+
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
@@ -27,6 +29,8 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 @javax.inject.Named("doSomethingArrayItemProcessorImpl")
 public class DoSomethingArrayItemProcessorImpl implements ItemProcessor<ReadRecord, ReadRecord> {
 	
+	private final static Logger logger = Logger.getLogger(DoSomethingArrayItemProcessorImpl.class.getName());
+
     @Inject    
     @BatchProperty(name="app.processFilterItem")
     String appProcessFilterItem;
@@ -49,7 +53,7 @@ public class DoSomethingArrayItemProcessorImpl implements ItemProcessor<ReadReco
 		
 		if (initSkipNumber) {
 			if (filterNumber == count) {
-				System.out.println("AJM: filtering out #" + filterNumber);
+				logger.fine("AJM: filtering out #" + filterNumber);
 				count++;
 				return null; // filter
 			}

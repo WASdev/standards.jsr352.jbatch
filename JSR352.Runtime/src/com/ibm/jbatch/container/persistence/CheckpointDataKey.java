@@ -16,18 +16,14 @@
 */
 package com.ibm.jbatch.container.persistence;
 
-import com.ibm.jbatch.container.services.IPersistenceDataKey;
-
-public class CheckpointDataKey implements IPersistenceDataKey {
+public class CheckpointDataKey {
 	
 	private long _jobInstanceId;
-	private String _batchDataStreamName;
-	private String _stepName;
 	
-	public CheckpointDataKey(long jobId) {
-		this._jobInstanceId = jobId;
-		
-	}
+	// OK, this comes from IBM terminology, but I can't come up with a better name so we're leaving it.
+	// "readerOrWriterName" ?
+	private String _batchDataStreamName;  
+	private String _stepName;
 	
 	public CheckpointDataKey(long jobId, String stepName, String bdsName) {
 		this._jobInstanceId = jobId;
@@ -38,33 +34,24 @@ public class CheckpointDataKey implements IPersistenceDataKey {
 	public long getJobInstanceId() {
 		return _jobInstanceId;
 	}
-	public void setJobInstanceId(long id) {
-		_jobInstanceId = id;
-	}
+	
 	public String getBatchDataStreamName() {
 		return _batchDataStreamName;
 	}
-	public void setBatchDataStreamName(String dataStreamName) {
-		_batchDataStreamName = dataStreamName;
-	}
+	
 	public String getStepName() {
 		return _stepName;
 	}
-	public void setStepName(String name) {
-		_stepName = name;
-	}
-
-
+	
 	public String getCommaSeparatedKey() {
-		return _jobInstanceId + "," + _stepName + "," + _batchDataStreamName;
+		return stringify();
 	}
 
 	public String toString() {
-		return this.getKeyPrimitive();
+		return stringify();
 	}
-
-	@Override
-	public String getKeyPrimitive() {
-		return _jobInstanceId + "," + _stepName + "," + _batchDataStreamName; 
-}
+	
+	private String stringify() {
+		return _jobInstanceId + "," + _stepName + "," + _batchDataStreamName;
+	}
 }

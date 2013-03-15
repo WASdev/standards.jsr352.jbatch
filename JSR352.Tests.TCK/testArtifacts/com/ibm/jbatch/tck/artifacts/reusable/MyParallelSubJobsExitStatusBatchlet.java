@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.reusable;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 import javax.batch.api.AbstractBatchlet;
 
@@ -24,6 +25,8 @@ import javax.batch.api.AbstractBatchlet;
 @javax.inject.Named("myParallelSubJobsExitStatusBatchlet")
 public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
     
+	private final static Logger logger = Logger.getLogger(MyParallelSubJobsExitStatusBatchlet.class.getName());
+	
     private volatile static AtomicInteger count = new AtomicInteger(1);
     
     public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
@@ -31,7 +34,7 @@ public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
 	
 	@Override
 	public String process() throws Exception {	
-		System.out.println("Running batchlet process(): " + count);
+		logger.fine("Running batchlet process(): " + count);
 		
 		count.incrementAndGet();
 		

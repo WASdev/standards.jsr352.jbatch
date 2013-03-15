@@ -237,4 +237,9 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 		return _persistenceManagementService.getTagName(executionID);
 	}
 
+	@Override
+	public long getInstanceId() {
+		return instanceID;
+	}
+
 }

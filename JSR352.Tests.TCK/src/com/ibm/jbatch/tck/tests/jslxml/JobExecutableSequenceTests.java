@@ -69,7 +69,7 @@ public class JobExecutableSequenceTests {
 			}
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("Job should have failed with unknown steps ", jobExec.getBatchStatus().equals(BatchStatus.FAILED));
+			assertWithMessage("Job should have failed with unknown steps ", BatchStatus.FAILED, jobExec.getBatchStatus());
 			Reporter.log("job failed");
     	} catch (Exception e) {
     		handleException(METHOD, e);

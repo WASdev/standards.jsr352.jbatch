@@ -24,12 +24,11 @@ import javax.batch.api.AbstractBatchlet;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
-@javax.inject.Named("BatchletRestartStateMachineImpl")
+@javax.inject.Named("batchletRestartStateMachineImpl")
 public class BatchletRestartStateMachineImpl extends AbstractBatchlet {
 
     private final static String sourceClass = BatchletRestartStateMachineImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
-
  
     @Inject
     StepContext stepCtx;
@@ -38,14 +37,11 @@ public class BatchletRestartStateMachineImpl extends AbstractBatchlet {
     @BatchProperty(name="execution.number")
     String executionNumberString;
 
-
     @Override
     public String process() throws Exception {
         logger.fine(sourceClass + ".process()");
 
         ClassLoader cl = BatchletRestartStateMachineImpl.class.getClassLoader();
-        
-        
         
         // Do something a bit "compute-intensive".
         Random r = new Random();

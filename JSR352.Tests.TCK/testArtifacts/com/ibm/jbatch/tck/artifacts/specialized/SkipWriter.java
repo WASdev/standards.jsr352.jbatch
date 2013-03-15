@@ -18,6 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
@@ -30,10 +31,11 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 @javax.inject.Named("skipWriter")
 public class SkipWriter implements ItemWriter<ReadRecord> {
 
+	private final static Logger logger = Logger.getLogger(SkipWriter.class.getName());
+	
 	private int[] writerDataArray = new int[30];
-	//private int[] checkArray;
 	private int idx = 0;
-	private int chkArraySize;
+
 	int chunkWriteIteration = 0;
 	
     @Inject    
@@ -50,7 +52,7 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 	
 	@Override
 	public void open(Serializable cpd) throws Exception {
-		System.out.println("openWriter");
+		logger.fine("openWriter");
 		
 		ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
 		
@@ -71,7 +73,7 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 		if (checkpointData == null){
 			//position at the beginning
 			idx = 0;
-			System.out.println("WRITE: chkpt data = null, so idx = " + idx);
+			logger.fine("WRITE: chkpt data = null, so idx = " + idx);
 		}
 		else {
 			// position at index held in the cpd
@@ -82,11 +84,11 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 			//	}
 			//}
 			
-			System.out.println("WRITE: chkpt data was valid, so idx = " + idx);
-			System.out.println("WRITE: chunkWriteIteration = " + chunkWriteIteration);
+			logger.fine("WRITE: chkpt data was valid, so idx = " + idx);
+			logger.fine("WRITE: chunkWriteIteration = " + chunkWriteIteration);
 		}
 		//for (int n=0; n<chkArraySize;n++){
-		//	System.out.println("WRITE: chunk write point[" + n + " ]: " + checkArray[n]);
+		//	logger.fine("WRITE: chunk write point[" + n + " ]: " + checkArray[n]);
 		//}
 		
 		
@@ -94,25 +96,25 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 			writerDataArray[i] = 0;
 		}
 		//idx = checkpointData.getCurrentIndex();
-		//System.out.println("WRITE: chkpt data was valid, so idx = " + idx);
+		//logger.fine("WRITE: chkpt data was valid, so idx = " + idx);
 	}
 	
 	
 	@Override
 	public void close() throws Exception {
-		//System.out.println("closeWriter - writerDataArray:\n");
+		//logger.fine("closeWriter - writerDataArray:\n");
 		for (int i = 0; i < arraysize; i++){
-			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
+			logger.fine("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
 	}
 	
 	@Override
 	public void writeItems(List<ReadRecord> myData) throws Exception {
 		
-		System.out.println("writeMyData receives chunk size=" + myData.size());
+		logger.fine("writeMyData receives chunk size=" + myData.size());
 		int i;
-		System.out.println("WRITE: before writing, idx = " + idx);
-		System.out.println("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
+		logger.fine("WRITE: before writing, idx = " + idx);
+		logger.fine("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
 		
 		if (!writeRecordFailNumberString.equals("null")) {
 			if (chunkWriteIteration == 2) {
@@ -140,10 +142,10 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 			idx++;
 		}
 		for (i = 0; i < arraysize; i++){
-			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
+			logger.fine("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
-		System.out.println("WRITE: idx = " + idx + " and i = " + i);
-		System.out.println("WRITE: chunkWriteIteration= "+ chunkWriteIteration);
+		logger.fine("WRITE: idx = " + idx + " and i = " + i);
+		logger.fine("WRITE: chunkWriteIteration= "+ chunkWriteIteration);
 		//if (checkArray[chunkWriteIteration] == (chunkWriteIteration+1)*chunksize ) {
 	}
 	
@@ -153,16 +155,6 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 			_chkptData.setCurrentIndex(idx);
 		return _chkptData;
 	}
-	
-	private boolean isFailnum(int idxIn) {
-		
-		boolean ans = false;
-		for (int i = 0; i < failnum.length; i++) {
-			if (idxIn == failnum[i]){
-				ans = true;
-			}
-		}
-		return ans;
-	}
+
 }
 

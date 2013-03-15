@@ -16,8 +16,14 @@
 */
 package com.ibm.jbatch.tck.spi;
 
+import javax.batch.operations.JobOperator;
+
 public interface JobEndCallback {
 
 	void done(long jobExecutionId);
+	
+	JobOperator getJobOperator();
+	
+	long getExecutionId();
 
 }

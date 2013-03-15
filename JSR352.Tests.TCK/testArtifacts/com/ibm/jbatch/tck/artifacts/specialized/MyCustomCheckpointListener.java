@@ -41,17 +41,17 @@ public class MyCustomCheckpointListener extends AbstractChunkListener {
 
     @Override
     public void beforeChunk() {
-    	System.out.println("CHUNKLISTENER: beforeChunk");
+    	logger.fine("CHUNKLISTENER: beforeChunk");
     }
     
     @Override
     public void afterChunk() {
-    	System.out.println("CHUNKLISTENER: afterChunk");
+    	logger.fine("CHUNKLISTENER: afterChunk");
     }
     
     @Override
     public void onError() {
-    	System.out.println("CHUNKLISTENER: onError");
+    	logger.fine("CHUNKLISTENER: onError");
     }
 }
 

@@ -11,14 +11,56 @@ DROP TABLE EXECUTIONINSTANCEDATA;
 
 DROP TABLE STEPEXECUTIONINSTANCEDATA;
 
+CREATE TABLE JOBINSTANCEDATA(
+  jobinstanceid   BIGINT NOT NULL PRIMARY KEY IDENTITY,
+  name    VARCHAR(512), 
+  apptag VARCHAR(512)
+);
+
+CREATE TABLE EXECUTIONINSTANCEDATA(
+  jobexecid  BIGINT NOT NULL PRIMARY KEY IDENTITY, 
+  jobinstanceid BIGINT,
+  createtime  DATETIME,
+  starttime   DATETIME,
+  endtime   DATETIME,
+  updatetime  DATETIME,
+  parameters  VARBINARY,
+  batchstatus   VARCHAR(512),
+  exitstatus    VARCHAR(512),
+  CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES JOBINSTANCEDATA (jobinstanceid)
+);
+
+CREATE TABLE STEPEXECUTIONINSTANCEDATA(
+  stepexecid BIGINT NOT NULL PRIMARY KEY IDENTITY, 
+  jobexecid BIGINT,
+  batchstatus         VARCHAR(512),
+    exitstatus      VARCHAR(512),
+    stepname      VARCHAR(512),
+    stepcontainmentcsv VARCHAR(512),
+  readcount       INTEGER,
+  writecount      INTEGER,
+  commitcount     INTEGER,
+  rollbackcount   INTEGER,
+  readskipcount   INTEGER,
+  processskipcount  INTEGER,
+  filtercount       INTEGER,
+  writeskipcount    INTEGER,
+  startTime           DATETIME,
+  endTime             DATETIME,
+  persistentData    VARBINARY,
+  CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES EXECUTIONINSTANCEDATA (jobexecid)
+);  
+
 CREATE TABLE JOBSTATUS (
-  id		BIGINT,
-  obj		VARBINARY
+  id		BIGINT NOT NULL PRIMARY KEY,
+  obj		VARBINARY,
+  CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES JOBINSTANCEDATA (jobinstanceid) ON DELETE CASCADE
 );
 
 CREATE TABLE STEPSTATUS(
-  id		VARCHAR(512),
-  obj		VARBINARY
+  id		BIGINT NOT NULL PRIMARY KEY,
+  obj		VARBINARY,
+  CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES STEPEXECUTIONINSTANCEDATA (stepexecid) ON DELETE CASCADE
 );
 
 CREATE TABLE CHECKPOINTDATA(
@@ -26,41 +68,4 @@ CREATE TABLE CHECKPOINTDATA(
   obj		VARBINARY
 );
 
-CREATE TABLE JOBINSTANCEDATA(
-  id		VARCHAR(512),
-  name		VARCHAR(512), 
-  apptag VARCHAR(512)
-);
-
-CREATE TABLE EXECUTIONINSTANCEDATA(
-  id			VARCHAR(512),
-  createtime	DATETIME,
-  starttime		DATETIME,
-  endtime		DATETIME,
-  updatetime	DATETIME,
-  parameters	VARBINARY,
-  jobinstanceid	VARCHAR(512),
-  batchstatus		VARCHAR(512),
-  exitstatus		VARCHAR(512)
-);
-
-CREATE TABLE STEPEXECUTIONINSTANCEDATA(
-	id			VARCHAR(512),
-	jobexecid	VARCHAR(512),
-	stepexecid			VARCHAR(512),
-	batchstatus         VARCHAR(512),
-    exitstatus			VARCHAR(512),
-    stepname			VARCHAR(512),
-	readcount			VARCHAR(512),
-	writecount			VARCHAR(512),
-	commitcount         VARCHAR(512),
-	rollbackcount		VARCHAR(512),
-	readskipcount		VARCHAR(512),
-	processskipcount	VARCHAR(512),
-	filtercount			VARCHAR(512),
-	writeskipcount		VARCHAR(512),
-	startTime           DATETIME,
-	endTime             DATETIME,
-	persistentData		VARBINARY
-);  
   

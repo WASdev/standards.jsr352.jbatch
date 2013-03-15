@@ -156,38 +156,11 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
 
     @Override 
     public void updateStepStatus(long stepExecutionId, StepStatus newStepStatus) {
+        String method = "updateStepStatus";
+        logger.entering(CLASSNAME, method, new Object[] {stepExecutionId, newStepStatus});
         _persistenceManager.updateStepStatus(stepExecutionId, newStepStatus);
+        logger.exiting(CLASSNAME, method);
     }
-
-
-    /*
-    @Override
-    public void updateStepStatus(long jobInstanceId, String stepId, BatchStatus stepBatchStatus) throws BatchContainerServiceException {
-
-        StepStatus s = getStepStatus(jobInstanceId, stepId);
-        if (s == null) {
-            throw new IllegalStateException("Couldn't find entry to update for key with jobInstance id = " + 
-                    jobInstanceId + ", and stepId = " + stepId);
-        }
-        s.setBatchStatus(stepBatchStatus);
-        updateStepStatus(jobInstanceId, stepId, s);
-    }
-
-    @Override
-    public void updateStepStatusWithStarting(long jobInstanceId, String stepId) throws BatchContainerServiceException {
-
-        StepStatus s = getStepStatus(jobInstanceId, stepId);        
-        if (s == null) {
-            throw new IllegalStateException("Couldn't find entry to update for key with jobInstance id = " + 
-                    jobInstanceId + ", and stepId = " + stepId);
-        }
-        s.incrementStartCount();
-        s.setBatchStatus(BatchStatus.STARTING);
-        updateStepStatus(jobInstanceId, stepId, s);
-    }
-     */
-
-
 
     @Override
     public void init(IBatchConfig batchConfig)
@@ -199,39 +172,7 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
 
         _persistenceManager = sm.getPersistenceManagerService();
 
-        /*
-        if(!_isInited ) {
-
-            ServicesManager sm = ServicesManager.getInstance();
-
-            _persistenceManager = (IPersistenceManagerService)sm.getService(ServicesManager.ServiceType.PERSISTENCE_MANAGEMENT_SERVICE);
-
-            List jobStatusList = _persistenceManager.getData(
-                    IPersistenceManagerService.JOB_STATUS_STORE_ID,
-                    new JobStatusKey(_jobId));
-
-            if(jobStatusList != null && jobStatusList.size() == 1) {
-                // if the job is in restartable state it will already have
-                // a status so load it into the cache
-                _cachedJobStatus = (JobStatus)jobStatusList.get(0);
-                int upCnt = _cachedJobStatus.getUpdateCount();
-                // increment the count because in case of z the cr may have sent a job status update with 100 as the update count
-                // because it can't obtain the actual no from DB, the scheduler would then realizing the cnt is 100 set the cnt on
-                // jsdo as <last known cnt? + 1
-                _cachedJobStatus.setUpdateCount(++upCnt);
-            }
-
-            _isInited = true;
-        }
-         */
         if(logger.isLoggable(Level.FINER)) { logger.exiting(CLASSNAME, method);}
-    }
-
-
-    @Override
-    public List<JobStatus> getAllJobStatus() throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

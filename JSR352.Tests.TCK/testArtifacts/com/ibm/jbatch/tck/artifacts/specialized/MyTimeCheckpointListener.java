@@ -58,18 +58,18 @@ public class MyTimeCheckpointListener extends AbstractChunkListener {
     
     @Override
     public void beforeChunk() {
-    	System.out.println("CHUNKLISTENER: beforeChunk");
+    	logger.fine("CHUNKLISTENER: beforeChunk");
     	
     	timeinterval = Integer.parseInt(timeintervalString);
     	
-    		System.out.println("CHUNKLISTENER: got the timeinterval: " + timeinterval);
-    		System.out.println("CHUNKLISTENER: startTime: " + startTime);
-    		System.out.println("CHUNKLISTENER: endTime: " + endTime);
+    		logger.fine("CHUNKLISTENER: got the timeinterval: " + timeinterval);
+    		logger.fine("CHUNKLISTENER: startTime: " + startTime);
+    		logger.fine("CHUNKLISTENER: endTime: " + endTime);
     		
 
         
         long curdiff = endTime - startTime;
-        System.out.println("CHUNKLISTENER: curdiff: " + curdiff);
+        logger.fine("CHUNKLISTENER: curdiff: " + curdiff);
         int diff = 0;
         if (curdiff == 0){
         	diff = 0;
@@ -78,14 +78,14 @@ public class MyTimeCheckpointListener extends AbstractChunkListener {
         	diff = (int)((int)endTime - startTime)/1000;
         }
         
-        System.out.println("AJM: time diff =" + diff);
+        logger.fine("AJM: time diff =" + diff);
         
         if ((diff >= timeinterval-1) && (diff <= timeinterval+1)) {
-			System.out.println("CHUNKLISTENER: the checkpoint is occuring at the correct time -> " + diff + " which is: " + timeinterval + " +/- 1 second");
+			logger.fine("CHUNKLISTENER: the checkpoint is occuring at the correct time -> " + diff + " which is: " + timeinterval + " +/- 1 second");
 			jobCtx.setExitStatus("TRUE: " + diff);
 		}
 		else {
-			System.out.println("CHUNKLISTENER: checkpoint outside the window surrounding the time interval of " + timeinterval);
+			logger.fine("CHUNKLISTENER: checkpoint outside the window surrounding the time interval of " + timeinterval);
 			jobCtx.setExitStatus("FALSE: " + diff);
 			//throw new Exception("WRITE: the chunk write did not occur at the correct time boundry -> "+ diff + " which is: " + timeinterval + "+/- 1 second");
 		}
@@ -96,7 +96,7 @@ public class MyTimeCheckpointListener extends AbstractChunkListener {
    
     @Override
     public void afterChunk() {
-    	System.out.println("CHUNKLISTENER: afterChunk");
+    	logger.fine("CHUNKLISTENER: afterChunk");
     	
     	date = new java.util.Date();
         ts = date.getTime();
@@ -106,7 +106,7 @@ public class MyTimeCheckpointListener extends AbstractChunkListener {
     
     @Override
     public void onError() {
-    	System.out.println("CHUNKLISTENER: onError");
+    	logger.fine("CHUNKLISTENER: onError");
     }
 
 }

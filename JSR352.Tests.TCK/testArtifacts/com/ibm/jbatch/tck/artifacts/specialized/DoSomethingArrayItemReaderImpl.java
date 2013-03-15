@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
@@ -30,6 +31,8 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 @javax.inject.Named("doSomethingArrayItemReaderImpl")
 public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadRecord> {
 		
+	private final static Logger logger = Logger.getLogger(DoSomethingArrayItemReaderImpl.class.getName());
+	
 	private int count = 0;
 	private int[] readerDataArray;
 	private int idx;
@@ -81,7 +84,7 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
  	       //MyPersistentRestartUserData myData = null;
 	        //if ((myData = stepCtx.getPersistentUserData()) != null) {        	
 	        	//stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
-	        	//System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+	        	//logger.fine("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
 	        //} else {        
 	        	//stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
 	        //}
@@ -99,14 +102,14 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
 				// position at index held in the cpd
 				idx = checkpointData.getCurrentIndex() + 1; 
 			}
-			System.out.println("READ: starting at index: " + idx);
+			logger.fine("READ: starting at index: " + idx);
 			
 			if (appCheckpointPositionString != null) {
 				if (idx != checkpointPosition) {
 					throw new Exception(
 							"checkpointPosition incorect, test will now fail");
 				} else {
-					System.out.println("AJM: checkpoint position as expected");
+					logger.fine("AJM: checkpoint position as expected");
 				}
 			}
 		}
@@ -117,7 +120,7 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
 			int i = idx;
 			
 			execnum = stepCtx.getPersistentUserData().getExecutionNumber();
-			System.out.println("AJM: iteration number = " + execnum);
+			logger.fine("AJM: iteration number = " + execnum);
 			
 			if (i == arraysize) {
 				return null;
@@ -127,7 +130,7 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
 			}
 						
 			if (idx == failnum-1){
-				System.out.println("READ: got the fail num..." + failnum);
+				logger.fine("READ: got the fail num..." + failnum);
 				throw new Exception("fail on purpose on idx = " + failnum);
 			}
 			count = count + 1;
@@ -139,8 +142,8 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
 		@Override
 		public ArrayIndexCheckpointData checkpointInfo() {
 			
-			System.out.println("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
-			System.out.println("READ: in getCPD idx : " + idx);
+			logger.fine("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
+			logger.fine("READ: in getCPD idx : " + idx);
 			
 		    return _cpd;   
 		}

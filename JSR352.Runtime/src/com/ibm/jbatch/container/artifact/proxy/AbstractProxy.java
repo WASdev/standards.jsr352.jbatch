@@ -16,6 +16,7 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
@@ -32,8 +33,7 @@ public abstract class AbstractProxy<T> {
     private final static Logger logger = Logger.getLogger(sourceClass);
 
     protected T delegate;
-    protected StepContextImpl stepContext;
-
+    protected StepContextImpl<?, ? extends Serializable> stepContext;
 
     /**
      * @param delegate
@@ -47,16 +47,11 @@ public abstract class AbstractProxy<T> {
         this.delegate = delegate;
     }
 
-
-    /**
-     * May need to remove this. We currently have no need for direct access to
-     * the delegate object.
-     **/
     public T getDelegate() {
         return this.delegate;
     }
     
-    public void setStepContext(StepContextImpl stepContext){
+    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext){
     	this.stepContext = stepContext;
     }
 }

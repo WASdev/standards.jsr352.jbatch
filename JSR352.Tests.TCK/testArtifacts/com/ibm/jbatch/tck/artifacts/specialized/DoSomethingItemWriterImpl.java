@@ -18,6 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.batch.api.chunk.AbstractItemWriter;
 
@@ -28,21 +29,23 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 @javax.inject.Named("doSomethingItemWriterImpl")
 public class DoSomethingItemWriterImpl extends AbstractItemWriter<ReadRecord> {
 
+	private final static Logger logger = Logger.getLogger(DoSomethingItemWriterImpl.class.getName());
+	
 	@Override
 	public void open(Serializable checkpointData) throws Exception {
-		System.out.println("openWriter");
+		logger.fine("openWriter");
 	}
 	
 	@Override
 	public void close() throws Exception {
-		System.out.println("closeWriter");
+		logger.fine("closeWriter");
 	}
 	
 	@Override
 	public void writeItems(List<ReadRecord> myData) throws Exception {
-		System.out.println("writeMyData receives chunk size=" + myData.size());
+		logger.fine("writeMyData receives chunk size=" + myData.size());
 		for  (int i = 0; i< myData.size(); i++) {
-			System.out.println("myData=" + myData.get(i).getCount());
+			logger.fine("myData=" + myData.get(i).getCount());
 		}
 	}
 	

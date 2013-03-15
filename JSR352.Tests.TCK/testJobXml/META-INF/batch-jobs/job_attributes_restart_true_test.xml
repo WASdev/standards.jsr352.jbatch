@@ -16,8 +16,11 @@
   limitations under the License.
 -->
 <job id="job_attributes_test" restartable="true" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
-
 	<step id="step1">
-		<batchlet ref="jobAttributesTestBatchlet"/>
+		<batchlet ref="jobAttributesTestBatchlet">
+			<properties>
+				<property name="execution.number" value="#{jobParameters['execution.number']}"/>
+			</properties>
+		</batchlet>
 	</step>
 </job>

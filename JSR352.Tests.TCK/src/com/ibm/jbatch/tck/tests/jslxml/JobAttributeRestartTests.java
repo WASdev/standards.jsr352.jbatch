@@ -29,7 +29,6 @@ import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
-import com.ibm.jbatch.tck.utils.IOHelper;
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
 import org.junit.Before;
@@ -65,95 +64,29 @@ public class JobAttributeRestartTests {
 		
 		try {
 			Reporter.log("starting job");
-			JobExecution jobExec = jobOp.startJobWithoutWaitingForResult("job_attributes_restart_true_test", null);
-	
-			IOHelper.waitForBatchStatusOrTimeout(jobExec, BatchStatus.STARTED, TIMEOUT);
+			Properties jobParams = new Properties();
+			Reporter.log("execution.number=1<p>");
+			jobParams.put("execution.number", "1");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_attributes_restart_true_test", jobParams);
+				
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			assertWithMessage("Job started", jobExec.getBatchStatus().equals(BatchStatus.STARTED));
-			Reporter.log("job started");
-			
-			if(jobExec.getBatchStatus().equals(BatchStatus.STARTED)) {
+			assertWithMessage("Job failed ", BatchStatus.FAILED, jobExec.getBatchStatus());
 				
-				Reporter.log("stopping job");
-				jobOp.stopJobAndWaitForResult(jobExec);
-				
-				Reporter.log("Job Status = " + jobExec.getBatchStatus());
-				assertWithMessage("Job stopped", jobExec.getBatchStatus().equals(BatchStatus.STOPPED));
-				Reporter.log("job stopped");
-				
-				if(jobExec.getBatchStatus().equals(BatchStatus.STOPPED)) {
+			Reporter.log("restarting job");
+			Properties restartParams = new Properties();
+			Reporter.log("execution.number=2<p>");
+			restartParams.put("execution.number", "2");
+			JobExecution newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartParams);
 	
-					Reporter.log("restarting job");
-					JobExecution newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), null);
-	
-					Reporter.log("Job Status = " + newJobExec.getBatchStatus());
-					assertWithMessage("Job completed", newJobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
-					Reporter.log("job completed");
-				}
-			}
+			Reporter.log("Job Status = " + newJobExec.getBatchStatus());
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, newJobExec.getBatchStatus());
+			Reporter.log("job completed");
 		} catch (Exception e) {
     		handleException(METHOD, e);
     	}
 	}
-	
-	/**
-	 * @testName: testJobAttributeRestartableFalse
-	 * @assertion: Section 5.1 job attribute restartable
-	 * @test_Strategy: set restartable false should not allow job to restart
-	 * 
-	 * @throws JobStartException
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	@Test @org.junit.Test
-	public void testJobAttributeRestartableFalse() throws Exception {
-		
-		String METHOD = "testJobAttributeRestartableFalse";
-		
-		try {
-			Reporter.log("starting job");
-			JobExecution jobExec = jobOp.startJobWithoutWaitingForResult("job_attributes_restart_false_test", null);
-	
-			IOHelper.waitForBatchStatusOrTimeout(jobExec, BatchStatus.STARTED, TIMEOUT);
-			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			assertWithMessage("Job started", jobExec.getBatchStatus().equals(BatchStatus.STARTED));
-			Reporter.log("job started");
-			
-			if(jobExec.getBatchStatus().equals(BatchStatus.STARTED)) {
-				
-				Reporter.log("stopping job");
-				jobOp.stopJobAndWaitForResult(jobExec);
-				
-				Reporter.log("Job Status = " + jobExec.getBatchStatus());
-				assertWithMessage("Job stopped", jobExec.getBatchStatus().equals(BatchStatus.STOPPED));
-				Reporter.log("job stopped");
-				
-				if(jobExec.getBatchStatus().equals(BatchStatus.STOPPED)) {
-	
-					Reporter.log("restarting job, should fail because restartable is false");
-					JobExecution newJobExec = null;
-					try {
-						newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), null);
-					} catch (NoSuchJobExecutionException nsjee) {
-						Reporter.log("NoSuchJobExecutionException = " + nsjee.getLocalizedMessage());
-						assertWithMessage("Job Restart = false should throw JobRestartException NOT NoSuchJobExecutionException", false);
-					} catch (NoSuchJobException nsje) {
-						Reporter.log("NoSuchJobException = " + nsje.getLocalizedMessage());
-						assertWithMessage("Job Restart = false should throw JobRestartException NOT NoSuchJobException", false);
-					} catch (JobRestartException jre) {
-						Reporter.log("JobRestartException = " + jre.getLocalizedMessage());
-						assertWithMessage("Job Restart = false throws JobRestartException", true);
-					}
-	
-					assertWithMessage("Job should fail to restart", newJobExec == null);
-					Reporter.log("job should fail to restart");
-				}
-			}
-		}  catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
-	}
+
+
 	
 	 private static void handleException(String methodName, Exception e) throws Exception {
 			Reporter.log("Caught exception: " + e.getMessage()+"<p>");

@@ -32,13 +32,11 @@ import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.jsl.model.Chunk;
 import com.ibm.jbatch.jsl.model.ExceptionClassFilter;
 
-public class SkipHandler<T> {
+public class SkipHandler {
 
 	/**
 	 *
 	 * Logic for handling skipped records.
-	 *
-	 * A SkipHandler object is attached to every BDS that inherits from AbstractBatchDataStream.
 	 *
 	 */
 
@@ -59,8 +57,6 @@ public class SkipHandler<T> {
 	  private Set<String> _skipExcludeExceptions = null;
 	  private int _skipLimit = 0;
 	  private long _skipCount = 0;
-	  private Exception _skipException = null;
-
 
 	  public SkipHandler(Chunk chunk, long l, String stepId)
 	  {
@@ -69,7 +65,6 @@ public class SkipHandler<T> {
 
 	    initialize(chunk);
 	  }
-
 
 	  /**
 	   * Add the user-defined SkipReadListeners.
@@ -144,17 +139,6 @@ public class SkipHandler<T> {
 						logger.finer("SKIPHANDLE: include element not present");
 
 					}
-					
-					//if (includes.size() > 1) {
-					//	String msg = "TODO: Do not currently support >1 <include> element, even though spec allows this.";
-					//	logger.severe(msg);
-					//	throw new IllegalArgumentException(msg);
-					//} else if (includes.size() == 1) {
-					//	includeEx = includes.get(0).getClazz();
-					//	logger.finer("SKIPHANDLE: include: " + includeEx);
-					//}  else {
-					//	logger.finer("SKIPHANDLE: include element not present");
-					//}
 				}
 			}
 			
@@ -171,26 +155,10 @@ public class SkipHandler<T> {
 						logger.finer("SKIPHANDLE: exclude element not present");
 
 					}
-					
-					//if (excludes.size() > 1) {
-					//	String msg = "TODO: Do not currently support >1 <exclude> element, even though spec allows this.";
-					//	logger.severe(msg);
-					//	throw new IllegalArgumentException(msg);
-					//} else if (excludes.size() == 1) {
-					//	excludeEx = excludes.get(0).getClazz();
-					//	logger.finer("SKIPHANDLE: exclude: " + excludeEx);
-					//}  else {
-					//	logger.finer("SKIPHANDLE: exclude element not present");
-					//}
+
 				}
 			}
 
-			//if (includeEx != null)
-			//	_skipIncludeExceptions.add(includeEx.trim());
-			//if (excludeEx != null)
-			//	_skipExcludeExceptions.add(excludeEx.trim());
-
-			//done = (includeEx == null && excludeEx == null);
 
 			if (logger.isLoggable(Level.FINE))
 				logger.logp(Level.FINE, className, mName,
@@ -271,9 +239,9 @@ public class SkipHandler<T> {
 	  /** 
 	   * Handle exception from a write failure.
 	   */
-	  public void handleExceptionWithRecordListWrite(Exception e, List<T> items)
+	  public void handleExceptionWithRecordListWrite(Exception e, List<?> items)
 	  {
-	    final String mName = "handleExceptionWithRecordListWrite(Exception, List<T>)";
+	    final String mName = "handleExceptionWithRecordListWrite(Exception, List<?>)";
 	    
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
@@ -359,12 +327,10 @@ public class SkipHandler<T> {
 	  
 	  private void logSkip(Exception e)
 	  {
-	    String key = "record.skipped.by.batch.data.stream";
 	    Object[] details = { _jobId, _stepId, e.getClass().getName() + ": " + e.getMessage() };
-	    //String message = LoggerUtil.getFormattedMessage(key, details, true);
-	    //logger.info(message);	
-	    //ServicesManager.getInstance().getJobLogManagerService(_jobId).println(message);
-		}
+	    if(logger.isLoggable(Level.FINE)) 
+	      logger.logp(Level.FINE, className, "logSkip", "Logging details: ", details); 
+	  }
 
 
 	  public long getSkipCount()

@@ -16,19 +16,22 @@
 */
 package com.ibm.jbatch.tck.artifacts.reusable;
 
+import java.util.logging.Logger;
+
 import javax.batch.api.AbstractBatchlet;
 
 
 @javax.inject.Named("myBatchletImpl")
 public class MyBatchletImpl extends AbstractBatchlet {
-    
+	private final static Logger logger = Logger.getLogger(MyBatchletImpl.class.getName());
+	
     private volatile static int count = 1;
     
     public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
 	
 	@Override
 	public String process() throws Exception {	
-		System.out.println("Running batchlet process(): " + count);
+		logger.fine("Running batchlet process(): " + count);
 		
 		count++;
 

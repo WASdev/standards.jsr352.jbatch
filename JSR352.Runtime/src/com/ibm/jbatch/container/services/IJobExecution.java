@@ -20,4 +20,6 @@ public interface IJobExecution extends JobExecution {
 	public void setStartTime(Timestamp ts);
 
 	public void setJobParameters(Properties jProps);
+	
+	public long getInstanceId();
 }

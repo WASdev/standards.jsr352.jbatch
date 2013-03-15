@@ -20,28 +20,31 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.logging.Logger;
 
 @javax.inject.Named("arrayIndexCheckpointData")
 public class ArrayIndexCheckpointData implements Externalizable {
 
+	private final static Logger logger = Logger.getLogger(ArrayIndexCheckpointData.class.getName());
+	
     private final static long serialVersionUID = 1L;
     private int i = 0;
     
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     	i = in.readInt();
-    	System.out.println("AJM: reading in the chkpt data: " + i);
+    	logger.fine("AJM: reading in the chkpt data: " + i);
     }
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-    	System.out.println("AJM: must have been checkpointed, writing out array index: " + i);
+    	logger.fine("AJM: must have been checkpointed, writing out array index: " + i);
         out.writeInt(i);
 
     }
     
     public int getCurrentIndex(){
-    	System.out.println("AJM: current index = " + i);
+    	logger.fine("AJM: current index = " + i);
     	return i;
     }
     

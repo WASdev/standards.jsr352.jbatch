@@ -86,13 +86,13 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 	 */
 	private void initIfNecessary() {
 		if (logger.isLoggable(Level.FINER)) {
-			logger.finer("In initIfNecessary().");
+			logger.config("In initIfNecessary().");
 		}
 		// Use double-checked locking with volatile.
 		if (!isInited) {
 			synchronized (isInitedLock) {
 				if (!isInited) {
-					logger.fine("--- Initializing ServicesManagerImpl ---");
+					logger.config("--- Initializing ServicesManagerImpl ---");
 					batchRuntimeConfig = new BatchConfigImpl();
 
 					initFromPropertiesFiles();
@@ -101,14 +101,12 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 					initOtherConfig();
 					isInited = Boolean.TRUE;
 					
-					logger.fine("--- Completed initialization of ServicesManagerImpl ---");
+					logger.config("--- Completed initialization of ServicesManagerImpl ---");
 				}
 			}
 		}
 
-		if (logger.isLoggable(Level.FINER)) {
-			logger.finer("Exiting initIfNecessary()");
-		}
+		logger.config("Exiting initIfNecessary()");
 	}
 
 	private void initFromPropertiesFiles() {
@@ -119,16 +117,16 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 
 		if (batchServicesListInputStream != null) {
 			try {
-				logger.fine("Batch Integrator Config File exists! loading it..");
+				logger.config("Batch Integrator Config File exists! loading it..");
 				serviceIntegratorProps.load(batchServicesListInputStream);
 				batchServicesListInputStream.close();
 			} catch (IOException e) {
-				logger.info("Error loading " + "/META-INF/services/" + BATCH_INTEGRATOR_CONFIG_FILE + " IOException=" + e.toString());
+				logger.config("Error loading " + "/META-INF/services/" + BATCH_INTEGRATOR_CONFIG_FILE + " IOException=" + e.toString());
 			} catch (Exception e) {
-				logger.info("Error loading " + "/META-INF/services/" + BATCH_INTEGRATOR_CONFIG_FILE + " Exception=" + e.toString());
+				logger.config("Error loading " + "/META-INF/services/" + BATCH_INTEGRATOR_CONFIG_FILE + " Exception=" + e.toString());
 			}
 		} else {
-			logger.info("Could not find batch integrator config file: " + "/META-INF/services/" + BATCH_INTEGRATOR_CONFIG_FILE);
+			logger.config("Could not find batch integrator config file: " + "/META-INF/services/" + BATCH_INTEGRATOR_CONFIG_FILE);
 		}
 
 		// See if any do not map to service impls.
@@ -153,16 +151,16 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 
 		if (batchServicesListInputStream != null) {
 			try {
-				logger.fine("Batch Admin Config File exists! loading it..");
+				logger.config("Batch Admin Config File exists! loading it..");
 				adminProps.load(batchAdminConfigListInputStream);
 				batchAdminConfigListInputStream.close();
 			} catch (IOException e) {
-				logger.info("Error loading " + "/META-INF/services/" + BATCH_ADMIN_CONFIG_FILE + " IOException=" + e.toString());
+				logger.config("Error loading " + "/META-INF/services/" + BATCH_ADMIN_CONFIG_FILE + " IOException=" + e.toString());
 			} catch (Exception e) {
-				logger.info("Error loading " + "/META-INF/services/" + BATCH_ADMIN_CONFIG_FILE + " Exception=" + e.toString());
+				logger.config("Error loading " + "/META-INF/services/" + BATCH_ADMIN_CONFIG_FILE + " Exception=" + e.toString());
 			}
 		} else {
-			logger.info("Could not find batch admin config file: " + "/META-INF/services/" + BATCH_ADMIN_CONFIG_FILE);
+			logger.config("Could not find batch admin config file: " + "/META-INF/services/" + BATCH_ADMIN_CONFIG_FILE);
 		}
 
 		// See if any DO map to service impls, which would be a mistake
@@ -185,13 +183,10 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		batchContainerProps.putAll(adminProps);
 		batchContainerProps.putAll(serviceIntegratorProps);
 
-		// Trace
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("Dumping contents of batchContainerProps after reading properties files.");
-			for (Object key : batchContainerProps.keySet()) {
-				logger.fine("key = " + key);
-				logger.fine("value = " + batchContainerProps.get(key));
-			}
+		logger.fine("Dumping contents of batchContainerProps after reading properties files.");
+		for (Object key : batchContainerProps.keySet()) {
+			logger.config("key = " + key);
+			logger.config("value = " + batchContainerProps.get(key));
 		}
 		
 		// Set this on the config. 
@@ -213,17 +208,15 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 				Name serviceType = propertyNameTable.get(propKey);
 				String defaultServiceImplClassName = serviceImplClassNames.get(serviceType); // For logging.
 				serviceImplClassNames.put(serviceType, value.trim());
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine("Overriding serviceType: " + serviceType + ", replacing default impl classname: " + 
-								defaultServiceImplClassName + " with override impl class name: " + value.trim());
-				}
+				logger.config("Overriding serviceType: " + serviceType + ", replacing default impl classname: " + 
+							defaultServiceImplClassName + " with override impl class name: " + value.trim());
 			}
 		}
 	}
 
 	private void initDatabaseConfig() {
 		if (databaseConfigBean == null) { 
-			logger.fine("First try to load 'suggested config' from BatchSPIManager");
+			logger.config("First try to load 'suggested config' from BatchSPIManager");
 			databaseConfigBean = BatchSPIManager.getInstance().getFinalDatabaseConfiguration();
 			if (databaseConfigBean == null) { 
 				logger.fine("Loading database config from configuration properties file.");
@@ -238,7 +231,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 			}
 		}  else {
 			// Currently we do not expected this path to be used by Glassfish
-			logger.fine("Database config has been set directly from SPI, do NOT load from properties file.");
+			logger.config("Database config has been set directly from SPI, do NOT load from properties file.");
 		}
 		// In either case, set this bean on the main config bean
 		batchRuntimeConfig.setDatabaseConfigurationBean(databaseConfigBean);

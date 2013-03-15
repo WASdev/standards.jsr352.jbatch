@@ -400,7 +400,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
                         batchKernel.restartGeneratedJob(iterator.next());
                     }
                 } else {
-                    break;
+                    break; 
                 }
             }
             }catch (InterruptedException e) {

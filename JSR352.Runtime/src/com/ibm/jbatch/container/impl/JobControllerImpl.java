@@ -75,7 +75,6 @@ public class JobControllerImpl implements IController {
 
     private final JobContextImpl<?> jobContext;
     private final Navigator<JSLJob> jobNavigator;
-    private final String jobId;
 
     private BlockingQueue<PartitionDataWrapper> analyzerQueue;
     private Stack<String> subJobExitStatusQueue;
@@ -97,8 +96,6 @@ public class JobControllerImpl implements IController {
         this.containment = containment;
         this.rootJobExecution = rootJobExecution;
         jobNavigator = jobExecution.getJobNavigator();
-        jobId = jobNavigator.getId();
-        //AJM: jobContext = new JobContextImpl(jobId); // TODO - is this the right id?
         jobInstanceId = jobExecution.getJobInstance().getInstanceId();
         jobStatusService = ServicesManagerImpl.getInstance().getJobStatusManagerService();
         persistenceService = ServicesManagerImpl.getInstance().getPersistenceManagerService();
@@ -307,7 +304,7 @@ public class JobControllerImpl implements IController {
 
             if (!(currentExecutionElement instanceof Step) && !(currentExecutionElement instanceof Decision) 
             		&& !(currentExecutionElement instanceof Flow) && !(currentExecutionElement instanceof Split)) {
-                throw new UnsupportedOperationException("Only support step, flow, and decision at the moment.");
+                throw new IllegalStateException("Found unknown currentExecutionElement type = " + currentExecutionElement.getClass().getName());
             }
 
             if (logger.isLoggable(Level.FINE)) {
@@ -330,7 +327,7 @@ public class JobControllerImpl implements IController {
                     // only job context is available to the decider since it is
                     // the first execution element in the job
                 } else if (previousExecutionElement instanceof Decision) {
-                    throw new BatchContainerRuntimeException("A decision cannot precede another decision...OR CAN IT???");
+                    throw new BatchContainerRuntimeException("A decision cannot precede another decision.");
                 } else if (previousExecutionElement instanceof Step) {
                     // the
                     // context
@@ -407,6 +404,7 @@ public class JobControllerImpl implements IController {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Execution failed before even getting to execute execution element = " + currentExecutionElement.getId());
                 }
+                logger.warning("Execution failed, InstanceId: " + this.jobInstanceId + ", executionId = " + this.jobExecution.getExecutionId());
                 throw new IllegalStateException("Execution failed before even getting to execute execution element = " + 
                         currentExecutionElement.getId() + "; breaking out of execution loop.");                
             }
@@ -428,7 +426,7 @@ public class JobControllerImpl implements IController {
 
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " Exiting as job has been stopped");
-                }
+                } 
                 return;
             }
 

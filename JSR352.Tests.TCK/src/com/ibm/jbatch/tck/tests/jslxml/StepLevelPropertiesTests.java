@@ -61,12 +61,12 @@ public class StepLevelPropertiesTests {
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count");
 
 		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+		assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 		Reporter.log("job completed");
 		
 		int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 0;
 	
-		assertWithMessage("Properties count", count == PROPERTIES_COUNT);
+		assertWithMessage("Properties count", PROPERTIES_COUNT, count);
 		
 		Reporter.log("Job batchlet return code is the step.properties size " + count);
 		} catch (Exception e) {
@@ -94,10 +94,10 @@ public class StepLevelPropertiesTests {
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_value");
 
 		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+		assertWithMessage("Job completed",BatchStatus.COMPLETED, jobExec.getBatchStatus());
 		Reporter.log("job completed");
 		
-		assertWithMessage("Property value", FOO_VALUE.equals(jobExec.getExitStatus()));
+		assertWithMessage("Property value", FOO_VALUE, jobExec.getExitStatus());
 		
 		Reporter.log("Job batchlet return code is the step property foo value " + FOO_VALUE);
 		} catch (Exception e) {
@@ -125,12 +125,12 @@ public class StepLevelPropertiesTests {
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count_zero");
 
 		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+		assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 		Reporter.log("job completed");
 		
 		int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 100;
 	
-		assertWithMessage("Properties count", count == 0);
+		assertWithMessage("Properties count", 0, count);
 		
 		Reporter.log("Job batchlet return code is the step.properties size " + count);
 		} catch (Exception e) {
@@ -156,10 +156,9 @@ public class StepLevelPropertiesTests {
 		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_scope");
 
 		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+		assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 		Reporter.log("job completed");
-		;
-		assertWithMessage("Step Level Property is not available through job context", jobExec.getExitStatus().equals(BatchStatus.COMPLETED.name()));
+		assertWithMessage("Step Level Property is not available through job context",BatchStatus.COMPLETED.name(), jobExec.getExitStatus());
 		Reporter.log("Job batchlet return code is the step.property read through job context (expected value=COMPLETED) " + jobExec.getExitStatus());
 		} catch (Exception e) {
     		handleException(METHOD, e);

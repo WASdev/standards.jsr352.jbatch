@@ -108,6 +108,40 @@ public class ChunkTests {
         }
 
     }
+    
+    /*
+     * @testName: testChunkNoProcessorDefined
+     * @assertion: job will finish successfully with COMPLETED and buffer size = default value of 10 is recognized
+     *             5.2.1.1 - Reader, 5.2.1.1.1 - Reader Properties,
+     *             5.2.1.2 - Processor
+     *             5.2.1.3 - Writer, 5.2.1.3.1 - Writer Properties
+     *             5.2.1 - Chunk, item-count default value
+     *             5.2.1 - Chunk item checkpointing/restart
+     * 
+     * @test_Strategy: start a job with no item-count specified. 
+     *                 Batch artifact checks that the checkpointing occurs at the default item-count (10). Test that the 
+     *                 job completes successfully. 
+     */
+    @Test
+    @org.junit.Test
+    public void testChunkNullCheckpointInfo() throws Exception {
+        String METHOD = "testChunkDefaultItemCount";
+
+        try {
+
+            Reporter.log("Locate job XML file: nullChkPtInfo.xml<p>");
+
+            Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+            JobExecution execution1 = jobOp.startJobAndWaitForResult("nullChkPtInfo", null);
+            Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
+            Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
+            assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
+            assertWithMessage("Testing execution #1", "checkpointInfo is null in reader.open...checkpointInfo is null in writer.open", execution1.getExitStatus());
+        } catch (Exception e) {
+            handleException(METHOD, e);
+        }
+
+    }
 
     /*
      * Obviously would be nicer to have more granular tests for some of this
@@ -616,7 +650,7 @@ public class ChunkTests {
 	        assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
 	        assertWithMessage("Testing execution #1", "TRUE: 10", execution1.getExitStatus());
 	
-	        System.out.println("AJM: exit status = " + execution1.getExitStatus());
+	        Reporter.log("exit status = " + execution1.getExitStatus() + "<p>");
     	 } catch (Exception e) {
              handleException(METHOD, e);
          }

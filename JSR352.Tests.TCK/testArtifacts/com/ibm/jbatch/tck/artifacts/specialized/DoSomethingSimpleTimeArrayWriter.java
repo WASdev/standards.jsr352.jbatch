@@ -18,6 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
@@ -31,6 +32,8 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 @javax.inject.Named("doSomethingSimpleTimeArrayWriter")
 public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRecord> {
 
+	private final static Logger logger = Logger.getLogger(DoSomethingSimpleTimeArrayWriter.class.getName());
+	
 	private int[] writerDataArray;
 	//private int[] checkArray;
 	private int idx = 0;
@@ -57,12 +60,12 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
 	
 	@Override
 	public void open(Serializable cpd) throws Exception {
-		System.out.println("openWriter");
+		logger.fine("openWriter");
 		
 	    MyPersistentRestartUserData myData = null;
         if ((myData = stepCtx.getPersistentUserData()) != null) {        	
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
-        	System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+        	logger.fine("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
         } else {        
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
         }
@@ -76,14 +79,14 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
 		if (checkpointData == null){
 			//position at the beginning
 			idx = 0;
-			System.out.println("WRITE: chkpt data = null, so idx = " + idx);
+			logger.fine("WRITE: chkpt data = null, so idx = " + idx);
 		}
 		else {
 			// position at index held in the cpd
 			idx = checkpointData.getCurrentIndex();
 			
-			System.out.println("WRITE: chkpt data was valid, so idx = " + idx);
-			System.out.println("WRITE: chunkWriteIteration = " + chunkWriteIteration);
+			logger.fine("WRITE: chkpt data was valid, so idx = " + idx);
+			logger.fine("WRITE: chunkWriteIteration = " + chunkWriteIteration);
 		}
 		
 		for (int i = 0; i<arraysize; i++) {
@@ -94,32 +97,32 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
 	
 	@Override
 	public void close() throws Exception {
-		//System.out.println("closeWriter - writerDataArray:\n");
+		//logger.fine("closeWriter - writerDataArray:\n");
 		for (int i = 0; i < arraysize; i++){
-			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
+			logger.fine("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
 	}
 	
 	@Override
 	public void writeItems(List<ReadRecord> myData) throws Exception {
 		
-		System.out.println("writeMyData receives chunk size=" + myData.size());
+		logger.fine("writeMyData receives chunk size=" + myData.size());
 		int i;
-		System.out.println("WRITE: before writing, idx = " + idx);
-		System.out.println("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
+		logger.fine("WRITE: before writing, idx = " + idx);
+		logger.fine("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
 		
 		//java.util.Date curDate = new java.util.Date();
         //long curts = curDate.getTime();
         //long curdiff = curts - ts;
         //int diff = (int)curdiff / 1000;
         
-        //System.out.println("WRITE: diff = " + diff);
+        //logger.fine("WRITE: diff = " + diff);
 		
 		//if ((diff <= timeinterval+2) || (diff >= timeinterval-2) ) {
-		//	System.out.println("WRITE: the chunk write is occuring at the correct time -> " + diff + " which is: " + timeinterval + " +/- 2 seconds");
+		//	logger.fine("WRITE: the chunk write is occuring at the correct time -> " + diff + " which is: " + timeinterval + " +/- 2 seconds");
 		//}
 		//else {
-		//	System.out.println("WRITE: we have an issue! throw exception here");
+		//	logger.fine("WRITE: we have an issue! throw exception here");
 		//	throw new Exception("WRITE: the chunk write did not occur at the correct time boundary -> "+ diff + " which is: " + timeinterval + "+/- 2 seconds");
 		//}
 		chunkWriteIteration++;
@@ -131,10 +134,10 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
 			idx++;
 		}
 		for (i = 0; i < arraysize; i++){
-			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
+			logger.fine("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
-		System.out.println("WRITE: idx = " + idx + " and i = " + i);
-		System.out.println("WRITE: chunkWriteIteration= "+ chunkWriteIteration);
+		logger.fine("WRITE: idx = " + idx + " and i = " + i);
+		logger.fine("WRITE: chunkWriteIteration= "+ chunkWriteIteration);
 		//if (checkArray[chunkWriteIteration] == (chunkWriteIteration+1)*chunksize ) {
 	}
 	

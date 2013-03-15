@@ -16,9 +16,10 @@
  */
 package com.ibm.jbatch.container.api.impl;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -72,7 +73,22 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	@Override
-	public long start(String jobXMLName, Properties submittedProps)	throws JobStartException {
+	public long start(String jobXMLName, Properties jobParameters)	throws JobStartException {
+
+		StringWriter jobParameterWriter = new StringWriter();
+		if (jobParameters != null) {
+			try {
+				jobParameters.store(jobParameterWriter, "Job parameters on start: ");
+			} catch (IOException e) {
+				jobParameterWriter.write("Job parameters on start: not printable");
+			}
+		} else {
+			jobParameterWriter.write("Job parameters on start = null");
+		}
+
+		if (logger.isLoggable(Level.FINE)) {            
+			logger.fine("JobOperator start, with jobXMLName = " + jobXMLName + "\n" + jobParameterWriter.toString());
+		}
 
 		String jobXML = jobXMLLoaderService.loadJSL(jobXMLName);
 
@@ -83,11 +99,11 @@ public class JobOperatorImpl implements JobOperator {
 			logger.fine("Starting job: " + jobXML.substring(0, concatLen) + "... truncated ...");
 		}
 
-		IJobExecution execution = batchKernel.startJob(jobXML, submittedProps);
+		IJobExecution execution = batchKernel.startJob(jobXML, jobParameters);
 		executionId = execution.getExecutionId();
 
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("JobOperator start received executionId: " + executionId);
+			logger.fine("Started job with instanceId: " + execution.getInstanceId() + ", executionId: " + executionId);
 		}
 
 		return executionId;
@@ -164,11 +180,11 @@ public class JobOperatorImpl implements JobOperator {
 	public JobInstance getJobInstance(long executionId)
 			throws NoSuchJobExecutionException {
 		JobInstance jobInstance = this.batchKernel.getJobInstance(executionId);
-		
+
 		if (jobInstance == null){
 			throw new NoSuchJobExecutionException("No JobInstance found for job execution id: " + executionId);
 		}
-		
+
 		return this.batchKernel.getJobInstance(executionId);
 	}
 
@@ -196,7 +212,7 @@ public class JobOperatorImpl implements JobOperator {
 		List<JobInstance> jobInstances = new ArrayList<JobInstance>();
 
 		// get the jobinstance ids associated with this job name
-		List<Long> instanceIds = persistenceService.jobOperatorgetJobInstanceIds(jobName, start, count);
+		List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobName, start, count);
 
 		if (instanceIds.size() > 0){
 			// for every job instance id
@@ -222,13 +238,13 @@ public class JobOperatorImpl implements JobOperator {
 	public Set<String> getJobNames() {
 
 		Set<String> jobNames = new HashSet<String>();
-		HashMap data = persistenceService.jobOperatorGetJobInstanceData();
-		Iterator it = data.entrySet().iterator();
+		Map<Long, String> data = persistenceService.jobOperatorGetJobInstanceData();
+		Iterator<Map.Entry<Long,String>> it = data.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry entry = (Map.Entry) it.next();
-			long instanceId = (Long) entry.getKey();
+			Map.Entry<Long,String> entry = it.next();
+			long instanceId = entry.getKey();
 			if(isAuthorized(instanceId)) {
-				String name = (String)entry.getValue();
+				String name = entry.getValue();
 				jobNames.add(name);
 			}
 		}
@@ -310,22 +326,32 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	@Override
-	public long restart(long executionId, Properties restartParameters) throws NoSuchJobExecutionException,
+	public long restart(long oldExecutionId, Properties restartParameters) throws NoSuchJobExecutionException,
 	NoSuchJobException, JobRestartException, JobSecurityException {
 
 		long newExecutionId = -1;
 
-		if (logger.isLoggable(Level.FINE)) {            
-			logger.fine("Restarting job with instanceID: " + executionId);
+		StringWriter jobParameterWriter = new StringWriter();
+		if (restartParameters != null) {
+			try {
+				restartParameters.store(jobParameterWriter, "Job parameters on restart: ");
+			} catch (IOException e) {
+				jobParameterWriter.write("Job parameters on restart: not printable");
+			}
+		} else {
+			jobParameterWriter.write("Job parameters on restart = null");
 		}
 
-		IJobExecution jobEx = batchKernel.getJobExecution(executionId);
+		if (logger.isLoggable(Level.FINE)) {            
+			logger.fine("JobOperator restart, with old executionId = " + oldExecutionId + "\n" + jobParameterWriter.toString());
+		}
 
-		JobExecution execution = batchKernel.restartJob(executionId, restartParameters);
+		IJobExecution execution = batchKernel.restartJob(oldExecutionId, restartParameters);
+		
 		newExecutionId = execution.getExecutionId();
 
 		if (logger.isLoggable(Level.FINE)) {            
-			logger.fine("Restarted job with instanceID: " + executionId + ", and new executionID: " + newExecutionId);
+			logger.fine("Restarted job with instanceID: " + execution.getInstanceId() + ", new executionId: " + newExecutionId + ", and old executionID: " + oldExecutionId);
 		}
 
 		return newExecutionId;
@@ -338,7 +364,7 @@ public class JobOperatorImpl implements JobOperator {
 		logger.entering(sourceClass, "stop", executionId);
 
 		batchKernel.stopJob(executionId);	
-		
+
 		logger.exiting(sourceClass, "stop");
 	}
 
@@ -361,5 +387,4 @@ public class JobOperatorImpl implements JobOperator {
 		logger.exiting(sourceClass, "isAuthorized", retVal);
 		return retVal;
 	}
-
 }

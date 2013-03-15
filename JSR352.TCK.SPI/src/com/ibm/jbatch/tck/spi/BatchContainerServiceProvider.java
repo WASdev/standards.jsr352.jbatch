@@ -17,11 +17,14 @@
 package com.ibm.jbatch.tck.spi;
 
 
+/**
+ * 
+ * Though we're down to only one SPI, the idea is that
+ * this is the wrapper, discoverable on the classpath
+ * via ServiceLoader, for all the TCK SPI impls.  
+ *
+ */
 public interface BatchContainerServiceProvider {
-	
-    //public JobOperator getJobOperator();
-    
-    public JSLInheritanceMerger getJSLInheritanceMerger();  
-    
+
     public JobEndCallbackManager getCallbackManager();
 }

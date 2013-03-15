@@ -3,6 +3,7 @@
 	<dirname property="jsr352.tck.basedir" file="${ant.file.jsr352.tck}"/>
 	<property file="${imported.basedir}/imported.properties"/>
 	<property name="workspace.home.dir" value="${jsr352.tck.basedir}/../.."/>
+	<property name="tckZipRootDir" value="jsr352-tck-1.0"/>
 
 	<taskdef resource="testngtasks" classpath="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar"/>
 
@@ -31,7 +32,7 @@
 	<target name="cleanTCK">
 		<delete dir="${jsr352.tck.basedir}/../testArtifactsBin"/>
 		<delete dir="${jsr352.tck.basedir}/../bin"/>
-		<delete dir="${jsr352.tck.basedir}/../tckZip"/>
+		<delete dir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
 		<delete dir="${jsr352.tck.basedir}/../dist"/>
 	</target>
 
@@ -56,15 +57,15 @@
 	</target>
 
 	<target name="buildTCKZip" depends="mainTckBuild">
-		<mkdir dir="${jsr352.tck.basedir}/../tckZip"/>
-		<mkdir dir="${jsr352.tck.basedir}/../tckZip/doc"/>
-		<mkdir dir="${jsr352.tck.basedir}/../tckZip/lib"/>
+		<mkdir dir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
+		<mkdir dir="${jsr352.tck.basedir}/../${tckZipRootDir}/doc"/>
+		<mkdir dir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
 		<mkdir dir="${jsr352.tck.basedir}/../dist"/>
-		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl-src.jar">
+		<jar destfile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-impl-src.jar">
 			<fileset dir="${jsr352.tck.basedir}/../src"/>
 			<fileset dir="${jsr352.tck.basedir}/../testArtifacts"/>
 		</jar>
-		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl.jar">
+		<jar destfile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-impl.jar">
 			<fileset dir="${jsr352.tck.basedir}/../testArtifactsBin"
 				includes="**/*.class"/>
 			<fileset dir="${jsr352.tck.basedir}/../testArtifactsBin"
@@ -72,26 +73,28 @@
 			<fileset dir="${jsr352.tck.basedir}/../testJobXml"/>
 			<fileset dir="${jsr352.tck.basedir}/../bin"/>
 		</jar>
-		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-SPI-src.jar">
+		<jar destfile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-SPI-src.jar">
 			<fileset dir="${workspace.home.dir}/JSR352.TCK.SPI/src"/>
 		</jar>
-		<jar destfile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-SPI.jar">
+		<jar destfile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-SPI.jar">
 			<fileset dir="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>
 		</jar>
-		<copy file="${jsr352.tck.basedir}/../doc/jsr352-tck-reference-guide.pdf" todir="${jsr352.tck.basedir}/../tckZip/doc"/>
-		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/LICENSE.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
-		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/NOTICE.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
-		<copy file="${jsr352.tck.basedir}/../build.xml" todir="${jsr352.tck.basedir}/../tckZip"/>
-		<copy file="${jsr352.tck.basedir}/../readme.txt" todir="${jsr352.tck.basedir}/../tckZip"/>
-		<copy file="${jsr352.tck.basedir}/../jsr352-tck.properties" todir="${jsr352.tck.basedir}/../tckZip"/>
-		<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-SE-suite.xml" tofile="${jsr352.tck.basedir}/../tckZip/artifacts/jsr352-tck-impl-suite.xml"/>
+		<copy file="${jsr352.tck.basedir}/../doc/jsr352-tck-reference-guide.pdf" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/doc"/>
+		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/LICENSE.txt" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
+		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/NOTICE.txt" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
+		<copy file="${jsr352.tck.basedir}/../build.xml" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
+		<copy file="${jsr352.tck.basedir}/../readme.txt" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-tck.properties" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-SE-suite.xml" tofile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-impl-suite.xml"/>
 		
-		<copy file="${jsr352.tck.basedir}/../jsr352-api-sigtest.sig" todir="${jsr352.tck.basedir}/../tckZip/artifacts"/>
-		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar" todir="${jsr352.tck.basedir}/../tckZip/lib"/>
-		<zip destfile="${jsr352.tck.basedir}/../dist/jsr352-tck.zip" basedir="${jsr352.tck.basedir}/../tckZip"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-api-sigtest.sig" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts"/>
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
+		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
+		<zip destfile="${jsr352.tck.basedir}/../dist/${tckZipRootDir}.zip">
+			<zipfileset dir="${jsr352.tck.basedir}/.." includes="${tckZipRootDir}"/>
+		</zip>
 	</target>
 
 	<!-- Generate sig file -->

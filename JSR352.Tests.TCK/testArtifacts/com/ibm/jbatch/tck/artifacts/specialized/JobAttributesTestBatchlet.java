@@ -16,32 +16,49 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.logging.Logger;
+
+import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
+import javax.inject.Inject;
 
 @javax.inject.Named("jobAttributesTestBatchlet")
 public class JobAttributesTestBatchlet extends AbstractBatchlet {
 
+    private final static String sourceClass = JobAttributesTestBatchlet.class.getName();
+    private final static Logger logger = Logger.getLogger(sourceClass);
+    
 	public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION"; 
+	public static String BAD_EXIT_STATUS = "VERY BAD INVOCATION"; 
 	
-	private boolean stopped = false;
-
+    @Inject    
+    @BatchProperty(name="execution.number")
+    String executionNumberString;
+    
+	
+    @Inject    
+    @BatchProperty(name="execution")
+    String executionString;
+    
 	@Override
 	public String process() throws Exception {
 
-		// do nothing, we are only testing job restartable and abstract attribute
-		// loop until stopped or test time out.
-		for (int i = 0; i < 10000; i++) {
-			// do nothing
-//			Thread.sleep(100);
-			if (stopped) { break; }
-		}
+		int execNum = Integer.parseInt(executionNumberString);
 		
-		return GOOD_EXIT_STATUS;
+		if (execNum == 1) {
+			logger.fine(sourceClass + ".process(); Purposefully failing on execution == 1");
+			throw new IllegalArgumentException("Purposefully failing on execution == 1");
+		} else if (execNum == 2) {
+			logger.fine(sourceClass + ".process(); Success...exit normally");
+			return GOOD_EXIT_STATUS;
+		} else {
+			logger.fine(sourceClass + ".process(); Unexpected count, return bad exit status");
+			return BAD_EXIT_STATUS;
+		}
 	}
 	
 	@Override
 	public void stop() throws Exception {
 		super.stop();
-		stopped = true;
 	}
 }

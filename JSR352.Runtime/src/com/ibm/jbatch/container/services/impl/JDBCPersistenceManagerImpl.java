@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -63,6 +64,7 @@ import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.persistence.CheckpointData;
 import com.ibm.jbatch.container.persistence.CheckpointDataKey;
 import com.ibm.jbatch.container.services.IJobExecution;
+import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.container.status.JobStatusKey;
 import com.ibm.jbatch.container.status.StepStatus;
@@ -70,114 +72,13 @@ import com.ibm.jbatch.container.status.StepStatusKey;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
-public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
+public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, JDBCPersistenceManagerSQLConstants {
 
 	private static final String CLASSNAME = JDBCPersistenceManagerImpl.class.getName();
 
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
-	
-	private static final String JOBSTATUS_TABLE = "JOBSTATUS";
-	private static final String STEPSTATUS_TABLE = "STEPSTATUS";
-	private static final String CHECKPOINTDATA_TABLE = "CHECKPOINTDATA";
-	private static final String JOBINSTANCEDATA_TABLE = "JOBINSTANCEDATA";
-	private static final String EXECUTIONINSTANCEDATA_TABLE = "EXECUTIONINSTANCEDATA";
-	private static final String STEPEXECUTIONINSTANCEDATA_TABLE = "STEPEXECUTIONINSTANCEDATA";
-	
-	private static final String CREATE_TAB_JOBSTATUS = "CREATE TABLE JOBSTATUS("
-			+ "id BIGINT CONSTRAINT JOBSTATUS_PK PRIMARY KEY," 
-			+ "obj BLOB,"
-			+ "CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES JOBINSTANCEDATA (jobinstanceid) ON DELETE CASCADE)";
-	private static final String CREATE_TAB_STEPSTATUS = "CREATE TABLE STEPSTATUS("
-			+ "id BIGINT CONSTRAINT STEPSTATUS_PK PRIMARY KEY," 
-			+ "obj BLOB,"
-			+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES STEPEXECUTIONINSTANCEDATA (stepexecid) ON DELETE CASCADE)";
-	private static final String CREATE_TAB_CHECKPOINTDATA = "CREATE TABLE CHECKPOINTDATA("
-			+ "id VARCHAR(512),obj BLOB)";
-	private static final String CREATE_TAB_JOBINSTANCEDATA = "CREATE TABLE JOBINSTANCEDATA("
-			+ "jobinstanceid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBINSTANCE_PK PRIMARY KEY,"
-			+ "name VARCHAR(512),"
-			+ "apptag VARCHAR(512))";
-	private static final String CREATE_TAB_EXECUTIONINSTANCEDATA = "CREATE TABLE EXECUTIONINSTANCEDATA("
-			+ "jobexecid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBEXECUTION_PK PRIMARY KEY,"
-			+ "jobinstanceid BIGINT,"
-			+ "createtime TIMESTAMP,"
-			+ "starttime TIMESTAMP,"
-			+ "endtime TIMESTAMP,"
-			+ "updatetime TIMESTAMP,"
-			+ "parameters BLOB,"
-			+ "batchstatus VARCHAR(512),"
-			+ "exitstatus VARCHAR(512)," 
-			+ "CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES JOBINSTANCEDATA (jobinstanceid))";
-	private static final String CREATE_TAB_STEPEXECUTIONINSTANCEDATA = "CREATE TABLE STEPEXECUTIONINSTANCEDATA("
-			+ "stepexecid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT STEPEXECUTION_PK PRIMARY KEY,"
-			+ "jobexecid BIGINT,"
-			+ "batchstatus VARCHAR(512),"
-			+ "exitstatus VARCHAR(512),"
-			+ "stepname VARCHAR(512),"
-	        + "stepcontainmentcsv VARCHAR(512),"
-			+ "readcount INTEGER,"
-			+ "writecount INTEGER,"
-			+ "commitcount INTEGER,"
-			+ "rollbackcount INTEGER,"
-			+ "readskipcount INTEGER,"
-			+ "processskipcount INTEGER,"
-			+ "filtercount INTEGER,"
-			+ "writeskipcount INTEGER,"
-			+ "startTime TIMESTAMP," 
-			+ "endTime TIMESTAMP,"
-			+ "persistentData BLOB," 
-			+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES EXECUTIONINSTANCEDATA (jobexecid))";
-	
-	private static final String INSERT_JOBSTATUS = "insert into jobstatus values(?, ?)";
-	
-	private static final String UPDATE_JOBSTATUS = "update jobstatus set obj = ? where id = ?";
 
-	private static final String SELECT_JOBSTATUS = "select id, obj from jobstatus where id = ?";
-	
-	private static final String DELETE_JOBSTATUS = "delete from jobstatus where id = ?";
-
-	private static final String INSERT_STEPSTATUS = "insert into stepstatus values(?, ?)";
-	
-	private static final String UPDATE_STEPSTATUS = "update stepstatus set obj = ? where id = ?";
-
-	private static final String SELECT_STEPSTATUS = "select id, obj from stepstatus where id = ?";
-	
-	private static final String DELETE_STEPSTATUS = "delete from stepstatus where id = ?";
-
-	private static final String INSERT_CHECKPOINTDATA = "insert into checkpointdata values(?, ?)";
-
-	private static final String UPDATE_CHECKPOINTDATA = "update checkpointdata set obj = ? where id = ?";
-
-	private static final String SELECT_CHECKPOINTDATA = "select id, obj from checkpointdata where id = ?";
-	
-	private static final String CREATE_CHECKPOINTDATA_INDEX = "create index chk_index on checkpointdata(id)";
-	
-	private static final String DELETE_CHECKPOINTDATA = "delete from checkpointdata where id = ?";
-	
-	// JOB OPERATOR QUERIES
-	private static final String INSERT_JOBINSTANCEDATA = "insert into jobinstancedata (name, apptag) values(?, ?)";
-	
-	private static final String INSERT_EXECUTIONDATA = "insert into executionInstanceData (jobinstanceid, parameters) values(?, ?)";
-	
-	private static final String SELECT_JOBINSTANCEDATA_COUNT = "select count(jobinstanceid) as jobinstancecount from jobinstancedata where name = ?";
-	
-	private static final String SELECT_JOBINSTANCEDATA_IDS = "select jobinstanceid from jobinstancedata where name = ?";
-	
-	private static final String SELECT_JOBINSTANCEDATA_NAMES = "select name from jobinstancedata where apptag = ?";
-	private static final String SELECT_JOBINSTANCEDATA_APPTAG = "select apptag from jobinstancedata where jobinstanceid = ?";
-	
-	public static final String START_TIME = "starttime";
-	public static final String CREATE_TIME = "createtime";
-	public static final String END_TIME = "endtime";
-	public static final String UPDATE_TIME = "updatetime";
-	public static final String BATCH_STATUS = "batchstatus";
-	public static final String EXIT_STATUS = "exitstatus";
-	public static final String INSTANCE_ID = "instanceId";
-	public static final String JOBEXEC_ID = "jobexecid";
-	public static final String STEPEXEC_ID = "stepexecid";
-	public static final String STEPCONTEXT = "stepcontext";
-	public static final String APPTAG = "apptag";
-
+	private IBatchConfig batchConfig = null;
 
     protected DataSource dataSource = null;
     protected String jndiName = null;
@@ -193,16 +94,16 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	 */
 	@Override
 	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
-		super.init(batchConfig);
+		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
 		
-		logger.entering(CLASSNAME, "init", batchConfig);
+		this.batchConfig = batchConfig;
 		
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 		
 		if (!batchConfig.isJ2seMode()) {
 			jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
 			
-			logger.log(Level.FINE, "JNDI name is {0}", jndiName);
+			logger.config("JNDI name = " + jndiName);
 			
 			if (jndiName == null || jndiName.equals("")) {
 				throw new BatchContainerServiceException("JNDI name is not defined.");
@@ -224,7 +125,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 			userId = batchConfig.getDatabaseConfigurationBean().getDbUser();
 			pwd = batchConfig.getDatabaseConfigurationBean().getDbPassword();
 			
-			logger.log(Level.FINE, "driver: {0}, url: {1}", new Object[]{driver, url});
+			logger.config("driver: " + driver + ", url: " + url);
 		}
 		
 		try {
@@ -240,7 +141,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 			throw new BatchContainerServiceException(e);
 		}
 		
-		logger.exiting(CLASSNAME, "init");
+		logger.config("Exiting CLASSNAME.init()");
 	}
 	
 	/**
@@ -361,139 +262,98 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 
 	
     /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_createJobStatus(com.ibm.jbatch.container.status.JobStatusKey, com.ibm.jbatch.container.status.JobStatus)
+     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#createJobStatus(com.ibm.jbatch.container.status.JobStatusKey, com.ibm.jbatch.container.status.JobStatus)
      */
     @Override
-	protected void _createJobStatus(JobStatusKey key, JobStatus value) {
-    	logger.entering(CLASSNAME, "_createJobStatus", new Object[] {key, value});
-    	executeInsert(key.getJobInstanceId(), value, INSERT_JOBSTATUS);
-    	logger.exiting(CLASSNAME, "_createJobStatus");
+	public void createJobStatus(JobStatusKey key, JobStatus value) {
+    	logger.entering(CLASSNAME, "createJobStatus", new Object[] {key, value});
+    	executeInsert(key.getDatabaseKey(), value, INSERT_JOBSTATUS);
+    	logger.exiting(CLASSNAME, "createJobStatus");
 	}
 
 	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_getJobStatus(com.ibm.jbatch.container.status.JobStatusKey)
+	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#getJobStatus(com.ibm.jbatch.container.status.JobStatusKey)
 	 */
 	@Override
-	protected List<JobStatus> _getJobStatus(JobStatusKey key) {
-		logger.entering(CLASSNAME, "_getJobStatus", key);
-		List<JobStatus> jobStatuses = executeQuery(key.getJobInstanceId(), SELECT_JOBSTATUS);
-		logger.exiting(CLASSNAME, "_getJobStatus", jobStatuses);
+	public List<JobStatus> getJobStatus(JobStatusKey key) {
+		logger.entering(CLASSNAME, "getJobStatus", key);
+		List<JobStatus> jobStatuses = executeQuery(key.getDatabaseKey(), SELECT_JOBSTATUS);
+		logger.exiting(CLASSNAME, "getJobStatus", jobStatuses);
 		return jobStatuses;
 	}
     
     /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_updateJobStatus(com.ibm.jbatch.container.status.JobStatusKey, com.ibm.jbatch.container.status.JobStatus)
+     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#updateJobStatus(com.ibm.jbatch.container.status.JobStatusKey, com.ibm.jbatch.container.status.JobStatus)
      */
     @Override
-    protected void _updateJobStatus(JobStatusKey key, JobStatus value) {
-    	logger.entering(CLASSNAME, "_updateJobStatus", new Object[] {key, value});
-   		List<JobStatus> data = executeQuery(key.getJobInstanceId(), SELECT_JOBSTATUS);
+	public void updateJobStatus(JobStatusKey key, JobStatus value) {
+    	logger.entering(CLASSNAME, "updateJobStatus", new Object[] {key, value});
+   		List<JobStatus> data = executeQuery(key.getDatabaseKey(), SELECT_JOBSTATUS);
    		if(data != null && !data.isEmpty()) {
-    		executeUpdate(value, key.getJobInstanceId(), UPDATE_JOBSTATUS);
+    		executeUpdate(value, key.getDatabaseKey(), UPDATE_JOBSTATUS);
     	}
-   		logger.exiting(CLASSNAME, "_updateJobStatus");
+   		logger.exiting(CLASSNAME, "updateJobStatus");
     }
 
     /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_deleteJobStatus(com.ibm.jbatch.container.status.JobStatusKey)
+     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#createStepStatus(com.ibm.jbatch.container.status.StepStatusKey, com.ibm.jbatch.container.status.StepStatus)
      */
     @Override
-    protected void _deleteJobStatus(JobStatusKey key) {
-    	logger.entering(CLASSNAME, "_deleteJobStatus", key);
-    	executeDelete(key.getJobInstanceId(), DELETE_JOBSTATUS);
-    	logger.exiting(CLASSNAME, "_deleteJobStatus");
-    }
-
-    /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_createStepStatus(com.ibm.jbatch.container.status.StepStatusKey, com.ibm.jbatch.container.status.StepStatus)
-     */
-    @Override
-	protected void _createStepStatus(StepStatusKey key, StepStatus value) {
-    	logger.entering(CLASSNAME, "_createStepStatus", new Object[] {key, value});
-        executeInsert(key.getKeyPrimitive(), value, INSERT_STEPSTATUS);
-        logger.exiting(CLASSNAME, "_createStepStatus");
+	public void createStepStatus(StepStatusKey key, StepStatus value) {
+    	logger.entering(CLASSNAME, "createStepStatus", new Object[] {key, value});
+        executeInsert(key.getDatabaseKey(), value, INSERT_STEPSTATUS);
+        logger.exiting(CLASSNAME, "createStepStatus");
 	}
 
     /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_getStepStatus(com.ibm.jbatch.container.status.StepStatusKey)
+     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#updateStepStatus(com.ibm.jbatch.container.status.StepStatusKey, com.ibm.jbatch.container.status.StepStatus)
      */
     @Override
-	protected List<StepStatus> _getStepStatus(StepStatusKey key) {
-    	logger.entering(CLASSNAME, "_getStepStatus", key);
-    	List<StepStatus> stepStatuses = executeQuery(key.getStepId(), SELECT_STEPSTATUS); 
-    	logger.exiting(CLASSNAME, "_getStepStatus", stepStatuses);
-    	return stepStatuses;
-	}
-
-    /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_updateStepStatus(com.ibm.jbatch.container.status.StepStatusKey, com.ibm.jbatch.container.status.StepStatus)
-     */
-    @Override
-    protected void _updateStepStatus(StepStatusKey key, StepStatus value) {
-    	logger.entering(CLASSNAME, "_updateStepStatus", new Object[] {key, value});
-		List<StepStatus> data = executeQuery(key.getKeyPrimitive(), SELECT_STEPSTATUS);
+    public void updateStepStatus(StepStatusKey key, StepStatus value) {
+    	logger.entering(CLASSNAME, "updateStepStatus", new Object[] {key, value});
+		List<StepStatus> data = executeQuery(key.getDatabaseKey(), SELECT_STEPSTATUS);
 		if(data != null && !data.isEmpty()) {
-			executeUpdate(value, key.getKeyPrimitive(), UPDATE_STEPSTATUS);
+			executeUpdate(value, key.getDatabaseKey(), UPDATE_STEPSTATUS);
 		}
-		logger.exiting(CLASSNAME, "_updateStepStatus");
-    }
-
-    /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_deleteStepStatus(com.ibm.jbatch.container.status.StepStatusKey)
-     */
-    @Override
-    protected void _deleteStepStatus(StepStatusKey key) {
-    	logger.entering(CLASSNAME, "_deleteStepStatus", key);
-    	executeDelete(key.getKeyPrimitive(), DELETE_STEPSTATUS);
-    	logger.exiting(CLASSNAME, "_deleteStepStatus");
+		logger.exiting(CLASSNAME, "updateStepStatus");
     }
 
 	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_createCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey, com.ibm.ws.batch.container.checkpoint.CheckpointData)
+	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#createCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey, com.ibm.ws.batch.container.checkpoint.CheckpointData)
 	 */
 	@Override
-	protected void _createCheckpointData(CheckpointDataKey key, CheckpointData value) {
-		logger.entering(CLASSNAME, "_createCheckpointData", new Object[] {key, value});
+	public void createCheckpointData(CheckpointDataKey key, CheckpointData value) {
+		logger.entering(CLASSNAME, "createCheckpointData", new Object[] {key, value});
 		executeInsert(key.getCommaSeparatedKey(), value, INSERT_CHECKPOINTDATA);
-		logger.exiting(CLASSNAME, "_createCheckpointData");
+		logger.exiting(CLASSNAME, "createCheckpointData");
 	}
 
 	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_getCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey)
+	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#getCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey)
 	 */
 	@Override
-	protected List<CheckpointData> _getCheckpointData(CheckpointDataKey key) {
-		logger.entering(CLASSNAME, "_getCheckpointData", key);
+	public List<CheckpointData> getCheckpointData(CheckpointDataKey key) {
+		logger.entering(CLASSNAME, "getCheckpointData", key);
 		List<CheckpointData> checkpointData = executeQuery(key.getCommaSeparatedKey(), SELECT_CHECKPOINTDATA);
-		logger.exiting(CLASSNAME, "_getCheckpointData", checkpointData);
+		logger.exiting(CLASSNAME, "getCheckpointData", checkpointData);
 		return checkpointData;
 	}
 
 	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_updateCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey, com.ibm.ws.batch.container.checkpoint.CheckpointData)
+	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#updateCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey, com.ibm.ws.batch.container.checkpoint.CheckpointData)
 	 */
 	@Override
-	protected void _updateCheckpointData(CheckpointDataKey key, CheckpointData value) {
-		logger.entering(CLASSNAME, "_updateCheckpointData", new Object[] {key, value});
+	public void updateCheckpointData(CheckpointDataKey key, CheckpointData value) {
+		logger.entering(CLASSNAME, "updateCheckpointData", new Object[] {key, value});
 		List<CheckpointData> data = executeQuery(key.getCommaSeparatedKey(), SELECT_CHECKPOINTDATA);
 		if(data != null && !data.isEmpty()) {
 			executeUpdate(value, key.getCommaSeparatedKey(), UPDATE_CHECKPOINTDATA);
 		} else {
-		    _createCheckpointData(key, value);
+		    createCheckpointData(key, value);
 		}
-		logger.exiting(CLASSNAME, "_updateCheckpointData");
+		logger.exiting(CLASSNAME, "updateCheckpointData");
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#_deleteCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey)
-	 */
-	@Override
-	protected void _deleteCheckpointData(CheckpointDataKey key) {
-		executeDelete(key.getJobInstanceId(), DELETE_CHECKPOINTDATA);
-		logger.entering(CLASSNAME, "_deleteCheckpointData", key);
-		executeDelete(key.getCommaSeparatedKey(), DELETE_CHECKPOINTDATA);
-		logger.exiting(CLASSNAME, "_deleteCheckpointData");
-	}
 
 	/**
 	 * @return the database connection and sets it to the default schema JBATCH or the schema defined in batch-config.
@@ -1066,24 +926,16 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	
 	@Override
     public void jobOperatorCreateJobInstanceData(long key, String Value, String apptag){
-		this.executeJobInstanceDataInsert(key, Value, apptag, this.INSERT_JOBINSTANCEDATA);
+		this.executeJobInstanceDataInsert(key, Value, apptag, INSERT_JOBINSTANCEDATA);
 	}
 
 	
 	@Override
 	public int jobOperatorGetJobInstanceCount(String jobName) {
-		/*
-		List<Integer> data = executeQuery(jobName, SELECT_JOBINSTANCEDATA_COUNT);
-		if(data != null && !data.isEmpty()) {
-			return data.get(0);
-		}
-		else return 0;
-		*/
 		
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		String status = null;
 		int count;
 		
 		try {
@@ -1105,7 +957,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 
 
 	@Override
-	public List<Long> jobOperatorgetJobInstanceIds(String jobName, int start,
+	public List<Long> jobOperatorGetJobInstanceIds(String jobName, int start,
 			int count) {
 
 		Connection conn = null;
@@ -1141,12 +993,12 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 	}
 	
 	@Override
-	public HashMap jobOperatorGetJobInstanceData() {
+	public Map<Long, String> jobOperatorGetJobInstanceData() {
 
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		HashMap data = new HashMap();
+		HashMap<Long, String> data = new HashMap<Long,String>();
 	
 		try {
 			conn = getConnection();
@@ -1169,7 +1021,7 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 
 
 	@Override
-	public Set<String> jobOperatorgetJobNames() {
+	public Set<String> jobOperatorGetJobNames() {
 		
 		Connection conn = null;
 		PreparedStatement statement = null;
@@ -2593,5 +2445,11 @@ public class JDBCPersistenceManagerImpl extends AbstractPersistenceManagerImpl {
 		logger.exiting(CLASSNAME, "getTagName");
 		return apptag;
 	}
+    
+    @Override
+    public void shutdown() throws BatchContainerServiceException {
+        // TODO Auto-generated method stub
+
+    }
 
 }

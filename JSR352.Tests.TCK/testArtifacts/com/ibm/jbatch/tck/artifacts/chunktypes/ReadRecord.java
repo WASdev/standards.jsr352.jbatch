@@ -16,17 +16,22 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunktypes;
 
+import java.util.logging.Logger;
+
 @javax.inject.Named("readRecord")
 public class ReadRecord {
+	
+	private final static Logger logger = Logger.getLogger(ReadRecord.class.getName());
+	
 	private int count = 0;
 	
 	public ReadRecord() {
-		//System.out.println("AJM: in ReadRecord ctor");
+		//logger.fine("AJM: in ReadRecord ctor");
 	}
 	
 	public ReadRecord(int in) {
 		count = in;
-		System.out.println("AJM: in ReadRecord ctor (int), count = " + count);
+		logger.fine("AJM: in ReadRecord ctor (int), count = " + count);
 
 	}
 	public int getCount() {
@@ -34,7 +39,7 @@ public class ReadRecord {
 	}
 	
 	public void  setRecord(int i) {
-		//System.out.println("AJM: in setRecord");
+		//logger.fine("AJM: in setRecord");
 		count = i;
 	}
 }

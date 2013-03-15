@@ -31,4 +31,5 @@ public interface JobEndCallbackManager {
 	void registerJobEndCallback(JobEndCallback callback);
 	
 	void deregisterJobEndCallback(JobEndCallback callback);
+	
 }

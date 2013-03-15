@@ -185,7 +185,7 @@ public class MetricsTests {
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
 				if (metrics[i].getType().equals(Metric.MetricType.READ_SKIP_COUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
+					Reporter.log("AJM: in test, found metric: " + metrics[i].getType() + "<p>");
 					assertWithMessage(
 							"Testing the read skip count for execution #1", 4L,
 							metrics[i].getValue());
@@ -259,7 +259,7 @@ public class MetricsTests {
 			Reporter.log("Testing the write skip count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
 				if (metrics[i].getType().equals(Metric.MetricType.WRITE_SKIPCOUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
+					Reporter.log("AJM: in test, found metric: " + metrics[i].getType() + "<p>");
 					assertWithMessage(
 							"Testing the write skip count for execution #1", 3L,
 							metrics[i].getValue());
@@ -335,7 +335,7 @@ public class MetricsTests {
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
 				if (metrics[i].getType().equals(Metric.MetricType.PROCESS_SKIP_COUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
+					Reporter.log("AJM: in test, found metric: " + metrics[i].getType() + "<p>");
 					assertWithMessage(
 							"Testing the read count for execution #1", 2L,
 							metrics[i].getValue());
@@ -404,7 +404,7 @@ public class MetricsTests {
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
 				if (metrics[i].getType().equals(Metric.MetricType.READ_COUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
+					Reporter.log("AJM: in test, found metric: " + metrics[i].getType() + "<p>");
 					assertWithMessage(
 							"Testing the read count for execution #1", 9L,
 							metrics[i].getValue());
@@ -465,7 +465,7 @@ public class MetricsTests {
 			Reporter.log("Testing the read count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
 				if (metrics[i].getType().equals(Metric.MetricType.WRITE_COUNT)) {
-					System.out.println("AJM: in test, found metric: " + metrics[i].getType());
+					Reporter.log("AJM: in test, found metric: " + metrics[i].getType() + "<p>");
 					assertWithMessage(
 							"Testing the write count for execution #1", 9L,
 							metrics[i].getValue());
@@ -647,9 +647,9 @@ public class MetricsTests {
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
 			
-			System.out.println("AJM: testcase start time: " + ts);
-			System.out.println("AJM: step start time: " + step.getStartTime());
-			System.out.println("AJM: step end time: " + step.getEndTime());
+			Reporter.log("AJM: testcase start time: " + ts + "<p>");
+			Reporter.log("AJM: step start time: " + step.getStartTime() + "<p>");
+			Reporter.log("AJM: step end time: " + step.getEndTime() + "<p>");
 			
 			assertWithMessage("Start time of step occurs after start time of test", ts.compareTo(step.getStartTime()) < 0);
 			assertWithMessage("End time of step occurs after start time of step", step.getEndTime().compareTo(step.getStartTime()) > 0);
@@ -697,11 +697,11 @@ public class MetricsTests {
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
 			
-			System.out.println("AJM: testcase start time: " + ts);
-			System.out.println("AJM: job create time: " + execution1.getCreateTime());
-			System.out.println("AJM: job start time: " + execution1.getStartTime());
-			System.out.println("AJM: job last updated time: " + execution1.getLastUpdatedTime());
-			System.out.println("AJM: job end time: " + execution1.getEndTime());
+			Reporter.log("AJM: testcase start time: " + ts + "<p>");
+			Reporter.log("AJM: job create time: " + execution1.getCreateTime() + "<p>");
+			Reporter.log("AJM: job start time: " + execution1.getStartTime() + "<p>");
+			Reporter.log("AJM: job last updated time: " + execution1.getLastUpdatedTime() + "<p>");
+			Reporter.log("AJM: job end time: " + execution1.getEndTime() + "<p>");
 			
 			assertWithMessage("Start time of job occurs after start time of test", ts.compareTo(execution1.getStartTime()) < 0);
 			assertWithMessage("Create time of job occurs before start time of job", execution1.getCreateTime().compareTo(execution1.getStartTime()) < 0);

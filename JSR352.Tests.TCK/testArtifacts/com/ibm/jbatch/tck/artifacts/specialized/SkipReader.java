@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
@@ -30,6 +31,8 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 @javax.inject.Named("skipReader")
 public class SkipReader extends AbstractItemReader<ReadRecord> {
 
+	private final static Logger logger = Logger.getLogger(SkipReader.class.getName());
+	
     private int count = 0;
     private int[] readerDataArray;
     private int idx;
@@ -89,7 +92,7 @@ public class SkipReader extends AbstractItemReader<ReadRecord> {
             // position at index held in the cpd
             idx = ((ArrayIndexCheckpointData)cpd).getCurrentIndex() + 1;
         }
-        System.out.println("READ: starting at index: " + idx);
+        logger.fine("READ: starting at index: " + idx);
     }
 
     @Override
@@ -112,7 +115,7 @@ public class SkipReader extends AbstractItemReader<ReadRecord> {
         }
 
         if (isFailnum(idx)) {
-            System.out.println("READ: got the fail num..." + failnum);
+            logger.fine("READ: got the fail num..." + failnum);
             threwSkipException = true;
             if (!throwChildEx) {
                 throw new MyParentException("fail on purpose with MyParentException");
@@ -130,8 +133,8 @@ public class SkipReader extends AbstractItemReader<ReadRecord> {
     @Override
     public ArrayIndexCheckpointData checkpointInfo() {
 
-        System.out.println("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
-        System.out.println("READ: in getCPD idx : " + idx);
+        logger.fine("READ: in getCPD cpd index from store: " + _cpd.getCurrentIndex());
+        logger.fine("READ: in getCPD idx : " + idx);
 
         return _cpd;
     }

@@ -13,32 +13,31 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
-package jsr352.test;
+ */
 
-import javax.batch.annotation.*;
-import javax.batch.annotation.Process;
+package com.ibm.jbatch.tck.artifacts.reusable;
+import java.io.Serializable;
 
+import java.util.ArrayList;
+import java.util.List;
 
-@Batchlet("MyBatchlet")
-public class MyBatchletImpl {
-    
-    private static int count = 1;
-    
-    public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
-    
-	
-	@Process
-	public String process() throws Exception {
-		System.out.println("MyBatchLetImpl.process() - @Process #" + count++);
-		return GOOD_EXIT_STATUS;
-				
+public class StopOnBulletinBoardTestData implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	List<Long> threadIdArrayList = new ArrayList<Long>();
+
+	public StopOnBulletinBoardTestData() {
+		super();
 	}
-	
-	@Stop
-	public void cancel() throws Exception {
-		System.out.println("MyBatchLetImpl.cancel() - @Cancel #" + count);		
+
+
+	public List<Long> getThreadIdArrayList() {
+		return threadIdArrayList;
 	}
-	
+
+	public void addThreadIdToList(long id) {
+		threadIdArrayList.add(id);
+	}
 
 }

@@ -48,6 +48,14 @@ import javax.batch.api.partition.PartitionCollector;
 import javax.batch.api.partition.PartitionMapper;
 import javax.batch.api.partition.PartitionReducer;
 
+/**
+ * This class is not needed at all by the executor of the TCK.   It
+ * is used to generate the META-INF/batch.xml associated with the
+ * set of batch artifacts used in the TCK
+ * 
+ * It was convenient to keep it in the same project with the TCK itself but it
+ * can be ignored by someone simply running/executing the TCK.
+ */
 public class BatchXMLGenerator {
     
     private final static Logger logger = Logger.getLogger(BatchXMLGenerator.class.getName());

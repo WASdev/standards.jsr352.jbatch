@@ -18,6 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
@@ -31,6 +32,8 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 @javax.inject.Named("doSomethingArrayItemWriterImpl")
 public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecord> {
 
+	private final static Logger logger = Logger.getLogger(DoSomethingArrayItemWriterImpl.class.getName());
+	
 	private int[] writerDataArray = new int[30];
 	private int[] checkArray;
 	private int idx = 0;
@@ -60,7 +63,7 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
     public void open(Serializable cpd) {
                     
         ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
-		System.out.println("openWriter");
+		logger.fine("openWriter");
 		
 		arraysize = Integer.parseInt(appArraySizeString);
 		chunksize = Integer.parseInt(chunkSizeString);
@@ -69,7 +72,7 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 	    MyPersistentRestartUserData myData = null;
         if ((myData = stepCtx.getPersistentUserData()) != null) {        	
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
-        	System.out.println("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+        	logger.fine("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
         } else {        
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
         }
@@ -77,17 +80,17 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 		if (checkpointData == null){
 			//position at the beginning
 			idx = 0;
-			System.out.println("WRITE: chkpt data = null, so idx = " + idx);
+			logger.fine("WRITE: chkpt data = null, so idx = " + idx);
 		}
 		else {
 			// position at index held in the cpd
 			idx = checkpointData.getCurrentIndex();
-			System.out.println("WRITE: chkpt data was valid, so idx = " + idx);
+			logger.fine("WRITE: chkpt data was valid, so idx = " + idx);
 			
-			System.out.println("WRITE: idx % chunksize =" + idx % chunksize);
+			logger.fine("WRITE: idx % chunksize =" + idx % chunksize);
 			
 			if (idx % chunksize == 0){
-				System.out.println("WRITE: the previous checkpoint was correct"); 
+				logger.fine("WRITE: the previous checkpoint was correct"); 
 			}
 
 		}
@@ -108,7 +111,7 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 				//(arraysize / chunksize) + (arraysize / commitinterval);
 			}
 			else {
-				System.out.println("AJM: figuring out nthe array size, idx = " + idx);
+				logger.fine("AJM: figuring out nthe array size, idx = " + idx);
 				chkArraySize = round((arraysize - idx), chunksize) + round((arraysize - idx), commitinterval);
 				//((arraysize - idx) / chunksize) + ((arraysize - idx) / commitinterval);
 			}
@@ -118,7 +121,7 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 		}
 		
 		checkArray = new int[chkArraySize];
-		System.out.println("WRITE: check array size = " + chkArraySize);
+		logger.fine("WRITE: check array size = " + chkArraySize);
 		int checkerIdx= 0;
 		
 		// fill the write check array with the correct write points
@@ -174,7 +177,7 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 		}
 		
 		for (int n=0; n<chkArraySize;n++){
-			System.out.println("WRITE: chunk write point[" + n + " ]: " + checkArray[n]);
+			logger.fine("WRITE: chunk write point[" + n + " ]: " + checkArray[n]);
 		}
 		
 		
@@ -182,7 +185,7 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 			writerDataArray[i] = 0;
 		}
 		//idx = checkpointData.getCurrentIndex();
-		//System.out.println("WRITE: chkpt data was valid, so idx = " + idx);
+		//logger.fine("WRITE: chkpt data was valid, so idx = " + idx);
 	}
 	
 	private int round(int i1, int i2){
@@ -191,27 +194,27 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 	
 	@Override
 	public void close() throws Exception {
-		//System.out.println("closeWriter - writerDataArray:\n");
+		//logger.fine("closeWriter - writerDataArray:\n");
 		for (int i = 0; i < arraysize; i++){
-			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
+			logger.fine("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
 	}
 	
     @Override
 	public void writeItems(List<ReadRecord> myData) throws Exception {
 		
-		System.out.println("writeMyData receives chunk size=" + myData.size());
+		logger.fine("writeMyData receives chunk size=" + myData.size());
 		int i;
-		System.out.println("WRITE: before writing, idx = " + idx);
+		logger.fine("WRITE: before writing, idx = " + idx);
 		
 		if ((checkArray[chunkWriteIteration] == idx) ) {
-			System.out.println("WRITE: the chunk write is occuring at the correct boundary (idx) ->" + idx);
+			logger.fine("WRITE: the chunk write is occuring at the correct boundary (idx) ->" + idx);
 		}
 		else if (checkArray[chunkWriteIteration] == (chunkWriteIteration+1)*(commitinterval % chunksize)  ) {
-			System.out.println("WRITE: the chunk write is occuring at the correct boundary ->" + checkArray[chunkWriteIteration]);
+			logger.fine("WRITE: the chunk write is occuring at the correct boundary ->" + checkArray[chunkWriteIteration]);
 		}
 		else {
-			System.out.println("WRITE: we have an issue! throw exception here");
+			logger.fine("WRITE: we have an issue! throw exception here");
 			throw new Exception("WRITE: the chunk write did not at the correct boundary (idx) ->" + idx);
 		}
 		chunkWriteIteration++;
@@ -221,11 +224,11 @@ public class DoSomethingArrayItemWriterImpl extends AbstractItemWriter<ReadRecor
 			idx++;
 		}
 		for (i = 0; i < arraysize; i++){
-			System.out.println("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
+			logger.fine("WRITE: writerDataArray[" + i + "] = " + writerDataArray[i]);
 		}
-		System.out.println("WRITE: idx = " + idx + " and i = " + i);
-		System.out.println("WRITE: chunkWriteIteration= "+ chunkWriteIteration);
-		System.out.println("WRITE: size of checkArray->" + checkArray.length);
+		logger.fine("WRITE: idx = " + idx + " and i = " + i);
+		logger.fine("WRITE: chunkWriteIteration= "+ chunkWriteIteration);
+		logger.fine("WRITE: size of checkArray->" + checkArray.length);
 		//if (checkArray[chunkWriteIteration] == (chunkWriteIteration+1)*chunksize ) {
 	}
 	

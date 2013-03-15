@@ -41,17 +41,17 @@ public class ChunkOnErrorCheckpointListener extends AbstractChunkListener {
 
     @Override
     public void beforeChunk() {
-    	System.out.println("CUSTOMCHKPTLISTENER: beforeCheckpoint");
+    	logger.fine("CUSTOMCHKPTLISTENER: beforeCheckpoint");
     }
     
     @Override
     public void afterChunk() {
-    	System.out.println("CUSTOMCHKPTLISTENER: afterCheckpoint");
+    	logger.fine("CUSTOMCHKPTLISTENER: afterCheckpoint");
     }
     
     @Override
     public void onError() {
-    	System.out.println("CUSTOMCHKPTLISTENER: onError");
+    	logger.fine("CUSTOMCHKPTLISTENER: onError");
     	
     	jobCtx.setExitStatus("Chunk onError invoked");
     }

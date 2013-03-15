@@ -39,7 +39,7 @@ public class ContextsGetIdTests {
 	 * @testName: testJobContextGetId
 	 * @assertion: Section 7.7.2 JobContext
 	 * @test_Strategy: 1. setup a simple job with one step
-	 * 				   2. start job 
+	 * 				   2. start job  
 	 * 				   3. set job exit status equals job id from JobContext in batchlet
 	 * 				   4. compare job id 'job1' to job exit status
 	 * 
@@ -65,9 +65,8 @@ public class ContextsGetIdTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_jobcontext", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("job id equals job1", jobExec.getExitStatus().equals(jobId));
-			
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("job id equals job1", jobId, jobExec.getExitStatus());
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
     	} catch (Exception e) {
     		handleException(METHOD, e);
@@ -103,9 +102,9 @@ public class ContextsGetIdTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_stepcontext", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("job id equals job1", jobExec.getExitStatus().equals(stepId));
+			assertWithMessage("job id equals job1", stepId, jobExec.getExitStatus());
 			
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
     	} catch (Exception e) {
     		handleException(METHOD, e);

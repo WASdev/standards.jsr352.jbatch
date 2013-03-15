@@ -419,7 +419,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 
         //There can only be one instance associated with a subjob's id since it is generated from an unique
         //job instance id. So there should be no way to directly start a subjob with particular
-        List<Long> instanceIds = persistenceService.jobOperatorgetJobInstanceIds(jobModel.getId(), 0, 2);
+        List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobModel.getId(), 0, 2);
         
         assert(instanceIds.size() == 1);
         

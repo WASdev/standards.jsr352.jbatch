@@ -17,6 +17,8 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 
+import java.util.logging.Logger;
+
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.listener.JobListener;
 import javax.batch.api.listener.StepListener;
@@ -26,6 +28,8 @@ import javax.inject.Inject;
 @javax.inject.Named("myUniversalListener")
 public class MyUniversalListener implements JobListener, StepListener {
     
+	private final static Logger logger = Logger.getLogger(MyUniversalListener.class.getName());
+	
     @Inject 
     private JobContext jobCtx = null; 
     
@@ -57,7 +61,7 @@ public class MyUniversalListener implements JobListener, StepListener {
     
     @Override
     public void afterStep() {
-    	System.out.println("AJM: gonna sleep for " + timeinterval);
+    	logger.fine("AJM: gonna sleep for " + timeinterval);
     	try {
     		Thread.sleep(timeinterval);
     	} catch (Exception e){

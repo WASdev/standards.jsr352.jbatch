@@ -16,6 +16,8 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.logging.Logger;
+
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
 import javax.batch.operations.JobOperator.BatchStatus;
@@ -28,12 +30,13 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentUserData;
 @javax.inject.Named("batchletUsingStepContextImpl")
 public class BatchletUsingStepContextImpl extends AbstractBatchlet{
 
+	private final static Logger logger = Logger.getLogger(BatchletUsingStepContextImpl.class.getName());
+	
     @Inject 
     private StepContext<MyTransient, MyPersistentUserData> stepCtx = null; 
 
     @Inject 
     private JobContext jobCtx = null; 
-
     
     private String BEGAN = "MadeItToBegin";
     private String CANCEL = "Cancelled";
@@ -48,7 +51,7 @@ public class BatchletUsingStepContextImpl extends AbstractBatchlet{
         
     
     private void begin() throws Exception {
-        System.out.println("BatchletUsingStepContextImpl - @BeginStep");
+        logger.fine("BatchletUsingStepContextImpl - @BeginStep");
         assert stepCtx.getExitStatus()==null;
         stepCtx.setExitStatus(BEGAN);
         
@@ -66,7 +69,7 @@ public class BatchletUsingStepContextImpl extends AbstractBatchlet{
     public String process() throws Exception {
     	this.begin();   	
     	
-        System.out.println("BatchletUsingStepContextImpl - @Process");		
+        logger.fine("BatchletUsingStepContextImpl - @Process");		
         assert stepCtx.getExitStatus().equals(BEGAN);
         
         MyPersistentUserData myData = null;
@@ -93,12 +96,12 @@ public class BatchletUsingStepContextImpl extends AbstractBatchlet{
 
     @Override
     public void stop() throws Exception {
-        System.out.println("BatchletUsingStepContextImpl - @Cancel");		
+        logger.fine("BatchletUsingStepContextImpl - @Cancel");		
         stepCtx.setExitStatus(CANCEL);
     }
 
     private void end() throws Exception {
-        System.out.println("BatchletUsingStepContextImpl - formerly @EndStep");
+        logger.fine("BatchletUsingStepContextImpl - formerly @EndStep");
         MyPersistentUserData p = stepCtx.getPersistentUserData();
         MyTransient t = stepCtx.getTransientUserData();
         

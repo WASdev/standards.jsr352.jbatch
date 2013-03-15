@@ -67,12 +67,12 @@ public class FlowTransitioningTests {
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
 			String[] jobTransitionList = jobExec.getExitStatus().split(",");
-			assertWithMessage("transitioned to exact number of steps", jobTransitionList.length == transitionList.length);
+			assertWithMessage("transitioned to exact number of steps", transitionList.length, jobTransitionList.length);
 			for (int i = 0; i < jobTransitionList.length; i++) {
-				assertWithMessage("Flow transitions", transitionList[i].equals(jobTransitionList[i].trim())  );
+				assertWithMessage("Flow transitions", transitionList[i], jobTransitionList[i].trim());
 			}
 			
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("Job completed");
 		} catch (Exception e) {
     		handleException(METHOD, e);
@@ -126,7 +126,8 @@ public class FlowTransitioningTests {
 			
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
-			assertWithMessage("Job should have failed because of out of scope execution elements.", jobExec.getBatchStatus().equals(BatchStatus.FAILED));
+			assertWithMessage("Job should have failed because of out of scope execution elements.", 
+					BatchStatus.FAILED, jobExec.getBatchStatus());
     	} catch (Exception e) {
     		handleException(METHOD, e);
     	}
@@ -163,7 +164,7 @@ public class FlowTransitioningTests {
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
 			assertWithMessage("Job Exit Status is from decider", exitStatus, jobExec.getExitStatus());
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("Job completed");
 		} catch (Exception e) {
     		handleException(METHOD, e);
@@ -198,12 +199,12 @@ public class FlowTransitioningTests {
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			
 			String[] jobTransitionList = jobExec.getExitStatus().split(",");
-			assertWithMessage("transitioned to exact number of steps", jobTransitionList.length == transitionList.length);
+			assertWithMessage("transitioned to exact number of steps", transitionList.length, jobTransitionList.length);
 			for (int i = 0; i < jobTransitionList.length; i++) {
-				assertWithMessage("Flow transitions", transitionList[i].equals(jobTransitionList[i].trim())  );
+				assertWithMessage("Flow transitions", transitionList[i], jobTransitionList[i].trim());
 			}
 					
-			assertWithMessage("Job completed", jobExec.getBatchStatus().equals(BatchStatus.COMPLETED));
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("Job completed");
 		} catch (Exception e) {
     		handleException(METHOD, e);

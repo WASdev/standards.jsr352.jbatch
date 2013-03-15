@@ -121,11 +121,7 @@ public class JobStatus implements Serializable, Cloneable{
         buf.append(",currentStepId: " + currentStepId);
         buf.append(",batchStatus: " + batchStatus);
         buf.append(",latestExecutionId: " + latestExecutionId);
-        //buf.append(",updateCount: " + updateCount);
-        //buf.append(",restartCount: " + restartCount);
         buf.append(",restartOn: " + restartOn);
-        buf.append("\n-----------------------\n");
-       // buf.append("jobInstance: " + jobInstance.toString());
         return buf.toString();
     }
 

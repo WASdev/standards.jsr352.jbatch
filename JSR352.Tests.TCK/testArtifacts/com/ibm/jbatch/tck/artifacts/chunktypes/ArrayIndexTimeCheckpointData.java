@@ -20,9 +20,12 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.logging.Logger;
 
 @javax.inject.Named("arrayIndexTimeCheckpointData")
 public class ArrayIndexTimeCheckpointData implements Externalizable {
+	
+	private final static Logger logger = Logger.getLogger(ArrayIndexTimeCheckpointData.class.getName());
 
     private final static long serialVersionUID = 1L;
     private static int i = 0;
@@ -35,7 +38,7 @@ public class ArrayIndexTimeCheckpointData implements Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-    	System.out.println("AJM: must have been checkpointed, writing out array index: " + i);
+    	logger.fine("AJM: must have been checkpointed, writing out array index: " + i);
         out.writeInt(i);
 
     }

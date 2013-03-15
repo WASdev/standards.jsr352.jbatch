@@ -49,7 +49,7 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteReco
 		if (items != null && applistenerTest.equals("WRITE")){
 			logger.finer("In beforeWrite()");
 			beforecounter++;
-			System.out.println("AJM: beforecounter = " + beforecounter);
+			logger.fine("AJM: beforecounter = " + beforecounter);
 
 		}
 	}
@@ -57,13 +57,13 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteReco
 	@Override
 	public void afterWrite(List<WriteRecord> items) throws Exception {
 		
-		System.out.println("AJM: applistenerTest = " + applistenerTest);
+		logger.fine("AJM: applistenerTest = " + applistenerTest);
 		
 		if (items != null && applistenerTest.equals("WRITE")){
 			logger.finer("In afterWrite()");
 			
 			aftercounter++;
-			System.out.println("AJM: aftercounter = " + aftercounter);
+			logger.fine("AJM: aftercounter = " + aftercounter);
 
 			if (beforecounter == aftercounter) {
 				jobCtx.setExitStatus(GOOD_EXIT_STATUS);

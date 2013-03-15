@@ -19,7 +19,6 @@ package com.ibm.jbatch.jsl.util;
 import java.net.URL;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.ValidationEventHandler;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
@@ -27,8 +26,9 @@ import org.xml.sax.SAXException;
 
 public class ValidatorHelper {
 
+    public final static String SCHEMA_LOCATION = "jobXML_1_0.xsd";
+    
     private static Schema schema = null;
-    private static ValidationEventHandler validationEventHandler = null;
     
     private static SchemaFactory sf = 
         SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);              
@@ -36,7 +36,7 @@ public class ValidatorHelper {
     public static Schema getXJCLSchema() {
         if (schema == null) {
             try {
-                URL url = ValidatorHelper.class.getResource("/jobXML.xsd");
+                URL url = ValidatorHelper.class.getResource("/" + SCHEMA_LOCATION);
                 schema = sf.newSchema(url);
             } catch (SAXException e) {
                 throw new RuntimeException(e);

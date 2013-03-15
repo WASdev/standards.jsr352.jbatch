@@ -16,6 +16,8 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.logging.Logger;
+
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
 import javax.inject.Inject;
@@ -23,6 +25,8 @@ import javax.inject.Inject;
 @javax.inject.Named("myPartitionedBatchletImpl")
 public class MyPartitionedBatchletImpl extends AbstractBatchlet {
 
+	private final static Logger logger = Logger.getLogger(MyPartitionedBatchletImpl.class.getName());
+	
     private static int count = 1;
 
     @Inject    
@@ -47,7 +51,7 @@ public class MyPartitionedBatchletImpl extends AbstractBatchlet {
 
     @Override
     public void stop() throws Exception {
-        System.out.println("MyPartitionedBatchletImpl() - @Cancel #" + count);
+        logger.fine("MyPartitionedBatchletImpl() - @Cancel #" + count);
     }
 
 

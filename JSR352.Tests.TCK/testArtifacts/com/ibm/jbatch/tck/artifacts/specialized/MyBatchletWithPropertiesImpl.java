@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.lang.reflect.Field;
+import java.util.logging.Logger;
 
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
@@ -25,6 +26,8 @@ import javax.inject.Inject;
 @javax.inject.Named("myBatchletWithPropertiesImpl")
 public class MyBatchletWithPropertiesImpl extends AbstractBatchlet {
 
+	private final static Logger logger = Logger.getLogger(MyBatchletWithPropertiesImpl.class.getName());
+	
     private static int count = 1;
 
     public static String GOOD_EXIT_CODE = "VERY GOOD INVOCATION";
@@ -94,7 +97,7 @@ public class MyBatchletWithPropertiesImpl extends AbstractBatchlet {
     
     @Override
     public void stop() throws Exception {
-        System.out.println("MyBatchletWithProperties.cancel() - @Cancel #" + count);
+        logger.fine("MyBatchletWithProperties.cancel() - @Cancel #" + count);
     }
 
 

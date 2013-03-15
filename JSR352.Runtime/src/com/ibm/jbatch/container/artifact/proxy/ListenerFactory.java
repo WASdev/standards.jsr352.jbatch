@@ -146,6 +146,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isItemProcessListener()) {
                 ItemProcessListenerProxy proxy = new ItemProcessListenerProxy((ItemProcessListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -162,6 +163,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isItemReadListener()) {
                 ItemReadListenerProxy proxy = new ItemReadListenerProxy((ItemReadListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -177,6 +179,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isItemWriteListener()) {
                 ItemWriteListenerProxy proxy = new ItemWriteListenerProxy((ItemWriteListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -192,6 +195,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isRetryProcessListener()) {
                 RetryProcessListenerProxy proxy = new RetryProcessListenerProxy((RetryProcessListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -207,6 +211,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isRetryReadListener()) {
                 RetryReadListenerProxy proxy = new RetryReadListenerProxy((RetryReadListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -222,6 +227,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isRetryWriteListener()) {
                 RetryWriteListenerProxy proxy = new RetryWriteListenerProxy((RetryWriteListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -237,6 +243,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isSkipProcessListener()) {
                 SkipProcessListenerProxy proxy = new SkipProcessListenerProxy((SkipProcessListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -252,6 +259,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isSkipReadListener()) {
                 SkipReadListenerProxy proxy = new SkipReadListenerProxy((SkipReadListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -267,6 +275,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isSkipWriteListener()) {
                 SkipWriteListenerProxy proxy = new SkipWriteListenerProxy((SkipWriteListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
@@ -282,6 +291,7 @@ public class ListenerFactory {
         for (ListenerInfo li : stepListenerInfo) {
             if (li.isStepListener()) {
                 StepListenerProxy proxy = new StepListenerProxy((StepListener) li.getArtifact());
+                proxy.setStepContext(stepContext);
                 retVal.add(proxy);
             }
         }
