@@ -20,21 +20,16 @@ import java.io.Serializable;
 
 import javax.batch.api.chunk.ItemReader;
 
-import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
 public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemReader {
 
-	StepContextImpl stepContextImpl = null;
-	
     ItemReaderProxy(ItemReader delegate) {
         super(delegate);
-
     }
 
     @Override
     public Serializable checkpointInfo() {
-        
         try {
             return this.delegate.checkpointInfo();
         } catch (Exception e) {
@@ -45,7 +40,6 @@ public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemRe
 
     @Override
     public void close() {
-        
         try {
             this.delegate.close();
         } catch (Exception e) {
@@ -56,11 +50,10 @@ public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemRe
 
     @Override
     public void open(Serializable checkpoint) {
-        
         try {
             this.delegate.open(checkpoint);
         } catch (Exception e) {
-        	stepContextImpl.setException(e);
+        	this.stepContext.setException(e);
             throw new BatchContainerRuntimeException(e);
         }
     }
@@ -72,7 +65,6 @@ public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemRe
      */
     @Override
     public Object readItem() throws Exception {
-    	
 		return this.delegate.readItem();
     }
 

@@ -36,7 +36,6 @@ import javax.xml.transform.stream.StreamSource;
 import com.ibm.jbatch.container.jsl.ModelResolver;
 import com.ibm.jbatch.jsl.model.Step;
 import com.ibm.jbatch.jsl.util.ValidatorHelper;
-import com.ibm.jbatch.jsl.util.JSLMerger;
 import com.ibm.jbatch.jsl.util.JSLValidationEventHandler;
 
 //FIXME: basically identical to JobModelResolverImpl
@@ -46,21 +45,6 @@ public class StepModelResolverImpl implements ModelResolver<Step> {
 	public Step resolveModel(String stepXML) {
         Step theStep = null;
         Step stepModel = unmarshalStepXML(stepXML);
-        
-        if(stepModel.getParent() != null) {
-            //Resolve parent refs for inheritance --CT
-        	Step parent = null;
-        	try {
-				parent = getStepInheritance(stepModel.getParent());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	if (parent != null) {
-        		JSLMerger merger = new JSLMerger();
-        		theStep = merger.mergeStep(parent, stepModel);
-        	}
-        }
         if (theStep == null) {
         	theStep = stepModel;
         }
@@ -107,20 +91,6 @@ public class StepModelResolverImpl implements ModelResolver<Step> {
 	@Override
 	public Step resolveModel(Step t) {
 		Step theStep = null;
-        if(t.getParent() != null) {
-            //Resolve parent refs for inheritance --CT
-        	Step parent = null;
-        	try {
-				parent = getStepInheritance(t.getParent());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	if (parent != null) {
-        		JSLMerger merger = new JSLMerger();
-        		theStep = merger.mergeStep(parent, t);
-        	}
-        }
         if (theStep == null) {
         	theStep = t;
         }

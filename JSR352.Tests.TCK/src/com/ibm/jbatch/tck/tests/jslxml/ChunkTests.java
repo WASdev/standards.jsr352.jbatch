@@ -110,7 +110,7 @@ public class ChunkTests {
     }
     
     /*
-     * @testName: testChunkNoProcessorDefined
+     * @testName: testChunkNullCheckpointInfo
      * @assertion: job will finish successfully with COMPLETED and buffer size = default value of 10 is recognized
      *             5.2.1.1 - Reader, 5.2.1.1.1 - Reader Properties,
      *             5.2.1.2 - Processor
@@ -142,6 +142,42 @@ public class ChunkTests {
         }
 
     }
+    
+    /*
+    * @testName: testChunkArtifactInstanceUniqueness
+    * @assertion: job will finish successfully with COMPLETED and 2 unique listener lifecycles will be reported in the exit status 
+    *             5.2.1.1 - Reader, 5.2.1.1.1 - Reader Properties,
+    *             5.2.1.2 - Processor
+    *             5.2.1.3 - Writer, 5.2.1.3.1 - Writer Properties
+    *             5.2.1 - Chunk, item-count default value
+    *             5.2.1 - Chunk item checkpointing/restart
+    * 
+    * @test_Strategy: start a job with no item-count specified. 
+    *                 Two unique Batch artifact Chunk, Step and Job listeners are defined.
+    *                 Each listener contains validation logic to determine that separate instances of 
+    *                 the listeners are being produced by the runtime. Test finishes in COMPLETED state and
+    *                 the before/after lifecycle of each listener is contained in the  exit status.
+    */
+   @Test
+   @org.junit.Test
+   public void testChunkArtifactInstanceUniqueness() throws Exception {
+       String METHOD = "testChunkDefaultItemCount";
+
+       try {
+
+           Reporter.log("Locate job XML file: uniqueInstanceTest.xml<p>");
+
+           Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+           JobExecution execution1 = jobOp.startJobAndWaitForResult("uniqueInstanceTest", null);
+           Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
+           Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
+           assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
+           assertWithMessage("Testing execution #1", "nullChunkListenerChunkListenerStepListenerStepListenerJobListenerJobListener", execution1.getExitStatus());
+       } catch (Exception e) {
+           handleException(METHOD, e);
+       }
+
+   }
 
     /*
      * Obviously would be nicer to have more granular tests for some of this

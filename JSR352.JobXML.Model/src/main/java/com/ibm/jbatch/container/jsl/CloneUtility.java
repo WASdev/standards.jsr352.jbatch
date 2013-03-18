@@ -56,7 +56,6 @@ public class CloneUtility {
     		return null;
     	}
 
-    	
     	JSLProperties newJSLProps = jslFactory.createJSLProperties();
     	
     	newJSLProps.setPartition(jslProps.getPartition());;
@@ -126,7 +125,7 @@ public class CloneUtility {
     	
     	for(Listener listener : listeners.getListenerList()) {
     		Listener newListener = jslFactory.createListener();
-    		
+    		newListeners.getListenerList().add(newListener);
     		newListener.setRef(listener.getRef());
     		newListener.setProperties(cloneJSLProperties(listener.getProperties()));
     	}

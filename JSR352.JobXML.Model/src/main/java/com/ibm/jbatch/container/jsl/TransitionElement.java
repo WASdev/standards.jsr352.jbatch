@@ -23,7 +23,11 @@ package com.ibm.jbatch.container.jsl;
  * End, Fail, Next, Stop,  without forcing us
  * to make a common XSD base type just to have this in the model.
  */
-
+/**
+ * 
+ * This is a workaround to not having the ability to generate interfaces
+ * directly from JAXB
+ */
 public interface TransitionElement {
     
     public String getOn();

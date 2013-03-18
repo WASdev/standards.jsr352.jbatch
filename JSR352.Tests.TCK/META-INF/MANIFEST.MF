@@ -5,8 +5,11 @@ Bundle-SymbolicName: JSR352.Tests.TCK
 Bundle-Version: 1.0.0.qualifier
 Import-Package: com.ibm.jbatch.tck.spi,
  javax.batch.annotation,
+ javax.batch.api,
+ javax.batch.api.chunk,
+ javax.batch.api.chunk.listener,
+ javax.batch.api.listener,
+ javax.batch.api.partition,
  javax.batch.operations,
  javax.batch.runtime,
  javax.batch.runtime.context
-Require-Bundle: JSR352.API,
- JSR352.RI.SPI;bundle-version="1.0.0"

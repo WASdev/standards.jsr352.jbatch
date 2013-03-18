@@ -29,7 +29,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionIsRunningException;
+import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobRestartException;
@@ -73,7 +75,7 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	@Override
-	public long start(String jobXMLName, Properties jobParameters)	throws JobStartException {
+	public long start(String jobXMLName, Properties jobParameters)	throws JobStartException, JobSecurityException {
 
 		StringWriter jobParameterWriter = new StringWriter();
 		if (jobParameters != null) {
@@ -118,7 +120,7 @@ public class JobOperatorImpl implements JobOperator {
 		// if there are none found, throw exception saying so
 		if (jobEx == null){
 			logger.fine("Job Execution: " + executionId + " not found");
-			throw new NoSuchJobInstanceException("Job Execution: " + executionId + " not found");
+			throw new NoSuchJobExecutionException("Job Execution: " + executionId + " not found");
 		}
 
 		// for every job execution associated with the job
@@ -130,6 +132,9 @@ public class JobOperatorImpl implements JobOperator {
 			Timestamp timestamp = new Timestamp(time);
 			persistenceService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(jobEx.getExecutionId(), "batchstatus", BatchStatus.ABANDONED.name(), timestamp);
 			logger.fine("Job Execution: " + executionId + " was abandoned");
+			
+			// Don't forget to update JOBSTATUS table
+			_jobStatusManagerService.updateJobBatchStatus(jobEx.getInstanceId(), BatchStatus.ABANDONED);
 		}
 		else {
 			logger.warning("Job Execution: " + executionId + " is still running");
@@ -178,7 +183,7 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public JobInstance getJobInstance(long executionId)
-			throws NoSuchJobExecutionException {
+			throws NoSuchJobExecutionException, JobSecurityException {
 		JobInstance jobInstance = this.batchKernel.getJobInstance(executionId);
 
 		if (jobInstance == null){
@@ -189,7 +194,7 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	@Override
-	public int getJobInstanceCount(String jobName) throws NoSuchJobException {
+	public int getJobInstanceCount(String jobName) throws NoSuchJobException, JobSecurityException {
 
 		int jobInstanceCount = 0;
 
@@ -206,7 +211,7 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public List<JobInstance> getJobInstances(String jobName, int start,
-			int count) throws NoSuchJobException {
+			int count) throws NoSuchJobException, JobSecurityException {
 
 		logger.entering(sourceClass, "getJobInstances", new Object[]{jobName, start, count});
 		List<JobInstance> jobInstances = new ArrayList<JobInstance>();
@@ -235,7 +240,7 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	@Override
-	public Set<String> getJobNames() {
+	public Set<String> getJobNames() throws JobSecurityException {
 
 		Set<String> jobNames = new HashSet<String>();
 		Map<Long, String> data = persistenceService.jobOperatorGetJobInstanceData();
@@ -261,7 +266,7 @@ public class JobOperatorImpl implements JobOperator {
 
 		if (isAuthorized(requestedJobInstance.getInstanceId())) {
 
-			props = persistenceService.getParameters(requestedJobInstance.getInstanceId());
+			props = persistenceService.getParameters(executionId);
 			if (props == null) {
 				logger.fine("getParameters: executionId: " + executionId + " was not found");
 				throw new NoSuchJobExecutionException("executionId: " + executionId + " was not found");
@@ -276,7 +281,7 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public List<Long> getRunningExecutions(String jobName)
-			throws NoSuchJobException {
+			throws NoSuchJobException, JobSecurityException {
 
 		logger.entering(sourceClass, "getRunningExecutions", jobName);
 		List<Long> jobExecutions = new ArrayList<Long>();
@@ -326,8 +331,8 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	@Override
-	public long restart(long oldExecutionId, Properties restartParameters) throws NoSuchJobExecutionException,
-	NoSuchJobException, JobRestartException, JobSecurityException {
+	public long restart(long oldExecutionId, Properties restartParameters) throws JobExecutionAlreadyCompleteException,
+	NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
 
 		long newExecutionId = -1;
 

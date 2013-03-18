@@ -6,8 +6,18 @@
 	    buf.append("Step: id=" + id);
 	    buf.append(", startLimit=" + startLimit);
 	    buf.append(", allowStartIfComplete=" + allowStartIfComplete);
-	    buf.append("\n");
-	    buf.append("Properties = " + com.ibm.jbatch.jsl.util.PropertiesToStringHelper.getString(properties));
+	    buf.append("\nnextFromAttribute =" + nextFromAttribute);
+		buf.append("\nTransition elements: \n");
+		if (transitionElements == null) {
+			buf.append("<none>");
+		} else {
+			int j = 0;
+			for ( com.ibm.jbatch.container.jsl.TransitionElement e : transitionElements) {
+				buf.append("transition element[" + j + "]:" + e + "\n");
+				j++;
+			}
+		}
+	    buf.append("\nProperties = " + com.ibm.jbatch.jsl.util.PropertiesToStringHelper.getString(properties));
 	    buf.append("\n");
 	    if (batchlet != null) {
 	    	buf.append("Contains batchlet=" + batchlet);

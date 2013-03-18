@@ -18,7 +18,7 @@
 <job id="splitTransitionToDecision" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 
     <split id="split1" next="decider1" >
-	    <flow id="flow1" next="flow2">
+	    <flow id="flow1">
 			<step id="flow1step1" next="flow1step2">
 				<batchlet ref="splitTransitionToDecisionTestBatchlet"/>
 			</step>

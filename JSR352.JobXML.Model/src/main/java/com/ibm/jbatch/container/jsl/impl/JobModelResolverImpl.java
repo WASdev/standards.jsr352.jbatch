@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -38,7 +40,6 @@ import com.ibm.jbatch.container.jsl.ModelResolver;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.Step;
 import com.ibm.jbatch.jsl.util.ValidatorHelper;
-import com.ibm.jbatch.jsl.util.JSLMerger;
 import com.ibm.jbatch.jsl.util.JSLValidationEventHandler;
 
 public class JobModelResolverImpl implements ModelResolver<JSLJob> {
@@ -117,31 +118,15 @@ public class JobModelResolverImpl implements ModelResolver<JSLJob> {
        
     @Override
     public JSLJob resolveModel(String jobXML) {        
-        
-    	JSLJob jslJob = null;
-        JSLJob jobModel = unmarshalJobXML(jobXML);
-        
-        if(jobModel.getParent() != null) {
-            //Resolve parent refs for inheritance --CT
-        	// load parent 
-        	JSLJob parent = null; 
-        	try {
-        		parent = getJslJobInheritance(jobModel.getParent());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        	if(parent != null) {
-        		// merge here
-        		JSLMerger merger = new JSLMerger();
-        		jslJob = merger.mergeJob(parent, jobModel);
-        	}
-        }
-        if (jslJob == null) {
-        	JSLMerger merger = new JSLMerger();
-        	jslJob = merger.mergeJobSteps(jobModel);
-        	jslJob = jobModel;
-        }
+    	
+    	final String finalJobXML = jobXML;
+    	JSLJob jslJob = AccessController.doPrivileged(
+    	
+		          new PrivilegedAction<JSLJob>() {
+		              public JSLJob run() {
+		            	  return  unmarshalJobXML(finalJobXML);
+		              }
+		          });
         
         return jslJob;
     }

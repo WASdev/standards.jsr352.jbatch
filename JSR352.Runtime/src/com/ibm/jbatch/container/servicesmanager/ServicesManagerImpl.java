@@ -28,13 +28,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.ibm.jbatch.container.callback.IJobEndCallbackService;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
+import com.ibm.jbatch.container.exception.PersistenceException;
 import com.ibm.jbatch.container.impl.BatchConfigImpl;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServiceTypes.Name;
-import com.ibm.jbatch.container.tck.bridge.IJobEndCallbackService;
 import com.ibm.jbatch.container.util.BatchContainerConstants;
 import com.ibm.jbatch.spi.BatchSPIManager;
 import com.ibm.jbatch.spi.DatabaseConfigurationBean;
@@ -374,10 +375,13 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 			try {
 				if (className != null)
 					service = _loadService(className);
+			} catch (PersistenceException pe) {
+				// Don't rewrap to make it a bit clearer
+				logger.log(Level.SEVERE, "Caught persistence exception which probably means there is an issue initalizing and/or connecting to the RI database");
+				throw pe;
 			} catch (Throwable e1) {
 				e = e1;
-				if (logger != null)
-					logger.log(Level.WARNING, "Could not instantiate service: " + className + " due to exception:" + e);
+				logger.log(Level.SEVERE, "Could not instantiate service: " + className + " due to exception:" + e);
 				throw new RuntimeException("Could not instantiate service " + className + " due to exception: " + e);
 			}
 

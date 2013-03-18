@@ -13,10 +13,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.container.impl;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +26,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
 
+import com.ibm.jbatch.container.callback.IJobEndCallbackService;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
@@ -44,7 +45,6 @@ import com.ibm.jbatch.container.services.impl.JSEBatchSecurityHelper;
 import com.ibm.jbatch.container.services.impl.RuntimeBatchJobUtil;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
-import com.ibm.jbatch.container.tck.bridge.IJobEndCallbackService;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
@@ -57,302 +57,273 @@ import com.ibm.jbatch.spi.services.ParallelTaskResult;
 
 public class BatchKernelImpl implements IBatchKernelService {
 
-    private final static String sourceClass = BatchKernelImpl.class.getName();
-    private final static Logger logger = Logger.getLogger(sourceClass);
+	private final static String sourceClass = BatchKernelImpl.class.getName();
+	private final static Logger logger = Logger.getLogger(sourceClass);
 
-    private Map<Long, JobControllerImpl> instanceId2jobControllerMap = new ConcurrentHashMap<Long, JobControllerImpl>();
-    private Map<Long, RuntimeJobExecutionHelper> jobExecutionInstancesMap = new ConcurrentHashMap<Long, RuntimeJobExecutionHelper>();
+	private Map<Long, JobControllerImpl> instanceId2jobControllerMap = new ConcurrentHashMap<Long, JobControllerImpl>();
+	private Map<Long, RuntimeJobExecutionHelper> jobExecutionInstancesMap = new ConcurrentHashMap<Long, RuntimeJobExecutionHelper>();
 
-    ServicesManager servicesManager = ServicesManagerImpl.getInstance();
+	ServicesManager servicesManager = ServicesManagerImpl.getInstance();
 
-    private IBatchThreadPoolService executorService = null;
-    
-    private IJobEndCallbackService callbackService = null;
-    
-    private IPersistenceManagerService persistenceService = null;
-    
-    private BatchSecurityHelper batchSecurity = null;
-    
-    private BatchJobUtil batchJobUtil = null;
+	private IBatchThreadPoolService executorService = null;
 
-    // TODO - assuming we have a IBatchConfig, maybe we should get size from
-    // there.
-    public final static int THREAD_POOL_SIZE = 5;
+	private IJobEndCallbackService callbackService = null;
 
-    public BatchKernelImpl() {
-        executorService = servicesManager.getThreadPoolService();
-        callbackService = servicesManager.getJobCallbackService();
-        persistenceService = servicesManager.getPersistenceManagerService();
-        
-        // registering our implementation of the util class used to purge by apptag
-        batchJobUtil = new RuntimeBatchJobUtil();
-        BatchSPIManager.getInstance().registerBatchJobUtil(batchJobUtil);
-    }
+	private IPersistenceManagerService persistenceService = null;
+
+	private BatchSecurityHelper batchSecurity = null;
+
+	private BatchJobUtil batchJobUtil = null;
+
+	// TODO - assuming we have a IBatchConfig, maybe we should get size from
+	// there.
+	public final static int THREAD_POOL_SIZE = 5;
+
+	public BatchKernelImpl() {
+		executorService = servicesManager.getThreadPoolService();
+		callbackService = servicesManager.getJobCallbackService();
+		persistenceService = servicesManager.getPersistenceManagerService();
+
+		// registering our implementation of the util class used to purge by apptag
+		batchJobUtil = new RuntimeBatchJobUtil();
+		BatchSPIManager.getInstance().registerBatchJobUtil(batchJobUtil);
+	}
 
 	public BatchSecurityHelper getBatchSecurityHelper() {
 		batchSecurity = BatchSPIManager.getInstance().getBatchSecurityHelper();
-        if(batchSecurity == null) { 
-        	batchSecurity = new JSEBatchSecurityHelper();
-        }
-        return batchSecurity;
+		if(batchSecurity == null) { 
+			batchSecurity = new JSEBatchSecurityHelper();
+		}
+		return batchSecurity;
 	}
 
-    public void init(IBatchConfig pgcConfig) throws BatchContainerServiceException {
+	public void init(IBatchConfig pgcConfig) throws BatchContainerServiceException {
 
-    }
+	}
 
-    @Override
-    public void shutdown() throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
+	@Override
+	public void shutdown() throws BatchContainerServiceException {
+		// TODO Auto-generated method stub
 
-    }
+	}
 
-    @Override
-    public IJobExecution startJob(String jobXML) throws JobStartException {
-        return startJob(jobXML, null);
-    }
+	@Override
+	public IJobExecution startJob(String jobXML) throws JobStartException {
+		return startJob(jobXML, null);
+	}
 
-    @Override
-    public IJobExecution startJob(String jobXML, Properties jobParameters) throws JobStartException {
-        String method = "startJob";
+	@Override
+	public IJobExecution startJob(String jobXML, Properties jobParameters) throws JobStartException {
+		String method = "startJob";
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method, new Object[] { jobXML, jobParameters });
-        }
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(sourceClass, method, new Object[] { jobXML, jobParameters });
+		}
 
-        RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.startJob(jobXML, jobParameters);
+		RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.startJob(jobXML, jobParameters);
 
-        // TODO - register with status manager
-        
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JobExecution constructed: " + jobExecution);
-        }
+		// TODO - register with status manager
 
-        BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
-        this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
-        //AJM: not needed anymore : jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("JobExecution constructed: " + jobExecution);
+		}
 
-        executorService.executeTask(batchWork, null);
+		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
+		this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
+		//AJM: not needed anymore : jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(sourceClass, method, jobExecution);
-        }
+		executorService.executeTask(batchWork, null);
 
-        return jobExecution.getJobOperatorJobExecution();
-    }
+		if (logger.isLoggable(Level.FINER)) {
+			logger.exiting(sourceClass, method, jobExecution);
+		}
 
-    @Override
-    public void stopJob(long executionId) throws NoSuchJobExecutionException, JobExecutionNotRunningException {
+		return jobExecution.getJobOperatorJobExecution();
+	}
 
-    	long jobInstanceId = persistenceService.jobOperatorQueryJobExecutionJobInstanceId(executionId);
-    	
-        JobControllerImpl controller = this.instanceId2jobControllerMap.get(jobInstanceId);
-        if (controller == null) {
-    	//TODO - should  be more discriminating w/ exception  to see if it's just not running or if it doesn't exist at all in the DB !
-        	String msg = "JobExecution with execution id of " + jobInstanceId + "is not running.";
-        	logger.warning("stopJob(): " + msg);
-            throw new JobExecutionNotRunningException(msg);
-        }
+	@Override
+	public void stopJob(long executionId) throws NoSuchJobExecutionException, JobExecutionNotRunningException {
 
-        controller.stop();
-    }
+		long jobInstanceId = persistenceService.jobOperatorQueryJobExecutionJobInstanceId(executionId);
 
-    @Override
-    public IJobExecution restartJob(long executionId) throws JobRestartException {
-        String method = "restartJob";
+		JobControllerImpl controller = this.instanceId2jobControllerMap.get(jobInstanceId);
+		if (controller == null) {
+			//TODO - should  be more discriminating w/ exception  to see if it's just not running or if it doesn't exist at all in the DB !
+			String msg = "JobExecution with execution id of " + jobInstanceId + "is not running.";
+			logger.warning("stopJob(): " + msg);
+			throw new JobExecutionNotRunningException(msg);
+		}
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method);
-        }
+		controller.stop();
+	}
 
-        Properties dummyPropObj = new Properties();
-        return this.restartJob(executionId, dummyPropObj);
-    }
-    
-    @Override
-    public IJobExecution restartJob(long executionId, Properties jobOverrideProps) throws JobRestartException {
-        String method = "restartJob";
+	@Override
+	public IJobExecution restartJob(long executionId) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+		String method = "restartJob";
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method);
-        }
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(sourceClass, method);
+		}
 
-        RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.restartJob(executionId, jobOverrideProps, false);
+		Properties dummyPropObj = new Properties();
+		return this.restartJob(executionId, dummyPropObj);
+	}
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JobExecution constructed: " + jobExecution);
-        }
+	@Override
+	public IJobExecution restartJob(long executionId, Properties jobOverrideProps) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+		String method = "restartJob";
 
-        BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
-        this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
-        //AJM not needed any longer jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(sourceClass, method);
+		}
 
-        executorService.executeTask(batchWork, null);
+		RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.restartJob(executionId, null, jobOverrideProps, false);
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(sourceClass, method, jobExecution);
-        }
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("JobExecution constructed: " + jobExecution);
+		}
 
-        return jobExecution.getJobOperatorJobExecution();
-    }
+		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
+		this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
+		//AJM not needed any longer jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
 
-    @Override
-    public void jobExecutionDone(RuntimeJobExecutionHelper jobExecution) {
+		executorService.executeTask(batchWork, null);
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JobExecution done, getting ready to invoke callbacks for JobExecution: " + jobExecution.getExecutionId());
-        }
+		if (logger.isLoggable(Level.FINER)) {
+			logger.exiting(sourceClass, method, jobExecution);
+		}
 
-        callbackService.done(jobExecution.getExecutionId());
+		return jobExecution.getJobOperatorJobExecution();
+	}
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Done invoking callbacks for JobExecution: " + jobExecution.getExecutionId());
-        }
+	@Override
+	public void jobExecutionDone(RuntimeJobExecutionHelper jobExecution) {
 
-        // Remove from map after job is done        
-        this.instanceId2jobControllerMap.remove(jobExecution.getInstanceId());
-        
-        // AJM: ah - purge jobExecution from map here and flush to DB?
-        // edit: no long want a 2 tier for the jobexecution...do want it for step execution
-        // renamed method to flushAndRemoveStepExecution
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("JobExecution done with batchStatus: " + jobExecution.getBatchStatus() + " , getting ready to invoke callbacks for JobExecution: " + jobExecution.getExecutionId());
+		}
 
-    }
+		callbackService.done(jobExecution.getExecutionId());
 
-    public IJobExecution getJobExecution(long executionId) {
-    	// this method will retrieve a 'live' JobOperatorJobExecutionImpl from the in memory map OR
-    	// hydrate a previously run job's JobOperatorJobExecutionImpl from the backing store ...
-    	
-        String method = "getJobExecution";
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method, executionId);
-        }
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("Done invoking callbacks for JobExecution: " + jobExecution.getExecutionId());
+		}
 
-        IJobExecution retVal = null;
-        
-        /*
-        RuntimeJobExecutionHelper rtJobExecution = jobExecutionInstancesMap.get(executionId);
-        
-        if (rtJobExecution != null){       	
-        // get JobExecution out of map, send back a JOJobExecution
-        	retVal = rtJobExecution.getJobOperatorJobExecution();
-        }
-        else { 
-        	// need to look in the backing store
-        	retVal = JobExecutionHelper.getPersistedJobOperatorJobExecution(executionId);
-        }
-        */
-        
-        retVal = JobExecutionHelper.getPersistedJobOperatorJobExecution(executionId);
-        
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(sourceClass, method, retVal);
-        }
+		// Remove from map after job is done        
+		this.instanceId2jobControllerMap.remove(jobExecution.getInstanceId());
 
-        return retVal;
-        
-    }
+		// AJM: ah - purge jobExecution from map here and flush to DB?
+		// edit: no long want a 2 tier for the jobexecution...do want it for step execution
+		// renamed method to flushAndRemoveStepExecution
 
-    
-    @Override
-    public List<StepExecution<?>> getStepExecutions(long executionId) {
-    	return JobExecutionHelper.getstepExecutionIDInfoList(executionId);
-    }
-    
-    @Override    
-    public StepExecution<? extends Serializable> getStepExecution(long stepExecutionId) {
-		return JobExecutionHelper.getStepExecutionIDInfo(stepExecutionId);
-    }
+	}
 
-    @Override
-    public void startGeneratedJob(BatchWorkUnit batchWork) {
-        String method = "startGeneratedJob";
+	public IJobExecution getJobExecution(long executionId) {
+		// this method will retrieve a 'live' JobOperatorJobExecutionImpl from the in memory map OR
+		// hydrate a previously run job's JobOperatorJobExecutionImpl from the backing store ...
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method, new Object[] { batchWork });
-        }
+		logger.finest("Entering " + sourceClass + ".getJobExecution(), executionId = " + executionId);
 
-        //This call is non-blocking
-        ParallelTaskResult result = executorService.executeParallelTask(batchWork, null);
+		IJobExecution retVal = null;
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(sourceClass, method, new Object[] { batchWork });
-        }
-    }
-    
-    
-    /**
-     * Build a batch work unit and set it up in STARTING state but don't start it yet.
-     * 
-     * @param jobModel
-     * @param partitionProps
-     * @param analyzerQueue
-     * @param subJobExitStatusQueue
-     * @param completedQueue
-     * @return
-     */
-    @Override
-    public BatchWorkUnit buildNewBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
-            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobStartException {
-        String method = "buildBatchWorkUnit";
+		retVal = JobExecutionHelper.getPersistedJobOperatorJobExecution(executionId);
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method, new Object[] { jobModel, partitionProps });
-        }
+		logger.finest("Exiting " + sourceClass + ".getJobExecution(), retVal = " + retVal);
 
-        RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.startJob(jobModel, partitionProps, true);
+		return retVal;
 
-        // TODO - register with status manager
+	}
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JobExecution constructed: " + jobExecution);
-        }
+	@Override
+	public void startGeneratedJob(BatchWorkUnit batchWork) {
+		String method = "startGeneratedJob";
 
-        BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution, analyzerQueue, subJobExitStatusQueue, completedQueue, containment,rootJobExecution, false);
-        this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
-        // re-enabling while i work out the persistence
-        jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(sourceClass, method, new Object[] { batchWork });
+		}
 
-        return batchWork;
-    }
-    
-    
+		//This call is non-blocking
+		ParallelTaskResult result = executorService.executeParallelTask(batchWork, null);
 
-    @Override
-    public List<BatchWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels,
-            Properties[] partitionProperties,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue, 
-            Stack<String> subJobExitStatusQueue, 
-            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, 
-            RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException, JobStartException {
-        List<BatchWorkUnit> batchWorkUnits = new ArrayList<BatchWorkUnit>(jobModels.size());
-        
-        //for now let always use a Properties array. We can add some more convenience methods later for null properties and what not
-        
-        int instance = 0;
-        for (JSLJob parallelJob  : jobModels){
-            
-            
-            Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];    
-            
-            BatchWorkUnit batchWork = this.buildNewBatchWorkUnit(parallelJob, partitionProps, analyzerQueue, 
-                    subJobExitStatusQueue, completedQueue, containment, rootJobExecution);
-            batchWorkUnits.add(batchWork);
+		if (logger.isLoggable(Level.FINER)) {
+			logger.exiting(sourceClass, method, new Object[] { batchWork });
+		}
+	}
 
-            instance++;
-        }
-        
-        return batchWorkUnits;
-        
-    }
+
+	/**
+	 * Build a batch work unit and set it up in STARTING state but don't start it yet.
+	 * 
+	 * @param jobModel
+	 * @param partitionProps
+	 * @param analyzerQueue
+	 * @param subJobExitStatusQueue
+	 * @param completedQueue
+	 * @return
+	 */
+	@Override
+	public BatchWorkUnit buildNewBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
+			BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobStartException {
+		String method = "buildBatchWorkUnit";
+
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(sourceClass, method, new Object[] { jobModel, partitionProps });
+		}
+
+		RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.startJob(jobModel, partitionProps, true);
+
+		// TODO - register with status manager
+
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("JobExecution constructed: " + jobExecution);
+		}
+
+		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution, analyzerQueue, subJobExitStatusQueue, completedQueue, containment,rootJobExecution, false);
+		this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
+		// re-enabling while i work out the persistence
+		jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
+
+		return batchWork;
+	}
+
+
+
+	@Override
+	public List<BatchWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels,
+			Properties[] partitionProperties,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue, 
+			Stack<String> subJobExitStatusQueue, 
+			BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, 
+			RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException, JobStartException {
+		List<BatchWorkUnit> batchWorkUnits = new ArrayList<BatchWorkUnit>(jobModels.size());
+
+		//for now let always use a Properties array. We can add some more convenience methods later for null properties and what not
+
+		int instance = 0;
+		for (JSLJob parallelJob  : jobModels){
+
+
+			Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];    
+
+			BatchWorkUnit batchWork = this.buildNewBatchWorkUnit(parallelJob, partitionProps, analyzerQueue, 
+					subJobExitStatusQueue, completedQueue, containment, rootJobExecution);
+			batchWorkUnits.add(batchWork);
+
+			instance++;
+		}
+
+		return batchWorkUnits;
+
+	}
 
 	@Override
 	public int getJobInstanceCount(String jobName) {
-        int jobInstanceCount = 0;
-        
-        jobInstanceCount = persistenceService.jobOperatorGetJobInstanceCount(jobName);
-        
-        return jobInstanceCount;
+		int jobInstanceCount = 0;
+
+		jobInstanceCount = persistenceService.jobOperatorGetJobInstanceCount(jobName);
+
+		return jobInstanceCount;
 	}
 
 	@Override
@@ -360,95 +331,100 @@ public class BatchKernelImpl implements IBatchKernelService {
 		return JobExecutionHelper.getJobInstance(executionId);
 	}
 
-	
+
 	@Override
 	public List<BatchWorkUnit> buildRestartableParallelJobs(List<JSLJob> jobModels,
-            Properties[] partitionProperties,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue, 
-            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, 
-            RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException {
-        List<BatchWorkUnit> batchWorkUnits = new ArrayList<BatchWorkUnit>(jobModels.size());
-        
-        //for now let always use a Properties array. We can add some more convenience methods later for null properties and what not
-        
-        int instance = 0;
-        for (JSLJob parallelJob  : jobModels){
-            
-            
-            Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];    
-            
-            BatchWorkUnit batchWork = this.buildRestartableBatchWorkUnit(parallelJob, partitionProps, analyzerQueue, 
-                    subJobExitStatusQueue, completedQueue, containment, rootJobExecution);
-            batchWorkUnits.add(batchWork);
+			Properties[] partitionProperties,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue, 
+			BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, 
+			RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+		List<BatchWorkUnit> batchWorkUnits = new ArrayList<BatchWorkUnit>(jobModels.size());
 
-            instance++;
-        }
-        
-        
-        return batchWorkUnits;
-    }
-	
+		//for now let always use a Properties array. We can add some more convenience methods later for null properties and what not
+
+		int instance = 0;
+		for (JSLJob parallelJob  : jobModels){
+
+
+			Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];    
+
+			try {
+				BatchWorkUnit batchWork = this.buildRestartableBatchWorkUnit(parallelJob, partitionProps, analyzerQueue, 
+					subJobExitStatusQueue, completedQueue, containment, rootJobExecution);
+				batchWorkUnits.add(batchWork);
+			} catch (JobExecutionAlreadyCompleteException e) {
+				logger.fine("This execution already completed: " + parallelJob.getId());
+			}
+
+			instance++;
+		}
+
+
+		return batchWorkUnits;
+	}
+
 	@Override
 	public void  restartGeneratedJob(BatchWorkUnit batchWork) throws JobRestartException {
-        String method = "restartGeneratedJob";
+		String method = "restartGeneratedJob";
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method, new Object[] { batchWork });
-        }
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(sourceClass, method, new Object[] { batchWork });
+		}
 
-     
-        //This call is non-blocking
-        ParallelTaskResult result = executorService.executeParallelTask(batchWork, null);
-        
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(sourceClass, method, batchWork);
-        }
+		//This call is non-blocking
+		ParallelTaskResult result = executorService.executeParallelTask(batchWork, null);
+
+
+		if (logger.isLoggable(Level.FINER)) {
+			logger.exiting(sourceClass, method, batchWork);
+		}
 
 	}
-	
+
 	@Override
-    public BatchWorkUnit buildRestartableBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
-            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException {
-        String method = "restartGeneratedJob";
+	public BatchWorkUnit buildRestartableBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
+			BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+		String method = "restartGeneratedJob";
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(sourceClass, method, new Object[] { jobModel, partitionProps });
-        }
+		if (logger.isLoggable(Level.FINER)) {
+			logger.entering(sourceClass, method, new Object[] { jobModel, partitionProps });
+		}
 
-        //There can only be one instance associated with a subjob's id since it is generated from an unique
-        //job instance id. So there should be no way to directly start a subjob with particular
-        List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobModel.getId(), 0, 2);
-        
-        assert(instanceIds.size() == 1);
-        
-        List<IJobExecution> partitionExecs = persistenceService.jobOperatorGetJobExecutions(instanceIds.get(0));
-        
-        Long execId = Long.MIN_VALUE;
-        
-        for (IJobExecution partitionExec : partitionExecs ) {
-            if (partitionExec.getExecutionId() > execId ) {
-                execId = partitionExec.getExecutionId();
-            }
-        }
-        
-        RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.restartJob(execId, partitionProps, true);
+		//There can only be one instance associated with a subjob's id since it is generated from an unique
+		//job instance id. So there should be no way to directly start a subjob with particular
+		List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobModel.getId(), 0, 2);
 
-        // TODO - register with status manager
+		assert(instanceIds.size() == 1);
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("JobExecution constructed: " + jobExecution);
-        }
+		List<IJobExecution> partitionExecs = persistenceService.jobOperatorGetJobExecutions(instanceIds.get(0));
 
-        BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution, analyzerQueue, subJobExitStatusQueue, completedQueue, containment, rootJobExecution, false);
-        this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
-        // re-enabling while i work out the persistence
-        jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
+		Long execId = Long.MIN_VALUE;
 
-        
-        return batchWork;
-        
+		for (IJobExecution partitionExec : partitionExecs ) {
+			if (partitionExec.getExecutionId() > execId ) {
+				execId = partitionExec.getExecutionId();
+			}
+		}
+
+		RuntimeJobExecutionHelper jobExecution = JobExecutionHelper.restartJob(execId, jobModel, partitionProps, true);
+			
+
+		// TODO - register with status manager
+
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("JobExecution constructed: " + jobExecution);
+		}
+
+		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution, analyzerQueue, subJobExitStatusQueue, completedQueue, containment, rootJobExecution, false);
+		this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
+		// re-enabling while i work out the persistence
+		jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
+
+
+		return batchWork;
+
 	}
 
 }

@@ -68,9 +68,9 @@ public class JobNavigatorImpl implements Navigator<JSLJob> {
             // Nothing special to do in this case.
         }
 
-        List<TransitionElement> controlElements = currentElem.getControlElements();
+        List<TransitionElement> transitionElements = currentElem.getTransitionElements();
 
-        if (nextExecutionElement == null && controlElements.isEmpty()) {
+        if (nextExecutionElement == null && transitionElements.isEmpty()) {
             if (logger.isLoggable(Level.FINE))
                 logger.fine(method + " return null, there is no next step");
             // Don't set anything special on return transition.
@@ -80,9 +80,9 @@ public class JobNavigatorImpl implements Navigator<JSLJob> {
                 logger.fine(method + " return execution element:" + nextExecutionElement);
             returnTransition.setNextExecutionElement(nextExecutionElement);
             return returnTransition;
-        } else if (controlElements.size() > 0) {
+        } else if (transitionElements.size() > 0) {
 
-            Iterator<TransitionElement> iterator = controlElements.iterator();
+            Iterator<TransitionElement> iterator = transitionElements.iterator();
             while (iterator.hasNext()) {
 
                 TransitionElement elem = iterator.next();
@@ -98,7 +98,7 @@ public class JobNavigatorImpl implements Navigator<JSLJob> {
                         if (logger.isLoggable(Level.FINE))
                             logger.fine(method + " , Stop element matches to " + exitStatusToMatch);
 
-                        returnTransition.setControlElement(elem);
+                        returnTransition.setTransitionElement(elem);
                         return returnTransition;
                     }
                 } else if (elem instanceof End) {
@@ -107,7 +107,7 @@ public class JobNavigatorImpl implements Navigator<JSLJob> {
                     if (isMatched == true) {
                         if (logger.isLoggable(Level.FINE))
                             logger.fine(method + " , End element matches to " + exitStatusToMatch);
-                        returnTransition.setControlElement(elem);
+                        returnTransition.setTransitionElement(elem);
                         return returnTransition;
                     }
                 } else if (elem instanceof Fail) {
@@ -116,7 +116,7 @@ public class JobNavigatorImpl implements Navigator<JSLJob> {
                     if (isMatched == true) {
                         if (logger.isLoggable(Level.FINE))
                             logger.fine(method + " , Fail element matches to " + exitStatusToMatch);
-                        returnTransition.setControlElement(elem);
+                        returnTransition.setTransitionElement(elem);
                         return returnTransition;
                     }
                 } else if (elem instanceof Next) {
@@ -192,15 +192,20 @@ public class JobNavigatorImpl implements Navigator<JSLJob> {
 
     private ExecutionElement getExecutionElementByID(String id) {
         if (id != null) {
+        	logger.finer("attribute value is " + id);
             for (ExecutionElement elem : job.getExecutionElements()) {
                 if (elem.getId().equals(id)) {
                     return elem;
                 }
             }
+            logger.warning("In job, no execution element found with id = " + id);
+            throw new IllegalStateException("In job, no execution element found with id = " + id);
+        } else {
+        	logger.finer("attribute value is <null>, so simply exiting...");
+        	return null;
         }
-        return null;
     }
-
+    
     /*
      * 
      */

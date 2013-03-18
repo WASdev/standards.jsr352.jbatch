@@ -16,14 +16,11 @@
 */
 package com.ibm.jbatch.container.impl;
 
-import java.util.List;
 import java.util.Properties;
 
 import javax.batch.runtime.context.JobContext;
 
-
 import com.ibm.jbatch.container.jsl.CloneUtility;
-import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.ObjectFactory;
@@ -80,7 +77,6 @@ public class PartitionedStepBuilder {
         
         //Copy all properties from parent JobContext to partitioned step threads
         subJob.setProperties(CloneUtility.javaPropsTojslProperties(jobContext.getProperties()));
-        
 
         // Add one step to job
         Step newStep = jslFactory.createStep();
@@ -92,7 +88,6 @@ public class PartitionedStepBuilder {
         /***
          * deep copy all fields in a step
          */
-        newStep.setAbstract(step.getAbstract());
         newStep.setAllowStartIfComplete(step.getAllowStartIfComplete());
         
         if (step.getBatchlet() != null){
@@ -103,12 +98,10 @@ public class PartitionedStepBuilder {
         	newStep.setChunk(CloneUtility.cloneChunk(step.getChunk()));
         }
         
-        List<TransitionElement> newControlElements = newStep.getControlElements();
-        CloneUtility.cloneControlElements(step.getControlElements(), newControlElements);
+        // Do not copy next attribute and control elements.  Transitioning should ONLY
+        // take place on the main thread.
         
-        newStep.setListeners(CloneUtility.cloneListeners(step.getListeners()));
-        newStep.setNextFromAttribute(step.getNextFromAttribute());
-        newStep.setParent(step.getParent());
+        //Do not add step listeners, only call them on parent thread.
 
         //Add partition artifacts and set instances to 1 as the base case 
         Partition partition = step.getPartition();
@@ -130,10 +123,7 @@ public class PartitionedStepBuilder {
         newStep.setStartLimit(step.getStartLimit());
         newStep.setProperties(CloneUtility.cloneJSLProperties(step.getProperties()));
         
-        //Add listeners
-        if (step.getListeners() != null) {
-            newStep.setListeners(CloneUtility.cloneListeners(step.getListeners()));
-        }
+        //Do not add step listeners, only call them on parent thread.
         
         //Add Step properties, need to be careful here to remember the right precedence
         

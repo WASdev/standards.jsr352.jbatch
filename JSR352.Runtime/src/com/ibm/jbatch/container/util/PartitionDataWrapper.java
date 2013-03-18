@@ -14,10 +14,7 @@ public class PartitionDataWrapper {
     
     private PartitionEventType eventType;
 
-    public enum PartitionEventType { ANALYZE_COLLECTOR_DATA,
-        ANALYZE_STATUS,
-        STEP_ALREADY_COMPLETED;
-    }
+    public enum PartitionEventType { ANALYZE_COLLECTOR_DATA, ANALYZE_STATUS }
     
     public BatchStatus getBatchstatus() {
         return batchStatus;

@@ -20,7 +20,7 @@
 		<step id="step1" next="step2">
 			<batchlet ref="myBatchletImpl" />
 		</step>
-		<step id="step2" next="stepDNE">
+		<step id="step2">
 			<batchlet ref="myBatchletImpl" />
 		</step>
 	</flow>

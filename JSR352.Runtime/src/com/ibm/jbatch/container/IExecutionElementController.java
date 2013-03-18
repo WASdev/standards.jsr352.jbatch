@@ -22,16 +22,12 @@ import java.util.concurrent.BlockingQueue;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 
 public interface IExecutionElementController extends IController {
 
-    public enum ExecutionWasStarted { YES, NO }
-
-    /*
-     * @return exitStatus
-     */
-    public String execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException, Exception;
+    public InternalExecutionElementStatus execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException, Exception;
     
     public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext);
     

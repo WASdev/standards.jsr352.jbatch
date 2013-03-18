@@ -145,31 +145,7 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
 		return stepExecID;
 	}
 
-	/*
-	@Override
-	public List<FlowContext<T>> getBatchContexts() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-    */
-	
-	/*
-	@Override
-	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
-		// TODO Auto-generated method stub
-		
-	}
-    */
-	
-	/*
-	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
-	*/
-	
+
 	public void setStepExecutionId(long stepExecutionId){
 		stepExecID = stepExecutionId;
 	}

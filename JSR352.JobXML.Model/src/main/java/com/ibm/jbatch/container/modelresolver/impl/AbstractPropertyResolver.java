@@ -244,7 +244,7 @@ public abstract class AbstractPropertyResolver<B> implements
 
 			// Add the parent property to the child if the child does not
 			// already define it
-			if (!!!childProps.containsKey(parentKey)) {
+			if (!childProps.containsKey(parentKey)) {
 				childProps.setProperty(parentKey, parentProps
 						.getProperty(parentKey));
 			}

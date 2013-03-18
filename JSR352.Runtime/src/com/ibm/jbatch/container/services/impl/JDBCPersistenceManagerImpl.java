@@ -28,9 +28,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,9 +66,7 @@ import com.ibm.jbatch.container.persistence.CheckpointDataKey;
 import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.status.JobStatus;
-import com.ibm.jbatch.container.status.JobStatusKey;
 import com.ibm.jbatch.container.status.StepStatus;
-import com.ibm.jbatch.container.status.StepStatusKey;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
@@ -185,7 +183,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.entering(CLASSNAME, "createSchema");
 		Connection conn = getConnectionToDefaultSchema();
 
-		logger.log(Level.WARNING, schema + " schema does not exists. Trying to create it.");
+		logger.log(Level.INFO, schema + " schema does not exists. Trying to create it.");
 		PreparedStatement ps = null;
 		ps = conn.prepareStatement("CREATE SCHEMA " + schema);
 		ps.execute();
@@ -232,7 +230,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		ResultSet rs = dbmd.getTables(null, schema, tableName, null);
 		PreparedStatement ps = null;
 		if(!rs.next()) {
-			logger.log(Level.WARNING, tableName + " table does not exists. Trying to create it.");
+			logger.log(Level.INFO, tableName + " table does not exists. Trying to create it.");
 			ps = conn.prepareStatement(createTableStatement);
 			ps.executeUpdate();
 		}
@@ -262,69 +260,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 	
     /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#createJobStatus(com.ibm.jbatch.container.status.JobStatusKey, com.ibm.jbatch.container.status.JobStatus)
-     */
-    @Override
-	public void createJobStatus(JobStatusKey key, JobStatus value) {
-    	logger.entering(CLASSNAME, "createJobStatus", new Object[] {key, value});
-    	executeInsert(key.getDatabaseKey(), value, INSERT_JOBSTATUS);
-    	logger.exiting(CLASSNAME, "createJobStatus");
-	}
-
-	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#getJobStatus(com.ibm.jbatch.container.status.JobStatusKey)
-	 */
-	@Override
-	public List<JobStatus> getJobStatus(JobStatusKey key) {
-		logger.entering(CLASSNAME, "getJobStatus", key);
-		List<JobStatus> jobStatuses = executeQuery(key.getDatabaseKey(), SELECT_JOBSTATUS);
-		logger.exiting(CLASSNAME, "getJobStatus", jobStatuses);
-		return jobStatuses;
-	}
-    
-    /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#updateJobStatus(com.ibm.jbatch.container.status.JobStatusKey, com.ibm.jbatch.container.status.JobStatus)
-     */
-    @Override
-	public void updateJobStatus(JobStatusKey key, JobStatus value) {
-    	logger.entering(CLASSNAME, "updateJobStatus", new Object[] {key, value});
-   		List<JobStatus> data = executeQuery(key.getDatabaseKey(), SELECT_JOBSTATUS);
-   		if(data != null && !data.isEmpty()) {
-    		executeUpdate(value, key.getDatabaseKey(), UPDATE_JOBSTATUS);
-    	}
-   		logger.exiting(CLASSNAME, "updateJobStatus");
-    }
-
-    /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#createStepStatus(com.ibm.jbatch.container.status.StepStatusKey, com.ibm.jbatch.container.status.StepStatus)
-     */
-    @Override
-	public void createStepStatus(StepStatusKey key, StepStatus value) {
-    	logger.entering(CLASSNAME, "createStepStatus", new Object[] {key, value});
-        executeInsert(key.getDatabaseKey(), value, INSERT_STEPSTATUS);
-        logger.exiting(CLASSNAME, "createStepStatus");
-	}
-
-    /* (non-Javadoc)
-     * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#updateStepStatus(com.ibm.jbatch.container.status.StepStatusKey, com.ibm.jbatch.container.status.StepStatus)
-     */
-    @Override
-    public void updateStepStatus(StepStatusKey key, StepStatus value) {
-    	logger.entering(CLASSNAME, "updateStepStatus", new Object[] {key, value});
-		List<StepStatus> data = executeQuery(key.getDatabaseKey(), SELECT_STEPSTATUS);
-		if(data != null && !data.isEmpty()) {
-			executeUpdate(value, key.getDatabaseKey(), UPDATE_STEPSTATUS);
-		}
-		logger.exiting(CLASSNAME, "updateStepStatus");
-    }
-
-	/* (non-Javadoc)
 	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#createCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey, com.ibm.ws.batch.container.checkpoint.CheckpointData)
 	 */
 	@Override
 	public void createCheckpointData(CheckpointDataKey key, CheckpointData value) {
 		logger.entering(CLASSNAME, "createCheckpointData", new Object[] {key, value});
-		executeInsert(key.getCommaSeparatedKey(), value, INSERT_CHECKPOINTDATA);
+		insertCheckpointData(key.getCommaSeparatedKey(), value);
 		logger.exiting(CLASSNAME, "createCheckpointData");
 	}
 
@@ -332,9 +273,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#getCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey)
 	 */
 	@Override
-	public List<CheckpointData> getCheckpointData(CheckpointDataKey key) {
+	public CheckpointData getCheckpointData(CheckpointDataKey key) {
 		logger.entering(CLASSNAME, "getCheckpointData", key);
-		List<CheckpointData> checkpointData = executeQuery(key.getCommaSeparatedKey(), SELECT_CHECKPOINTDATA);
+		CheckpointData checkpointData = queryCheckpointData(key.getCommaSeparatedKey());
 		logger.exiting(CLASSNAME, "getCheckpointData", checkpointData);
 		return checkpointData;
 	}
@@ -345,9 +286,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	@Override
 	public void updateCheckpointData(CheckpointDataKey key, CheckpointData value) {
 		logger.entering(CLASSNAME, "updateCheckpointData", new Object[] {key, value});
-		List<CheckpointData> data = executeQuery(key.getCommaSeparatedKey(), SELECT_CHECKPOINTDATA);
-		if(data != null && !data.isEmpty()) {
-			executeUpdate(value, key.getCommaSeparatedKey(), UPDATE_CHECKPOINTDATA);
+		CheckpointData data = queryCheckpointData(key.getCommaSeparatedKey());
+		if(data != null) {
+			updateCheckpointData(key.getCommaSeparatedKey(), value);
 		} else {
 		    createCheckpointData(key, value);
 		}
@@ -361,26 +302,26 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * @throws SQLException
 	 */
 	protected Connection getConnection() throws SQLException {
-		logger.entering(CLASSNAME, "getConnection");
+		logger.finest("Entering: " + CLASSNAME + ".getConnection");
 		Connection connection = null;
 		
 		if(!batchConfig.isJ2seMode()) {
-			logger.finer("J2EE mode, getting connection from data source");
+			logger.finest("J2EE mode, getting connection from data source");
 			connection = dataSource.getConnection();
-			logger.finer("autocommit="+connection.getAutoCommit());
+			logger.finest("autocommit="+connection.getAutoCommit());
 		} else {
 			try {
 				Class.forName(driver);
 			} catch (ClassNotFoundException e) {
 				throw new PersistenceException(e);
 			}
-			logger.log(Level.FINER, "JSE mode, getting connection from {0}", url);
+			logger.finest("JSE mode, getting connection from " + url);
 			connection = DriverManager.getConnection(url, userId, pwd);
-			logger.finer("autocommit="+connection.getAutoCommit());
+			logger.finest("autocommit="+connection.getAutoCommit());
 		}
 		setSchemaOnConnection(connection);
 		
-        logger.exiting(CLASSNAME, "getConnection", connection);
+		logger.finest("Exiting: " + CLASSNAME + ".getConnection() with conn =" + connection);
         return connection;
 	}
 	
@@ -389,32 +330,44 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * @throws SQLException
 	 */
 	protected Connection getConnectionToDefaultSchema() throws SQLException {
-		logger.entering(CLASSNAME, "getConnection");
+		logger.finest("Entering getConnectionToDefaultSchema");
 		Connection connection = null;
 		
 		if(!batchConfig.isJ2seMode()) {
-			logger.finer("J2EE mode, getting connection from data source");
-			connection = dataSource.getConnection();
-			logger.finer("autocommit="+connection.getAutoCommit());
+			logger.finest("J2EE mode, getting connection from data source");
+			try {
+				connection = dataSource.getConnection();
+			} catch(SQLException e) {
+				logException("FAILED GETTING DATABASE CONNECTION", e);
+				throw new PersistenceException(e);
+			}
+			logger.finest("autocommit="+connection.getAutoCommit());
 		} else {
 			try {
 				Class.forName(driver);
 			} catch (ClassNotFoundException e) {
-								
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				
-				logger.log(Level.SEVERE, "ClassNotFoundException: Cannot load driver class: " + driver + "; Exception stack trace: " + sw);
-				
+				logException("ClassNotFoundException: Cannot load driver class: " + driver, e);
 				throw new PersistenceException(e);
 			}
-			logger.log(Level.FINER, "JSE mode, getting connection from {0}", url);
-			connection = DriverManager.getConnection(url, userId, pwd);
-			logger.finer("autocommit="+connection.getAutoCommit());
+			logger.finest("JSE mode, getting connection from " + url);
+			try {
+				connection = DriverManager.getConnection(url, userId, pwd);
+			} catch (SQLException e) {
+				logException("FAILED GETTING DATABASE CONNECTION.  FOR EMBEDDED DERBY CHECK FOR OTHER USER LOCKING THE CURRENT DATABASE (Try using a different database instance).", e); 
+				throw new PersistenceException(e);
+			}
+			logger.finest("autocommit="+connection.getAutoCommit());
 		}
-		logger.exiting(CLASSNAME, "getConnection", connection);
+		logger.finest("Exiting from getConnectionToDefaultSchema, conn= " +connection);
 		return connection;
+	}
+	
+	private void logException(String msg, Exception e) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		
+		logger.log(Level.SEVERE, msg +  "; Exception stack trace: " + sw);
 	}
 	
 	/**
@@ -424,7 +377,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * @throws SQLException
 	 */
 	private void setSchemaOnConnection(Connection connection) throws SQLException {
-		logger.entering(CLASSNAME, "setSchemaOnConnection");
+		logger.finest("Entering " + CLASSNAME +".setSchemaOnConnection()");
 		
 		PreparedStatement ps = null;
 		ps = connection.prepareStatement("SET SCHEMA ?");
@@ -433,20 +386,64 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		
 		ps.close();
 	    
-	    logger.exiting(CLASSNAME, "setSchemaOnConnection");
+		logger.finest("Exiting " + CLASSNAME +".setSchemaOnConnection()");
 	}
+	
+	/**
+	 * select data from DB table
+	 * 
+	 * @param key - the IPersistenceDataKey object
+	 * @return List of serializable objects store in the DB table
+	 * 
+	 * Ex. select id, obj from tablename where id = ?
+	 */
+	private CheckpointData queryCheckpointData(Object key) {
+		logger.entering(CLASSNAME, "queryCheckpointData", new Object[] {key, SELECT_CHECKPOINTDATA});
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		ObjectInputStream objectIn = null;
+		CheckpointData data = null;
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement(SELECT_CHECKPOINTDATA);
+			statement.setObject(1, key);
+			rs = statement.executeQuery();
+			if (rs.next()) {
+				byte[] buf = rs.getBytes("obj");
+				data = (CheckpointData)deserializeObject(buf);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} catch (IOException e) {
+			throw new PersistenceException(e);
+		} catch (ClassNotFoundException e) {
+			throw new PersistenceException(e);
+		} finally {
+			if (objectIn != null) {
+				try {
+					objectIn.close();
+				} catch (IOException e) {
+					throw new PersistenceException(e);
+				}
+			}
+			cleanupConnection(conn, rs, statement);
+		}
+		logger.exiting(CLASSNAME, "queryCheckpointData");
+		return data;	
+	}
+	
 	
 	/**
 	 * insert data to DB table
 	 * 
 	 * @param key - the IPersistenceDataKey object
 	 * @param value - serializable object to store  
-	 * @param query - SQL statement to execute
 	 * 
 	 * Ex. insert into tablename values(?, ?)
 	 */
-	private <T> void executeInsert(Object key, T value, String query) {
-		logger.entering(CLASSNAME, "executeInsert", new Object[] {key, value, query});
+	private <T> void insertCheckpointData(Object key, T value) {
+		logger.entering(CLASSNAME, "insertCheckpointData", new Object[] {key, value});
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ByteArrayOutputStream baos = null;
@@ -454,7 +451,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		byte[] b;
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement(query);
+			statement = conn.prepareStatement(INSERT_CHECKPOINTDATA);
 			baos = new ByteArrayOutputStream();
 			oout = new ObjectOutputStream(baos);
 			oout.writeObject(value);
@@ -485,101 +482,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 			cleanupConnection(conn, null, statement);
 		}
-		logger.exiting(CLASSNAME, "executeInsert");
-	}
-	
-	private void executeJobInstanceDataInsert(long key, String jobName, String apptag, String query){
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oout = null;
-		byte[] b;
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(query);
-			baos = new ByteArrayOutputStream();
-			oout = new ObjectOutputStream(baos);
-			oout.writeObject(jobName);
-
-			b = baos.toByteArray();
-
-			statement.setLong(1, key);
-			statement.setString(2, jobName);
-			statement.setString(3, apptag);
-			
-			statement.executeUpdate();
-			
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (baos != null) {
-				try {
-					baos.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			if (oout != null) {
-				try {
-					oout.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, null, statement);
-		}
-	}
-	
-	private void executeExecutionDataInsert(long key, Timestamp createtime, Timestamp starttime, Timestamp endtime, 
-											Timestamp updatetime, Properties parms, long instanceID, String batchstatus, String exitstatus, String query) {
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oout = null;
-		byte[] b;
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(query);
-			baos = new ByteArrayOutputStream();
-			oout = new ObjectOutputStream(baos);
-			oout.writeObject(parms);
-
-			b = baos.toByteArray();
-
-			statement.setLong(1, key);
-			statement.setTimestamp(2, createtime);
-			statement.setTimestamp(3,starttime);
-			statement.setTimestamp(4, endtime);
-			statement.setTimestamp(5, updatetime);
-			statement.setBytes(6, b);
-			statement.setLong(7, instanceID);
-			statement.setString(8, batchstatus);
-			statement.setString(9, exitstatus);
-			
-			statement.executeUpdate();
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (baos != null) {
-				try {
-					baos.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			if (oout != null) {
-				try {
-					oout.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, null, statement);
-		}
+		logger.exiting(CLASSNAME, "insertCheckpointData");
 	}
 	
 	/**
@@ -591,8 +494,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * 
 	 * Ex. update tablename set obj = ? where id = ?
 	 */
-	private <T> void executeUpdate(T value, Object key, String query) {
-		logger.entering(CLASSNAME, "executeUpdate", new Object[] {key, value, query});
+	private void updateCheckpointData(Object key, CheckpointData value) {
+		logger.entering(CLASSNAME, "updateCheckpointData", new Object[] {key, value});
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ByteArrayOutputStream baos = null;
@@ -600,7 +503,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		byte[] b;
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement(query);
+			statement = conn.prepareStatement(UPDATE_CHECKPOINTDATA);
 			baos = new ByteArrayOutputStream();
 			oout = new ObjectOutputStream(baos);
 			oout.writeObject(value);
@@ -631,7 +534,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 			cleanupConnection(conn, null, statement);
 		}
-		logger.exiting(CLASSNAME, "executeUpdate");
+		logger.exiting(CLASSNAME, "updateCheckpointData");
 	}
 	
 	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts) {
@@ -690,157 +593,6 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 	}
 	
-	private void executeExecutionDataUpdate(long key, Timestamp createtime,
-			Timestamp starttime, Timestamp endtime, Timestamp updatetime,
-			Properties parms, long instanceID, String status, String query) {
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oout = null;
-		byte[] b;
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(query);
-			baos = new ByteArrayOutputStream();
-			oout = new ObjectOutputStream(baos);
-			oout.writeObject(parms);
-
-			b = baos.toByteArray();
-
-			statement.setObject(1, key);
-			statement.setTimestamp(2, createtime);
-			statement.setTimestamp(3, starttime);
-			statement.setTimestamp(4, endtime);
-			statement.setTimestamp(5, updatetime);
-			statement.setBytes(6, b);
-
-			statement.setString(7, status);
-
-			statement.executeUpdate();
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (baos != null) {
-				try {
-					baos.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			if (oout != null) {
-				try {
-					oout.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, null, statement);
-		}
-	}
-	
-	/**
-	 * delete data from DB table
-	 * 
-	 * @param key - the IPersistenceDataKey object
-	 * @param query - SQL statement to execute.
-	 * 
-	 * Ex. delete from tablename where id = ?
-	 */
-	private void executeDelete(Object key, String query) {
-		logger.entering(CLASSNAME, "executeDelete", new Object[] {key, query});
-		Connection conn = null;
-		PreparedStatement statement = null;
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(query);
-			statement.setObject(1, key);
-			statement.executeUpdate();
-
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} finally {
-
-			cleanupConnection(conn, null, statement);
-		}
-		logger.exiting(CLASSNAME, "executeDelete");
-	}
-	
-	/**
-	 * select data from DB table
-	 * 
-	 * @param key - the IPersistenceDataKey object
-	 * @param query - SQL statement to execute.
-	 * @return List of serializable objects store in the DB table
-	 * 
-	 * Ex. select id, obj from tablename where id = ?
-	 */
-	private <T> List<T> executeQuery(Object key, String query) {
-		logger.entering(CLASSNAME, "executeQuery", new Object[] {key, query});
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		List<T> data = new ArrayList<T>();
-		ObjectInputStream objectIn = null;
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(query);
-			statement.setObject(1, key);
-			rs = statement.executeQuery();
-			while (rs.next()) {
-				byte[] buf = rs.getBytes("obj");
-				if (buf != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
-					T deSerializedObject = (T) objectIn.readObject();
-					data.add(deSerializedObject);
-				}
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} catch (ClassNotFoundException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (objectIn != null) {
-				try {
-					objectIn.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, rs, statement);
-		}
-		logger.exiting(CLASSNAME, "executeQuery");
-		return data;	
-	}
-	
-	private Set<String> executeNameQuery(String query) {
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		Set<String> data = new HashSet<String>();
-	
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(query);
-			rs = statement.executeQuery();
-			while (rs.next()) {
-				String name = rs.getString("name");
-				data.add(name);
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		}
-		finally {
-			cleanupConnection(conn, rs, statement);
-		}
-		
-		return data;	
-	}
-
-
 
 	/**
 	 * closes connection, result set and statement
@@ -851,7 +603,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private void cleanupConnection(Connection conn, ResultSet rs, PreparedStatement statement) {
 
-		logger.entering(CLASSNAME, "cleanupConnection", new Object[] {conn, rs, statement});
+		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Entering",  new Object[] {conn, rs, statement});
 		
 		if (statement != null) {
 			try {
@@ -882,7 +634,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				}
 			}
 		}
-		logger.exiting(CLASSNAME, "cleanupConnection");
+		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Exiting");
 	}
 	
 	/**
@@ -893,7 +645,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private void cleanupConnection(Connection conn, PreparedStatement statement) {
 
-		logger.entering(CLASSNAME, "cleanupConnection", new Object[] {conn,statement});
+		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Entering",  new Object[] {conn, statement});
 		
 		if (statement != null) {
 			try {
@@ -916,20 +668,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				}
 			}
 		}
-		logger.exiting(CLASSNAME, "cleanupConnection");
+		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Exiting");
 	}
 
 
-	/**
-	 * JOB OPERATOR METHODS
-	 */
-	
-	@Override
-    public void jobOperatorCreateJobInstanceData(long key, String Value, String apptag){
-		this.executeJobInstanceDataInsert(key, Value, apptag, INSERT_JOBINSTANCEDATA);
-	}
-
-	
 	@Override
 	public int jobOperatorGetJobInstanceCount(String jobName) {
 		
@@ -1020,40 +762,6 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	}
 
 
-	@Override
-	public Set<String> jobOperatorGetJobNames() {
-		
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		Set<String> data = new HashSet<String>();
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_NAMES);
-			rs = statement.executeQuery();
-			while (rs.next()) {
-				String name = rs.getString("name");
-				data.add(name);
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		}
-		finally {
-			cleanupConnection(conn, rs, statement);
-		}
-		return data;
-	}
-
-
-	@Override
-	public void jobOperatorCreateExecutionData(long key,
-			Timestamp createTime, Timestamp starttime, Timestamp endtime, Timestamp updateTime, Properties parms,
-			long instanceID, String batchstatus, String exitstatus) {
-		
-		executeExecutionDataInsert(key, createTime, starttime, endtime, updateTime, parms, instanceID, batchstatus, exitstatus, INSERT_EXECUTIONDATA);
-		
-	}
-	
 	public Timestamp jobOperatorQueryJobExecutionTimestamp(long key, String requestedTimestamp){
 		
 		Connection conn = null;
@@ -1130,64 +838,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	}
 
 	@Override
-	public List<IJobExecution> jobOperatorGetJobExecutionsByJobInstanceID(long jobInstanceID){
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		List<IJobExecution> data = new ArrayList<IJobExecution>();
-		JobOperatorJobExecutionImpl jobExecutionImpl;
-		ObjectInputStream objectIn = null;
-		
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement("select * from executioninstancedata where jobinstanceid = ?");
-			statement.setLong(1, jobInstanceID);
-			rs = statement.executeQuery();
-			
-			while (rs.next()) {
-				jobExecutionImpl = new JobOperatorJobExecutionImpl(rs.getLong("id"), rs.getLong("jobinstanceid"), null);
-				jobExecutionImpl.setCreateTime(rs.getTimestamp("createtime"));
-				jobExecutionImpl.setStartTime(rs.getTimestamp("starttime"));
-				jobExecutionImpl.setLastUpdateTime(rs.getTimestamp("updatetime"));
-				jobExecutionImpl.setEndTime(rs.getTimestamp("endtime"));
-				jobExecutionImpl.setBatchStatus(rs.getString("batchstatus"));
-				jobExecutionImpl.setExitStatus(rs.getString("exitstatus"));
-				
-				// get the object based data
-				Properties props = null;
-				byte[] buf = rs.getBytes("parameters");
-				if (buf != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
-					props = (Properties) objectIn.readObject();
-				}
-				
-				jobExecutionImpl.setJobParameters(props);
-				
-				data.add(jobExecutionImpl);
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} catch (ClassNotFoundException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (objectIn != null) {
-				try {
-					objectIn.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, rs, statement);
-		}
-		
-		return data;
-
-	}
-
-	@Override
-	public Properties getParameters(long instanceId){
+	public Properties getParameters(long executionId){
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
@@ -1196,8 +847,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select parameters from executioninstancedata where jobinstanceid = ?"); 
-			statement.setLong(1, instanceId);
+			statement = conn.prepareStatement("select parameters from executioninstancedata where jobexecid = ?"); 
+			statement.setLong(1, executionId);
 			rs = statement.executeQuery();
 			while (rs.next()) {
 				
@@ -1230,111 +881,6 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	}
 
 
-	@Override
-	public void stepExecutionCreateStepExecutionData(String stepExecutionKey,
-			long jobExecutionID, StepContextImpl stepContext, List<String> stepContainment) {
-
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		long stepExecutionID = stepContext.getStepExecutionId();
-		String batchStatus = stepContext.getBatchStatus().name();
-		String exitStatus = stepContext.getExitStatus();
-		String stepName = stepContext.getStepName();
-		String stepContainmentCSV = StepExecutionImpl.getStepContainmentCSV(stepContainment);
-		Object persistentData = stepContext.getPersistentUserData();
-		ByteArrayOutputStream baos = null;
-		ObjectOutputStream oout = null;
-		byte[] pdataBytes;
-		
-    	long readCnt = 0;
-    	long writeCnt = 0;
-    	long processSkipCnt = 0;
-    	long commitCnt = 0;
-    	long rollbackCnt = 0;
-    	long readSkipCnt = 0;
-    	long filterCnt = 0;
-    	long writeSkipCnt = 0;
-    	
-    	Timestamp startTimeTS = stepContext.getStartTimeTS();
-    	Timestamp endTimeTS = stepContext.getEndTimeTS();
-    	
-		Metric[] metrics = stepContext.getMetrics();
-		for (int i = 0; i < metrics.length; i++) {
-			
-			if (metrics[i].getType().equals(MetricImpl.MetricType.READ_COUNT)) {
-				readCnt = metrics[i].getValue();
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.WRITE_COUNT)) {
-				writeCnt = metrics[i].getValue();	
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.PROCESS_SKIP_COUNT)) {
-				processSkipCnt = metrics[i].getValue();	
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.COMMIT_COUNT)) {
-				commitCnt = metrics[i].getValue();
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.ROLLBACK_COUNT)) {
-				rollbackCnt = metrics[i].getValue();	
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.READ_SKIP_COUNT)) {
-				readSkipCnt = metrics[i].getValue();
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.FILTER_COUNT)) {
-				filterCnt = metrics[i].getValue();	
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.WRITE_SKIPCOUNT)) {
-				writeSkipCnt = metrics[i].getValue();	
-			}
-		
-		}
-		
-				
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement("insert into stepexecutionInstanceData values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-			statement.setString(1, stepExecutionKey);
-			statement.setLong(2, jobExecutionID);
-			statement.setLong(3, stepExecutionID);
-			statement.setString(4, batchStatus);
-			statement.setString(5, exitStatus);
-			statement.setString(6, stepName);
-			statement.setString(7, stepContainmentCSV);
-			statement.setLong(8, readCnt);
-			statement.setLong(9, writeCnt);
-			statement.setLong(10, commitCnt);
-			statement.setLong(11, rollbackCnt);
-			statement.setLong(12, readSkipCnt);
-			statement.setLong(13, processSkipCnt);
-			statement.setLong(14, filterCnt);
-			statement.setLong(15, writeSkipCnt);
-            statement.setTimestamp(16, startTimeTS);
-            statement.setTimestamp(17, endTimeTS);
-            baos = new ByteArrayOutputStream();
-			oout = new ObjectOutputStream(baos);
-			oout.writeObject(persistentData);
-
-			pdataBytes = baos.toByteArray();
-			
-			statement.setObject(18,pdataBytes);
-            
-			statement.executeUpdate();
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (baos != null) {
-				try {
-					baos.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			if (oout != null) {
-				try {
-					oout.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, rs, statement);
-		}		
-	}
-	
 	@Override
 	public List<StepExecution<?>> getStepExecutionIDListQueryByJobID(long execid){
 		Connection conn = null;
@@ -1428,98 +974,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		return data;
 	}
 	
-	@Override
-	public StepExecution getStepExecutionObjQueryByStepID(long stepExecutionId){
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		long jobexecid = 0;
-		long stepexecid = 0;
-		String stepname = null;
-		String stepContainmentCSV = null;
-		String batchstatus = null;
-		String exitstatus = null;
-		Exception ex = null;
-		long readCount =0;
-		long writeCount = 0;
-		long commitCount = 0;
-		long rollbackCount = 0;
-		long readSkipCount = 0;
-		long processSkipCount = 0;
-		long filterCount = 0;
-		long writeSkipCount = 0;
-		Timestamp startTS = null;
-		Timestamp endTS = null;
-		StepExecutionImpl stepEx = null;
-		ObjectInputStream objectIn = null;
 	
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement("select * from stepexecutioninstancedata where stepexecid = ?"); 
-			statement.setLong(1, stepExecutionId);
-			rs = statement.executeQuery();
-			while (rs.next()) {
-				jobexecid = rs.getLong("jobexecid");
-				stepexecid = rs.getLong("stepexecid");
-				stepname = rs.getString("stepname");
-				stepContainmentCSV = rs.getString("stepcontainmentcsv");
-				batchstatus = rs.getString("batchstatus");
-				exitstatus = rs.getString("exitstatus");
-				readCount = rs.getLong("readcount");
-				writeCount = rs.getLong("writecount");
-				commitCount = rs.getLong("commitcount");
-				rollbackCount = rs.getLong("rollbackcount");
-				readSkipCount = rs.getLong("readskipcount");
-				processSkipCount = rs.getLong("processskipcount");
-				filterCount = rs.getLong("filtercount");
-				writeSkipCount = rs.getLong("writeSkipCount");
-				startTS = rs.getTimestamp("startTime");
-				endTS = rs.getTimestamp("endTime");
-				// get the object based data
-				byte[] pDataBytes = rs.getBytes("persistentData");
-				Serializable persistentDataObj = null;
-				if (pDataBytes != null) {
-					objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
-					persistentDataObj = (Serializable)objectIn.readObject();
-				}
-				
-				stepEx = new StepExecutionImpl(jobexecid, stepexecid);
-				
-				stepEx.setBatchStatus(BatchStatus.valueOf(batchstatus));
-				stepEx.setExitStatus(exitstatus);
-				stepEx.setStepName(stepname);
-				stepEx.setStepContainment(StepExecutionImpl.split(stepContainmentCSV));
-				stepEx.setReadCount(readCount);
-				stepEx.setWriteCount(writeCount);
-				stepEx.setCommitCount(commitCount);
-				stepEx.setRollbackCount(rollbackCount);
-				stepEx.setReadSkipCount(readSkipCount);
-				stepEx.setProcessSkipCount(processSkipCount);
-				stepEx.setFilterCount(filterCount);
-				stepEx.setWriteSkipCount(writeSkipCount);
-				stepEx.setStartTime(startTS);
-				stepEx.setEndTime(endTS);	
-				stepEx.setpersistentUserData(persistentDataObj);
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} catch (ClassNotFoundException e) {
-			throw new PersistenceException(e);
-		} finally {
-			if (objectIn != null) {
-				try {
-					objectIn.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
-			cleanupConnection(conn, rs, statement);
-		}
-		
-		return stepEx;
-	}
 	
 	/*
 	@Override
@@ -1624,7 +1079,6 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 			cleanupConnection(conn, null, statement);
 		}
-		
 	}
 
 
@@ -1642,10 +1096,11 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		String exitStatus = null;
 		JobOperatorJobExecutionImpl jobEx = null;
 		ObjectInputStream objectIn = null;
+		String jobName = null;
 	
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select createtime, starttime, endtime, updatetime, parameters, jobinstanceid, batchstatus, exitstatus from executioninstancedata where jobexecid = ?"); 
+			statement = conn.prepareStatement("select A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.jobinstanceid, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B on A.jobinstanceid = B.jobinstanceid where jobexecid = ?"); 
 			statement.setLong(1, jobExecutionId);
 			rs = statement.executeQuery();
 			while (rs.next()) {
@@ -1662,10 +1117,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				// get the object based data
 				Properties params = null;
 				byte[] buf = rs.getBytes("parameters");
-				if (buf != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
-					params = (Properties) objectIn.readObject();
-				}
+				params = (Properties)deserializeObject(buf);
+				
+				jobName = rs.getString("name");
+				
 				jobEx = new JobOperatorJobExecutionImpl(jobExecutionId, instanceId, null);
 				jobEx.setCreateTime(createtime);
 				jobEx.setStartTime(starttime);
@@ -1674,6 +1129,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				jobEx.setLastUpdateTime(updatetime);
 				jobEx.setBatchStatus(batchStatus);
 				jobEx.setExitStatus(exitStatus);
+				jobEx.setJobName(jobName);
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
@@ -1729,11 +1185,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				
 				// get the object based data
 				byte[] buf = rs.getBytes("parameters");
-				Properties params = null;
-				if (buf != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
-					params = (Properties) objectIn.readObject();
-				}
+				Properties params = (Properties)deserializeObject(buf);
 				
 				jobEx = new JobOperatorJobExecutionImpl(jobExecutionId, instanceId, null);
 				jobEx.setCreateTime(createtime);
@@ -1859,53 +1311,31 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	}
 
 	@Override
-	public List<JobStatus> getJobStatusFromExecution(long executionId) {
-		
-		long instanceId = 0;
+	public JobStatus getJobStatusFromExecution(long executionId) {
 		
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		List<JobStatus> data = new ArrayList<JobStatus>();
-		ObjectInputStream objectIn = null;
+		JobStatus retVal = null;
 		
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select jobinstanceid from executioninstancedata where jobexecid = ?");
+			statement = conn.prepareStatement("select A.obj from jobstatus as A inner join " + 
+											"executioninstancedata as B on A.id = B.jobinstanceid where B.jobexecid = ?");
 			statement.setLong(1, executionId);
 			rs = statement.executeQuery();
-			while (rs.next()) {
-				instanceId = rs.getLong("jobinstanceid");
+			byte[] buf = null;
+			if (rs.next()) {
+				buf = rs.getBytes("obj");
 			}
-			statement = conn.prepareStatement("select obj from jobstatus where id = ?");
-			statement.setLong(1, instanceId);
-			rs = statement.executeQuery();
-			while (rs.next()){
-				byte[] buf = rs.getBytes("obj");
-				if (buf != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
-				}
-				JobStatus deSerializedObject = (JobStatus) objectIn.readObject();
-				data.add(deSerializedObject);
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} catch (IOException e) {
-			throw new PersistenceException(e);
-		} catch (ClassNotFoundException e) {
+			retVal = (JobStatus)deserializeObject(buf);
+		} catch (Exception e) {
 			throw new PersistenceException(e);
 		} finally {
-			if (objectIn != null) {
-				try {
-					objectIn.close();
-				} catch (IOException e) {
-					throw new PersistenceException(e);
-				}
-			}
 			cleanupConnection(conn, rs, statement);
 		}
 		logger.exiting(CLASSNAME, "executeQuery");
-		return data;	
+		return retVal;	
 	}
 	
 	public long getJobInstanceIdByExecutionId(long executionId){
@@ -2445,6 +1875,32 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.exiting(CLASSNAME, "getTagName");
 		return apptag;
 	}
+
+    @Override
+    public long getMostRecentExecutionId(long jobInstanceId) {
+    	logger.entering(CLASSNAME, "getMostRecentExecutionId", jobInstanceId);
+    	long mostRecentId = -1;
+    	Connection conn = null;
+    	PreparedStatement statement = null;
+    	ResultSet rs = null;
+    	String query = "SELECT jobexecid FROM executioninstancedata WHERE jobinstanceid = ? ORDER BY createtime DESC";
+
+	try {
+	 	conn = getConnection();
+	    	statement = conn.prepareStatement(query);
+	    	statement.setLong(1, jobInstanceId);
+	    	rs = statement.executeQuery();
+	    	if(rs.next()) {
+			mostRecentId = rs.getLong(1);
+		}
+	} catch (SQLException e) {
+		throw new PersistenceException(e);
+	} finally {
+		cleanupConnection(conn, rs, statement);
+	}
+	logger.exiting(CLASSNAME, "getMostRecentExecutionId");
+    	return mostRecentId;
+    }
     
     @Override
     public void shutdown() throws BatchContainerServiceException {

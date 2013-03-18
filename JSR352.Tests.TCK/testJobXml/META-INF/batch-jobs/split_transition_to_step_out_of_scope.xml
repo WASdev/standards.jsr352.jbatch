@@ -20,7 +20,8 @@
 
     <split id="split1">
 	    <flow id="flow1" next="step1">
-			<step id="flow1step1" next="flow1step2">
+	        <!--  OUT OF SCOPE, SHOULDN'T BE ALLOWED -->
+			<step id="flow1step1" next="flow1step3">
 				<batchlet ref="splitTransitionToDecisionTestBatchlet"/>
 			</step>
 			<step id="flow1step2">
@@ -36,10 +37,5 @@
 			</step>
 		</flow>
 	</split>
-	
-	<step id="step1">
-		<batchlet ref="splitTransitionToStepTestBatchlet"/>
-	</step>
-
 
 </job>

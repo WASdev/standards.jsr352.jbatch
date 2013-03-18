@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
@@ -40,9 +40,9 @@ import org.testng.annotations.Test;
 public class JobAttributeRestartTests {
 
 	private JobOperatorBridge jobOp = null;
-	
+
 	private long TIMEOUT = 5000L;
-	
+
 	/**
 	 * @testName: testJobAttributeRestartableTrue
 	 * @assertion: Section 5.1 job attribute restartable
@@ -59,60 +59,60 @@ public class JobAttributeRestartTests {
 	 */
 	@Test @org.junit.Test
 	public void testJobAttributeRestartableTrue() throws Exception {
-		
+
 		String METHOD = "testJobAttributeRestartableTrue";
-		
+
 		try {
 			Reporter.log("starting job");
 			Properties jobParams = new Properties();
 			Reporter.log("execution.number=1<p>");
 			jobParams.put("execution.number", "1");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_attributes_restart_true_test", jobParams);
-				
+
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			assertWithMessage("Job failed ", BatchStatus.FAILED, jobExec.getBatchStatus());
-				
+
 			Reporter.log("restarting job");
 			Properties restartParams = new Properties();
 			Reporter.log("execution.number=2<p>");
 			restartParams.put("execution.number", "2");
 			JobExecution newJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartParams);
-	
+
 			Reporter.log("Job Status = " + newJobExec.getBatchStatus());
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, newJobExec.getBatchStatus());
 			Reporter.log("job completed");
 		} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+			handleException(METHOD, e);
+		}
 	}
 
 
-	
-	 private static void handleException(String methodName, Exception e) throws Exception {
-			Reporter.log("Caught exception: " + e.getMessage()+"<p>");
-			Reporter.log(methodName + " failed<p>");
-			throw e;
+
+	private static void handleException(String methodName, Exception e) throws Exception {
+		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+		Reporter.log(methodName + " failed<p>");
+		throw e;
+	}
+
+	public void setup(String[] args, Properties props) throws Exception {
+
+		String METHOD = "setup";
+
+		try {
+			jobOp = new JobOperatorBridge();
+		} catch (Exception e) {
+			handleException(METHOD, e);
 		}
-	    
-	  public void setup(String[] args, Properties props) throws Exception {
-	    	
-	    	String METHOD = "setup";
-	    	
-	    	try {
-	    		jobOp = new JobOperatorBridge();
-	    	} catch (Exception e) {
-	    		handleException(METHOD, e);
-	    	}
-	    }
-	    
-	    /* cleanup */
-		public void  cleanup()
-		{		
-		
-		}
+	}
+
+	/* cleanup */
+	public void  cleanup()
+	{		
+
+	}
 
 	@BeforeTest
-    @Before
+	@Before
 	public void beforeTest() throws ClassNotFoundException {
 		jobOp = new JobOperatorBridge(); 
 	}
@@ -121,5 +121,5 @@ public class JobAttributeRestartTests {
 	public void afterTest() {
 		jobOp = null;
 	}
-	
+
 }

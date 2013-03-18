@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.container.status;
 
 import java.io.ByteArrayInputStream;
@@ -28,84 +28,88 @@ import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 
 public class StepStatus implements Serializable {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-    private long stepExecutionId;
-    private BatchStatus batchStatus;
-    private String exitStatus;
-    private int startCount;    
-    private PersistentDataWrapper persistentUserData;
-    private PartitionPlan plan;
-    
-    public StepStatus(long stepExecutionId) {
-        this.startCount = 1;
-        this.stepExecutionId = stepExecutionId;
-        this.batchStatus = BatchStatus.STARTING;
-    }
-    
-    public void setBatchStatus(BatchStatus batchStatus) {
-        this.batchStatus = batchStatus;
-    }
+	private long stepExecutionId;
+	private BatchStatus batchStatus;
+	private String exitStatus;
+	private int startCount;    
+	private PersistentDataWrapper persistentUserData;
+	private PartitionPlan plan;
 
-    public BatchStatus getBatchStatus() {
-        return batchStatus;
-    } 
-    
-    @Override
-    public String toString() {        
-        StringBuffer buf = new StringBuffer();
-        buf.append("stepExecutionId: " + stepExecutionId);        
-        buf.append(",batchStatus: " + batchStatus);
-        buf.append(",exitStatus: " + exitStatus);
-        buf.append(",startCount: " + startCount);
-        buf.append(",persistentUserData: " + persistentUserData);
-        buf.append(",plan: " + plan);
-        return buf.toString();
-    }
+	public StepStatus(long stepExecutionId) {
+		this.startCount = 1;
+		this.stepExecutionId = stepExecutionId;
+		this.batchStatus = BatchStatus.STARTING;
+	}
 
-    public long getStepExecutionId() {
-        return stepExecutionId;
-    }
+	public void setBatchStatus(BatchStatus batchStatus) {
+		this.batchStatus = batchStatus;
+	}
 
-    public int getStartCount() {
-        return startCount;
-    }
+	public BatchStatus getBatchStatus() {
+		return batchStatus;
+	} 
 
-    public void incrementStartCount() {
-        startCount++;
-    }
+	@Override
+	public String toString() {        
+		StringBuffer buf = new StringBuffer();
+		buf.append("stepExecutionId: " + stepExecutionId);        
+		buf.append(",batchStatus: " + batchStatus);
+		buf.append(",exitStatus: " + exitStatus);
+		buf.append(",startCount: " + startCount);
+		buf.append(",persistentUserData: " + persistentUserData);
+		buf.append(",plan: " + plan);
+		return buf.toString();
+	}
 
-    public void setExitStatus(String exitStatus) {
-        this.exitStatus = exitStatus;
-    }
+	public long getStepExecutionId() {
+		return stepExecutionId;
+	}
 
-    public String getExitStatus() {
-        return exitStatus;
-    }
+	public int getStartCount() {
+		return startCount;
+	}
 
-    public void setPersistentUserData(PersistentDataWrapper persistentUserData) {
-        this.persistentUserData = persistentUserData;
-    }
+	public void incrementStartCount() {
+		startCount++;
+	}
 
-    public Serializable getPersistentUserData() {
-        byte[] persistentToken = this.persistentUserData.getPersistentDataBytes();
-        ByteArrayInputStream persistentByteArrayInputStream = new ByteArrayInputStream(persistentToken);
-        TCCLObjectInputStream persistentOIS = null;
+	public void setExitStatus(String exitStatus) {
+		this.exitStatus = exitStatus;
+	}
 
-        Serializable persistentObject = null;
-        
-        try {
-            persistentOIS = new TCCLObjectInputStream(persistentByteArrayInputStream);
-            persistentObject = (Serializable)persistentOIS.readObject();
-        } catch (Exception e) {
-            throw new BatchContainerRuntimeException(e);
-        }
-        
-        return persistentObject;
-    }
+	public String getExitStatus() {
+		return exitStatus;
+	}
+
+	public void setPersistentUserData(PersistentDataWrapper persistentUserData) {
+		this.persistentUserData = persistentUserData;
+	}
+
+	public Serializable getPersistentUserData() {
+		if (this.persistentUserData != null) {
+			byte[] persistentToken = this.persistentUserData.getPersistentDataBytes();
+			ByteArrayInputStream persistentByteArrayInputStream = new ByteArrayInputStream(persistentToken);
+			TCCLObjectInputStream persistentOIS = null;
+
+			Serializable persistentObject = null;
+
+			try {
+				persistentOIS = new TCCLObjectInputStream(persistentByteArrayInputStream);
+				persistentObject = (Serializable)persistentOIS.readObject();
+			} catch (Exception e) {
+				throw new BatchContainerRuntimeException(e);
+			}
+
+			return persistentObject;
+		} else {
+			return null;
+		}
+	}
 
 	public void setPlan(PartitionPlan plan) {
 		this.plan = plan;

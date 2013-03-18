@@ -82,7 +82,7 @@ public class PropertyResolverFactory {
         return new ChunkPropertyResolverImpl(isPartitionedStep);
     }
     
-    public static PropertyResolver<TransitionElement> createControlElementPropertyResolver(boolean isPartitionedStep) {
+    public static PropertyResolver<TransitionElement> createTransitionElementPropertyResolver(boolean isPartitionedStep) {
         return new ControlElementPropertyResolverImpl(isPartitionedStep);
     }
 

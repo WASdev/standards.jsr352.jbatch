@@ -16,17 +16,17 @@
 */
 package com.ibm.jbatch.container.jobinstance;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionNotMostRecentException;
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
 import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.jsl.ModelResolverFactory;
@@ -52,8 +52,6 @@ public class JobExecutionHelper {
     private final static String CLASSNAME = JobExecutionHelper.class.getName();
     private final static Logger logger = Logger.getLogger(CLASSNAME);
     
-    private static final String GENERATED_JOB = "GENERATED_JOB";
-
     private static ServicesManager servicesManager = ServicesManagerImpl.getInstance();
 
     private static IJobStatusManagerService _jobStatusManagerService = 
@@ -64,9 +62,17 @@ public class JobExecutionHelper {
     private static IBatchKernelService _batchKernelService = servicesManager.getBatchKernelService();
 
 
-    private static Navigator getResolvedJobNavigator(String jobXml, Properties jobParameters, boolean isPartitionedStep) {
+    private static Navigator<JSLJob> getResolvedJobNavigator(String jobXml, Properties jobParameters, boolean isPartitionedStep) {
 
         JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobXml); 
+        PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(isPartitionedStep);
+        propResolver.substituteProperties(jobModel, jobParameters);
+
+        return NavigatorFactory.createJobNavigator(jobModel);
+    }
+    
+    private static Navigator<JSLJob> getResolvedJobNavigator(JSLJob jobModel, Properties jobParameters, boolean isPartitionedStep) {
+
         PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(isPartitionedStep);
         propResolver.substituteProperties(jobModel, jobParameters);
 
@@ -78,12 +84,12 @@ public class JobExecutionHelper {
         return serializer.serializeModel(jobModel);
     }
 
-    private static JobContextImpl getJobContext(Navigator jobNavigator) {
+    private static JobContextImpl<?> getJobContext(Navigator<JSLJob> jobNavigator) {
         JSLProperties jslProperties = new JSLProperties();
-        if(jobNavigator.getJSL() != null && jobNavigator.getJSL() instanceof JSLJob) {
-            jslProperties = ((JSLJob)jobNavigator.getJSL()).getProperties();
+        if(jobNavigator.getJSL() != null) {
+            jslProperties = jobNavigator.getJSL().getProperties();
         }
-        return new JobContextImpl(jobNavigator.getId(), jslProperties); 
+        return new JobContextImpl<Object>(jobNavigator.getId(), jslProperties); 
     }
 
     private static JobInstance getNewJobInstance(String name, String jobXml, Properties jobParameters) {
@@ -91,19 +97,12 @@ public class JobExecutionHelper {
         return _persistenceManagementService.createJobInstance(name, apptag, jobXml, jobParameters);
     }
 
-    private static RuntimeJobExecutionHelper getNewJobExecution(Navigator jobNavigator, JobInstance jobInstance, Properties jobParameters, JobContextImpl jobContext) {
+    private static RuntimeJobExecutionHelper getNewJobExecution(Navigator<JSLJob> jobNavigator, JobInstance jobInstance, Properties jobParameters, JobContextImpl<?> jobContext) {
         return _persistenceManagementService.createJobExecution(jobNavigator, jobInstance, jobParameters, jobContext);
     }
 
     private static JobStatus createNewJobStatus(long instanceId) {
         return _jobStatusManagerService.createJobStatus(instanceId);
-    }
-
-    private static void validateAbstractJobDoNotStart(JSLJob jobModel)
-            throws JobStartException {
-        if (jobModel.getAbstract() != null && jobModel.getAbstract().equalsIgnoreCase("true")) {
-            throw new JobStartException("An abstract job is NOT executable.");
-        }
     }
 
     private static void validateRestartableFalseJobsDoNotRestart(JSLJob jobModel)
@@ -129,13 +128,11 @@ public class JobExecutionHelper {
 
         logger.entering(CLASSNAME, "startJob", new Object[]{jobModel, jobParameters, isPartitionedStep});
 
-        validateAbstractJobDoNotStart(jobModel);
-
         String jobXML = getJobXml(jobModel);
 
-        Navigator jobNavigator = getResolvedJobNavigator(jobXML, jobParameters, isPartitionedStep);
+        Navigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobXML, jobParameters, isPartitionedStep);
 
-        JobContextImpl jobContext = getJobContext(jobNavigator);
+        JobContextImpl<?> jobContext = getJobContext(jobNavigator);
 
         JobInstance jobInstance = getNewJobInstance(jobNavigator.getId(), jobXML, jobParameters);
 
@@ -150,28 +147,69 @@ public class JobExecutionHelper {
     }
 
 
-    public static RuntimeJobExecutionHelper restartJob(long executionId) throws JobRestartException {
+    public static RuntimeJobExecutionHelper restartJob(long executionId, JSLJob gennedJobModel) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
     	
-        return restartJob(executionId, null, false);
+        return restartJob(executionId, null, null, false);
     }
     
-    public static RuntimeJobExecutionHelper restartJob(long executionId, Properties restartJobParameters, boolean isPartitionedStep) throws JobRestartException {
+    private static void validateJobInstanceNotCompleteOrAbandonded(JobStatus jobStatus) throws JobRestartException, JobExecutionAlreadyCompleteException {
+        if (jobStatus.getBatchStatus() == null) {
+        	String msg = "On restart, we didn't find an earlier batch status.";
+        	logger.warning(msg);
+        	throw new IllegalStateException(msg);
+        }
+        
+        if (jobStatus.getBatchStatus().equals(BatchStatus.COMPLETED)) {
+        	String msg = "Already completed job instance = " + jobStatus.getJobInstanceId();
+        	logger.fine(msg);
+        	throw new JobExecutionAlreadyCompleteException(msg);
+        } else if (jobStatus.getBatchStatus().equals(BatchStatus.ABANDONED)) {
+        	String msg = "Abandoned job instance = " + jobStatus.getJobInstanceId();
+        	logger.warning(msg);
+        	throw new JobRestartException(msg);
+        } 
+    }
 
-    	long jobInstanceId = _persistenceManagementService.getJobInstanceIdByExecutionId(executionId);
+    private static void validateJobExecutionIsMostRecent(long jobInstanceId, long executionId) throws JobExecutionNotMostRecentException {
+
+        long mostRecentExecutionId = _persistenceManagementService.getMostRecentExecutionId(jobInstanceId);
+
+        if ( mostRecentExecutionId != executionId ) {
+            String message = "ExecutionId: " + executionId + " is not the most recent execution.";
+            logger.warning(message);
+            throw new JobExecutionNotMostRecentException(message);
+        }
+    }
+    
+    public static RuntimeJobExecutionHelper restartJob(long executionId, JSLJob gennedJobModel, Properties restartJobParameters, boolean isPartitionedStep) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+
+        long jobInstanceId = _persistenceManagementService.getJobInstanceIdByExecutionId(executionId);
     	
         JobStatus jobStatus = _jobStatusManagerService.getJobStatus(jobInstanceId);
-
+        
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("On restartJob with jobInstance Id = " + jobInstanceId + " , found JobStatus: " + jobStatus ); 
+            logger.fine("On restartJob with jobInstance Id = " + jobInstanceId + " , found JobStatus: " + jobStatus + 
+            		", batchStatus = " + jobStatus.getBatchStatus().name() ); 
         }
+        
+        validateJobInstanceNotCompleteOrAbandonded(jobStatus);
+
+        validateJobExecutionIsMostRecent(jobInstanceId, executionId);
 
         JobInstanceImpl jobInstance = jobStatus.getJobInstance();
+        
+        Navigator<JSLJob> jobNavigator = null;
+               
+        // If we are in a parallel job that is genned use the regenned JSL.
+        if (gennedJobModel == null) {
+            jobNavigator = getResolvedJobNavigator(jobInstance.getJobXML(), restartJobParameters, isPartitionedStep);
+        } else {
+            jobNavigator = getResolvedJobNavigator(gennedJobModel, restartJobParameters, isPartitionedStep);
+        }
+        // JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobInstance.getJobXML());
+        validateRestartableFalseJobsDoNotRestart(jobNavigator.getJSL());
 
-        Navigator jobNavigator = getResolvedJobNavigator(jobInstance.getJobXML(), restartJobParameters, isPartitionedStep);
-        JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobInstance.getJobXML());
-        validateRestartableFalseJobsDoNotRestart(jobModel);
-
-        JobContextImpl jobContext = getJobContext(jobNavigator);
+        JobContextImpl<?> jobContext = getJobContext(jobNavigator);
         
         RuntimeJobExecutionHelper jobExecution = getNewJobExecution(jobNavigator, jobInstance, restartJobParameters, jobContext);
         
@@ -225,13 +263,7 @@ public class JobExecutionHelper {
     	_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, failedTs);
     }
     
-    public static StepExecution<? extends Serializable> getStepExecutionIDInfo(long stepexecutionId){
-    	return _persistenceManagementService.getStepExecutionObjQueryByStepID(stepexecutionId);
-    }
-    
-    public static List<StepExecution<?>> getstepExecutionIDInfoList(long jobexecutionId){
-    	return _persistenceManagementService.getStepExecutionIDListQueryByJobID(jobexecutionId);
-    }
+
     
 //    public static StepExecution getStepExecution(String key){
 //    	return _persistenceManagementService.getStepExecutionQueryID(key);

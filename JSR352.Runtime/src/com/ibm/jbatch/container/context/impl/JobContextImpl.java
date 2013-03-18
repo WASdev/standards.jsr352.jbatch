@@ -17,11 +17,9 @@
 package com.ibm.jbatch.container.context.impl;
 
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator.BatchStatus;
-import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.JobContext;
 
 import com.ibm.jbatch.jsl.model.JSLProperties;
@@ -40,13 +38,6 @@ public class JobContextImpl<T> implements JobContext<T> {
     private String id; //will this change to long?
     private Properties properties = new Properties();
     
-
-    private ConcurrentHashMap<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
-
-//    public JobContextImpl(String id) {
-//        this.id = id;
-//    }
-    
     public JobContextImpl(String id, JSLProperties jslProperties) {
     	this.id = id;
     	this.batchStatus = BatchStatus.STARTING;
@@ -63,14 +54,7 @@ public class JobContextImpl<T> implements JobContext<T> {
         }
         return jobProperties;
     }
-    
-    /*
-     * Copy Constructor returns a new JobContextImpl with the same properties as the original context
-     */
-//    public JobContextImpl(JobContextImpl<T> jobContext) {
-//    	//jobContext.getProperties().
-//    	
-//    }
+
     
     public String getExitStatus() {
         return exitStatus;
@@ -107,9 +91,7 @@ public class JobContextImpl<T> implements JobContext<T> {
     }
 
     public void setTransientUserData(T data) {
-
         this.transientUserData = data;
-        
     }
 
 	@Override

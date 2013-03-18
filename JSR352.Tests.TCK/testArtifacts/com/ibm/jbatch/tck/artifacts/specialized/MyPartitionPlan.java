@@ -16,11 +16,10 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import com.ibm.jbatch.tck.artifacts.common.AbstractPartitionPlan;
-
+import javax.batch.api.partition.PartitionPlanImpl;
 
 @javax.inject.Named("myPartitionPlan")
-public class MyPartitionPlan extends AbstractPartitionPlan {
+public class MyPartitionPlan extends PartitionPlanImpl {
 
 	@Override
 	public boolean getPartitionsOverride() {

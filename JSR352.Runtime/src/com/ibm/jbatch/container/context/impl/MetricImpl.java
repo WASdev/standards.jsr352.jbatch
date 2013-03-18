@@ -46,9 +46,4 @@ public class MetricImpl implements Metric {
 	public void incValueBy(long incValue) {
 		this.value = this.value + incValue;
 	}
-	
-	public void decValue() {
-		this.value = --this.value;
-	}
-
 }

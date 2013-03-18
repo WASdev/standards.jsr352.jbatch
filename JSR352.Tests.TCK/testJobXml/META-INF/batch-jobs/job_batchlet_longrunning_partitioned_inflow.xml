@@ -11,7 +11,7 @@
 <job id="job_batchlet_longrunning_partitioned" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<flow id="flow1" next="step3">
 		<step id="step1" next="step2">
-			<batchlet ref="myLongRunningBatchletImpl">
+			<batchlet ref="myLongRunningBatchlet">
 				<properties>
 					<!-- Run indefinitely so we know for sure we can stop in the middle 
 						of step 1. -->
@@ -25,12 +25,12 @@
 			</partition>
 		</step>
 		<step id="step2">
-			<batchlet ref="myLongRunningBatchletImpl">
+			<batchlet ref="myLongRunningBatchlet">
 			</batchlet>
 		</step>
 	</flow>
 	<step id="step3">
-		<batchlet ref="myLongRunningBatchletImpl">
+		<batchlet ref="myLongRunningBatchlet">
 		</batchlet>
 	</step>
 </job>

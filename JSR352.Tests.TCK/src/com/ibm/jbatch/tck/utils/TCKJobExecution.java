@@ -17,10 +17,11 @@
 package com.ibm.jbatch.tck.utils;
 
 import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.JobExecution;
 
 public interface TCKJobExecution extends JobExecution {
 	
-	public long getInstanceId() throws JobSecurityException;
+	public long getInstanceId() throws JobSecurityException, NoSuchJobExecutionException;
 	
 }

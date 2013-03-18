@@ -162,10 +162,10 @@ public class MetricsTests {
 			assertWithMessage("Testing execution #1",
 					MetricsStepListener.GOOD_EXIT_STATUS_READ,
 					execution1.getExitStatus());
-			
+
 			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
-			
+
 			StepExecution step = null;
 			String stepNameTest = "step1";
 
@@ -179,7 +179,7 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			Metric[] metrics = step.getMetrics();
 
 			Reporter.log("Testing the read count for execution #1<p>");
@@ -196,7 +196,7 @@ public class MetricsTests {
 		}
 
 	}
-	
+
 	/*
 	 * @testName: testMetricsSkipWrite
 	 * 
@@ -236,10 +236,10 @@ public class MetricsTests {
 					+ execution1.getExitStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
-			
+
 			StepExecution step = null;
 			String stepNameTest = "step1";
 
@@ -253,7 +253,7 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			Metric[] metrics = step.getMetrics();
 
 			Reporter.log("Testing the write skip count for execution #1<p>");
@@ -312,10 +312,10 @@ public class MetricsTests {
 			assertWithMessage("Testing execution #1",
 					MetricsStepListener.GOOD_EXIT_STATUS_PROCESS,
 					execution1.getExitStatus());
-			
+
 			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
-			
+
 			StepExecution step = null;
 			String stepNameTest = "step1";
 
@@ -329,7 +329,7 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			Metric[] metrics = step.getMetrics();
 
 			Reporter.log("Testing the read count for execution #1<p>");
@@ -345,7 +345,7 @@ public class MetricsTests {
 			handleException(METHOD, e);
 		}
 	}
-	
+
 	/*
 	 * @testName: testReadMetric
 	 * 
@@ -371,7 +371,7 @@ public class MetricsTests {
 			jobParams.put("execution.number", "1");
 			jobParams.put("readrecord.fail", "-1");
 			jobParams.put("app.arraysize", "30");
-		
+
 			Reporter.log("Locate job XML file: testChunkMetrics.xml<p>");
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
@@ -381,10 +381,10 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			Reporter.log("execution #1 JobExecution getExitStatus()="
 					+ execution1.getExitStatus() + "<p>");
-			
+
 			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
-			
+
 			StepExecution step = null;
 			String stepNameTest = "step1Metric";
 
@@ -398,7 +398,7 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			Metric[] metrics = step.getMetrics();
 
 			Reporter.log("Testing the read count for execution #1<p>");
@@ -416,7 +416,7 @@ public class MetricsTests {
 		}
 
 	}
-	
+
 	/*
 	 * @testName: testWriteMetric
 	 * 
@@ -432,7 +432,7 @@ public class MetricsTests {
 		try {
 			Reporter.log("Create job parameters for execution #1:<p>");
 			Properties jobParams = new Properties();
-		
+
 			Reporter.log("Locate job XML file: testChunkMetrics.xml<p>");
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
@@ -442,10 +442,10 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			Reporter.log("execution #1 JobExecution getExitStatus()="
 					+ execution1.getExitStatus() + "<p>");
-			
+
 			List<StepExecution<?>> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
-			
+
 			StepExecution step = null;
 			String stepNameTest = "step1Metric";
 
@@ -459,7 +459,7 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			Metric[] metrics = step.getMetrics();
 
 			Reporter.log("Testing the read count for execution #1<p>");
@@ -471,7 +471,7 @@ public class MetricsTests {
 							metrics[i].getValue());
 				}
 			}
-			
+
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
@@ -597,7 +597,7 @@ public class MetricsTests {
 		}
 	}
 
-	
+
 	/*
 	 * @testName: testMetricsStepTimestamps
 	 * 
@@ -646,11 +646,11 @@ public class MetricsTests {
 					+ execution1.getBatchStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			Reporter.log("AJM: testcase start time: " + ts + "<p>");
 			Reporter.log("AJM: step start time: " + step.getStartTime() + "<p>");
 			Reporter.log("AJM: step end time: " + step.getEndTime() + "<p>");
-			
+
 			assertWithMessage("Start time of step occurs after start time of test", ts.compareTo(step.getStartTime()) < 0);
 			assertWithMessage("End time of step occurs after start time of step", step.getEndTime().compareTo(step.getStartTime()) > 0);
 			assertWithMessage("End time of step occurs after start time of test", step.getEndTime().compareTo(ts) > 0);
@@ -658,7 +658,7 @@ public class MetricsTests {
 			handleException(METHOD, e);
 		}
 	}
-	
+
 	/*
 	 * @testName: testMetricsJobExecutionTimestamps
 	 * 
@@ -691,18 +691,18 @@ public class MetricsTests {
 					jobParams);
 
 
-			
+
 			Reporter.log("execution #1 JobExecution getBatchStatus()="
 					+ execution1.getBatchStatus() + "<p>");
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
-			
+
 			Reporter.log("AJM: testcase start time: " + ts + "<p>");
 			Reporter.log("AJM: job create time: " + execution1.getCreateTime() + "<p>");
 			Reporter.log("AJM: job start time: " + execution1.getStartTime() + "<p>");
 			Reporter.log("AJM: job last updated time: " + execution1.getLastUpdatedTime() + "<p>");
 			Reporter.log("AJM: job end time: " + execution1.getEndTime() + "<p>");
-			
+
 			assertWithMessage("Start time of job occurs after start time of test", ts.compareTo(execution1.getStartTime()) < 0);
 			assertWithMessage("Create time of job occurs before start time of job", execution1.getCreateTime().compareTo(execution1.getStartTime()) < 0);
 			assertWithMessage("End time of job occurs after start time of job", execution1.getEndTime().compareTo(execution1.getStartTime()) > 0);

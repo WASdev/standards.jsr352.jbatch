@@ -46,9 +46,7 @@ public abstract class SingleThreadedStepControllerImpl extends BaseStepControlle
     protected void setupStepArtifacts() {
         // set up listeners
 
-        InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, 
-                null);
-
+        InjectionReferences injectionRef = new InjectionReferences(jobExecutionImpl.getJobContext(), stepContext, null);
         this.stepListeners = jobExecutionImpl.getListenerFactory().getStepListeners(step, injectionRef, stepContext);
 
         // set up collectors if we are running a partitioned step
@@ -84,10 +82,6 @@ public abstract class SingleThreadedStepControllerImpl extends BaseStepControlle
         for (StepListenerProxy listenerProxy : stepListeners) {
             listenerProxy.beforeStep();
         }
-
-        // 
-        // ServicesManager.getInstance().setStepForThread(stepContext);
-
     }
 
     @Override

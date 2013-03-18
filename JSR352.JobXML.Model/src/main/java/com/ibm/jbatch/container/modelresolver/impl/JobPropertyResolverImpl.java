@@ -55,8 +55,6 @@ public class JobPropertyResolverImpl extends AbstractPropertyResolver<JSLJob> {
         // resolve all the properties used in attributes and update the JAXB
         // model
         job.setId(this.replaceAllProperties(job.getId(), submittedProps, parentProps));
-        job.setParent(this.replaceAllProperties(job.getParent(), submittedProps, parentProps));
-        job.setAbstract(this.replaceAllProperties(job.getAbstract(), submittedProps, parentProps));
         job.setRestartable(this.replaceAllProperties(job.getRestartable(), submittedProps, parentProps));
         
         // Resolve all the properties defined for a job

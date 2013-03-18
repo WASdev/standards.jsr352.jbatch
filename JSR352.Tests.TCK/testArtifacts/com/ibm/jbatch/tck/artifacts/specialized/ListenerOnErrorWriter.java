@@ -6,9 +6,11 @@ import java.util.List;
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
+@Named
 public class ListenerOnErrorWriter implements ItemWriter<ReadRecord> {
 
 	@Inject    

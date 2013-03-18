@@ -16,13 +16,13 @@
 */
 package com.ibm.jbatch.container.services.impl;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
+import com.ibm.jbatch.container.exception.PersistenceException;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
@@ -67,26 +67,16 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
     
     @Override
     public JobStatus getJobStatusFromExecutionId(long executionId) throws BatchContainerServiceException {
-        JobStatus retVal = null;
-        //List<?> data = _persistenceManager.getData(IPersistenceManagerService.JOB_STATUS_STORE_ID,
-        //        new JobStatusKey(jobInstanceId));
-        
-        List<?> data = _persistenceManager.getJobStatusFromExecution(executionId);
-
-        if (data == null) { 
-            throw new IllegalStateException("Null entry for JobInstance associated with execution id: " + executionId);
-        } else if (data.size()==0) {
-            throw new IllegalStateException("Empty entry for JobInstance associated with execution id: " + executionId);
-        } else if (data.size()!=1) {
-            throw new IllegalStateException("Should only be one entry for JobInstance associated with execution id: " + executionId);
-        } else {
-            try {
-                retVal = (JobStatus)data.get(0);
-            } catch (ClassCastException e) {
-                throw new IllegalStateException("Expected JobStatus but found" + data.get(0)); 
-            }
-        }
-        return retVal;
+    	JobStatus retVal = null;
+    	logger.fine("For executionId: " + executionId);
+    	try {
+    		retVal = _persistenceManager.getJobStatusFromExecution(executionId);
+    	} catch (PersistenceException e) {
+    		logger.warning("Did not find job instance status for executionId: " + executionId);
+    		throw e;
+    	}
+    	logger.fine("Returning : " + retVal);
+    	return retVal;
     }
 
     @Override
@@ -94,6 +84,9 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
         JobStatus js = getJobStatus(jobInstanceId);
         if (js == null) {
             throw new IllegalStateException("Couldn't find entry to update for id = " + jobInstanceId);
+        }
+        if (BatchStatus.ABANDONED.equals(js.getBatchStatus())) {
+        	logger.fine("Don't update batch status for id = " + jobInstanceId + " since it is already ABANDONED"); 
         }
         js.setBatchStatus(batchStatus);
         persistJobStatus(jobInstanceId, js);

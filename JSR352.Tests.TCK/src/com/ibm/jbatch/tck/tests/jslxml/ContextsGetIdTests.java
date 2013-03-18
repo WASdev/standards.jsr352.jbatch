@@ -34,7 +34,7 @@ import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 public class ContextsGetIdTests {
 
 	private JobOperatorBridge jobOp = null;
-	
+
 	/**
 	 * @testName: testJobContextGetId
 	 * @assertion: Section 7.7.2 JobContext
@@ -51,28 +51,28 @@ public class ContextsGetIdTests {
 	 *
 	 * @throws Exception
 	 */
-    @Test
-    @org.junit.Test
+	@Test
+	@org.junit.Test
 	public void testJobContextGetId() throws Exception {
 
-    	String METHOD = "testJobContextGetId";
-    	
-    	try {
-    	
-	    	String jobId = "job1";
-	    	
+		String METHOD = "testJobContextGetId";
+
+		try {
+
+			String jobId = "job1";
+
 			Reporter.log("starting job");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_jobcontext", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			
+
 			assertWithMessage("job id equals job1", jobId, jobExec.getExitStatus());
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
-    	} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
 	}
-    
+
 	/**
 	 * @testName: testStepContextGetId
 	 * @assertion: Section 7.7.2 StepContext
@@ -89,53 +89,53 @@ public class ContextsGetIdTests {
 	 *
 	 * @throws Exception
 	 */
-    @Test
-    @org.junit.Test
+	@Test
+	@org.junit.Test
 	public void testStepContextGetId() throws Exception {
 
-    	String METHOD = "testStepContextGetId";
-    	
-    	try {
-	    	String stepId = "step1";
-	    	
+		String METHOD = "testStepContextGetId";
+
+		try {
+			String stepId = "step1";
+
 			Reporter.log("starting job");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("contexts_getid_stepcontext", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			
+
 			assertWithMessage("job id equals job1", stepId, jobExec.getExitStatus());
-			
+
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
-    	} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
 	}
-    
-    private static void handleException(String methodName, Exception e) throws Exception {
+
+	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
 		Reporter.log(methodName + " failed<p>");
 		throw e;
 	}
-    
-  public void setup(String[] args, Properties props) throws Exception {
-    	
-    	String METHOD = "setup";
-    	
-    	try {
-    		jobOp = new JobOperatorBridge();
-    	} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
-    }
-    
-    /* cleanup */
+
+	public void setup(String[] args, Properties props) throws Exception {
+
+		String METHOD = "setup";
+
+		try {
+			jobOp = new JobOperatorBridge();
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	/* cleanup */
 	public void  cleanup()
 	{		
-	
+
 	}
-	
+
 	@BeforeTest
-    @Before
+	@Before
 	public void beforeTest() throws ClassNotFoundException {
 		jobOp = new JobOperatorBridge(); 
 	}

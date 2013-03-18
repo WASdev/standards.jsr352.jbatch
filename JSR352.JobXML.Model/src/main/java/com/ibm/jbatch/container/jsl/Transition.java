@@ -20,8 +20,8 @@ package com.ibm.jbatch.container.jsl;
 public interface Transition {
 
     public ExecutionElement getNextExecutionElement();
-    public TransitionElement getControlElement();
-    public void setControlElement(TransitionElement controlElement);
     public void setNextExecutionElement(ExecutionElement executionElement);
+    public TransitionElement getTransitionElement();
+    public void setTransitionElement(TransitionElement transitionElement);
     
 }

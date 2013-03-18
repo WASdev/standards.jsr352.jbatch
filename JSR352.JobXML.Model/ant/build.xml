@@ -118,7 +118,9 @@
 	<target name="addToStrings">
 		<appendToString class="Batchlet"/>
 		<appendToString class="Chunk"/>
+		<appendToString class="Flow"/>
 		<appendToString class="JSLJob"/>
+		<appendToString class="Split"/>
 		<appendToString class="Step"/>
 	</target>
 	

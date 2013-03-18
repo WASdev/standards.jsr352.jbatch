@@ -38,7 +38,7 @@ public class SplitPropertyResolverImpl extends AbstractPropertyResolver<Split> {
     	
         // Resolve all the properties defined for this step
         Properties currentProps = null;
-        for (final Flow flow : split.getFlow()) {
+        for (final Flow flow : split.getFlows()) {
         	PropertyResolverFactory.createFlowPropertyResolver(this.isPartitionedStep).substituteProperties(flow, submittedProps, currentProps);
         }
     	

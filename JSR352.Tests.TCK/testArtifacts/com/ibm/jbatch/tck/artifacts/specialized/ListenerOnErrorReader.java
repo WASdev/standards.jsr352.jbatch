@@ -5,9 +5,11 @@ import java.io.Serializable;
 import javax.batch.annotation.BatchProperty;
 import javax.batch.api.chunk.ItemReader;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
+@Named
 public class ListenerOnErrorReader implements ItemReader<ReadRecord> {
 
 	@Inject    
@@ -17,11 +19,9 @@ public class ListenerOnErrorReader implements ItemReader<ReadRecord> {
 	
 	@Override
 	public void open(Serializable checkpoint) throws Exception {
-		// TODO Auto-generated method stub
 		if (failImmediateString!=null){
 			failimmediate = Boolean.parseBoolean(failImmediateString);
 		}
-		
 	}
 
 	@Override

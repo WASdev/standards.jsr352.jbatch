@@ -25,8 +25,13 @@ import java.util.List;
  * Step, Flow, Split, Decision, without forcing us
  * to make a common XSD base type just to have this in the model.
  */
+/**
+ * 
+ * This is a workaround to not having the ability to generate interfaces
+ * directly from JAXB
+ */
 public interface ExecutionElement {
     String getId();
-    List<TransitionElement> getControlElements();
+    List<TransitionElement> getTransitionElements();
 }
 

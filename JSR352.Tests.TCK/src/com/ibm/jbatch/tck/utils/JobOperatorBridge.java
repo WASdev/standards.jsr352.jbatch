@@ -13,14 +13,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.tck.utils;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionIsRunningException;
@@ -28,212 +27,163 @@ import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobRestartException;
+import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.operations.NoSuchJobInstanceException;
-import javax.batch.operations.JobSecurityException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.tck.spi.JobEndCallbackManager;
+import org.testng.Reporter;
+
+import com.ibm.jbatch.tck.spi.JobExecutionWaiter;
+import com.ibm.jbatch.tck.spi.JobExecutionWaiterFactory;
+import com.ibm.jbatch.tck.spi.JobExecutionTimeoutException;
 
 public class JobOperatorBridge {
 
 	public static final String DEFAULT_JOB_OPERATOR_SLEEP_TIME = "60000";
+
+	private final static Logger logger = Logger.getLogger(JobOperatorBridge.class.getName());
 	
-    private JobOperator jobOp = BatchRuntime.getJobOperator();
-    private JobEndCallbackManager callbackMgr = ServiceGateway.getServices().getCallbackManager();
+	private JobOperator jobOp = BatchRuntime.getJobOperator();
+	private JobExecutionWaiterFactory waiterFactory = ServiceGateway.getJobExecutionWaiterFactoryService();
 
-    private Set<Long> completedExecutions = new HashSet<Long>();
+	private int sleepTime = Integer.parseInt(System.getProperty("jobOperator.sleep.time", DEFAULT_JOB_OPERATOR_SLEEP_TIME));
+	private final String TIMEOUT_MSG = "Test failure due to timeout exception.  Either the timeout should be increased and there is nothing else wrong, " 
+	                 + "or perhaps the runtime implementation is handing and/or unresponsive<p>";
+	public JobOperatorBridge() {
+		super();        
+	}
 
-    private int sleepTime = Integer.parseInt(System.getProperty("junit.jobOperator.sleep.time", DEFAULT_JOB_OPERATOR_SLEEP_TIME));
+	public List<String> getJobNames() throws JobSecurityException {
+		return new ArrayList<String>(jobOp.getJobNames());
+	}
 
-    public JobOperatorBridge() {
-        super();        
-    }
-    
-    public List<String> getJobNames() throws JobSecurityException {
-    	return new ArrayList<String>(jobOp.getJobNames());
-    }
-    
-    public int getJobInstanceCount(String jobName) throws NoSuchJobException, JobSecurityException {
-    	return jobOp.getJobInstanceCount(jobName);
-    }
-    
-    public List<Long> getRunningExecutions(String jobName) throws NoSuchJobException, JobSecurityException {
-    	return jobOp.getRunningExecutions(jobName);
-    }
-    
-    public List<JobExecution> getJobExecutions(JobInstance instanceId) throws NoSuchJobInstanceException, JobSecurityException {
-    	return jobOp.getJobExecutions(instanceId);
-    }
-    
-    //public StepExecution getStepExecution(long stepExecutionId) {
-    //	return jobOp.getStepExecution(stepExecutionId);
-    //}
-    
-    public TCKJobExecutionWrapper restartJobAndWaitForResult(long executionId, Properties restartJobParameters) throws NoSuchJobExecutionException, NoSuchJobException, JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, JobSecurityException {    	
-    	//throw new UnsupportedOperationException("Waiting for spec discussion to settle down regarding restart parameters.");
-        // Register callback first in case job completes before we get control back 
-        JobEndCallbackImpl callback = new JobEndCallbackImpl();
-        
-        callbackMgr.registerJobEndCallback(callback);        
-        Long execID = (Long)jobOp.restart(executionId, restartJobParameters);        
-        
-        return jobExecutionResult(execID, callback);
-    }
-    
-    public void abandonJobInstance(long executionId) throws NoSuchJobInstanceException, JobExecutionIsRunningException, JobSecurityException {
-           
-        jobOp.abandon(executionId);        
-       
-    }
+	public int getJobInstanceCount(String jobName) throws NoSuchJobException, JobSecurityException {
+		return jobOp.getJobInstanceCount(jobName);
+	}
 
-    public TCKJobExecutionWrapper startJobAndWaitForResult(String jobName) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
-        return startJobAndWaitForResult(jobName, null);
-    }
+	public List<Long> getRunningExecutions(String jobName) throws NoSuchJobException, JobSecurityException {
+		return jobOp.getRunningExecutions(jobName);
+	}
 
-    public TCKJobExecutionWrapper startJobWithoutWaitingForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
-        Long execID = (Long)jobOp.start(jobName, jobParameters);
-        JobExecution jobExecution = jobOp.getJobExecution(execID);
-        return new TCKJobExecutionWrapper(jobExecution, jobOp);
-    }
-    
-    public void stopJobWithoutWaitingForResult(long jobInstanceId) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException {
-        jobOp.stop(jobInstanceId);
-    }
-            
-    /*
-     * I haven't mentally proven it to myself but I'm assuming this can ONLY be used
-     * after startJobWithoutWaitingForResult(), not after startJobAndWaitForResult().
-     */
-    public JobExecution stopJobAndWaitForResult(JobExecution jobExecution) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException {
-        JobEndCallbackImpl callback = new JobEndCallbackImpl();
+	public List<JobExecution> getJobExecutions(JobInstance instance) throws NoSuchJobInstanceException, JobSecurityException {
+		return jobOp.getJobExecutions(instance);
+	}
 
-        long execID = jobExecution.getExecutionId();
-        callbackMgr.registerJobEndCallback(callback);
-        jobOp.stop(execID);
+	public TCKJobExecutionWrapper restartJobAndWaitForResult(long oldExecutionId, Properties restartJobParameters) throws NoSuchJobExecutionException, NoSuchJobException, JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, JobSecurityException, JobExecutionTimeoutException {    	
 
-        return jobExecutionResult(execID, callback);
-    }
+		JobExecution terminatedJobExecution = null;
+		long newExecutionId = jobOp.restart(oldExecutionId, restartJobParameters);
 
-    public TCKJobExecutionWrapper startJobAndWaitForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
+		JobExecutionWaiter waiter = waiterFactory.createWaiter(newExecutionId, jobOp, sleepTime);
 
-        JobEndCallbackImpl callback = new JobEndCallbackImpl();
+		try {
+			terminatedJobExecution = waiter.awaitTermination();
+		} catch (JobExecutionTimeoutException e) {
+			logger.severe(TIMEOUT_MSG);
+			Reporter.log(TIMEOUT_MSG);
+			throw e;
+		}									
 
-        callbackMgr.registerJobEndCallback(callback);
-        Long executionId = (Long)jobOp.start(jobName, jobParameters);
-        
-        return jobExecutionResult(executionId, callback);
-    }
-        
+		return new TCKJobExecutionWrapper(terminatedJobExecution, jobOp);
+	}
+
+	public void abandonJobExecution(long executionId) throws NoSuchJobInstanceException, JobExecutionIsRunningException, JobSecurityException, NoSuchJobExecutionException {
+		jobOp.abandon(executionId);        
+	}
+
+	public TCKJobExecutionWrapper startJobAndWaitForResult(String jobName) throws JobStartException, NoSuchJobExecutionException, JobSecurityException, JobExecutionTimeoutException {
+		return startJobAndWaitForResult(jobName, null);
+	}
+
+	public TCKJobExecutionWrapper startJobWithoutWaitingForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
+		Long execID = (Long)jobOp.start(jobName, jobParameters);
+		JobExecution jobExecution = jobOp.getJobExecution(execID);
+		return new TCKJobExecutionWrapper(jobExecution, jobOp);
+	}
+
+	public void stopJobWithoutWaitingForResult(long jobInstanceId) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException {
+		jobOp.stop(jobInstanceId);
+	}
+
+	/*
+	 * I haven't mentally proven it to myself but I'm assuming this can ONLY be used
+	 * after startJobWithoutWaitingForResult(), not after startJobAndWaitForResult().
+	 */
+	public JobExecution stopJobAndWaitForResult(JobExecution jobExecution) throws NoSuchJobExecutionException, JobExecutionNotRunningException, JobSecurityException, JobExecutionTimeoutException {
+		
+		JobExecution terminatedJobExecution = null;
+		jobOp.stop(jobExecution.getExecutionId());
+
+		JobExecutionWaiter waiter = waiterFactory.createWaiter(jobExecution.getExecutionId(), jobOp, sleepTime);
+
+		try {
+			terminatedJobExecution = waiter.awaitTermination();
+		} catch (JobExecutionTimeoutException e) {
+			logger.severe(TIMEOUT_MSG);
+			Reporter.log(TIMEOUT_MSG);
+			throw e;
+		}									
+
+		return new TCKJobExecutionWrapper(terminatedJobExecution, jobOp);
+	}
 
 
-    public Properties getParameters(long executionId) throws NoSuchJobInstanceException, JobSecurityException{
-    	return jobOp.getParameters(executionId);
-    }
-    
-    public JobInstance getJobInstance(long executionId) throws NoSuchJobExecutionException, JobSecurityException{
-    	return jobOp.getJobInstance(executionId);
-    }
-    
-    public JobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException, JobSecurityException{
-    	return jobOp.getJobExecution(executionId);
-    }
-    
-    //TODO - when JobOperator introduces a deregister we should call it.
-    public void destroy() {
+	public TCKJobExecutionWrapper startJobAndWaitForResult(String jobName, Properties jobParameters) throws JobStartException, NoSuchJobExecutionException, JobSecurityException, JobExecutionTimeoutException{
+		JobExecution terminatedJobExecution = null;
+		long executionId = jobOp.start(jobName, jobParameters);
 
-    }
+		JobExecutionWaiter waiter = waiterFactory.createWaiter(executionId, jobOp, sleepTime);
 
-    private class JobEndCallbackImpl implements com.ibm.jbatch.tck.spi.JobEndCallback {
-    	
-    	private JobEndCallbackImpl() {
-    		super();
-    	}
-    	
-    	// The wrapper around long is chosen so that 'null' clearly signifies 'unset',
-    	// since '0' does not.
-    	private Long executionIdObj = null;
+		try {
+			terminatedJobExecution = waiter.awaitTermination();
+		} catch (JobExecutionTimeoutException e) {
+			logger.severe(TIMEOUT_MSG);
+			Reporter.log(TIMEOUT_MSG);
+			throw e;
+		}									
 
-		public void setExecutionId(Long executionId) {
-			this.executionIdObj = executionId;
-		}
+		return new TCKJobExecutionWrapper(terminatedJobExecution, jobOp);
+	}
 
-		@Override
-        public void done(long jobExecutionId) {
-            synchronized(this) {
-                completedExecutions.add(jobExecutionId);
-                
-                // If we have set an execution id into the callback,
-                // then only wake up the sleep if we have matched the
-                // execution id.
-                if (executionIdObj != null) {
-                	if (executionIdObj.longValue() == jobExecutionId) {
-                		this.notify();
-                	}
-                } 
-                
-                // otherwise there is nothing to do.   We will only be sleeping
-                // with an already-set execution id.
-            }
-        }
 
-		@Override
-		public JobOperator getJobOperator() {
-			// from outer class
-			return jobOp;
-		}
 
-		@Override
-		public long getExecutionId() {
-			if (executionIdObj == null) {
-				throw new IllegalStateException("Shouldn't use this impl before set with execution Id.");
-			}
-			return executionIdObj;
-		}
-    }
+	public Properties getParameters(long executionId) throws NoSuchJobInstanceException, JobSecurityException, NoSuchJobExecutionException{
+		return jobOp.getParameters(executionId);
+	}
 
-    protected TCKJobExecutionWrapper jobExecutionResult(long execID, JobEndCallbackImpl callback) throws NoSuchJobExecutionException, JobSecurityException {
-    	// First get the lock on the callback
-        synchronized (callback) {          
-        	// If this execution is already complete, then there's no need to wait
-            if (!completedExecutions.contains(execID)) {
-            	// While we have the lock we'll associate this callback with the execution id
-            	// so we can only get notified when this particular execution id completes.
-            	callback.setExecutionId(execID);
-                try {
-                    callback.wait(sleepTime);
-                } catch (InterruptedException e) {
-                    throw new IllegalStateException(e);
-                }
-                // Now either we have the result, or we've waiting long enough and are going to bail.
-                if (!completedExecutions.contains(execID)) {
-                	throw new IllegalStateException("Still didn't see a result for executionId: " + execID + 
-                        ".  Perhaps try increasing timeout.  Or, something else may have gone wrong.");
-                }
-            }            
-        }
-        
-        // Not absolutely required since we should have things coded such that a registered
-        // callback for some other execution doesn't interfere with correct notification of
-        // completion of this execution.   However, it might reduce noise and facilitate
-        // debug to clean things up.
-        callbackMgr.deregisterJobEndCallback(callback);
-        
-        JobExecution jobExecution = jobOp.getJobExecution(execID);
-        return new TCKJobExecutionWrapper(jobExecution, jobOp);
-    }
-    
+	public JobInstance getJobInstance(long executionId) throws NoSuchJobExecutionException, JobSecurityException{
+		return jobOp.getJobInstance(executionId);
+	}
+
+	public JobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException, JobSecurityException{
+		return jobOp.getJobExecution(executionId);
+	}
+
+	//TODO - when JobOperator introduces a deregister we should call it.
+	public void destroy() {
+
+	}
+
+
+
+
+
 	public List<JobInstance> getJobInstances(String jobName, int start, int end) throws NoSuchJobException, JobSecurityException {
 		return jobOp.getJobInstances(jobName, start, end);
 	}
 
 	public List<StepExecution<?>> getStepExecutions(long executionId) throws NoSuchJobExecutionException, JobSecurityException {
 		return jobOp.getStepExecutions(executionId);
+	}
+
+	public void startJobWithoutWaitingForResult(String jobName) throws JobStartException, NoSuchJobExecutionException, JobSecurityException {
+		startJobWithoutWaitingForResult(jobName, null);
 	}
 
 }

@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
@@ -38,9 +38,9 @@ public class StepLevelPropertiesTests {
 	private JobOperatorBridge jobOp = null;
 
 	private int PROPERTIES_COUNT = 3;
-	
+
 	private String FOO_VALUE = "bar";
-	
+
 	/**
 	 * @testName: testStepLevelPropertiesCount
 	 * @assertion: Section 5.2.3 Step Level Properties
@@ -52,28 +52,28 @@ public class StepLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesCount() throws Exception {
-		
-		String METHOD = "testStepLevelPropertiesCount";
-		
-		try {
-			
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count");
 
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
-		Reporter.log("job completed");
-		
-		int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 0;
-	
-		assertWithMessage("Properties count", PROPERTIES_COUNT, count);
-		
-		Reporter.log("Job batchlet return code is the step.properties size " + count);
+		String METHOD = "testStepLevelPropertiesCount";
+
+		try {
+
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count");
+
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			Reporter.log("job completed");
+
+			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 0;
+
+			assertWithMessage("Properties count", PROPERTIES_COUNT, count);
+
+			Reporter.log("Job batchlet return code is the step.properties size " + count);
 		} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+			handleException(METHOD, e);
+		}
 	}
-	
+
 	/**
 	 * @testName: testStepLevelPropertiesPropertyValue
 	 * @assertion: Section 5.2.3 Step Level Properties
@@ -85,26 +85,26 @@ public class StepLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesPropertyValue() throws Exception {
-		
+
 		String METHOD = "testStepLevelPropertiesPropertyValue";
-		
+
 		try {
 
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_value");
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_value");
 
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed",BatchStatus.COMPLETED, jobExec.getBatchStatus());
-		Reporter.log("job completed");
-		
-		assertWithMessage("Property value", FOO_VALUE, jobExec.getExitStatus());
-		
-		Reporter.log("Job batchlet return code is the step property foo value " + FOO_VALUE);
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed",BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			Reporter.log("job completed");
+
+			assertWithMessage("Property value", FOO_VALUE, jobExec.getExitStatus());
+
+			Reporter.log("Job batchlet return code is the step property foo value " + FOO_VALUE);
 		} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+			handleException(METHOD, e);
+		}
 	}
-	
+
 	/**
 	 * @testName: testStepLevelPropertiesEmpty
 	 * @assertion: Section 5.2.3 Step Level Properties
@@ -116,28 +116,28 @@ public class StepLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesEmpty() throws Exception {
-		
-		String METHOD = "testStepLevelPropertiesEmpty";
-		
-		try {
-	
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count_zero");
 
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
-		Reporter.log("job completed");
-		
-		int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 100;
-	
-		assertWithMessage("Properties count", 0, count);
-		
-		Reporter.log("Job batchlet return code is the step.properties size " + count);
+		String METHOD = "testStepLevelPropertiesEmpty";
+
+		try {
+
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count_zero");
+
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			Reporter.log("job completed");
+
+			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 100;
+
+			assertWithMessage("Properties count", 0, count);
+
+			Reporter.log("Job batchlet return code is the step.properties size " + count);
 		} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+			handleException(METHOD, e);
+		}
 	}
-	
+
 	/**
 	 * @testName: testStepLevelPropertiesShouldNotBeAvailableThroughJobContext
 	 * @assertion: Section 5.2.3 Step Level Properties
@@ -147,57 +147,57 @@ public class StepLevelPropertiesTests {
 	 */
 	@Test @org.junit.Test
 	public void testStepLevelPropertiesShouldNotBeAvailableThroughJobContext() throws Exception {
-		
-		String METHOD = "testStepLevelPropertiesShouldNotBeAvailableThroughJobContext";
-		
-		try {
-		
-		Reporter.log("starting job");
-		JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_scope");
 
-		Reporter.log("Job Status = " + jobExec.getBatchStatus());
-		assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
-		Reporter.log("job completed");
-		assertWithMessage("Step Level Property is not available through job context",BatchStatus.COMPLETED.name(), jobExec.getExitStatus());
-		Reporter.log("Job batchlet return code is the step.property read through job context (expected value=COMPLETED) " + jobExec.getExitStatus());
+		String METHOD = "testStepLevelPropertiesShouldNotBeAvailableThroughJobContext";
+
+		try {
+
+			Reporter.log("starting job");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_scope");
+
+			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			Reporter.log("job completed");
+			assertWithMessage("Step Level Property is not available through job context",BatchStatus.COMPLETED.name(), jobExec.getExitStatus());
+			Reporter.log("Job batchlet return code is the step.property read through job context (expected value=COMPLETED) " + jobExec.getExitStatus());
 		} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+			handleException(METHOD, e);
+		}
 	}
-	
+
 	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
 		Reporter.log(methodName + " failed<p>");
 		throw e;
 	}
-	
-	  public void setup(String[] args, Properties props) throws Exception {
-	    	
-	    	String METHOD = "setup";
-	    	
-	    	try {
-	    		jobOp = new JobOperatorBridge();
-	    	} catch (Exception e) {
-	    		handleException(METHOD, e);
-	    	}
-	    }
-	    
-	    /* cleanup */
-		public void  cleanup()
-		{		
-		
+
+	public void setup(String[] args, Properties props) throws Exception {
+
+		String METHOD = "setup";
+
+		try {
+			jobOp = new JobOperatorBridge();
+		} catch (Exception e) {
+			handleException(METHOD, e);
 		}
-	
+	}
+
+	/* cleanup */
+	public void  cleanup()
+	{		
+
+	}
+
 	@BeforeTest
-    @Before
+	@Before
 	public void beforeTest() throws ClassNotFoundException {
 		jobOp = new JobOperatorBridge();
-		
+
 	}
 
 	@AfterTest
 	public void afterTest() {
 		jobOp = null;
 	}
-	
+
 }

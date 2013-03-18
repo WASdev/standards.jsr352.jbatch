@@ -22,7 +22,7 @@ import com.ibm.jbatch.container.jsl.Transition;
 
 public class TransitionImpl implements Transition {
 
-    private TransitionElement controlElement;
+    private TransitionElement transitionElement;
     private ExecutionElement executionElement;
     
     public TransitionImpl() {
@@ -30,8 +30,8 @@ public class TransitionImpl implements Transition {
     }
 
     @Override
-    public TransitionElement getControlElement() {
-        return controlElement;
+    public TransitionElement getTransitionElement() {
+        return transitionElement;
     }
 
     @Override
@@ -40,8 +40,8 @@ public class TransitionImpl implements Transition {
     }
     
     @Override
-    public void setControlElement(TransitionElement controlElement) {
-        this.controlElement = controlElement;
+    public void setTransitionElement(TransitionElement transitionElement) {
+        this.transitionElement = transitionElement;
     }
     
     @Override

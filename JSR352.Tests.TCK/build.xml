@@ -62,8 +62,8 @@
 				</fileset>
 			</classpath>
 			<xmlfileset dir="." includes="artifacts/jsr352-tck-impl-suite.xml"/>
-			<sysproperty key="junit.jobOperator.sleep.time" value="900000"/>
-			<jvmarg value="-Djunit.jobOperator.sleep.time=900000"/>
+			<sysproperty key="jobOperator.sleep.time" value="900000"/>
+			<jvmarg value="-DjobOperator.sleep.time=900000"/>
 		</testng>
 	</target>
 

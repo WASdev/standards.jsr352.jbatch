@@ -28,12 +28,23 @@ import com.ibm.jbatch.jsl.util.ValidatorHelper;
 import com.ibm.jbatch.jsl.util.JSLValidationEventHandler;
 
 import java.io.ByteArrayOutputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 public class JobModelSerializerImpl implements ModelSerializer<JSLJob> {
 
 	@Override
 	public String serializeModel(JSLJob model) {
-		return marshalJSLJob(model);
+		
+		final JSLJob finalModel = model;
+		String serializedModel = AccessController.doPrivileged(
+		    	 new PrivilegedAction<String>() {
+		              public String run() {
+		            	  return marshalJSLJob(finalModel);
+		              }
+		          });
+		
+		return serializedModel;
 	}
 
     private String marshalJSLJob(JSLJob job) {

@@ -19,7 +19,6 @@ package com.ibm.jbatch.container.jobinstance;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator.BatchStatus;
@@ -51,8 +50,13 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
     String batchStatus;
     String exitStatus;
     Properties jobProperties = null;
+    String jobName = null;
     
-    private JobContextImpl<?> jobcontext = null;
+    public void setJobName(String jobName) {
+		this.jobName = jobName;
+	}
+
+	private JobContextImpl<?> jobcontext = null;
     
 	public JobOperatorJobExecutionImpl(long executionId, long instanceId, JobContextImpl<?> jobContext) {
 		this.executionID = executionId;
@@ -67,9 +71,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 		
 		if (this.jobcontext != null){
 			batchStatus = this.jobcontext.getBatchStatus();
-			if (logger.isLoggable(Level.FINE)) {            
-				logger.fine("Returning batch status of: " + batchStatus + " from JobContext.");
-			}
+			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
 		}
 		else {
 			// old job, retrieve from the backend
@@ -78,9 +80,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 			} else {
 				throw new UnsupportedOperationException("Only JDBC-based persistence currently supported for this function.");
 			}
-			if (logger.isLoggable(Level.FINE)) {            
-				logger.fine("Returning batch status of: " + batchStatus + " from JobContext.");
-			}
+			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
 		}
 		return batchStatus;
 	}
@@ -115,7 +115,6 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 
 	@Override
 	public long getExecutionId() {
-		// TODO Auto-generated method stub
 		return executionID;
 	}
 
@@ -228,8 +227,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 
 	@Override
 	public String getJobName() {
-		// TODO Auto-generated method stub
-		return null;
+		return jobName;
 	}
 
 	@Override

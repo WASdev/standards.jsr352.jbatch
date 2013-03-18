@@ -72,7 +72,9 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
 		    ArrayIndexCheckpointData checkpointData = (ArrayIndexCheckpointData)cpd;
 		    
 			failnum = Integer.parseInt(readrecordfailNumberString);
-            execnum = Integer.parseInt(executionNumberString);
+			if (executionNumberString != null) {
+				execnum = Integer.parseInt(executionNumberString);
+			}
             
     		arraysize = Integer.parseInt(appArraySizeString);
     		readerDataArray =  new int[arraysize];

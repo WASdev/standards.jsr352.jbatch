@@ -108,7 +108,7 @@ public class MyBatchletWithPropertiesImpl extends AbstractBatchlet {
         for (Field field: fields) {
             BatchProperty batchProperty = field.getAnnotation(BatchProperty.class);
             if (batchProperty != null) {
-                if (!!!batchProperty.name().equals("") && batchProperty.name().equals(name)){
+                if (!batchProperty.name().equals("") && batchProperty.name().equals(name)){
                     return (String)field.get(this);
                 } else if (field.getName().equals(name)){
                     return (String)field.get(this);

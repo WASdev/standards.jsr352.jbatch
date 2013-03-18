@@ -27,6 +27,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.AbortedBeforeStartException;
@@ -42,6 +43,7 @@ import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.Decision;
@@ -76,15 +78,13 @@ public class FlowControllerImpl implements IExecutionElementController {
     public FlowControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Flow flow) {
         this.jobExecutionImpl = jobExecutionImpl;
         this.flow = flow;
-        
         persistenceService = (IPersistenceManagerService) ServicesManagerImpl.getInstance().getPersistenceManagerService();
-        
         flowNavigator = NavigatorFactory.createFlowNavigator(flow);
     }
 
    
     @Override
-    public String execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException {
+    public InternalExecutionElementStatus execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException {
         final String methodName = "execute";
         if (logger.isLoggable(Level.FINE)) {
             logger.entering(CLASSNAME, methodName);
@@ -95,9 +95,7 @@ public class FlowControllerImpl implements IExecutionElementController {
             // --------------------
             // The same as a simple Job. Loop to complete all steps and decisions in the flow.
             // --------------------
-            doExecutionLoop(flowNavigator, containment, rootJobExecution);
-
-            return "FLOW_CONTROLLER_RETURN_VALUE";
+        	return doExecutionLoop(flowNavigator, containment, rootJobExecution);
 
         } catch (Throwable t) {
                         
@@ -143,7 +141,7 @@ public class FlowControllerImpl implements IExecutionElementController {
     	
     }
 
-    private void doExecutionLoop(Navigator<Flow> flowNavigator, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
+    private InternalExecutionElementStatus doExecutionLoop(Navigator<Flow> flowNavigator, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
         final String methodName = "doExecutionLoop";
 
         ExecutionElement currentExecutionElement = null;
@@ -239,7 +237,7 @@ public class FlowControllerImpl implements IExecutionElementController {
              */
             
             this.currentStoppableElementController = elementController;
-            String executionElementExitStatus = null;
+            InternalExecutionElementStatus executionElementStatus = null;
             try {
                 //we need to create a new copy of the containment list to pass around because we
                 //don't want to modify the original containment list, since it can get reused
@@ -249,7 +247,7 @@ public class FlowControllerImpl implements IExecutionElementController {
                     flowContainment.addAll(containment);
                 }
                 flowContainment.add(flow.getId());
-                executionElementExitStatus = elementController.execute(flowContainment, rootJobExecution);
+                executionElementStatus = elementController.execute(flowContainment, rootJobExecution);
             } catch (AbortedBeforeStartException e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Execution failed before even getting to execute execution element = " + currentExecutionElement.getId());
@@ -265,17 +263,16 @@ public class FlowControllerImpl implements IExecutionElementController {
             previousElementController = elementController;
 
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Done executing element=" + currentExecutionElement.getId() + ", exitStatus=" + executionElementExitStatus);
+                logger.fine("Done executing element=" + currentExecutionElement.getId() + ", exitStatus=" + executionElementStatus.getExitStatus());
             }
 
-            Transition nextTransition = flowNavigator.getNextTransition(currentExecutionElement, executionElementExitStatus);
+            Transition nextTransition = flowNavigator.getNextTransition(currentExecutionElement, executionElementStatus.getExitStatus());
 
-            // TODO
             if (nextTransition == null) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " TODO: is this an expected state or not? ");
                 }
-                return;
+                return new InternalExecutionElementStatus(BatchStatus.COMPLETED);
             }
             
             if (nextTransition.getNextExecutionElement() != null) {
@@ -289,24 +286,24 @@ public class FlowControllerImpl implements IExecutionElementController {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " , Looping through to next execution element=" + currentExecutionElement.getId());
                 }
-            } else if (nextTransition.getControlElement() != null) {
+            } else if (nextTransition.getTransitionElement() != null) {
                 // TODO - update job status mgr
-                TransitionElement controlElem = nextTransition.getControlElement();
+                TransitionElement transitionElem = nextTransition.getTransitionElement();
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine(methodName + " , Looping through to next control element=" + controlElem);
+                    logger.fine(methodName + " , Looping through to next control element=" + transitionElem);
                 }
 
-                if (controlElem instanceof Stop) {
-                    String restartOn = ((Stop) controlElem).getRestart();
+                if (transitionElem instanceof Stop) {
+                    String restartOn = ((Stop) transitionElem).getRestart();
 
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine(methodName + " , next control element is a <stop> : " + controlElem + " with restartOn=" + restartOn);
+                        logger.fine(methodName + " , next control element is a <stop> : " + transitionElem + " with restartOn=" + restartOn);
                     }
 
                     //FIXME jobStatusService.updateJobStatusFromJSLStop(jobInstanceId, restartOn);
 
-                    String newExitStatus = ((Stop) controlElem).getExitStatus();
+                    String newExitStatus = ((Stop) transitionElem).getExitStatus();
                     if (newExitStatus != null && !newExitStatus.isEmpty()) { // overrides with exit status in JSL @exit-status
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine(methodName + " , on stop, setting new JSL-specified exit status to: " + newExitStatus);
@@ -315,39 +312,38 @@ public class FlowControllerImpl implements IExecutionElementController {
                     if (logger.isLoggable(Level.FINE)) {
                         logger.fine(methodName + " Exiting stopped job");
                     }
-                    return;
+                    return new InternalExecutionElementStatus(BatchStatus.STOPPED, newExitStatus);
 
-                } else if (controlElem instanceof End) {
+                } else if (transitionElem instanceof End) {
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine(methodName + " , next control element is an <end>: " + controlElem);
+                        logger.fine(methodName + " , next control element is an <end>: " + transitionElem);
                     }
-                    String newExitStatus = ((End) controlElem).getExitStatus();
+                    String newExitStatus = ((End) transitionElem).getExitStatus();
                     if (newExitStatus != null && !newExitStatus.isEmpty()) { // overrides with exit status in JSL @exit-status
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine(methodName + " , on end, setting new JSL-specified exit status to: " + newExitStatus);
                         }
                     } 
-                } else if (controlElem instanceof Fail) {
+                    return new InternalExecutionElementStatus(BatchStatus.COMPLETED, newExitStatus);
+                } else if (transitionElem instanceof Fail) {
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine(methodName + " , next control element is a <fail>: " + controlElem);
+                        logger.fine(methodName + " , next control element is a <fail>: " + transitionElem);
                     }
-                    String newExitStatus = ((Fail) controlElem).getExitStatus();
-                    if (newExitStatus != null && !newExitStatus.isEmpty()) { // overrides
-                                                                             // with
-                                                                 // in
+                    String newExitStatus = ((Fail) transitionElem).getExitStatus();
+                    if (newExitStatus != null && !newExitStatus.isEmpty()) { // overrides with in
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine(methodName + " , on fail, setting new JSL-specified exit status to: " + newExitStatus);
                         }
                     } // <fail> @exit-status
+                    return new InternalExecutionElementStatus(BatchStatus.FAILED, newExitStatus);
                 } else {
                     throw new IllegalStateException("Not sure how we'd get here but better than looping.");
                 }
-                return;
             } else {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine(methodName + " Exiting as there are no more execution elements= ");
                 }
-                return;
+                return new InternalExecutionElementStatus();
             }
         }
 		

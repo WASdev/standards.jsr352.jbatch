@@ -119,7 +119,6 @@ public class UnmarshalledJSLComparator {
 		return equals(step1.getChunk(), step2.getChunk()) &&
 				equals(step1.getListeners(), step2.getListeners()) &&
 				equals(step1.getProperties(), step2.getProperties()) &&
-				nullSafeEquals(step1.getAbstract(), step2.getAbstract()) &&
 				nullSafeEquals(step1.getAllowStartIfComplete(), step2.getAllowStartIfComplete()) &&
 				nullSafeEquals(step1.getNextFromAttribute(), step2.getNextFromAttribute());
 	}

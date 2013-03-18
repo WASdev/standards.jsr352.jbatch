@@ -37,11 +37,9 @@ public class StepPropertyResolverImpl extends AbstractPropertyResolver<Step> {
         // model
         step.setId(this.replaceAllProperties(step.getId(), submittedProps, parentProps));
 
-        step.setAbstract(this.replaceAllProperties(step.getAbstract(), submittedProps, parentProps));
         step.setAllowStartIfComplete(this.replaceAllProperties(step.getAllowStartIfComplete(), submittedProps, parentProps));
         step.setNextFromAttribute(this.replaceAllProperties(step.getNextFromAttribute(), submittedProps, parentProps));
         step.setStartLimit(this.replaceAllProperties(step.getStartLimit(), submittedProps, parentProps));
-        step.setParent(this.replaceAllProperties(step.getParent(), submittedProps, parentProps));
 
         // Resolve all the properties defined for this step
         Properties currentProps = null;
@@ -61,9 +59,9 @@ public class StepPropertyResolverImpl extends AbstractPropertyResolver<Step> {
             }
         }
         
-        if (step.getControlElements() != null) {
-            for (final TransitionElement controlElement : step.getControlElements()) {
-                PropertyResolverFactory.createControlElementPropertyResolver(this.isPartitionedStep).substituteProperties(controlElement, submittedProps, currentProps);
+        if (step.getTransitionElements() != null) {
+            for (final TransitionElement controlElement : step.getTransitionElements()) {
+                PropertyResolverFactory.createTransitionElementPropertyResolver(this.isPartitionedStep).substituteProperties(controlElement, submittedProps, currentProps);
             }
         }
         

@@ -16,18 +16,18 @@
  */
 package com.ibm.jbatch.container.services;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
@@ -40,11 +40,9 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
 	IJobExecution getJobExecution(long executionId);
 
-	StepExecution<? extends Serializable> getStepExecution(long stepExecutionId);
+	IJobExecution restartJob(long executionID) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
-	IJobExecution restartJob(long executionID) throws JobRestartException;
-
-	IJobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException;
+	IJobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
 	IJobExecution startJob(String jobXML) throws JobStartException;
 
@@ -58,8 +56,6 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
 	JobInstance getJobInstance(long instanceId);
 
-	List<StepExecution<?>> getStepExecutions(long executionId);
-
 	BatchSecurityHelper getBatchSecurityHelper();
 
     List<BatchWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
@@ -68,7 +64,7 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
     List<BatchWorkUnit> buildRestartableParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
             BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
-            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException;
+            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
     void startGeneratedJob(BatchWorkUnit batchWork);
 
@@ -80,7 +76,7 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
     BatchWorkUnit buildRestartableBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
             BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
-            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException;
+            BlockingQueue<BatchWorkUnit> completedQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
 
 }

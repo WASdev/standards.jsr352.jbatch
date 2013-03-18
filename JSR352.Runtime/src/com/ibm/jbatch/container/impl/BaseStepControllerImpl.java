@@ -29,6 +29,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
@@ -47,9 +49,9 @@ import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
-import com.ibm.jbatch.container.util.PartitionDataWrapper.PartitionEventType;
 import com.ibm.jbatch.jsl.model.JSLProperties;
 import com.ibm.jbatch.jsl.model.Property;
 import com.ibm.jbatch.jsl.model.Step;
@@ -69,8 +71,6 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     protected Step step;
     protected StepStatus stepStatus;
     
-    private Properties properties = new Properties();
-
     protected BlockingQueue<PartitionDataWrapper> analyzerStatusQueue = null;
     protected Stack<String> subJobExitStatusQueue = null;
 
@@ -131,7 +131,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
     }
 
     @Override
-    public String execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException  {
+    public InternalExecutionElementStatus execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException  {
            
         Throwable throwable = null;
         
@@ -151,14 +151,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
                     logger.fine("Not going to run this step.  Returning previous exit status of: " + stepStatus.getExitStatus());
                 }
                 
-                //If we are in a partitioned step put a step finished message on the queue
-                if (this.analyzerStatusQueue != null) {
-                    PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
-                    dataWrapper.setEventType(PartitionEventType.STEP_ALREADY_COMPLETED);
-                    analyzerStatusQueue.add(dataWrapper);
-                }
-                
-                return stepStatus.getExitStatus();
+                return new InternalExecutionElementStatus(stepStatus.getExitStatus());
                 
             } else {
                 invokeCoreStep();
@@ -215,14 +208,17 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
             //partitioned jobs need to register exit status
             if (this.subJobExitStatusQueue != null){
                 logger.finer("Adding step exitStatus to stack.");
-            	subJobExitStatusQueue.add(this.stepContext.getExitStatus());
+            	subJobExitStatusQueue.add(stepContext.getExitStatus());
             }
             
-            return stepContext.getExitStatus();
+            // This internal status happens to be identical to an 
+            // externally-meaningful status (corresponding to a JobOperator-visible batch+exit status)
+            // but this will not generally be the case.
+            return new InternalExecutionElementStatus(stepContext.getBatchStatus(), stepContext.getExitStatus());
         }
     }
 
-    protected abstract void invokeCoreStep() throws JobRestartException, JobStartException;
+    protected abstract void invokeCoreStep() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
     
     protected abstract void setupStepArtifacts();
     

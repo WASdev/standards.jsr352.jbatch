@@ -31,8 +31,6 @@ public class MyPartitionAnalyzer extends AbstractPartitionAnalyzer {
 
 	private volatile String analyzedData = "";
 	
-	private volatile String analyzedExits = "";
-	
 	private volatile String analyzedStatus = "";
 	
     @Inject
@@ -61,7 +59,7 @@ public class MyPartitionAnalyzer extends AbstractPartitionAnalyzer {
 	        expectedString = expectedString + "CA";
 	    }
 	    
-	    if (!!!analyzedData.startsWith(expectedString)) {
+	    if (!analyzedData.startsWith(expectedString)) {
 	        throw new Exception("analyzeStatus was called at an unexpected time. Expected String to have at least=" +expectedString + " ActualData=" + analyzedData);
 	    }
 	    

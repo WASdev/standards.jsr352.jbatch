@@ -22,23 +22,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.batch.operations.JobStartException;
 import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.operations.JobStartException;
 import javax.batch.runtime.JobExecution;
 
-import com.ibm.jbatch.tck.utils.JobOperatorBridge;
-
 import org.junit.Before;
-import org.junit.Ignore;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+
 public class SplitTransitioningTests {
 
 	private JobOperatorBridge jobOp = null;
-	
+
 	/**
 	 * @testName: testSplitTransitionToStep
 	 * @assertion: Section 5.4 Split
@@ -56,21 +55,21 @@ public class SplitTransitioningTests {
 	public void testSplitTransitionToStep() throws Exception {
 
 		String METHOD = "testSplitTransitionToStep";
-		
+
 		try {
 			Reporter.log("starting job");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_step", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			
+
 			assertWithMessage("Split transitioned to step", "step1", jobExec.getExitStatus());
-			
+
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
 		} catch (Exception e) {
-    		handleException(METHOD, e); 
-    	}
+			handleException(METHOD, e); 
+		}
 	}
-	
+
 	/**
 	 * @testName: testSplitTransitionToStepOutOfScope
 	 * @assertion: Section 5.4 Split
@@ -78,7 +77,7 @@ public class SplitTransitioningTests {
 	 * 				   2. start job 
 	 * 				   3. this job should fail because the split flow 'flow1' next to outside the split
 	 * 
-     *	<split id="split1">
+	 *	<split id="split1">
 	 *	   <flow id="flow1" next="step1">
 	 *			<step id="flow1step1" next="flow1step2">
 	 *				<batchlet ref="splitTransitionToDecisionTestBatchlet"/>
@@ -106,28 +105,37 @@ public class SplitTransitioningTests {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-    @Test(enabled = false) @org.junit.Test @Ignore
+	@Test
+	@org.junit.Test
 	public void testSplitTransitionToStepOutOfScope() throws Exception {
-    	
-    	String METHOD = "testSplitTransitionToStepOutOfScope";
 
-    	try {
+		String METHOD = "testSplitTransitionToStepOutOfScope";
+
+		try {
 			Reporter.log("starting job");
+			
+			boolean seenException = false;
 			JobExecution jobExec = null;
 			try {
 				jobExec = jobOp.startJobAndWaitForResult("split_transition_to_step_out_of_scope", null);
 			} catch (JobStartException e) {
-				Reporter.log("job failed to start " + e.getLocalizedMessage());
+				Reporter.log("Caught JobStartException:  " + e.getLocalizedMessage());
+				seenException = true;
 			}
 			
-			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			// If we caught an exception we'd expect that a JobExecution would not have been created,
+			// though we won't validate that it wasn't created.  
 			
-			assertWithMessage("Job should have failed because of out of scope execution elements.", BatchStatus.FAILED, jobExec.getBatchStatus());
-    	} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+			// If we didn't catch an exception that we require that the implementation fail the job execution.
+			if (!seenException) {
+				Reporter.log("Didn't catch JobstartException, Job Batch Status = " + jobExec.getBatchStatus());
+				assertWithMessage("Job should have failed because of out of scope execution elements.", BatchStatus.FAILED, jobExec.getBatchStatus());
+			}
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
 	}
-	
+
 	/**
 	 * @testName: testFlowTransitionToDecision
 	 * @assertion: Section 5.4 Split
@@ -145,7 +153,7 @@ public class SplitTransitioningTests {
 	public void testFlowTransitionToDecision() throws Exception {
 
 		String METHOD = "testFlowTransitionToDecision";
-		
+
 		try {
 			String exitStatus = "ThatsAllFolks";
 			// based on our decider exit status
@@ -153,44 +161,44 @@ public class SplitTransitioningTests {
 			<decision id="decider1" ref="flowTransitionToDecisionTestDecider">
 				<end exit-status="ThatsAllFolks" on="DECIDER_EXIT_STATUS*2" />
 			</decision>
-			*/
+			 */
 			Reporter.log("starting job");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_transition_to_decision", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			
+
 			assertWithMessage("Job Exit Status is from decider", exitStatus, jobExec.getExitStatus());
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");
 		} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+			handleException(METHOD, e);
+		}
 	}
-	
-	 private static void handleException(String methodName, Exception e) throws Exception {
-			Reporter.log("Caught exception: " + e.getMessage()+"<p>");
-			Reporter.log(methodName + " failed<p>");
-			throw e;
+
+	private static void handleException(String methodName, Exception e) throws Exception {
+		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
+		Reporter.log(methodName + " failed<p>");
+		throw e;
+	}
+
+	/* cleanup */
+	public void  cleanup()
+	{		
+
+	}
+
+	public void setup(String[] args, Properties props) throws Exception {
+
+		String METHOD = "setup";
+
+		try {
+			jobOp = new JobOperatorBridge();
+		} catch (Exception e) {
+			handleException(METHOD, e);
 		}
-	    
-	 /* cleanup */
-		public void  cleanup()
-		{		
-		
-		}
-	 
-	 public void setup(String[] args, Properties props) throws Exception {
-	    	
-	    	String METHOD = "setup";
-	    	
-	    	try {
-	    		jobOp = new JobOperatorBridge();
-	    	} catch (Exception e) {
-	    		handleException(METHOD, e);
-	    	}
-	    } 
+	} 
 
 	@BeforeTest
-    @Before
+	@Before
 	public void beforeTest() throws ClassNotFoundException {
 		jobOp = new JobOperatorBridge(); 
 	}

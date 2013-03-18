@@ -42,9 +42,9 @@ public class DecisionPropertyResolverImpl extends AbstractPropertyResolver<Decis
             currentProps = this.resolveElementProperties(decision.getProperties().getPropertyList(), submittedProps, parentProps);
         }
         
-        if (decision.getControlElements() != null) {
-            for (final TransitionElement controlElement : decision.getControlElements()) {
-                PropertyResolverFactory.createControlElementPropertyResolver(this.isPartitionedStep).substituteProperties(controlElement, submittedProps, currentProps);
+        if (decision.getTransitionElements() != null) {
+            for (final TransitionElement transitionElement : decision.getTransitionElements()) {
+                PropertyResolverFactory.createTransitionElementPropertyResolver(this.isPartitionedStep).substituteProperties(transitionElement, submittedProps, currentProps);
             }
         }
         

@@ -31,7 +31,10 @@
 
 	<target name="cleanTCK">
 		<delete dir="${jsr352.tck.basedir}/../testArtifactsBin"/>
-		<delete dir="${jsr352.tck.basedir}/../bin"/>
+		<delete> 
+			<!-- Leaving this around shouldn't be a problem and removes the need to clean the Java builder build -->
+			<fileset dir="${jsr352.tck.basedir}/../bin" excludes="META-INF/services/*"/>
+		</delete>
 		<delete dir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
 		<delete dir="${jsr352.tck.basedir}/../dist"/>
 	</target>
@@ -52,6 +55,7 @@
 
 		<copy todir="${jsr352.tck.basedir}/../testArtifactsBin/META-INF">
 			<fileset dir="${jsr352.tck.basedir}/../META-INF"/>
+			<fileset dir="${jsr352.tck.basedir}/../resources/META-INF"/>
 		</copy>
 
 	</target>
@@ -93,7 +97,7 @@
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
 		<zip destfile="${jsr352.tck.basedir}/../dist/${tckZipRootDir}.zip">
-			<zipfileset dir="${jsr352.tck.basedir}/.." includes="${tckZipRootDir}"/>
+			<zipfileset dir="${jsr352.tck.basedir}/.." includes="${tckZipRootDir}/**/*"/>
 		</zip>
 	</target>
 

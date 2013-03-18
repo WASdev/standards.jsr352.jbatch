@@ -44,7 +44,7 @@ public class ServiceTypes {
 	private static final String DEFAULT_BATCH_THREADPOOL_SERVICE = "com.ibm.jbatch.container.services.impl.GrowableThreadPoolServiceImpl";
 	private static final String DEFAULT_BATCH_KERNEL_SERVICE = "com.ibm.jbatch.container.impl.BatchKernelImpl";
 	private static final String DEFAULT_JOBID_MGR_SERVICE = "com.ibm.jbatch.container.services.impl.JobIdManagerImpl";
-	private static final String DEFAULT_CALLBACK_SERVICE = "com.ibm.jbatch.container.tck.bridge.JobEndCallbackManagerImpl";
+	private static final String DEFAULT_CALLBACK_SERVICE = "com.ibm.jbatch.container.callback.JobEndCallbackManagerImpl";
 	private static final String DEFAULT_JOBXML_LOADER_SERVICE = "com.ibm.jbatch.container.services.impl.DelegatingJobXMLLoaderServiceImpl";
 	private static final String DEFAULT_DELEGATING_JOBXML_LOADER_SERVICE = "com.ibm.jbatch.container.services.impl.DelegatingJobXMLLoaderServiceImpl";
 	private static final String DEFAULT_CONTAINER_ARTIFACT_FACTORY_SERVICE = "com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl";

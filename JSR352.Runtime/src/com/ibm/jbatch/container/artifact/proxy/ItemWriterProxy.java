@@ -25,9 +25,7 @@ import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
 public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWriter {
 
-
-
-    ItemWriterProxy(ItemWriter delegate) {     	
+    ItemWriterProxy(ItemWriter<?> delegate) {     	
         super(delegate);
    }
 
@@ -44,7 +42,6 @@ public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWr
 
     @Override
     public void close() {
-        
         try {
             this.delegate.close();
         } catch (Exception e) {
@@ -55,7 +52,6 @@ public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWr
 
     @Override
     public void open(Serializable checkpoint) {
-        
         try {
             this.delegate.open(checkpoint);
         } catch (Exception e) {
@@ -72,9 +68,7 @@ public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWr
      */
     @Override
     public void writeItems(List items) throws Exception{
-        
             this.delegate.writeItems(items);
-      
     }
 
 

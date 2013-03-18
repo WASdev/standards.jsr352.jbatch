@@ -27,6 +27,8 @@ import javax.inject.Inject;
 
 import com.ibm.jbatch.tck.artifacts.reusable.StopOnBulletinBoardTestData;
 
+// NOTE:  We do NOT use the default @Named value in this special case, like we usually do.
+// Be careful generating the batch.xml !!  
 @javax.inject.Named("myLongRunningBatchlet")
 public class MyLongRunningBatchletImpl extends AbstractBatchlet {
 

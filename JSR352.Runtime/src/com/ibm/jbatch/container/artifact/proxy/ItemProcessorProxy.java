@@ -13,30 +13,25 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.container.artifact.proxy;
 
 import javax.batch.api.chunk.ItemProcessor;
 
 public class ItemProcessorProxy  extends AbstractProxy<ItemProcessor> implements ItemProcessor {
 
+	ItemProcessorProxy(ItemProcessor delegate) { 
+		super(delegate);
+	}
 
-    ItemProcessorProxy(ItemProcessor delegate) { 
-        super(delegate);
-        
-    }
-
-    
-    /*
-     * In order to provide skip/retry logic, these exceptions
-     * are thrown as-is rather than beeing wrapped.
-     * @see javax.batch.api.ItemReader#readItem()
-     */
-    @Override
-    public Object processItem(Object item) throws Exception {
-     
-            return this.delegate.processItem(item);
-
-    }
+	/*
+	 * In order to provide skip/retry logic, these exceptions
+	 * are thrown as-is rather than beeing wrapped.
+	 * @see javax.batch.api.ItemReader#readItem()
+	 */
+	@Override
+	public Object processItem(Object item) throws Exception {
+		return this.delegate.processItem(item);
+	}
 
 }

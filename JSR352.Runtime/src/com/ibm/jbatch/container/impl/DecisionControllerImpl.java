@@ -35,7 +35,7 @@ import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
-import com.ibm.jbatch.container.util.ExecutionStatus;
+import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.jsl.model.Decision;
@@ -89,9 +89,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
    
 
     @Override
-    public String execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
-
-        ExecutionStatus status = new ExecutionStatus();
+    public InternalExecutionElementStatus execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
 
         String deciderId = decision.getRef();
         List<Property> propList = (decision.getProperties() == null) ? null : decision.getProperties().getPropertyList();
@@ -115,7 +113,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
 
         String exitStatus = deciderProxy.decide(this.stepExecutions.toArray(new StepExecution[stepExecutions.size()]));
         
-        return exitStatus;
+        return new InternalExecutionElementStatus(exitStatus);
 
     }
 

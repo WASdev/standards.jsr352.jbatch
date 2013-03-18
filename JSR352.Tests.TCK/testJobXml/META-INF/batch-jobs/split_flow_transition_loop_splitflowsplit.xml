@@ -18,7 +18,7 @@
 <job id="splitFlowTransitionLoop" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 
     <split id="split1">
-	    <flow id="split1Flow" next="flow2">
+	    <flow id="split1Flow" >
 			<step id="split1FlowStep1" next="split1FlowSplit">
 				<batchlet ref="splitFlowTransitionLoopTestBatchlet">
 					<properties>

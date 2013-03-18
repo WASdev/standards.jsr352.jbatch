@@ -22,23 +22,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.batch.operations.JobStartException;
 import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.operations.JobStartException;
 import javax.batch.runtime.JobExecution;
 
-import com.ibm.jbatch.tck.utils.JobOperatorBridge;
-
 import org.junit.Before;
-import org.junit.Ignore;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+
 public class JobExecutableSequenceTests {
 
 	private JobOperatorBridge jobOp = null;
-	
+
 	/**
 	 * @testName: testJobExecutableSequenceToUnknown
 	 * @assertion: Section 5.3 Flow
@@ -51,56 +50,61 @@ public class JobExecutableSequenceTests {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-    @Test(enabled = false)
-    @org.junit.Test
-    @Ignore
+	@Test
+	@org.junit.Test
 	public void testJobExecutableSequenceToUnknown() throws Exception {
 
-    	String METHOD = "testJobExecutableSequenceToUnknown";
-    	
-    	try {
-    	
+		String METHOD = "testJobExecutableSequenceToUnknown";
+
+		try {
+
 			Reporter.log("starting job");
 			JobExecution jobExec = null;
+			boolean seenException = false;
 			try {
 				jobExec = jobOp.startJobAndWaitForResult("job_executable_sequence_invalid", null);
-			} catch (Exception e) {
-				Reporter.log("Job Failed with error: " + e.getLocalizedMessage());
+			} catch (JobStartException e) {
+				Reporter.log("Caught JobStartException:  " + e.getLocalizedMessage());
+				seenException = true;
 			}
-			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			
-			assertWithMessage("Job should have failed with unknown steps ", BatchStatus.FAILED, jobExec.getBatchStatus());
+			// If we caught an exception we'd expect that a JobExecution would not have been created,
+			// though we won't validate that it wasn't created.  
+			// If we didn't catch an exception that we require that the implementation fail the job execution.
+			if (!seenException) {
+				Reporter.log("Didn't catch JobStartException, Job Batch Status = " + jobExec.getBatchStatus());
+				assertWithMessage("Job should have failed because of out of scope execution elements.", BatchStatus.FAILED, jobExec.getBatchStatus());
+			}
 			Reporter.log("job failed");
-    	} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
 	}
-    
-    private static void handleException(String methodName, Exception e) throws Exception {
+
+	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
 		Reporter.log(methodName + " failed<p>");
 		throw e;
 	}
-    
-  public void setup(String[] args, Properties props) throws Exception {
-    	
-    	String METHOD = "setup";
-    	
-    	try {
-    		jobOp = new JobOperatorBridge();
-    	} catch (Exception e) {
-    		handleException(METHOD, e);
-    	}
-    }
-    
-    /* cleanup */
+
+	public void setup(String[] args, Properties props) throws Exception {
+
+		String METHOD = "setup";
+
+		try {
+			jobOp = new JobOperatorBridge();
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	/* cleanup */
 	public void  cleanup()
 	{		
-	
+
 	}
-	
+
 	@BeforeTest
-    @Before
+	@Before
 	public void beforeTest() throws ClassNotFoundException {
 		jobOp = new JobOperatorBridge(); 
 	}

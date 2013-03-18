@@ -851,13 +851,12 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
         _persistenceManagerService = servicesManager.getPersistenceManagerService();
         readerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "READER");
-        List<?> data = _persistenceManagerService.getCheckpointData(readerChkptDK);
+        CheckpointData readerChkptData = _persistenceManagerService.getCheckpointData(readerChkptDK);
         try {
 
             // check for data in backing store
-            if (data.size() >= 1) {
+            if (readerChkptData != null) {
 
-                readerChkptData = (CheckpointData) data.get(0);
                 byte[] readertoken = readerChkptData.getRestartToken();
                 ByteArrayInputStream readerChkptBA = new ByteArrayInputStream(readertoken);
                 TCCLObjectInputStream readerOIS = null;
@@ -875,16 +874,16 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 readerProxy.open(null);
             }
         } catch (ClassCastException e) {
-            throw new IllegalStateException("Expected CheckpointData but found" + data.get(0));
+            logger.warning("Expected CheckpointData but found" + readerChkptData );
+            throw new IllegalStateException("Expected CheckpointData but found" + readerChkptData );
         }
 
         writerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "WRITER");
-        data = _persistenceManagerService.getCheckpointData(writerChkptDK);
+        CheckpointData writerChkptData = _persistenceManagerService.getCheckpointData(writerChkptDK);
 
         try {
             // check for data in backing store
-            if (data.size() >= 1) {
-                writerChkptData = (CheckpointData) data.get(0);
+            if (writerChkptData != null) {
                 byte[] writertoken = writerChkptData.getRestartToken();
                 ByteArrayInputStream writerChkptBA = new ByteArrayInputStream(writertoken);
                 TCCLObjectInputStream writerOIS = null;
@@ -902,7 +901,8 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 writerProxy.open(null);
             }
         } catch (ClassCastException e) {
-            throw new IllegalStateException("Expected Checkpoint but found" + data.get(0));
+        	logger.warning("Expected Checkpoint but found" + writerChkptData);
+            throw new IllegalStateException("Expected Checkpoint but found" + writerChkptData);
         }
 
         // set up metrics
@@ -1007,15 +1007,11 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     private void positionReaderAtCheckpoint() {
         _persistenceManagerService = servicesManager.getPersistenceManagerService();
         readerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "READER");
-        List<?> data = _persistenceManagerService.getCheckpointData(readerChkptDK);
 
-        CheckpointData readerData = null;
-
+        CheckpointData readerData = _persistenceManagerService.getCheckpointData(readerChkptDK);
         try {
             // check for data in backing store
-            if (data.size() >= 1) {
-
-                readerData = (CheckpointData) data.get(0);
+            if (readerData != null) {
                 byte[] readertoken = readerData.getRestartToken();
                 ByteArrayInputStream readerChkptBA = new ByteArrayInputStream(readertoken);
                 TCCLObjectInputStream readerOIS = null;
@@ -1033,22 +1029,19 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 readerProxy.open(null);
             }
         } catch (ClassCastException e) {
-            throw new IllegalStateException("Expected CheckpointData but found" + data.get(0));
+            throw new IllegalStateException("Expected CheckpointData but found" + readerData);
         }
     }
 
     private void positionWriterAtCheckpoint() {
         _persistenceManagerService = servicesManager.getPersistenceManagerService();
         writerChkptDK = new CheckpointDataKey(jobExecutionImpl.getJobInstance().getInstanceId(), step.getId(), "WRITER");
-        List<?> data = _persistenceManagerService.getCheckpointData(writerChkptDK);
 
-        CheckpointData writerData = null;
+        CheckpointData writerData =  _persistenceManagerService.getCheckpointData(writerChkptDK);
 
         try {
             // check for data in backing store
-            if (data.size() >= 1) {
-
-                writerData = (CheckpointData) data.get(0);
+            if (writerData != null) {
                 byte[] writertoken = writerData.getRestartToken();
                 ByteArrayInputStream writerChkptBA = new ByteArrayInputStream(writertoken);
                 TCCLObjectInputStream writerOIS = null;
@@ -1066,7 +1059,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 writerProxy.open(null);
             }
         } catch (ClassCastException e) {
-            throw new IllegalStateException("Expected CheckpointData but found" + data.get(0));
+            throw new IllegalStateException("Expected CheckpointData but found" + writerData);
         }
     }
 }

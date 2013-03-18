@@ -16,7 +16,6 @@
 */
 package com.ibm.jbatch.container.services;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -34,9 +33,7 @@ import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.persistence.CheckpointData;
 import com.ibm.jbatch.container.persistence.CheckpointDataKey;
 import com.ibm.jbatch.container.status.JobStatus;
-import com.ibm.jbatch.container.status.JobStatusKey;
 import com.ibm.jbatch.container.status.StepStatus;
-import com.ibm.jbatch.container.status.StepStatusKey;
 import com.ibm.jbatch.spi.services.IBatchServiceBase;
 
 public interface IPersistenceManagerService extends IBatchServiceBase {
@@ -45,21 +42,12 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
      * JOB OPERATOR ONLY METHODS
      */
     
-    public void jobOperatorCreateJobInstanceData(long key, String jobNameValue, String apptag);
-    
 	public int jobOperatorGetJobInstanceCount(String jobName);
 	
 	public Map<Long, String> jobOperatorGetJobInstanceData();
 	
 	public List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count);
 
-	public Set<String> jobOperatorGetJobNames();
-
-	public void jobOperatorCreateExecutionData(long key,
-			Timestamp createTime, Timestamp starttime, Timestamp endtime,
-			Timestamp updateTime, Properties parms, long instanceID,
-			String batchstatus, String exitstatus);
-	
 	public Timestamp jobOperatorQueryJobExecutionTimestamp(long key, String timetype);
 	
 	public String jobOperatorQueryJobExecutionStatus(long key, String requestedStatus);
@@ -70,8 +58,6 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts);
 	
-	public void stepExecutionCreateStepExecutionData(String stepExecutionKey, long rootExecutionID, StepContextImpl stepContext, List<String> containment);
-	
 	public List<StepExecution<?>> getStepExecutionIDListQueryByJobID(long execid);
 	
 	public void jobOperatorUpdateBatchStatusWithUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
@@ -80,13 +66,9 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public IJobExecution jobOperatorGetJobExecution(long jobExecutionId);
 
-	public List<IJobExecution> jobOperatorGetJobExecutionsByJobInstanceID(long jobInstanceID);
-
-	public Properties getParameters(long instanceId);
+	public Properties getParameters(long executionId);
 
 	public List<IJobExecution> jobOperatorGetJobExecutions(long jobInstanceId);
-
-	public StepExecution<? extends Serializable> getStepExecutionObjQueryByStepID(long stepexecutionId);
 
 	public Set<Long> jobOperatorGetRunningExecutions(String jobName);
 	
@@ -94,7 +76,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public void purge(String apptag);
 	
-	public List<JobStatus> getJobStatusFromExecution(long executionId);
+	public JobStatus getJobStatusFromExecution(long executionId);
 	
 	public long getJobInstanceIdByExecutionId(long executionId);
 	
@@ -208,17 +190,9 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
     public void updateCheckpointData(CheckpointDataKey key, CheckpointData value);
 
-	void createStepStatus(StepStatusKey key, StepStatus value);
-
-	void updateStepStatus(StepStatusKey key, StepStatus value);
-
-	List<JobStatus> getJobStatus(JobStatusKey key);
-
-	void updateJobStatus(JobStatusKey key, JobStatus value);
-
-	void createJobStatus(JobStatusKey key, JobStatus value);
-
-	List<CheckpointData> getCheckpointData(CheckpointDataKey key);
+	CheckpointData getCheckpointData(CheckpointDataKey key);
 
 	void createCheckpointData(CheckpointDataKey key, CheckpointData value);
+
+	long getMostRecentExecutionId(long jobInstanceId);
 }

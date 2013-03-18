@@ -17,7 +17,7 @@
 -->
 <job id="job_batchlet_longrunning" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1" next="step2">
-		<batchlet ref="myLongRunningBatchletImpl">
+		<batchlet ref="myLongRunningBatchlet">
 			<properties>
 			    <!-- Run indefinitely so we know for sure we can stop in the middle of step 1. -->
 				<property name="run.indefinitely" value="#{jobParameters['run.indefinitely']}"/>
@@ -27,6 +27,6 @@
 		</batchlet>
 	</step>
 	<step id="step2" >
-		<batchlet ref="myLongRunningBatchletImpl"/>					
+		<batchlet ref="myLongRunningBatchlet"/>					
 	</step>
 </job>

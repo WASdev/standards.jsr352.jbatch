@@ -20,22 +20,24 @@ import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.ibm.jbatch.tck.spi.BatchContainerServiceProvider;
+import org.testng.Reporter;
+
+import com.ibm.jbatch.tck.spi.JobExecutionWaiterFactory;
 
 public class ServiceGateway {
-    private final static Logger logger = 
-        Logger.getLogger(ServiceGateway.class.getName());
+    private final static Logger logger = Logger.getLogger(ServiceGateway.class.getName());
 
-    public static BatchContainerServiceProvider getServices() { 
-        BatchContainerServiceProvider services = null;
-        ServiceLoader<BatchContainerServiceProvider> loader = 
-            ServiceLoader.load(BatchContainerServiceProvider.class);
+    public static JobExecutionWaiterFactory getJobExecutionWaiterFactoryService() { 
+    	JobExecutionWaiterFactory services = null;
+        ServiceLoader<JobExecutionWaiterFactory> loader = 
+            ServiceLoader.load(JobExecutionWaiterFactory.class);
 
-        for (BatchContainerServiceProvider provider : loader) {
+        for (JobExecutionWaiterFactory provider : loader) {
             if (provider != null) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.fine("Loaded BatchContainerServiceProvider with className = " + provider.getClass().getCanonicalName());
+                    logger.fine("Loaded JobExecutionWaiterFactory with className = " + provider.getClass().getCanonicalName());
                 }
+                Reporter.log("Loaded JobExecutionWaiterFactory with className = " + provider.getClass().getCanonicalName() + "<p>");
                 // Use first one
                 services = provider;
                 break;
@@ -43,8 +45,7 @@ public class ServiceGateway {
         }
 
         if (services == null) {
-            throw new IllegalStateException("Bad TCK classpath; check your run/debug config.  Probably the remedy is to add the 'Runtime' project as a classpath entry to the TCK run configuration (on the other hand it should NOT" +
-            		" be present on the build time clsspath.  The low level problem is that we couldn't find/load a BatchContainerServiceProvider instance.  ");
+            throw new IllegalStateException("Service loader didn't find resource found on classpath for service: META-INF/services/com.ibm.jbatch.tck.spi.JobExecutionWaiterFactory");
         }
         return services;
     } 

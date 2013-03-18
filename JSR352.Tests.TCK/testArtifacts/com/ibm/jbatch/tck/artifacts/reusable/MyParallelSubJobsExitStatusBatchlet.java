@@ -31,14 +31,13 @@ public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
     
     public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
     
-	
 	@Override
 	public String process() throws Exception {	
 		logger.fine("Running batchlet process(): " + count);
 		
 		count.incrementAndGet();
 		
-		//Get the last thread to start to sleep the longest so we can show it's exit status is the one that is
+		//Get the last thread to start to sleep the longest so we can show its exit status is the one that is
 		//picked up.
 		if (count.get() == 11) {
 		    Thread.sleep(2000);
@@ -46,7 +45,6 @@ public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
 		
 		String returnString = "VERY GOOD INVOCATION " + count;
 		return returnString;
-		
 	}
 	
 	@Override
