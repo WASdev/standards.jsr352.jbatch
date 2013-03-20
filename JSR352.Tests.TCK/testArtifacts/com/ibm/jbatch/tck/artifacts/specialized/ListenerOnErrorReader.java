@@ -2,7 +2,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.io.Serializable;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemReader;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -10,7 +10,7 @@ import javax.inject.Named;
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
 @Named
-public class ListenerOnErrorReader implements ItemReader<ReadRecord> {
+public class ListenerOnErrorReader implements ItemReader {
 
 	@Inject    
     @BatchProperty(name="read.fail.immediate")

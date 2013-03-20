@@ -47,6 +47,8 @@
 	</target>
 	
 	<target name="run" depends="init" description="Runs the JSR352 TCK suite" >
+		
+		<loadproperties srcFile="jsr352-tck.properties"/>
 	
 		<testng mode="testng" dumpCommand="true" workingDir="." failureProperty="tests.failed" outputdir="${results}">
 			<classpath>
@@ -62,8 +64,32 @@
 				</fileset>
 			</classpath>
 			<xmlfileset dir="." includes="artifacts/jsr352-tck-impl-suite.xml"/>
-			<sysproperty key="jobOperator.sleep.time" value="900000"/>
+			
+			<!-- TCK test sleep property definitions -->
 			<jvmarg value="-DjobOperator.sleep.time=900000"/>
+			<jvmarg value="-DExecutionTests.testInvokeJobWithUserStop.sleep=${ExecutionTests.testInvokeJobWithUserStop.sleep}"/>
+			<jvmarg value="-DJobOperatorTests.testInvokeJobWithUserStop.sleep=${JobOperatorTests.testInvokeJobWithUserStop.sleep}"/>
+			<jvmarg value="-DJobOperatorTests.testJobOperatorGetRunningJobExecutions.sleep=${JobOperatorTests.testJobOperatorGetRunningJobExecutions.sleep}"/>
+			<jvmarg value="-DParallelExecutionTests.testStopRunningPartitionedStep.sleep=${ParallelExecutionTests.testStopRunningPartitionedStep.sleep}"/>
+			<jvmarg value="-DParallelExecutionTests.testStopRestartRunningPartitionedStep.sleep=${ParallelExecutionTests.testStopRestartRunningPartitionedStep.sleep}"/>
+			<jvmarg value="-DStopOrFailOnExitStatusWithRestartTests.testInvokeJobWithUserStop.sleep=${StopOrFailOnExitStatusWithRestartTests.testInvokeJobWithUserStop.sleep}"/>
+			<jvmarg value="-DParallelExecutionTests.testInvokeJobWithOnePartitionedStepExitStatus.sleep=${ParallelExecutionTests.testInvokeJobWithOnePartitionedStepExitStatus.sleep}"/>
+			<jvmarg value="-DJobOperatorTests.testJobOperatorGetRunningJobExecutions.app.timeinterval=${JobOperatorTests.testJobOperatorGetRunningJobExecutions.app.timeinterval}"/>
+			<jvmarg value="-DJobOperatorTests.testJobOperatorGetRunningJobInstancesException.app.timeinterval=${JobOperatorTests.testJobOperatorGetRunningJobInstancesException.app.timeinterval}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranNoExceptions.sleep=${TransactionTests.testGlobalTranNoExceptions.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionWithRollback.sleep=${TransactionTests.testGlobalTranForcedExceptionWithRollback.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestart.sleep=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestart.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedTimeoutCheckpointRestartDefault.sleep=${TransactionTests.testGlobalTranForcedTimeoutCheckpointRestartDefault.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.1=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.1}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.2=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.2}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultiple.sleep=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultiple.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg.sleep=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.1=${TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.1}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.2=${TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.2}"/>
+			<jvmarg value="-DChunkTests.testChunkTimeBased10Seconds.sleep=${ChunkTests.testChunkTimeBased10Seconds.sleep}"/>
+			<jvmarg value="-DChunkTests.testChunkRestartTimeBasedCheckpoint.sleep=${ChunkTests.testChunkRestartTimeBasedCheckpoint.sleep}"/>
+			<jvmarg value="-DChunkTests.testChunkTimeBasedTimeLimit0.sleep=${ChunkTests.testChunkTimeBasedTimeLimit0.sleep}"/>
+			<jvmarg value="-DChunkTests.testChunkRestartTimeBasedDefaultCheckpoint.sleep=${ChunkTests.testChunkRestartTimeBasedDefaultCheckpoint.sleep}"/>
 		</testng>
 	</target>
 

@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 
@@ -27,7 +27,7 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 
 @javax.inject.Named("skipProcessor")
-public class SkipProcessor implements ItemProcessor<ReadRecord, ReadRecord> {
+public class SkipProcessor implements ItemProcessor {
 	
 	private final static Logger logger = Logger.getLogger(SkipProcessor.class.getName());
 	
@@ -49,7 +49,7 @@ public class SkipProcessor implements ItemProcessor<ReadRecord, ReadRecord> {
 	int processIteration = 0;
 	
 	@Override
-	public ReadRecord processItem(ReadRecord record) throws Exception {
+	public ReadRecord processItem(Object record) throws Exception {
 			
 		if (!inited){
 			if (!processrecordfailNumberString.equals("null")) {
@@ -84,7 +84,7 @@ public class SkipProcessor implements ItemProcessor<ReadRecord, ReadRecord> {
 			throw new MyParentException("fail on purpose on idx = " + failnum);
 		}
 		
-		processedRecord = record;
+		processedRecord = (ReadRecord) record;
 		processedRecord.setRecord(update);
 		update = update +1;
 		processIteration++;

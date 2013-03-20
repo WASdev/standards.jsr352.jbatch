@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.AbstractItemProcessListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
@@ -27,7 +27,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
 
 @javax.inject.Named("myItemProcessListenerImpl")
-public class MyItemProcessListenerImpl extends AbstractItemProcessListener<ReadRecord, ReadRecord> {
+public class MyItemProcessListenerImpl extends AbstractItemProcessListener {
 	private final static String sourceClass = MyItemProcessListenerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 	
@@ -45,18 +45,18 @@ public class MyItemProcessListenerImpl extends AbstractItemProcessListener<ReadR
     String applistenerTest;
 
 	@Override
-	public void beforeProcess(ReadRecord item) {
+	public void beforeProcess(Object item) {
 		if (item != null && applistenerTest.equals("PROCESS")){
-			logger.finer("In afterRead(), item = " + item.getCount());
+			logger.finer("In afterRead(), item = " + ((ReadRecord)item).getCount());
 			beforecounter++;
 
 		}
 	}
 	
 	@Override
-	public void afterProcess(ReadRecord input, ReadRecord result) throws Exception {
+	public void afterProcess(Object input, Object result) throws Exception {
 		if (input != null && applistenerTest.equals("PROCESS")){
-			logger.finer("In afterProcess(), input = " + input.getCount() + ", output = " + result.getCount());	
+			logger.finer("In afterProcess(), input = " + ((ReadRecord) input).getCount() + ", output = " + ((ReadRecord) result).getCount());	
 			
 			aftercounter++;
 
@@ -69,7 +69,7 @@ public class MyItemProcessListenerImpl extends AbstractItemProcessListener<ReadR
 	}
 	
 	@Override
-	public void onProcessError(ReadRecord input, Exception e) throws Exception {
+	public void onProcessError(Object input, Exception e) throws Exception {
 		logger.finer("In onProcessError(), input = " + e);
 		jobCtx.setExitStatus("MyItemProcessListenerImpl.onProcessError");
 	}

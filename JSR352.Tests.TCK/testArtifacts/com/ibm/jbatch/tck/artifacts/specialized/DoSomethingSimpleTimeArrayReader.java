@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -29,7 +29,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 
 @javax.inject.Named("doSomethingSimpleTimeArrayReader")
-public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRecord> {
+public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader {
 		
 	private final static Logger logger = Logger.getLogger(DoSomethingSimpleTimeArrayReader.class.getName());
 	
@@ -55,11 +55,12 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
     String sleeptimeString;
 	
 	     @Inject 
-	 private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null; 
+	 private StepContext stepCtx = null; 
 		
 	int execnum;
 	int failnum;
 	int arraysize;
+	int sleeptime;
 		
 		@Override
 		public void open(Serializable cpd) {
@@ -69,6 +70,9 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
 			failnum = Integer.parseInt(readrecordfailNumberString);
             execnum = Integer.parseInt(executionNumberString);   
     		arraysize = Integer.parseInt(appArraySizeString);
+    		
+    		sleeptime = Integer.parseInt(sleeptimeString);
+    		
     		
     		readerDataArray =  new int[arraysize];
     		
@@ -97,7 +101,7 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
 				return null;
 			}
 			
-			execnum = stepCtx.getPersistentUserData().getExecutionNumber();
+			execnum = ((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getExecutionNumber();
 			
 			if (execnum == 2){
 				failnum = -1;
@@ -110,7 +114,7 @@ public class DoSomethingSimpleTimeArrayReader extends AbstractItemReader<ReadRec
 			count = count + 1;
 			idx = idx+1;
 			_cpd.setCurrentIndex(i);
-			Thread.sleep(500);
+			Thread.sleep(sleeptime);
 		    return new ReadRecord(readerDataArray[i]);
 		}
 		

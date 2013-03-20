@@ -25,7 +25,7 @@ import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
 public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWriter {
 
-    ItemWriterProxy(ItemWriter<?> delegate) {     	
+    ItemWriterProxy(ItemWriter delegate) {     	
         super(delegate);
    }
 

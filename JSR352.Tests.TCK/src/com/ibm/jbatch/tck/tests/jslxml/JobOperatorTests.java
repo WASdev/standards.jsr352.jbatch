@@ -24,8 +24,8 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
-import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.NoSuchJobException;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.Metric;
@@ -114,7 +114,8 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorRestart
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - restart
+	 * @assertion: Section 7.7.9 Job Operator - restart.  Tests also that a restart JobExecution is associated with the
+	 *             same JobInstance as the original execution.
 	 * @test_Strategy: start a job that is configured to fail. Change configuration of job to ensure success. Restart job.
 	 *                 Test that job completes successfully and no exceptions are thrown.
 	 * @throws JobExecutionAlreadyCompleteException
@@ -182,8 +183,16 @@ public class JobOperatorTests {
 	 * 
 	 * @assertion: testJobOperatorRestartAlreadyCompleteException
 	 * @test_Strategy: start a job that is configured to fail. Change configuration of job to ensure success. Restart job
-	 *                 and let it run to completion.  Then restart another time and confirm a testJobOperatorRestartAlreadyCompleteException
+	 *                 and let it run to completion.  Then restart another time and confirm a JobExecutionAlreadyCompleteException
 	 *                 is caught.
+	 *                 
+	 *                 The first start isn't serving a huge purpose, just making the end-to-end test slightly more interesting.
+	 *                 
+	 *                 Though it might be interesting to restart from the first executionId, this would force the issue
+	*                  as to whether the implementation throws JobExecutionAlreadyCompleteException or JobExecutionNotMostRecentException.
+	*                  We don't want to specify a behavior not in the spec, and the spec purposely avoids overspecifying exception behavior.
+	*                  The net is we only restart from the second id.
+	*                   
 	 * @throws JobExecutionAlreadyCompleteException
 	 * @throws NoSuchJobExecutionException
 	 * @throws JobExecutionNotMostRecentException 
@@ -242,20 +251,10 @@ public class JobOperatorTests {
 			long secondExecutionId = exec.getExecutionId();
 			Reporter.log("execution #2 Job execution id="+ secondExecutionId+"<p>");
 
-			// Restart from first execution id
-			Reporter.log("Now invoke restart again, expecting JobExecutionAlreadyCompleteException, for execution id: " + firstExecutionId + "<p>");
-			boolean seenException = false;
-			try {
-				jobOp.restartJobAndWaitForResult(firstExecutionId, jobParams);
-			} catch (JobExecutionAlreadyCompleteException e) {
-				Reporter.log("Caught JobExecutionAlreadyCompleteException as expected<p>");
-				seenException = true;
-			}
-			assertWithMessage("Caught JobExecutionAlreadyCompleteException for bad restart #1 ", seenException);
 
-			// Restart from second execution id
+			// Restart from second execution id (not first, see strategy comment above).
 			Reporter.log("Now invoke restart again, expecting JobExecutionAlreadyCompleteException, for execution id: " + secondExecutionId + "<p>");
-			seenException = false;
+			boolean seenException = false;
 			try {
 				jobOp.restartJobAndWaitForResult(secondExecutionId, jobParams);
 			} catch (JobExecutionAlreadyCompleteException e) {
@@ -280,6 +279,8 @@ public class JobOperatorTests {
 	public void testInvokeJobWithUserStop() throws Exception {
 		String METHOD = "testInvokeJobWithUserStop";
 		begin(METHOD);
+		
+		final String DEFAULT_SLEEP_TIME = "1000";
 
 		try {
 			Reporter.log("Locate job XML file: job_batchlet_longrunning.xml<p>");
@@ -292,8 +293,9 @@ public class JobOperatorTests {
 			Reporter.log("Invoking startJobWithoutWaitingForResult for Execution #1<p>");
 			JobExecution jobExec = jobOp.startJobWithoutWaitingForResult("job_batchlet_longrunning", jobParameters);
 
-			Reporter.log("Thread.sleep(1000)");
-			Thread.sleep(1000);
+			int sleepTime = Integer.parseInt(System.getProperty("JobOperatorTests.testInvokeJobWithUserStop.sleep",DEFAULT_SLEEP_TIME));
+			Reporter.log("Thread.sleep(" +  sleepTime + ")<p>");
+			Thread.sleep(sleepTime);
 
 			Reporter.log("Invoking stopJobAndWaitForResult for Execution #1<p>");
 			jobOp.stopJobAndWaitForResult(jobExec);
@@ -328,7 +330,7 @@ public class JobOperatorTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_1step");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
 
 			assertObjEquals(1, stepExecutions.size());
 
@@ -876,28 +878,31 @@ public class JobOperatorTests {
 	public void testJobOperatorGetRunningJobExecutions() throws Exception {
 		String METHOD = "testJobOperatorGetRunningJobExecutions";
 		begin(METHOD);
+		
+		final String DEFAULT_SLEEP_TIME = "1000";
+		final String DEFAULT_APP_TIME_INTERVAL = "10000";
 
 		try {
 			Reporter.log("Create job parameters for execution #1:<p>");
 			Properties jobParams = new Properties();
-			Reporter.log("app.timeinterval=10000<p>");
-			jobParams.put("app.timeinterval", "10000");
-
-			Reporter.log("Locate job XML file: job_batchlet_step_listener.xml<p>");
+			String timeinterval = System.getProperty("JobOperatorTests.testJobOperatorGetRunningJobExecutions.app.timeinterval",DEFAULT_APP_TIME_INTERVAL);
+			
+			jobParams.put("app.timeinterval", timeinterval);
 
 			Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParams);
 
 			Properties newJobParameters = new Properties();
-			newJobParameters.put("app.timeinterval", "10000");
+			newJobParameters.put("app.timeinterval", timeinterval);
 			Reporter.log("Invoke startJobWithoutWaitingForResult<p>");
 
 			JobExecution exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", newJobParameters);
 
 			// Sleep to give the runtime the chance to start the job.  The job has a delay built into the stepListener afterStep() 
 			// so we aren't worried about the job finishing early leaving zero running executions.
-			Reporter.log("Thread.sleep(1000)");
-			Thread.sleep(1000);
+			int sleepTime = Integer.parseInt(System.getProperty("ExecutionTests.testJobOperatorGetRunningJobExecutions.sleep",DEFAULT_SLEEP_TIME));
+			Reporter.log("Thread.sleep(" + sleepTime + ")<p>");
+			Thread.sleep(sleepTime);
 
 			List<Long> jobExecutions = jobOp.getRunningExecutions("job_batchlet_step_listener");
 			assertWithMessage("Found job instances in the RUNNING state", jobExecutions.size() > 0);
@@ -923,20 +928,22 @@ public class JobOperatorTests {
 	public void testJobOperatorGetRunningJobInstancesException() throws Exception {
 		String METHOD = "testJobOperatorGetRunningJobInstancesException";
 		begin(METHOD);
+		
+		final String DEFAULT_APP_TIME_INTERVAL = "10000";
 
 		try {
 			Reporter.log("Create job parameters for execution #1:<p>");
 			Properties jobParams = new Properties();
-			Reporter.log("app.timeinterval=10000<p>");
-			jobParams.put("app.timeinterval", "10000");
-
-			Reporter.log("Locate job XML file: job_batchlet_step_listener.xml<p>");
+		
+			String timeinterval = System.getProperty("JobOperatorTests.testJobOperatorGetRunningJobInstancesException.app.timeinterval",DEFAULT_APP_TIME_INTERVAL);
+			
+			jobParams.put("app.timeinterval", timeinterval);
 
 			Reporter.log("Invoke startJobWithoutWaitingForResult for execution #1<p>");
 			JobExecution execution1 = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", jobParams);
 
 			Properties restartJobParameters = new Properties();
-			restartJobParameters.put("app.timeinterval", "10000");
+			restartJobParameters.put("app.timeinterval", timeinterval);
 
 			Reporter.log("Invoke startJobWithoutWaitingForResult");
 			JobExecution exec = jobOp.startJobWithoutWaitingForResult("job_batchlet_step_listener", restartJobParameters);
@@ -1112,7 +1119,7 @@ public class JobOperatorTests {
 
 		Reporter.log("---------------------------");
 		Reporter.log("getStepName(): " + step.getStepName() + " - ");
-		Reporter.log("getJobExecutionId(): " + step.getExecutionId() + " - ");
+		Reporter.log("getJobExecutionId(): " + step.getStepExecutionId() + " - ");
 		//System.out.print("getStepExecutionId(): " + step.getStepExecutionId() + " - ");
 		Metric[] metrics = step.getMetrics();
 

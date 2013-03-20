@@ -178,7 +178,7 @@ public class JobOperatorBridge {
 		return jobOp.getJobInstances(jobName, start, end);
 	}
 
-	public List<StepExecution<?>> getStepExecutions(long executionId) throws NoSuchJobExecutionException, JobSecurityException {
+	public List<StepExecution> getStepExecutions(long executionId) throws NoSuchJobExecutionException, JobSecurityException {
 		return jobOp.getStepExecutions(executionId);
 	}
 

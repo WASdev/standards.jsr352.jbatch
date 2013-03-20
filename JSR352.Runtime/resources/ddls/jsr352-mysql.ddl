@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS STEPEXECUTIONINSTANCEDATA(
   batchstatus       VARCHAR(512),
   exitstatus      VARCHAR(512),
   stepname        VARCHAR(512),
-  stepcontainmentcsv VARCHAR(512),
   readcount         INT,
   writecount        INT,
   commitcount       INT,

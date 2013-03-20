@@ -19,7 +19,6 @@ package com.ibm.jbatch.container.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -29,9 +28,9 @@ import javax.batch.api.partition.PartitionPlan;
 import javax.batch.api.partition.PartitionReducer.PartitionStatus;
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
-import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
+import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;
@@ -41,7 +40,7 @@ import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.artifact.proxy.StepListenerProxy;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jsl.CloneUtility;
 import com.ibm.jbatch.container.util.BatchPartitionPlan;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
@@ -90,7 +89,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 	BlockingQueue<PartitionDataWrapper> analyzerQueue = null;
 
-	protected PartitionedStepControllerImpl(final RuntimeJobExecutionHelper jobExecutionImpl, final Step step) {
+	protected PartitionedStepControllerImpl(final RuntimeJobContextJobExecutionBridge jobExecutionImpl, final Step step) {
 		super(jobExecutionImpl, step);
 	}
 
@@ -122,12 +121,12 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 
 		PartitionPlan plan = null;
-		PartitionPlan previousPlan = null;
+		Integer previousNumPartitions = null;
 		final PartitionMapper partitionMapper = step.getPartition().getMapper();
 
 		//from persisted plan from previous run
-		if (stepStatus.getPlan() != null) {
-			previousPlan = stepStatus.getPlan();
+		if (stepStatus.getNumPartitions() != null) {
+			previousNumPartitions = stepStatus.getNumPartitions();
 		}
 
 		if (partitionMapper != null) { //from partition mapper
@@ -160,10 +159,10 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 			//When true is specified, the partition count from the current run
 			//is used and all results from past partitions are discarded.
-			if (mapperPlan.getPartitionsOverride() || previousPlan == null){
+			if (mapperPlan.getPartitionsOverride() || previousNumPartitions == null){
 				plan.setPartitions(mapperPlan.getPartitions());
 			} else {
-				plan.setPartitions(previousPlan.getPartitions());
+				plan.setPartitions(previousNumPartitions);
 			}
 
 			if (mapperPlan.getThreads() == 0) {
@@ -262,7 +261,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		this.plan = this.generatePartitionPlan();
 
 		//persist the partition plan so on restart we have the same plan to reuse
-		stepStatus.setPlan(plan);
+		stepStatus.setNumPartitions(plan.getPartitions());
 
 		/* When true is specified, the partition count from the current run
 		 * is used and all results from past partitions are discarded. Any
@@ -284,7 +283,6 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			this.analyzerQueue =  new LinkedBlockingQueue<PartitionDataWrapper>();
 		}
 		this.completedWorkQueue = new LinkedBlockingQueue<BatchWorkUnit>();
-		this.subJobExitStatusQueue = new Stack<String>();
 
 		// Build all sub jobs from partitioned step
 		buildSubJobBatchWorkUnits();
@@ -309,9 +307,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 			// Then build all the subjobs but do not start them yet
 			if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
-				parallelBatchWorkUnits = batchKernel.buildRestartableParallelJobs(subJobs, partitionProperties, analyzerQueue, subJobExitStatusQueue, completedWorkQueue, this.containment, null);
+				parallelBatchWorkUnits = batchKernel.buildRestartableParallelJobs(subJobs, partitionProperties, analyzerQueue, completedWorkQueue, null);
 			} else {
-				parallelBatchWorkUnits = batchKernel.buildNewParallelJobs(subJobs, partitionProperties, analyzerQueue, subJobExitStatusQueue, completedWorkQueue, this.containment, null);
+				parallelBatchWorkUnits = batchKernel.buildNewParallelJobs(subJobs, partitionProperties, analyzerQueue, completedWorkQueue, null);
 			}
 
 			// NOTE:  At this point I might not have as many work units as I had partitions, since some may have already completed.
@@ -452,14 +450,6 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			if (this.partitionReducerProxy != null) {
 				this.partitionReducerProxy.beforePartitionedStepCompletion();
 			}
-			logger.fine("Only worry about exit status if we haven't detected a STOP or FAIL");
-			// get last item in queue - this should be the last subjob to run
-			if (this.stepContext.getExitStatus() == null){
-				// still need to deal with the potential of a null exit status coming out of a batchlet subjob
-				this.stepContext.setExitStatus(this.subJobExitStatusQueue.pop()); 
-				this.subJobExitStatusQueue.clear();
-
-			}
 		}
 	}
 
@@ -546,5 +536,12 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 				listenerProxy.afterStep();
 			}
 		}
+	}
+	
+	@Override
+	protected void sendStatusFromPartitionToAnalyzerIfPresent() {
+		// Since we're already on the main thread, there will never
+		// be anything to do on this thread.  It's only on the partitioned
+		// threads that there is something to send back.
 	}
 }

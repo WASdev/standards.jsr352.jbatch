@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.services;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.status.JobStatus;

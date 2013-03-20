@@ -16,7 +16,7 @@
  */
 package com.ibm.jbatch.container.status;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 
 /*
  * This is just a holder for batch and exit status-like processing
@@ -92,8 +92,8 @@ public class InternalExecutionElementStatus {
 
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("BatchStatus: " + batchStatus); 
-		buf.append("\nExit Status: " + exitStatus);
+		buf.append("Internal-only batchStatus: " + batchStatus + "(may or may not be the same as external batch status).");
+		buf.append("\nInternal-only exit Status: " + exitStatus + "(may or may not be the same as external exit status).");
 		return buf.toString();
 	}
 }

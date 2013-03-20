@@ -31,7 +31,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryCheckpointData;
 import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryRecord;
 
 @javax.inject.Named("inventoryInitReader")
-public class InventoryInitReader extends AbstractItemReader<InventoryRecord> {
+public class InventoryInitReader extends AbstractItemReader {
 
     protected DataSource dataSource = null;
 

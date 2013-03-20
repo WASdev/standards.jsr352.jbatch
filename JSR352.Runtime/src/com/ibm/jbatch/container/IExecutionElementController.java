@@ -15,31 +15,20 @@
  * limitations under the License.
 */
 package com.ibm.jbatch.container;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 
 public interface IExecutionElementController extends IController {
 
-    public InternalExecutionElementStatus execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException, Exception;
+    public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException, Exception;
     
-    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext);
-    
-    //TODO implement these in the controllers
-    //public void registerListeners(List<Listener> listeners);
-    
-    //public void registerCollectors(List<Collector> collectors);
-    
-    //public void registerAnalyzers(List<Collector> collectors);
+    public void setStepContext(StepContextImpl stepContext);
     
     public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue);
 
-	public void setSubJobExitStatusQueue(Stack<String> subJobExitStatusQueue);
         
 }

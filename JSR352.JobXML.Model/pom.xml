@@ -3,12 +3,12 @@
     <parent>
 		<groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b17</version>
+        <version>1.0-b19</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch-model</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b17</version>
+    <version>1.0-b19</version>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

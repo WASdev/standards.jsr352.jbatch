@@ -22,14 +22,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
-import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.persistence.CheckpointData;
 import com.ibm.jbatch.container.persistence.CheckpointDataKey;
 import com.ibm.jbatch.container.status.JobStatus;
@@ -58,7 +57,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts);
 	
-	public List<StepExecution<?>> getStepExecutionIDListQueryByJobID(long execid);
+	public List<StepExecution> getStepExecutionIDListQueryByJobID(long execid);
 	
 	public void jobOperatorUpdateBatchStatusWithUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
 	
@@ -96,13 +95,12 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	/**
 	 * Create a JobExecution
 	 * 
-	 * @param jobNavigator resolved job navigator
 	 * @param jobInstance the parent job instance
 	 * @param jobParameters the parent job instance parameters
-	 * @param jobContext the job context for this job execution
-	 * @return the RuntimeJobExecutionHelper class for this JobExecution
+	 * @param batchStatus the current BatchStatus
+	 * @return the RuntimeJobContextJobExecutionBridge class for this JobExecution
 	 */
-	public RuntimeJobExecutionHelper createJobExecution(Navigator jobNavigator, JobInstance jobInstance, Properties jobParameters, JobContextImpl jobContext);
+	RuntimeJobContextJobExecutionBridge createJobExecution(JobInstance jobInstance, Properties jobParameters, BatchStatus batchStatus);
 	
 	// STEPEXECUTIONINSTANCEDATA
 	/**
@@ -112,7 +110,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	 * @param stepContext the step context for this step execution
 	 * @return the StepExecution
 	 */
-	public StepExecutionImpl createStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment);
+	public StepExecutionImpl createStepExecution(long jobExecId, StepContextImpl stepContext);
 	
 	/**
 	 * Update a StepExecution
@@ -120,7 +118,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	 * @param jobExecId the parent JobExecution id
 	 * @param stepContext the step context for this step execution
 	 */
-	public void updateStepExecution(long jobExecId, StepContextImpl stepContext, List<String> containment);
+	public void updateStepExecution(long jobExecId, StepContextImpl stepContext);
 	
 
 	
@@ -195,4 +193,5 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	void createCheckpointData(CheckpointDataKey key, CheckpointData value);
 
 	long getMostRecentExecutionId(long jobInstanceId);
+
 }

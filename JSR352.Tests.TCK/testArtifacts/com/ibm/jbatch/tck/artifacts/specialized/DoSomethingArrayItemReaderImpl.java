@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -29,7 +29,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 
 @javax.inject.Named("doSomethingArrayItemReaderImpl")
-public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadRecord> {
+public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader {
 		
 	private final static Logger logger = Logger.getLogger(DoSomethingArrayItemReaderImpl.class.getName());
 	
@@ -55,7 +55,7 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
     String appCheckpointPositionString;
 
      @Inject 
-	 private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null; 
+	 private StepContext stepCtx = null; 
 		
 	int failnum;
 	int execnum;
@@ -121,7 +121,7 @@ public class DoSomethingArrayItemReaderImpl  extends AbstractItemReader<ReadReco
 		
 			int i = idx;
 			
-			execnum = stepCtx.getPersistentUserData().getExecutionNumber();
+			execnum = ((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getExecutionNumber();
 			logger.fine("AJM: iteration number = " + execnum);
 			
 			if (i == arraysize) {

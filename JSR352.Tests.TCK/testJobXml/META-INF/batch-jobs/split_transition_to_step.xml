@@ -27,10 +27,10 @@
 			</step>
 		</flow>
 		<flow id="flow2">
-			<step id="flow1step3" next="flow1step4">
+			<step id="flow2step3" next="flow2step4">
 				<batchlet ref="splitTransitionToStepTestBatchlet"/>
 			</step>
-			<step id="flow1step4">
+			<step id="flow2step4">
 				<batchlet ref="splitTransitionToStepTestBatchlet"/>
 			</step>
 		</flow>

@@ -18,9 +18,9 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.api.BatchProperty;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -33,7 +33,7 @@ public class BatchletUsingStepContextImpl extends AbstractBatchlet{
 	private final static Logger logger = Logger.getLogger(BatchletUsingStepContextImpl.class.getName());
 	
     @Inject 
-    private StepContext<MyTransient, MyPersistentUserData> stepCtx = null; 
+    private StepContext stepCtx = null; 
 
     @Inject 
     private JobContext jobCtx = null; 
@@ -58,8 +58,6 @@ public class BatchletUsingStepContextImpl extends AbstractBatchlet{
         if ("true".equalsIgnoreCase(forceFailureProp)) {
         	forceFailure = true;
         }
-        
-        
     }
 
     public static String GOOD_STEP_EXIT_STATUS = "VERY GOOD INVOCATION";
@@ -73,7 +71,7 @@ public class BatchletUsingStepContextImpl extends AbstractBatchlet{
         assert stepCtx.getExitStatus().equals(BEGAN);
         
         MyPersistentUserData myData = null;
-        if ((myData = stepCtx.getPersistentUserData()) != null) {
+        if ((myData = (MyPersistentUserData)stepCtx.getPersistentUserData()) != null) {
         	if (forceFailure){
         		forceFailure = false;
         		stepCtx.setPersistentUserData(new MyPersistentUserData(myData.getData() + 1, forceFailure));
@@ -102,8 +100,8 @@ public class BatchletUsingStepContextImpl extends AbstractBatchlet{
 
     private void end() throws Exception {
         logger.fine("BatchletUsingStepContextImpl - formerly @EndStep");
-        MyPersistentUserData p = stepCtx.getPersistentUserData();
-        MyTransient t = stepCtx.getTransientUserData();
+        MyPersistentUserData p = (MyPersistentUserData)stepCtx.getPersistentUserData();
+        MyTransient t = (MyTransient)stepCtx.getTransientUserData();
         
         assert stepCtx.getExitStatus().equals(PROCESSED);
         stepCtx.setExitStatus(GOOD_STEP_EXIT_STATUS);

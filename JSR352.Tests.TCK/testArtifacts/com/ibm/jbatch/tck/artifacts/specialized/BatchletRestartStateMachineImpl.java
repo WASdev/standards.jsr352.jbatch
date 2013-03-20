@@ -19,8 +19,8 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
+import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 

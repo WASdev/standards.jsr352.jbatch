@@ -16,7 +16,7 @@
  */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 
@@ -24,7 +24,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryRecord;
 
 
 @javax.inject.Named("inventoryInitProcessor")
-public class InventoryInitProcessor implements ItemProcessor<InventoryRecord, InventoryRecord> {
+public class InventoryInitProcessor implements ItemProcessor {
 
 	
     @Inject    
@@ -32,11 +32,11 @@ public class InventoryInitProcessor implements ItemProcessor<InventoryRecord, In
 	String quantityProp = null;
 	
 	@Override
-	public InventoryRecord processItem(InventoryRecord record) throws Exception {
+	public InventoryRecord processItem(Object record) throws Exception {
 		
 		//we don't care what quantity is in the db, we just want to reset it 
 
-		int itemID = record.getItemID();
+		int itemID = ((InventoryRecord)record).getItemID();
 		int quantity = Integer.parseInt(quantityProp);		
 		
 		//reset the database to initial state, this is for test setup purposes only 

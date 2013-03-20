@@ -40,6 +40,7 @@ import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.operations.NoSuchJobInstanceException;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
@@ -310,12 +311,12 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	@Override
-	public List<StepExecution<?>> getStepExecutions(long executionId)
+	public List<StepExecution> getStepExecutions(long executionId)
 			throws NoSuchJobExecutionException, JobSecurityException {
 
 		logger.entering(sourceClass, "getStepExecutions", executionId);
 
-		List<StepExecution<?>> stepExecutions = new ArrayList<StepExecution<?>>();
+		List<StepExecution> stepExecutions = new ArrayList<StepExecution>();
 
 		IJobExecution jobEx = batchKernel.getJobExecution(executionId);
 		if (isAuthorized(persistenceService.getJobInstanceIdByExecutionId(executionId))) {

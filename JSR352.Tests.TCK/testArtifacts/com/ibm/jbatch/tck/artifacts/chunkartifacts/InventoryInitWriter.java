@@ -30,7 +30,7 @@ import javax.sql.DataSource;
 import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryRecord;
 
 @javax.inject.Named("inventoryInitWriter")
-public class InventoryInitWriter extends AbstractItemWriter<InventoryRecord> {
+public class InventoryInitWriter extends AbstractItemWriter {
 	
 	
 	protected DataSource dataSource = null;
@@ -44,13 +44,15 @@ public class InventoryInitWriter extends AbstractItemWriter<InventoryRecord> {
 
 	
     @Override
-    public void writeItems(List<InventoryRecord> records) throws Exception {
+    public void writeItems(List<Object> records) throws Exception {
         int itemID = -1;
         int quantity = -1;
         
-        for (InventoryRecord record : records) {
-            itemID = record.getItemID();
-            quantity = record.getQuantity();
+        
+        
+        for (Object record : records) {
+            itemID = ((InventoryRecord)record).getItemID();
+            quantity = ((InventoryRecord)record).getQuantity();
         }
         
         Connection connection = null;   

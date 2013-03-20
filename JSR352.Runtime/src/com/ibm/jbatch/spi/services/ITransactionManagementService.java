@@ -20,6 +20,6 @@ import javax.batch.runtime.context.StepContext;
 
 public interface ITransactionManagementService extends IBatchServiceBase {
 
-	public TransactionManagerAdapter getTransactionManager(StepContext<?, ?> stepContext) ;
+	public TransactionManagerAdapter getTransactionManager(StepContext stepContext) ;
 	
 }

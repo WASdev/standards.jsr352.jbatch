@@ -16,19 +16,17 @@
  */
 package com.ibm.jbatch.container.impl;
 
-import java.io.Externalizable;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.AbortedBeforeStartException;
@@ -41,7 +39,7 @@ import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.jsl.Transition;
@@ -72,17 +70,15 @@ public class JobControllerImpl implements IController {
 	private IJobStatusManagerService jobStatusService = null;
 	private IPersistenceManagerService persistenceService = null;
 
-	private RuntimeJobExecutionHelper jobExecution = null;
+	private RuntimeJobContextJobExecutionBridge jobExecution = null;
 
-	private final JobContextImpl<?> jobContext;
+	private final JobContextImpl jobContext;
 	private final Navigator<JSLJob> jobNavigator;
 
 	private BlockingQueue<PartitionDataWrapper> analyzerQueue;
-	private Stack<String> subJobExitStatusQueue;
 	private ListenerFactory listenerFactory = null;
 	private final long jobInstanceId;
-	private List<String> containment = null;
-	private RuntimeJobExecutionHelper rootJobExecution = null;
+	private RuntimeJobContextJobExecutionBridge rootJobExecution = null;
 
 	//
 	// The currently executing controller, this will only be set to the 
@@ -91,10 +87,9 @@ public class JobControllerImpl implements IController {
 	private volatile IExecutionElementController currentStoppableElementController = null;
 
 
-	public JobControllerImpl(RuntimeJobExecutionHelper jobExecution, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) {
+	public JobControllerImpl(RuntimeJobContextJobExecutionBridge jobExecution, RuntimeJobContextJobExecutionBridge rootJobExecution) {
 		this.jobExecution = jobExecution;
 		this.jobContext = jobExecution.getJobContext();
-		this.containment = containment;
 		this.rootJobExecution = rootJobExecution;
 		jobNavigator = jobExecution.getJobNavigator();
 		jobInstanceId = jobExecution.getJobInstance().getInstanceId();
@@ -279,7 +274,7 @@ public class JobControllerImpl implements IController {
 	private void doExecutionLoop(Navigator jobNavigator) throws Exception {
 		final String methodName = "doExecutionLoop";
 
-		JobContextImpl<?> jobContext = jobExecution.getJobContext();
+		JobContextImpl jobContext = jobExecution.getJobContext();
 
 		ExecutionElement currentExecutionElement = null;
 		try {
@@ -292,10 +287,7 @@ public class JobControllerImpl implements IController {
 			logger.fine("First execution element = " + currentExecutionElement.getId());
 		}
 
-		// TODO can the first execution element be a decision ??? seems like
-		// it's possible
-
-		StepContextImpl<?, ?> stepContext = null;
+		StepContextImpl stepContext = null;
 
 		ExecutionElement previousExecutionElement = null;
 
@@ -317,9 +309,6 @@ public class JobControllerImpl implements IController {
 
 			//If this is a sub job it may have a analyzer queue we need to pass along
 			elementController.setAnalyzerQueue(this.analyzerQueue);
-
-			//If this is a sub job, pass along exit status queue
-			elementController.setSubJobExitStatusQueue(this.subJobExitStatusQueue);
 
 			// Depending on the execution element new up the associated context
 			// and add it to the controller
@@ -360,7 +349,7 @@ public class JobControllerImpl implements IController {
 
 			} else if (currentExecutionElement instanceof Step) {
 				String stepId = ((Step) currentExecutionElement).getId();
-				stepContext = new StepContextImpl<Object, Externalizable>(stepId);
+				stepContext = new StepContextImpl(stepId);
 				elementController.setStepContext(stepContext);
 			} else if (currentExecutionElement instanceof Flow) {
 				String flowId = ((Flow) currentExecutionElement).getId();
@@ -392,19 +381,10 @@ public class JobControllerImpl implements IController {
 			this.currentStoppableElementController = elementController;
 			InternalExecutionElementStatus executionElementStatus = null;
 			try {
-				//we need to create a new copy of the containment list to pass around because we
-				//don't want to modify the original containment list, since it can get reused
-				//multiple times
-				ArrayList<String> currentContainment = null;
-				if (containment != null) {
-					currentContainment = new ArrayList<String>();
-					currentContainment.addAll(containment);
-				}
-
 				//////////////////////////////////////////////////////////////////////////
 				//  This is it ... the point where we actually execute the next element !
 				//////////////////////////////////////////////////////////////////////////
-				executionElementStatus = elementController.execute(currentContainment, this.rootJobExecution);
+				executionElementStatus = elementController.execute(this.rootJobExecution);
 
 			} catch (AbortedBeforeStartException e) {
 				if (logger.isLoggable(Level.FINE)) {
@@ -424,7 +404,7 @@ public class JobControllerImpl implements IController {
 			// JSL Stop
 			if (executionElementStatus.getBatchStatus().equals(BatchStatus.STOPPED)) {
 				String restartOn = executionElementStatus.getRestartOn();
-				jslStop(executionElementStatus, executionElementStatus.getExitStatus());
+				jslStop(executionElementStatus, executionElementStatus.getExitStatus(), restartOn);
 				return;
 			}
 
@@ -493,7 +473,7 @@ public class JobControllerImpl implements IController {
 					} 
 					
 					InternalExecutionElementStatus internalStopStatus = new InternalExecutionElementStatus(BatchStatus.STOPPED, newExitStatus);
-					jslStop(internalStopStatus, newExitStatus);
+					jslStop(internalStopStatus, newExitStatus, restartOn);
 
 					if (logger.isLoggable(Level.FINE)) {
 						logger.fine(methodName + " Exiting stopped job");
@@ -548,7 +528,7 @@ public class JobControllerImpl implements IController {
 			for (BatchWorkUnit batchWorkUnit : controller.getParallelJobExecs()) {
 
 				StepExecution lastStepExecution = null;
-				List<StepExecution<?>> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(batchWorkUnit.getJobExecutionImpl().getExecutionId());
+				List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(batchWorkUnit.getJobExecutionImpl().getExecutionId());
 				for (StepExecution stepExecution : stepExecs) {
 					lastStepExecution = stepExecution;
 				}
@@ -560,7 +540,7 @@ public class JobControllerImpl implements IController {
 
 	private StepExecution getLastStepExecution(Step last) {
 		StepExecution lastStepExecution = null;
-		List<StepExecution<?>> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(jobExecution.getExecutionId());
+		List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(jobExecution.getExecutionId());
 		for (StepExecution stepExecution : stepExecs) {
 			if(last.getId().equals(stepExecution.getStepName())) {
 				lastStepExecution = stepExecution;
@@ -655,13 +635,10 @@ public class JobControllerImpl implements IController {
 		this.analyzerQueue = analyzerQueue;
 	}
 
-	public void setSubJobExitStatusQueue(Stack<String> subJobExitStatusQueue) {
-		this.subJobExitStatusQueue = subJobExitStatusQueue;
-	}
-
-	private void jslStop(InternalExecutionElementStatus status, String exitStatus) {
+	private void jslStop(InternalExecutionElementStatus status, String exitStatus, String restartOn) {
+		logger.fine("Logging JSL stop(): status = " + status + ", exitStatus = " + exitStatus + ", restartOn = " +restartOn );
 		updateJobBatchStatus(BatchStatus.STOPPED);
-		jobStatusService.updateJobStatusFromJSLStop(jobInstanceId, status.getRestartOn());
+		jobStatusService.updateJobStatusFromJSLStop(jobInstanceId, restartOn);
 		jobContext.setExitStatus(exitStatus);  
 		return;
 	}

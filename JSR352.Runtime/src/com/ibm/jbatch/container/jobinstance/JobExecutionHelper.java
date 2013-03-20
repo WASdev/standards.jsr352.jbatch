@@ -23,9 +23,9 @@ import java.util.logging.Logger;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
-import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
@@ -84,12 +84,12 @@ public class JobExecutionHelper {
         return serializer.serializeModel(jobModel);
     }
 
-    private static JobContextImpl<?> getJobContext(Navigator<JSLJob> jobNavigator) {
+    private static JobContextImpl getJobContext(Navigator<JSLJob> jobNavigator) {
         JSLProperties jslProperties = new JSLProperties();
         if(jobNavigator.getJSL() != null) {
             jslProperties = jobNavigator.getJSL().getProperties();
         }
-        return new JobContextImpl<Object>(jobNavigator.getId(), jslProperties); 
+        return new JobContextImpl(jobNavigator, jslProperties); 
     }
 
     private static JobInstance getNewJobInstance(String name, String jobXml, Properties jobParameters) {
@@ -97,12 +97,12 @@ public class JobExecutionHelper {
         return _persistenceManagementService.createJobInstance(name, apptag, jobXml, jobParameters);
     }
 
-    private static RuntimeJobExecutionHelper getNewJobExecution(Navigator<JSLJob> jobNavigator, JobInstance jobInstance, Properties jobParameters, JobContextImpl<?> jobContext) {
-        return _persistenceManagementService.createJobExecution(jobNavigator, jobInstance, jobParameters, jobContext);
-    }
 
-    private static JobStatus createNewJobStatus(long instanceId) {
-        return _jobStatusManagerService.createJobStatus(instanceId);
+    private static JobStatus createNewJobStatus(JobInstance jobInstance) {
+    	long instanceId = jobInstance.getInstanceId();
+        JobStatus jobStatus = _jobStatusManagerService.createJobStatus(instanceId);
+        jobStatus.setJobInstance(jobInstance);
+        return jobStatus;
     }
 
     private static void validateRestartableFalseJobsDoNotRestart(JSLJob jobModel)
@@ -112,19 +112,19 @@ public class JobExecutionHelper {
         }
     }
     
-    public static RuntimeJobExecutionHelper startJob(String jobXML, Properties jobParameters) throws JobStartException {
+    public static RuntimeJobContextJobExecutionBridge startJob(String jobXML, Properties jobParameters) throws JobStartException {
         logger.entering(CLASSNAME, "startJob", new Object[]{jobXML, jobParameters});
 
         JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobXML); 
 
-        RuntimeJobExecutionHelper jobExecution = startJob(jobModel, jobParameters, false);
+        RuntimeJobContextJobExecutionBridge jobExecution = startJob(jobModel, jobParameters, false);
 
         logger.exiting(CLASSNAME, "startJob", jobExecution);
 
         return jobExecution;
     }
 
-    public static RuntimeJobExecutionHelper startJob(JSLJob jobModel, Properties jobParameters, boolean isPartitionedStep) throws JobStartException{
+    public static RuntimeJobContextJobExecutionBridge startJob(JSLJob jobModel, Properties jobParameters, boolean isPartitionedStep) throws JobStartException{
 
         logger.entering(CLASSNAME, "startJob", new Object[]{jobModel, jobParameters, isPartitionedStep});
 
@@ -132,23 +132,24 @@ public class JobExecutionHelper {
 
         Navigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobXML, jobParameters, isPartitionedStep);
 
-        JobContextImpl<?> jobContext = getJobContext(jobNavigator);
+        JobContextImpl jobContext = getJobContext(jobNavigator);
 
         JobInstance jobInstance = getNewJobInstance(jobNavigator.getId(), jobXML, jobParameters);
 
-        RuntimeJobExecutionHelper jobExecution = getNewJobExecution(jobNavigator, jobInstance, jobParameters, jobContext);
-
-        JobStatus jobStatus = createNewJobStatus(jobInstance.getInstanceId());
-        jobStatus.setJobInstance(jobInstance);
+        RuntimeJobContextJobExecutionBridge executionHelper = 
+        		_persistenceManagementService.createJobExecution(jobInstance, jobParameters, jobContext.getBatchStatus());
+        
+        executionHelper.prepareForExecution(jobContext);
+        
+        JobStatus jobStatus = createNewJobStatus(jobInstance);
         _jobStatusManagerService.updateJobStatus(jobStatus);
         
-        logger.exiting(CLASSNAME, "startJob", jobExecution);
-        return jobExecution;
+        logger.exiting(CLASSNAME, "startJob", executionHelper);
+        return executionHelper;
     }
 
 
-    public static RuntimeJobExecutionHelper restartJob(long executionId, JSLJob gennedJobModel) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
-    	
+    public static RuntimeJobContextJobExecutionBridge restartJob(long executionId, JSLJob gennedJobModel) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
         return restartJob(executionId, null, null, false);
     }
     
@@ -173,7 +174,7 @@ public class JobExecutionHelper {
     private static void validateJobExecutionIsMostRecent(long jobInstanceId, long executionId) throws JobExecutionNotMostRecentException {
 
         long mostRecentExecutionId = _persistenceManagementService.getMostRecentExecutionId(jobInstanceId);
-
+        
         if ( mostRecentExecutionId != executionId ) {
             String message = "ExecutionId: " + executionId + " is not the most recent execution.";
             logger.warning(message);
@@ -181,7 +182,7 @@ public class JobExecutionHelper {
         }
     }
     
-    public static RuntimeJobExecutionHelper restartJob(long executionId, JSLJob gennedJobModel, Properties restartJobParameters, boolean isPartitionedStep) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+    public static RuntimeJobContextJobExecutionBridge restartJob(long executionId, JSLJob gennedJobModel, Properties restartJobParameters, boolean isPartitionedStep) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 
         long jobInstanceId = _persistenceManagementService.getJobInstanceIdByExecutionId(executionId);
     	
@@ -191,10 +192,10 @@ public class JobExecutionHelper {
             logger.fine("On restartJob with jobInstance Id = " + jobInstanceId + " , found JobStatus: " + jobStatus + 
             		", batchStatus = " + jobStatus.getBatchStatus().name() ); 
         }
-        
-        validateJobInstanceNotCompleteOrAbandonded(jobStatus);
 
         validateJobExecutionIsMostRecent(jobInstanceId, executionId);
+        
+        validateJobInstanceNotCompleteOrAbandonded(jobStatus);
 
         JobInstanceImpl jobInstance = jobStatus.getJobInstance();
         
@@ -209,13 +210,13 @@ public class JobExecutionHelper {
         // JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobInstance.getJobXML());
         validateRestartableFalseJobsDoNotRestart(jobNavigator.getJSL());
 
-        JobContextImpl<?> jobContext = getJobContext(jobNavigator);
+        JobContextImpl jobContext = getJobContext(jobNavigator);
+        RuntimeJobContextJobExecutionBridge executionHelper = 
+        		_persistenceManagementService.createJobExecution(jobInstance, restartJobParameters, jobContext.getBatchStatus());
+    	executionHelper.prepareForExecution(jobContext, jobStatus.getRestartOn());
+        _jobStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), executionHelper.getExecutionId());        
         
-        RuntimeJobExecutionHelper jobExecution = getNewJobExecution(jobNavigator, jobInstance, restartJobParameters, jobContext);
-        
-        _jobStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), jobExecution.getExecutionId());        
-        
-        return jobExecution;
+        return executionHelper;
     }    
     
     public static IJobExecution getPersistedJobOperatorJobExecution(long jobExecutionId) {

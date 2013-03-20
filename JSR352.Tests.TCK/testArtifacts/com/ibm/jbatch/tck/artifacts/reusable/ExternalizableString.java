@@ -31,6 +31,11 @@ public class ExternalizableString implements Externalizable {
 		this.string = string;
 	}
 
+	@Override
+	public String toString() {
+		return this.string;
+	}
+	
 	private String string;
 	
 	public ExternalizableString(String string) {

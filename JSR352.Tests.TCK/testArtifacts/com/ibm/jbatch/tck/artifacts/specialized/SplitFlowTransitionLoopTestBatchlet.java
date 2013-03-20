@@ -16,13 +16,9 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
@@ -38,29 +34,22 @@ public class SplitFlowTransitionLoopTestBatchlet extends AbstractBatchlet {
     
     @Inject
 	StepContext stepCtx = null;
-    
-    @Inject    
-    @BatchProperty(name="temp.file")
-    private String tempFile;
-    
+        
 	@Override
 	public String process() throws Exception {
+		List<String> stepsInJob = new ArrayList<String>();
+		stepsInJob.add("split1FlowStep1");
+		stepsInJob.add("split1FlowStep2");
+		stepsInJob.add("split1FlowSplitFlow1Step");
+		stepsInJob.add("split1FlowSplitFlow2Step");
+		stepsInJob.add("flow2step1");
+		stepsInJob.add("flow2step2");
 		
-		// open file and save step id
-		if(tempFile != null && tempFile.trim().length() > 0) {
-			saveStepId(stepCtx.getStepName());
+		if (!stepsInJob.contains(stepCtx.getStepName())) {
+			throw new Exception("Failed to assert steps id");
 		}
 				
 		return GOOD_EXIT_STATUS;
-	}
-	
-	private synchronized void saveStepId(String stepId) throws IOException {
-
-		OutputStream out = new FileOutputStream(tempFile, true);
-		Writer writer = new OutputStreamWriter(out);
-		writer.write(stepId);
-		writer.write(System.getProperty("line.separator"));
-		writer.close();
 	}
 
 }

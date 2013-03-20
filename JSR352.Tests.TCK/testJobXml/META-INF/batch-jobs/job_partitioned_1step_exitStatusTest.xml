@@ -17,9 +17,15 @@
 -->
 <job id="job_partitioned_1step" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1" >
-		<batchlet ref="myParallelSubJobsExitStatusBatchlet" />
-	    <partition>
+		<batchlet ref="myParallelSubJobsExitStatusBatchlet">
+			<properties>
+					<property name="sleep.time" value="#{jobParameters['sleep.time']}"/>
+			</properties>
+	    </batchlet>
+	   <partition>
 	    	<plan partitions="10" />
-	    </partition> 		
+            <!-- Analyzer without collector is useful simply for receiving status -->
+	    	<analyzer ref="parsingPartitionAnalyzer" />
+	    </partition>
 	</step>
 </job>

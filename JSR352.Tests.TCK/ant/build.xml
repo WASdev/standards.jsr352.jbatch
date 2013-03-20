@@ -8,7 +8,10 @@
 	<taskdef resource="testngtasks" classpath="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar"/>
 
 	<!-- NOTE: Set this to an Oracle jre prior to running the task to generate the sigtest signature file -->
-	<property name="sigtest.java.home" value=""/>
+	<property name="sigtest.java7.home" value=""/>
+	
+	<!-- NOTE: Set this to an Oracle jre prior to running the task to generate the sigtest signature file -->
+	<property name="sigtest.java6.home" value=""/>
 	
 	<path id="build.classpath">
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar"/>
@@ -18,7 +21,6 @@
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit/junit-4.10.jar"/>
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar"/>
 		<pathelement location="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>	
-		<pathelement location="${workspace.home.dir}/JSR352.Annotations/bin"/>
 		<pathelement location="${workspace.home.dir}/JSR352.Runtime/target/classes"/>
 		<pathelement location="${workspace.home.dir}/JSR352.RI.SPI/bin"/>
 		<pathelement location="${workspace.home.dir}/JSR352.API/bin"/>
@@ -26,6 +28,49 @@
 		<pathelement location="${jsr352.tck.basedir}/../bin"/>
 		<pathelement location="${jsr352.tck.basedir}/../testArtifactsBin"/>
 	</path>
+	
+	<path id="tck.javadoc.source.path">
+			    <pathelement location="${jsr352.tck.basedir}/../src"/>
+			    <pathelement location="${jsr352.tck.basedir}/../testArtifacts"/>
+	</path>
+	
+	<!-- generates the javadoc for TCK and TCK SPI.  Depending on your environment, you may need to explicity specify the javadoc
+		executable like this:   <javadoc executable="some_path/javadoc.exe" .... > -->
+	<target name="generateJavadoc">
+
+		<!-- TCK impl javadoc -->
+		<javadoc
+			windowtitle="JSR352 TCK" sourcepathref="tck.javadoc.source.path"
+			Doctitle="JSR352 TCK"
+			excludepackagenames="com.ibm.jbatch.tck.tests.ee"
+			destdir="${jsr352.tck.basedir}/../javadoc/tck-impl">
+		
+			<classpath>
+				<fileset dir="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit">
+					<include name="**/junit-4.10.jar"/>
+				</fileset>
+				<fileset dir="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng">
+					<include name="**/testng-6.8.jar"/>
+				</fileset>
+				<fileset dir="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject">
+					<include name="**/javax.inject.jar"/>
+				</fileset>
+				<pathelement location="${workspace.home.dir}/JSR352.API/bin"/>
+				<pathelement location="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>
+			</classpath>
+		</javadoc>
+		
+		<!-- TCK SPI javadoc -->
+		<javadoc
+				windowtitle="JSR352 TCK SPI" sourcepath="${workspace.home.dir}/JSR352.TCK.SPI/src"
+				Doctitle="JSR352 TCK SPI"
+				destdir="${jsr352.tck.basedir}/../javadoc/tck-spi">
+			
+			<classpath>
+				<pathelement location="${workspace.home.dir}/JSR352.API/bin"/>
+			</classpath>
+			</javadoc>
+	</target>
 
 	<taskdef name="setup"  classname="com.sun.tdk.signaturetest.ant.ASetup"  classpath="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/sigtestdev.jar"/>
 
@@ -60,7 +105,7 @@
 
 	</target>
 
-	<target name="buildTCKZip" depends="mainTckBuild">
+	<target name="buildTCKZip" depends="mainTckBuild, generateJavadoc">
 		<mkdir dir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
 		<mkdir dir="${jsr352.tck.basedir}/../${tckZipRootDir}/doc"/>
 		<mkdir dir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
@@ -83,6 +128,12 @@
 		<jar destfile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-SPI.jar">
 			<fileset dir="${workspace.home.dir}/JSR352.TCK.SPI/bin"/>
 		</jar>
+		<jar destfile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-SPI-javadoc.jar">
+				<fileset dir="${jsr352.tck.basedir}/../javadoc/tck-spi"/>
+		</jar>
+		<jar destfile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-impl-javadoc.jar">
+						<fileset dir="${jsr352.tck.basedir}/../javadoc/tck-impl"/>
+		</jar>
 		<copy file="${jsr352.tck.basedir}/../doc/jsr352-tck-reference-guide.pdf" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/doc"/>
 		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/LICENSE.txt" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
 		<copy file="${workspace.home.dir}/Legal.and.Release.Utils/externalFiles/NOTICE.txt" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
@@ -90,8 +141,8 @@
 		<copy file="${jsr352.tck.basedir}/../readme.txt" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
 		<copy file="${jsr352.tck.basedir}/../jsr352-tck.properties" todir="${jsr352.tck.basedir}/../${tckZipRootDir}"/>
 		<copy file="${jsr352.tck.basedir}/../jsr352-tck-impl-SE-suite.xml" tofile="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts/jsr352-tck-impl-suite.xml"/>
-		
-		<copy file="${jsr352.tck.basedir}/../jsr352-api-sigtest.sig" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-api-sigtest-java6.sig" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts"/>
+		<copy file="${jsr352.tck.basedir}/../jsr352-api-sigtest-java7.sig" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/artifacts"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/xmlunit/xmlunit-1.1.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
 		<copy file="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar" todir="${jsr352.tck.basedir}/../${tckZipRootDir}/lib"/>
@@ -102,16 +153,28 @@
 	</target>
 
 	<!-- Generate sig file -->
-	<target name="generateSigFile">
-		<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-api-sigtest.sig"
+	<target name="generateSigFile-java7">
+		<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-api-sigtest-java7.sig"
 				package="javax.batch">
 			<classpath>
-				<pathelement location="${sigtest.java.home}/lib/rt.jar"/>
+				<pathelement location="${sigtest.java7.home}/lib/rt.jar"/>
 				<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar"/>
 				<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.Combined.jar"/>
 			</classpath>
 		</setup>
 	</target>
+	
+	<!-- Generate sig file -->
+		<target name="generateSigFile-java6">
+			<setup failonerror="true" filename="${jsr352.tck.basedir}/../jsr352-api-sigtest-java6.sig"
+					package="javax.batch">
+				<classpath>
+					<pathelement location="${sigtest.java6.home}/lib/rt.jar"/>
+					<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar"/>
+					<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.Combined.jar"/>
+				</classpath>
+			</setup>
+		</target>
 
 	<target name="run-batch-xml-generator">
 		<echo message="building ${jsr352.tck.basedir}/../testArtifactsBin/META-INF/build.xml"/>
@@ -174,6 +237,12 @@
 			<fileset dir="${jsr352.tck.basedir}/../testJobXml/"/>
 		</copy>
 	</target>
+	
 
-	<target name="mainTckBuild" depends="cleanTCK, compileTCK, run-batch-xml-generator, copy-batch-jobs"/>
+	<target name="mainTckBuild" depends="cleanTCK, compileTCK, run-batch-xml-generator, copy-batch-jobs">
+    	<tstamp>
+    		<format property="current.time" pattern="MM/dd/yyyy hh:mm"/>
+    	</tstamp>
+		<echo message="Current time = ${current.time}"/>
+	</target>
 </project>

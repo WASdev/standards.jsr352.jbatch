@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.Properties;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.partition.PartitionMapper;
 import javax.batch.api.partition.PartitionPlan;
 import javax.inject.Inject;

@@ -1,6 +1,6 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.AbstractChunkListener;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
@@ -64,7 +64,7 @@ public class MyChunkListener extends AbstractChunkListener {
      *             (or subclass) if an error occurs.
      */
     @Override
-    public void onError() throws Exception {
+    public void onError(Exception e) throws Exception {
     	Exception ex = stepCtx.getException();
     	
     	if (ex instanceof MyParentException){

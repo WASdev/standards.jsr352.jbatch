@@ -22,7 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -37,13 +37,13 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 
 @javax.inject.Named("retryWriter")
-public class RetryWriter extends AbstractItemWriter<NumbersRecord> {
+public class RetryWriter extends AbstractItemWriter {
 	
 
 	protected DataSource dataSource = null;
 	
     @Inject
-    StepContext<?,?> stepCtx;
+    StepContext stepCtx;
 
 
     @Inject    
@@ -73,7 +73,7 @@ public class RetryWriter extends AbstractItemWriter<NumbersRecord> {
 	}
 	
 	@Override
-	public void writeItems(List<NumbersRecord> records) throws Exception {
+	public void writeItems(List<Object> records) throws Exception {
 		int item = -1;
 		int quantity = -1;
 		int check = -1;
@@ -85,9 +85,9 @@ public class RetryWriter extends AbstractItemWriter<NumbersRecord> {
 			isInited = true;
 		}
 		
-		for (NumbersRecord record : records) {
-			item = record.getItem();
-			quantity = record.getQuantity();
+		for (Object record : records) {
+			item = ((NumbersRecord)record).getItem();
+			quantity = ((NumbersRecord)record).getQuantity();
 			
 			Reporter.log("Writing item: " + item + "...<br>");
 			

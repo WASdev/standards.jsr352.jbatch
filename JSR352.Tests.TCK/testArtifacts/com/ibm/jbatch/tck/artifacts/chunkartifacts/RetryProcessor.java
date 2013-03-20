@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -28,11 +28,11 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 
 @javax.inject.Named("retryProcessor")
-public class RetryProcessor implements ItemProcessor<NumbersRecord, NumbersRecord> {
+public class RetryProcessor implements ItemProcessor {
 	
 	
     @Inject
-    StepContext<?,?> stepCtx;
+    StepContext stepCtx;
 	
     @Inject    
     @BatchProperty(name="forced.fail.count.process")
@@ -58,9 +58,9 @@ public class RetryProcessor implements ItemProcessor<NumbersRecord, NumbersRecor
 	
 	int failindex = 0;
 	
-	public NumbersRecord processItem(NumbersRecord record) throws Exception {
-		int item = record.getItem();
-		int quantity = record.getQuantity();
+	public NumbersRecord processItem(Object record) throws Exception {
+		int item = ((NumbersRecord)record).getItem();
+		int quantity = ((NumbersRecord)record).getQuantity();
 		Reporter.log("Processing item: " + item + "...<br>");
 		Reporter.log("Processing quantity: " + quantity + "...<p>");
 		

@@ -20,19 +20,19 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryRecord;
 
 
 @javax.inject.Named("inventoryProcessor")
-public class InventoryProcessor implements javax.batch.api.chunk.ItemProcessor<InventoryRecord, InventoryRecord>{
+public class InventoryProcessor implements javax.batch.api.chunk.ItemProcessor{
 
 	
 	@Override
-	public InventoryRecord processItem(InventoryRecord record) throws Exception {
+	public InventoryRecord processItem(Object record) throws Exception {
 		
 
 	    //The processor doesn't really do anything in this test. It just passes along 
 	    //the item item and the quantity to the item writer to create and order in the 
 	    //order table.
 	    
-		int itemID = record.getItemID();
-		int quantity = record.getQuantity();
+		int itemID = ((InventoryRecord)record).getItemID();
+		int quantity = ((InventoryRecord)record).getQuantity();
 		
 		return new InventoryRecord(itemID, quantity);
 	}

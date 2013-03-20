@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractCheckpointAlgorithm;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -44,7 +44,7 @@ public class MyCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {
    int requests;
    
        @Inject 
-   private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null; 
+   private StepContext stepCtx = null; 
    
        @Inject    
     @BatchProperty(name="writepoints")
@@ -61,10 +61,10 @@ public class MyCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {
    public void init(){
 	   
 	    MyPersistentRestartUserData myData = null;
-        if ((myData = stepCtx.getPersistentUserData()) != null) {        	
+        if ((myData = (MyPersistentRestartUserData)stepCtx.getPersistentUserData()) != null) {        	
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
-        	logger.fine("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
-        	writePointsString = stepCtx.getPersistentUserData().getNextWritePoints();
+        	logger.fine("AJM: iteration = " + ((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getExecutionNumber());
+        	writePointsString = ((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getNextWritePoints();
         } else {        
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, nextWritePointsString));
         }
@@ -90,8 +90,8 @@ public class MyCustomCheckpointAlgorithm extends AbstractCheckpointAlgorithm {
 
       	if (!init){
       		
-          	if (stepCtx.getPersistentUserData().getExecutionNumber() == 2){
-          		writePointsString = stepCtx.getPersistentUserData().getNextWritePoints();
+          	if (((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getExecutionNumber() == 2){
+          		writePointsString = ((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getNextWritePoints();
           	}
       		
      	   String[] writePointsStrArr = writePointsString.split(",");

@@ -19,7 +19,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
 import javax.inject.Inject;
 
@@ -29,7 +29,7 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 
 @javax.inject.Named("doSomethingItemReaderImpl")
-public class DoSomethingItemReaderImpl extends AbstractItemReader<ReadRecord> {
+public class DoSomethingItemReaderImpl extends AbstractItemReader {
 
 	private final static Logger logger = Logger.getLogger(DoSomethingItemReaderImpl.class.getName());
 	

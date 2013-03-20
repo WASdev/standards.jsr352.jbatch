@@ -19,14 +19,16 @@ package com.ibm.jbatch.container.context.impl;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.context.JobContext;
 
+import com.ibm.jbatch.container.jsl.Navigator;
+import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.JSLProperties;
 import com.ibm.jbatch.jsl.model.Property;
 
 
-public class JobContextImpl<T> implements JobContext<T> {
+public class JobContextImpl implements JobContext {
 
     private final static String sourceClass = JobContextImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
@@ -34,12 +36,21 @@ public class JobContextImpl<T> implements JobContext<T> {
     private BatchStatus batchStatus = null;
     private String exitStatus = null;
     
-    private T transientUserData = null;
-    private String id; //will this change to long?
+    private Object transientUserData = null;
+    private Navigator<JSLJob> navigator = null;
+    public Navigator<JSLJob> getNavigator() {
+		return navigator;
+	}
+
+	private String id;  // Name
     private Properties properties = new Properties();
     
-    public JobContextImpl(String id, JSLProperties jslProperties) {
-    	this.id = id;
+    private long executionId;
+    private long instanceId;
+    
+    public JobContextImpl(Navigator<JSLJob> navigator, JSLProperties jslProperties) {
+    	this.navigator = navigator;
+    	this.id = navigator.getId();
     	this.batchStatus = BatchStatus.STARTING;
     	this.properties = convertJSProperties(jslProperties);
     }
@@ -81,7 +92,7 @@ public class JobContextImpl<T> implements JobContext<T> {
     }
 
 
-    public T getTransientUserData() {
+    public Object getTransientUserData() {
         return transientUserData;
     }
 
@@ -90,19 +101,26 @@ public class JobContextImpl<T> implements JobContext<T> {
         return properties;
     }
 
-    public void setTransientUserData(T data) {
+    public void setTransientUserData(Object data) {
         this.transientUserData = data;
     }
 
 	@Override
 	public long getExecutionId() {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.executionId;
 	}
 
 	@Override
 	public long getInstanceId() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.instanceId;
+	}
+	
+	public void setExecutionId(long executionId){
+		this.executionId = executionId;
+	}
+	
+	public void setInstanceId(long instanceId){
+		this.instanceId = instanceId;
 	}
 }

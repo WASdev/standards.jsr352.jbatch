@@ -4,7 +4,6 @@ Bundle-Name: TCK
 Bundle-SymbolicName: JSR352.Tests.TCK
 Bundle-Version: 1.0.0.qualifier
 Import-Package: com.ibm.jbatch.tck.spi,
- javax.batch.annotation,
  javax.batch.api,
  javax.batch.api.chunk,
  javax.batch.api.chunk.listener,

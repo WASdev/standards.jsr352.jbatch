@@ -16,10 +16,8 @@
  */
 package com.ibm.jbatch.container.impl;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -27,15 +25,15 @@ import java.util.logging.Logger;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
-import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
+import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.AbortedBeforeStartException;
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
@@ -51,7 +49,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 	private final static String sourceClass = SplitControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 
-	private final RuntimeJobExecutionHelper jobExecutionImpl;
+	private final RuntimeJobContextJobExecutionBridge jobExecutionImpl;
 
 	private volatile List<BatchWorkUnit> parallelBatchWorkUnits;
 
@@ -62,7 +60,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 
 	protected Split split;
 
-	public SplitControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Split split) {
+	public SplitControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Split split) {
 		this.jobExecutionImpl = jobExecutionImpl;
 		this.split = split;
 
@@ -95,7 +93,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 	}
 
 	@Override
-	public InternalExecutionElementStatus execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException, JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+	public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException, JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 		String sourceMethod = "execute";
 		if (logger.isLoggable(Level.FINER)) {
 			logger.entering(sourceClass, sourceMethod);
@@ -105,15 +103,6 @@ public class SplitControllerImpl implements IExecutionElementController {
 		List<Flow> flows = this.split.getFlows();
 
 		parallelBatchWorkUnits = new ArrayList<BatchWorkUnit>();
-
-		//we need to create a new copy of the containment list to pass around because we
-		//don't want to modify the original containment list, since it can get reused
-		//multiple times
-		ArrayList<String> splitContainment = new ArrayList<String>();
-		if (containment != null) {
-			splitContainment.addAll(containment);
-		}
-		splitContainment.add(split.getId());
 
 		// Build all sub jobs from flows in split
 		synchronized (subJobs) {
@@ -125,9 +114,9 @@ public class SplitControllerImpl implements IExecutionElementController {
 			for (JSLJob job : subJobs) {
 				int count = batchKernel.getJobInstanceCount(job.getId());
 				if (count == 0) {
-					parallelBatchWorkUnits.add(batchKernel.buildNewBatchWorkUnit(job, null, null, null, completedWorkQueue, splitContainment, rootJobExecution));
+					parallelBatchWorkUnits.add(batchKernel.buildNewBatchWorkUnit(job, null, null, completedWorkQueue, rootJobExecution));
 				} else if (count == 1) {
-					parallelBatchWorkUnits.add(batchKernel.buildRestartableBatchWorkUnit(job, null, null, null, completedWorkQueue, splitContainment, rootJobExecution));
+					parallelBatchWorkUnits.add(batchKernel.buildRestartableBatchWorkUnit(job, null, null, completedWorkQueue, rootJobExecution));
 				} else {
 					throw new IllegalStateException("There is an inconsistency somewhere in the internal subjob creation");
 				}
@@ -196,7 +185,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 		return splitStatus;
 	}
 
-	public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
+	public void setStepContext(StepContextImpl stepContext) {
 		throw new BatchContainerRuntimeException("Incorrect usage: step context is not in scope within a flow.");
 	}
 
@@ -207,12 +196,6 @@ public class SplitControllerImpl implements IExecutionElementController {
 
 	public List<BatchWorkUnit> getParallelJobExecs() {
 		return parallelBatchWorkUnits;
-	}
-
-	@Override
-	public void setSubJobExitStatusQueue(Stack<String> subJobExitStatusQueue) {
-		// no-op
-
 	}
 
 }

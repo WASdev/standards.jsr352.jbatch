@@ -1,5 +1,5 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -8,7 +8,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
 @Named
 public class ListenerOnErrorProcessor implements
-		ItemProcessor<ReadRecord, ReadRecord> {
+		ItemProcessor {
 
 	@Inject    
     @BatchProperty(name="process.fail.immediate")
@@ -18,7 +18,7 @@ public class ListenerOnErrorProcessor implements
 	
 	
 	@Override
-	public ReadRecord processItem(ReadRecord item) throws Exception {
+	public ReadRecord processItem(Object item) throws Exception {
 		// TODO Auto-generated method stub
 		
 		if (failImmediateString!=null){

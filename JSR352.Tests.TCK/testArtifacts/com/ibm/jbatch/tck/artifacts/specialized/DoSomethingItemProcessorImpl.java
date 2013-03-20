@@ -23,13 +23,13 @@ import javax.batch.api.chunk.ItemProcessor;
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
 @javax.inject.Named("doSomethingItemProcessorImpl")
-public class DoSomethingItemProcessorImpl implements ItemProcessor<ReadRecord, ReadRecord> {
+public class DoSomethingItemProcessorImpl implements ItemProcessor {
 	private int update = 10;
 	
 	@Override
-	public ReadRecord processItem(ReadRecord record) throws Exception {
+	public ReadRecord processItem(Object record) throws Exception {
 		
-		ReadRecord processedRecord = record;
+		ReadRecord processedRecord = (ReadRecord)record;
 		processedRecord.setRecord(update);
 		update = update +1;
 		return processedRecord;

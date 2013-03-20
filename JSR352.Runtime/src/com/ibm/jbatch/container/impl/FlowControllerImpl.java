@@ -16,18 +16,15 @@
 */
 package com.ibm.jbatch.container.impl;
 
-import java.io.Externalizable;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.AbortedBeforeStartException;
@@ -35,12 +32,12 @@ import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
-import com.ibm.jbatch.container.jsl.TransitionElement;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.Navigator;
 import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.jsl.Transition;
+import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
@@ -59,7 +56,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 	private final static String CLASSNAME = PartitionedStepControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 	
-	private final RuntimeJobExecutionHelper jobExecutionImpl;
+	private final RuntimeJobContextJobExecutionBridge jobExecutionImpl;
 	
     private IPersistenceManagerService persistenceService = null;
     
@@ -75,7 +72,7 @@ public class FlowControllerImpl implements IExecutionElementController {
     
 	private PartitionAnalyzerProxy analyzerProxy;
 
-    public FlowControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Flow flow) {
+    public FlowControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Flow flow) {
         this.jobExecutionImpl = jobExecutionImpl;
         this.flow = flow;
         persistenceService = (IPersistenceManagerService) ServicesManagerImpl.getInstance().getPersistenceManagerService();
@@ -84,7 +81,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 
    
     @Override
-    public InternalExecutionElementStatus execute(List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws AbortedBeforeStartException {
+    public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException {
         final String methodName = "execute";
         if (logger.isLoggable(Level.FINE)) {
             logger.entering(CLASSNAME, methodName);
@@ -95,7 +92,7 @@ public class FlowControllerImpl implements IExecutionElementController {
             // --------------------
             // The same as a simple Job. Loop to complete all steps and decisions in the flow.
             // --------------------
-        	return doExecutionLoop(flowNavigator, containment, rootJobExecution);
+        	return doExecutionLoop(flowNavigator, rootJobExecution);
 
         } catch (Throwable t) {
                         
@@ -122,15 +119,7 @@ public class FlowControllerImpl implements IExecutionElementController {
                         + currentFlowContext.getExitStatus()*/);
             }
 
-            try {
-                //use the job status service here to persist the status        
-            } catch (Throwable t) {
-                if (logger.isLoggable(Level.WARNING)) {
-                    StringWriter sw = new StringWriter();
-                    t.printStackTrace(new PrintWriter(sw));
-                    logger.warning("Caught Throwable on updating execution status: " + sw.toString());
-                }
-            }
+
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.exiting(CLASSNAME, methodName);
@@ -141,7 +130,7 @@ public class FlowControllerImpl implements IExecutionElementController {
     	
     }
 
-    private InternalExecutionElementStatus doExecutionLoop(Navigator<Flow> flowNavigator, List<String> containment, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
+    private InternalExecutionElementStatus doExecutionLoop(Navigator<Flow> flowNavigator, RuntimeJobContextJobExecutionBridge rootJobExecution) throws Exception {
         final String methodName = "doExecutionLoop";
 
         ExecutionElement currentExecutionElement = null;
@@ -158,7 +147,7 @@ public class FlowControllerImpl implements IExecutionElementController {
         // TODO can the first execution element be a decision ??? seems like
         // it's possible
 
-        StepContextImpl<?, ?> stepContext = null;
+        StepContextImpl stepContext = null;
 
         ExecutionElement previousExecutionElement = null;
         
@@ -217,7 +206,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 
             } else if (currentExecutionElement instanceof Step) {
                 String stepId = ((Step) currentExecutionElement).getId();
-                stepContext = new StepContextImpl<Object, Externalizable>(stepId);
+                stepContext = new StepContextImpl(stepId);
                 elementController.setStepContext(stepContext);
             } else if (currentExecutionElement instanceof Flow) {
             	// do nothing
@@ -239,15 +228,7 @@ public class FlowControllerImpl implements IExecutionElementController {
             this.currentStoppableElementController = elementController;
             InternalExecutionElementStatus executionElementStatus = null;
             try {
-                //we need to create a new copy of the containment list to pass around because we
-                //don't want to modify the original containment list, since it can get reused
-                //multiple times
-                ArrayList<String> flowContainment = new ArrayList<String>();
-                if (containment != null) {
-                    flowContainment.addAll(containment);
-                }
-                flowContainment.add(flow.getId());
-                executionElementStatus = elementController.execute(flowContainment, rootJobExecution);
+                executionElementStatus = elementController.execute(rootJobExecution);
             } catch (AbortedBeforeStartException e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("Execution failed before even getting to execute execution element = " + currentExecutionElement.getId());
@@ -357,7 +338,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 			for (BatchWorkUnit batchWorkUnit : controller.getParallelJobExecs()) {
 				                			
 				StepExecution lastStepExecution = null;
-				List<StepExecution<?>> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(batchWorkUnit.getJobExecutionImpl().getExecutionId());
+				List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(batchWorkUnit.getJobExecutionImpl().getExecutionId());
 				for (StepExecution stepExecution : stepExecs) {
 					lastStepExecution = stepExecution;
 				}
@@ -370,7 +351,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 	private StepExecution getLastStepExecution(Step last) {
 				
 		StepExecution lastStepExecution = null;
-		List<StepExecution<?>> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(jobExecutionImpl.getExecutionId());
+		List<StepExecution> stepExecs = persistenceService.getStepExecutionIDListQueryByJobID(jobExecutionImpl.getExecutionId());
 		for (StepExecution stepExecution : stepExecs) {
 			if(last.getId().equals(stepExecution.getStepName())) {
 				lastStepExecution = stepExecution;
@@ -395,7 +376,7 @@ public class FlowControllerImpl implements IExecutionElementController {
 
     }
 
-    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
+    public void setStepContext(StepContextImpl stepContext) {
         throw new BatchContainerRuntimeException("Incorrect usage: step context is not in scope within a flow.");
     }
 
@@ -403,15 +384,9 @@ public class FlowControllerImpl implements IExecutionElementController {
         this.analyzerProxy = analyzerProxy;
     }
 
-
     @Override
     public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
         // no-op
     }
 
-	@Override
-	public void setSubJobExitStatusQueue(Stack<String> subJobExitStatusQueue) {
-		// no-op
-		
-	}
 }

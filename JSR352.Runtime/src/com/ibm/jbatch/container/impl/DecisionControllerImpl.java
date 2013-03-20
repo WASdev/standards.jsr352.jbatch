@@ -16,14 +16,11 @@
 */
 package com.ibm.jbatch.container.impl;
 
-import java.io.Externalizable;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.IExecutionElementController;
@@ -33,7 +30,7 @@ import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
@@ -46,9 +43,9 @@ import com.ibm.jbatch.jsl.model.Step;
 
 public class DecisionControllerImpl implements IExecutionElementController {
     
-    protected RuntimeJobExecutionHelper jobExecutionImpl; 
+    protected RuntimeJobContextJobExecutionBridge jobExecutionImpl; 
     
-    protected StepContextImpl<?, ? extends Externalizable> stepContext;
+    protected StepContextImpl stepContext;
     
     protected Decision decision;
 
@@ -60,13 +57,13 @@ public class DecisionControllerImpl implements IExecutionElementController {
 	// it is the previous executable element before the decision
 	protected ExecutionElement executionElement = null;
     
-    public DecisionControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Decision decision) {
+    public DecisionControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Decision decision) {
         this.jobExecutionImpl = jobExecutionImpl;
         this.decision = decision;
     }
 
     
-    public void setStepContext(StepContextImpl<?, ? extends Serializable> stepContext) {
+    public void setStepContext(StepContextImpl stepContext) {
     	throw new UnsupportedOperationException("Shouldn't be called on a decision.");
     }
    
@@ -89,7 +86,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
    
 
     @Override
-    public InternalExecutionElementStatus execute(List<String> containmentName, RuntimeJobExecutionHelper rootJobExecution) throws Exception {
+    public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws Exception {
 
         String deciderId = decision.getRef();
         List<Property> propList = (decision.getProperties() == null) ? null : decision.getProperties().getPropertyList();
@@ -127,12 +124,6 @@ public class DecisionControllerImpl implements IExecutionElementController {
     public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
         //no-op
     }
-
-	@Override
-	public void setSubJobExitStatusQueue(Stack<String> subJobExitStatusQueue) {
-		// no-op
-		
-	}
 
 
 }

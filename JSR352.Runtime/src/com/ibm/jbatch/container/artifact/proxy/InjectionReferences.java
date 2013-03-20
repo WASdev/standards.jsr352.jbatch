@@ -16,12 +16,12 @@ import com.ibm.jbatch.jsl.model.Property;
  */
 public class InjectionReferences {
 
-    private final JobContext<?> jobContext;
-    private final StepContext<?,?> stepContext;
+    private final JobContext jobContext;
+    private final StepContext stepContext;
     
     private List<Property> props;
     
-    public InjectionReferences(JobContext<?> jobContext, StepContext<?, ?> stepContext, 
+    public InjectionReferences(JobContext jobContext, StepContext stepContext, 
             List<Property> props) {
 
         this.jobContext = jobContext;
@@ -29,11 +29,11 @@ public class InjectionReferences {
         this.props = props;
     }
 
-    public JobContext<?> getJobContext() {
+    public JobContext getJobContext() {
         return jobContext;
     }
 
-    public StepContext<?, ?> getStepContext() {
+    public StepContext getStepContext() {
         return stepContext;
     }
 

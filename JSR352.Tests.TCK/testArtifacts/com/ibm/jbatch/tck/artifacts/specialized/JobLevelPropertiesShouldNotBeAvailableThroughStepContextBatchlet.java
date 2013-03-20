@@ -42,6 +42,10 @@ public class JobLevelPropertiesShouldNotBeAvailableThroughStepContextBatchlet  e
 		String foo = properties.getProperty("foo");
 
 		// the exit status defaults to COMPLETED since foo must be null
+		// Note the Javadoc for JobContext.setExitStatus() does say that
+		// "If setExitStatus was not called or was called with a null 
+		// value, then the exit status defaults to the batch status of the job." 
+
 		JobCtx.setExitStatus(foo);
 
 		return GOOD_EXIT_STATUS;

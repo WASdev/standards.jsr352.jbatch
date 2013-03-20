@@ -19,15 +19,13 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.AbstractItemWriteListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 
-import com.ibm.jbatch.tck.artifacts.chunktypes.WriteRecord;
-
 @javax.inject.Named("myItemWriteListenerImpl")
-public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteRecord> {
+public class MyItemWriteListenerImpl extends AbstractItemWriteListener {
 	private final static String sourceClass = MyItemWriteListenerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 
@@ -45,7 +43,7 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteReco
     String applistenerTest;
 	
 	@Override
-	public void beforeWrite(List<WriteRecord> items) throws Exception {
+	public void beforeWrite(List<Object> items) throws Exception {
 		if (items != null && applistenerTest.equals("WRITE")){
 			logger.finer("In beforeWrite()");
 			beforecounter++;
@@ -55,7 +53,7 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteReco
 	}
 	
 	@Override
-	public void afterWrite(List<WriteRecord> items) throws Exception {
+	public void afterWrite(List<Object> items) throws Exception {
 		
 		logger.fine("AJM: applistenerTest = " + applistenerTest);
 		
@@ -73,7 +71,7 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener<WriteReco
 	}
 	
     @Override
-    public void onWriteError(List<WriteRecord> items, Exception e) throws Exception {
+    public void onWriteError(List<Object> items, Exception e) throws Exception {
         logger.finer("In onWriteError()" + e);
         jobCtx.setExitStatus("MyItemWriteListenerImpl.onWriteError");
     }

@@ -19,7 +19,9 @@ package com.ibm.jbatch.tck.artifacts.reusable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
+import javax.batch.api.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
+import javax.inject.Inject;
 
 
 @javax.inject.Named("myParallelSubJobsExitStatusBatchlet")
@@ -29,18 +31,24 @@ public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
 	
     private volatile static AtomicInteger count = new AtomicInteger(1);
     
-    public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
+    public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";    
+    
+    @Inject    
+    @BatchProperty(name="sleep.time")
+    String sleepTimeString;
     
 	@Override
 	public String process() throws Exception {	
 		logger.fine("Running batchlet process(): " + count);
 		
+		int sleepTime = Integer.parseInt(sleepTimeString);
+		
 		count.incrementAndGet();
 		
-		//Get the last thread to start to sleep the longest so we can show its exit status is the one that is
-		//picked up.
+		//Get the last thread to start to sleep the longest so we can show its exit status is the 
+		//last one picked up by the analyzer.
 		if (count.get() == 11) {
-		    Thread.sleep(2000);
+		    Thread.sleep(sleepTime);
 		}
 		
 		String returnString = "VERY GOOD INVOCATION " + count;

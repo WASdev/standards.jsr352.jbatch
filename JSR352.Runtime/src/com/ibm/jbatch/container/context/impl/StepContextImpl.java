@@ -23,11 +23,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.StepContext;
 
-public class StepContextImpl<T, P extends Serializable> implements StepContext<T, P> {
+public class StepContextImpl implements StepContext {
 
     private final static String sourceClass = StepContextImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
@@ -35,8 +35,8 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
     private String stepId = null;
     private BatchStatus batchStatus = null;
     private String exitStatus = null;
-    private T transientUserData = null;
-    private P persistentUserData = null;
+    private Object transientUserData = null;
+    private Serializable persistentUserData = null;
     private Exception exception = null;
     Timestamp starttime = null;
     Timestamp endtime = null;
@@ -45,7 +45,11 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
     
     private Properties properties = new Properties(); 
 
-    private ConcurrentHashMap<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
+    private String batchletProcessRetVal = null;
+    
+
+
+	private ConcurrentHashMap<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
 
     public StepContextImpl(String stepId) {
         this.stepId = stepId;        
@@ -90,7 +94,7 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
     }
 
     @Override
-    public P getPersistentUserData() {
+    public Serializable getPersistentUserData() {
         return persistentUserData;
     }
 
@@ -99,7 +103,7 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
         return properties;
     }
 
-    public T getTransientUserData() {
+    public Object getTransientUserData() {
         return transientUserData;
     }
 
@@ -119,12 +123,12 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
     }
 
     @Override
-    public void setPersistentUserData(P data) {
+    public void setPersistentUserData(Serializable data) {
         persistentUserData = data;
 
     }
 
-    public void setTransientUserData(T data) {
+    public void setTransientUserData(Object data) {
         transientUserData = data;        
     }
 
@@ -134,6 +138,7 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
         buf.append(" stepId: " + stepId);
         buf.append(", batchStatus: " + batchStatus);        
         buf.append(", exitStatus: " + exitStatus);
+        buf.append(", batchletProcessRetVal: " + batchletProcessRetVal);
         buf.append(", transientUserData: " + transientUserData);
         buf.append(", persistentUserData: " +     persistentUserData);
         return buf.toString();
@@ -141,7 +146,6 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
 
 	@Override
 	public long getStepExecutionId() {
-		// TODO Auto-generated method stub
 		return stepExecID;
 	}
 
@@ -166,6 +170,14 @@ public class StepContextImpl<T, P extends Serializable> implements StepContext<T
 	
 	public Timestamp getEndTimeTS(){
 		return endtime;
+	}
+	
+    public String getBatchletProcessRetVal() {
+		return batchletProcessRetVal;
+	}
+
+	public void setBatchletProcessRetVal(String batchletProcessRetVal) {
+		this.batchletProcessRetVal = batchletProcessRetVal;
 	}
 
 }

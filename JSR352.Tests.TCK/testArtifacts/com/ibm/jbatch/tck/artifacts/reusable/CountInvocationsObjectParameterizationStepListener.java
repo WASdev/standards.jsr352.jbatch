@@ -29,7 +29,7 @@ public class CountInvocationsObjectParameterizationStepListener extends Abstract
 	private final static Logger logger = Logger.getLogger(CountInvocationsObjectParameterizationStepListener.class.getName());
 	
     @Inject 
-    private JobContext<Object> jobCtx = null; 
+    private JobContext jobCtx = null; 
     
 	@Override
 	public void beforeStep() throws Exception {

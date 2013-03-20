@@ -8,7 +8,7 @@ import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 
 @javax.inject.Named("nullChkPtInfoReader")
-public class NullChkPtInfoReader implements ItemReader<String> {
+public class NullChkPtInfoReader implements ItemReader {
 
 	private final static Logger logger = Logger.getLogger(DoSomethingSimpleArrayWriter.class.getName());
 	

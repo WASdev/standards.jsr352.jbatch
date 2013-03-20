@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.jbatch.container.util;
+package javax.batch.runtime;
 
-public enum InternalExecutionStatus {
-	STARTING, STARTED, STOPPING, 
-	STOPPED, FAILED, COMPLETED, ABANDONED,
-	NOTEXECUTED, OTHER
-}
+/**
+* BatchStatus enum defines the batch status values
+* possible for a job.
+*/
+public enum BatchStatus {STARTING, STARTED, STOPPING, 
+STOPPED, FAILED, COMPLETED, ABANDONED }

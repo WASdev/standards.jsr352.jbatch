@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 
@@ -24,7 +24,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.NumbersRecord;
 
 
 @javax.inject.Named("retryInitProcessor")
-public class RetryInitProcessor implements ItemProcessor<NumbersRecord, NumbersRecord> {
+public class RetryInitProcessor implements ItemProcessor {
 
 	
     @Inject    
@@ -32,9 +32,9 @@ public class RetryInitProcessor implements ItemProcessor<NumbersRecord, NumbersR
 	String quantityProp = null;
 	
 	@Override
-	public NumbersRecord processItem(NumbersRecord record) throws Exception {
+	public NumbersRecord processItem(Object record) throws Exception {
 		//we don't care what quantity is in the db, we just want to reset it	
-		int item = record.getItem();
+		int item = ((NumbersRecord)record).getItem();
 		int quantity = Integer.parseInt(quantityProp);	
 		//reset the database to initial state, this is for test setup purposes only 
 		return new NumbersRecord(item, quantity);

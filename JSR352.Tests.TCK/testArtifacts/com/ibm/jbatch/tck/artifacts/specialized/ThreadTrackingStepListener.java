@@ -25,11 +25,11 @@ import javax.inject.Named;
 public class ThreadTrackingStepListener extends AbstractStepListener {
 	
 	@Inject 
-	private JobContext<Thread> jobCtx = null; 
+	private JobContext jobCtx = null; 
 
 	@Override
 	public void beforeStep() throws Exception {
-		Thread t = jobCtx.getTransientUserData();
+		Thread t = (Thread)jobCtx.getTransientUserData();
 		if (t == null) {
 			throw new IllegalStateException("In beforeStep() expected job listener to have already set this.  Are we not on the same thread?");
 		} else if (!t.equals(Thread.currentThread())) {
@@ -39,7 +39,7 @@ public class ThreadTrackingStepListener extends AbstractStepListener {
 
 	@Override
 	public void afterStep() throws Exception {
-		Thread t = jobCtx.getTransientUserData();
+		Thread t = (Thread)jobCtx.getTransientUserData();
 		if (t == null) {
 			throw new IllegalStateException("In afterStep() expected job listener to have already set this.  Are we not on the same thread?");
 		} else if (!t.equals(Thread.currentThread())) {

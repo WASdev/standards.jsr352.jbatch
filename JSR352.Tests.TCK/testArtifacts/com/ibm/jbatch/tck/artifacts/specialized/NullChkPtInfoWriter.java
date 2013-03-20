@@ -9,7 +9,7 @@ import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
 
 @javax.inject.Named("nullChkPtInfoWriter")
-public class NullChkPtInfoWriter implements ItemWriter<String> {
+public class NullChkPtInfoWriter implements ItemWriter {
 
 	private final static Logger logger = Logger.getLogger(DoSomethingSimpleArrayWriter.class.getName());
 	
@@ -42,7 +42,7 @@ public class NullChkPtInfoWriter implements ItemWriter<String> {
 	}
 
 	@Override
-	public void writeItems(List<String> items) throws Exception {
+	public void writeItems(List<Object> items) throws Exception {
 		// TODO Auto-generated method stub
 		logger.fine("AJM: writer.writeItems()");
 	}

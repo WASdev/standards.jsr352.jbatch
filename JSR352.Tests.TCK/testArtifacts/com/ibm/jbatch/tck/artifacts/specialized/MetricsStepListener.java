@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.listener.AbstractStepListener;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.JobContext;

@@ -28,11 +28,11 @@ public class DeciderTestsJobListener extends AbstractJobListener implements Stat
 	public static final String SUCCESS = "SUCCESS";
 	
     @Inject
-    JobContext<Integer> jobCtx;
+    JobContext jobCtx;
 
 	@Override
 	public void afterJob() {
-		Integer count = jobCtx.getTransientUserData();
+		Integer count = (Integer)jobCtx.getTransientUserData();
 		if (!count.equals(new Integer(2))) {
 			jobCtx.setExitStatus(UNEXPECTED);
 			throw new IllegalStateException("TCK Test Failure: Expecting two steps to have run.");

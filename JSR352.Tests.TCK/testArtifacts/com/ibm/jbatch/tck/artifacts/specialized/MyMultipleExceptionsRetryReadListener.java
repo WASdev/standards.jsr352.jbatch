@@ -12,7 +12,7 @@ import org.testng.Reporter;
 import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 @javax.inject.Named("myMultipleExceptionsRetryReadListener")
-public class MyMultipleExceptionsRetryReadListener implements RetryReadListener<Object> {
+public class MyMultipleExceptionsRetryReadListener implements RetryReadListener {
 
     @Inject
     JobContext jobCtx;

@@ -18,74 +18,62 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
+import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
-@javax.inject.Named("batchletStopOnEndOn")
-public class BatchletStopOnEndOn extends AbstractBatchlet{
+@javax.inject.Named("overrideOnAttributeValuesUponRestartBatchlet")
+public class OverrideOnAttributeValuesUponRestartBatchlet extends AbstractBatchlet{
 
-    private final static String sourceClass = BatchletStopOnEndOn.class.getName();
+    private final static String sourceClass = OverrideOnAttributeValuesUponRestartBatchlet.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
 
     @Inject
-    StepContext<?,?> stepCtx;
+    StepContext stepCtx;
 
     @Inject
-    JobContext<?> jobCtx;
+    JobContext jobCtx;
     
-
     @Inject    
     @BatchProperty(name="execution.number")
     String executionNumberString;
 
-
+    int execNum;
+    String stepName;
+    
     /*
      * Appends "intended.exit.status" property to the current Job-level ExitStatus
      */
     @Override
     public String process() throws Exception {
-        logger.fine(sourceClass + ".calculateExitStatus(), executionNumberString = " + executionNumberString);
+    	execNum = Integer.parseInt(executionNumberString);
+    	stepName = stepCtx.getStepName();
         
-        int execNum = Integer.parseInt(executionNumberString);
-
-        String stepId = stepCtx.getStepName();
-        
-        logger.fine(sourceClass + ".calculateExitStatus(), execution # = " + execNum + ", stepId = " + stepId);
+        logger.fine("execution # = " + execNum + ", step = " + stepName);
         
         String exitStatus = calculateExitStatus();
         
-        logger.fine(sourceClass + ".process(); Exiting with exitStatus = " + exitStatus);
-        
+        logger.fine("Exiting with exitStatus = " + exitStatus);
         return exitStatus;
     }
     
     private String calculateExitStatus() {
-
-        logger.fine(sourceClass + ".calculateExitStatus(), executionNumberString = " + executionNumberString);
-        
-        int execNum = Integer.parseInt(executionNumberString);
-
-        String stepId = stepCtx.getStepName();
-        
-        logger.fine(sourceClass + ".calculateExitStatus(), execution # = " + execNum + ", stepId = " + stepId);
-        
         /*
          * Tests that stop @on and end @on don't result in re-running already completed steps.
          */
-        if (stepId.equals("step1")) {
+        if (stepName.equals("step1")) {
             switch (execNum) {
                 case 1: return "ES.STEP1";
                 default: return "ILLEGAL.STATE";
             }
-        } else if (stepId.equals("step2")) {
+        } else if (stepName.equals("step2")) {
             switch (execNum) {
                 case 2: return "ES.STEP2";
                 default: return "ILLEGAL.STATE";
             }
-        } else if (stepId.equals("step3")) {
+        } else if (stepName.equals("step3")) {
             switch (execNum) {
                 case 3: return "ES.STEP3";
                 default: return "ILLEGAL.STATE";

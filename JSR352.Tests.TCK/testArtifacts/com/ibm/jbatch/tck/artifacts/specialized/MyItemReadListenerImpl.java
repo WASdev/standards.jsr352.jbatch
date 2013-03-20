@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.AbstractItemReadListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
@@ -26,7 +26,7 @@ import javax.inject.Inject;
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
 @javax.inject.Named("myItemReadListenerImpl")
-public class MyItemReadListenerImpl extends AbstractItemReadListener<ReadRecord> {
+public class MyItemReadListenerImpl extends AbstractItemReadListener {
 
 	private final static String sourceClass = MyItemReadListenerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
@@ -51,10 +51,10 @@ public class MyItemReadListenerImpl extends AbstractItemReadListener<ReadRecord>
 	}
 	
     @Override
-	public void afterRead(ReadRecord item) throws Exception {
+	public void afterRead(Object item) throws Exception {
 		
 		if (item != null && applistenerTest.equals("READ")){
-			logger.finer("In afterRead(), item = " + item.getCount());
+			logger.finer("In afterRead(), item = " + ((ReadRecord)item).getCount());
 			aftercounter++;
 
 			if (beforecounter == aftercounter) {

@@ -23,14 +23,14 @@ public class ParallelJobExecution {
     
     
     private final transient ParallelTaskResult taskResult;
-    private final RuntimeJobExecutionHelper jobExecution;
+    private final RuntimeJobContextJobExecutionBridge jobExecution;
 
-    public ParallelJobExecution(RuntimeJobExecutionHelper jobExecution, ParallelTaskResult taskResult) {
+    public ParallelJobExecution(RuntimeJobContextJobExecutionBridge jobExecution, ParallelTaskResult taskResult) {
         this.jobExecution = jobExecution;
         this.taskResult = taskResult;
     }
 
-    public RuntimeJobExecutionHelper getJobExecution() {
+    public RuntimeJobContextJobExecutionBridge getJobExecution() {
         return jobExecution;
     }
     

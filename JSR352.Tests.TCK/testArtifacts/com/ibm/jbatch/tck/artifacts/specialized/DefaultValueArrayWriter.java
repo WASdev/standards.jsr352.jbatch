@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
@@ -31,7 +31,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 
 @javax.inject.Named("defaultValueArrayWriter")
-public class DefaultValueArrayWriter extends AbstractItemWriter<ReadRecord> {
+public class DefaultValueArrayWriter extends AbstractItemWriter {
 
 	private final static Logger logger = Logger.getLogger(DefaultValueArrayWriter.class.getName());
 	
@@ -48,8 +48,8 @@ public class DefaultValueArrayWriter extends AbstractItemWriter<ReadRecord> {
     @Inject
 	JobContext jobCtx;
 	
-	     @Inject 
-	 private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null; 
+	@Inject 
+	private StepContext stepCtx = null; 
 	 
 	int arraysize;
 	
@@ -58,9 +58,9 @@ public class DefaultValueArrayWriter extends AbstractItemWriter<ReadRecord> {
 		logger.fine("openWriter");
 		
 	       MyPersistentRestartUserData myData = null;
-	        if ((myData = stepCtx.getPersistentUserData()) != null) {        	
+	        if ((myData = (MyPersistentRestartUserData)stepCtx.getPersistentUserData()) != null) {        	
 	        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber()+1, null));
-	        	logger.fine("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+	        	logger.fine("AJM: iteration = " + ((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getExecutionNumber());
 	        } else {        
 	        	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
 	        }
@@ -97,7 +97,7 @@ public class DefaultValueArrayWriter extends AbstractItemWriter<ReadRecord> {
 	}
 	
 	@Override
-	public void writeItems(List<ReadRecord> myData) throws Exception {
+	public void writeItems(List<Object> myData) throws Exception {
 		
 		logger.fine("writeMyData receives chunk size=" + myData.size());
 		jobCtx.setExitStatus("buffer size = " + myData.size());
@@ -107,7 +107,7 @@ public class DefaultValueArrayWriter extends AbstractItemWriter<ReadRecord> {
 		logger.fine("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
 		
 		for  (i = 0; i < myData.size(); i++) {
-			writerDataArray[idx] = myData.get(i).getCount();
+			writerDataArray[idx] = ((ReadRecord)myData.get(i)).getCount();
 			idx++;
 		}
 		for (i = 0; i < arraysize; i++){

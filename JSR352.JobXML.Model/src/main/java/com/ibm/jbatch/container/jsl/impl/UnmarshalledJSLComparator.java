@@ -43,7 +43,7 @@ public class UnmarshalledJSLComparator {
 	 * Compare two <properties> elements and their contents. The properties need not
 	 * be in the same order.
 	 * @param jslprops1 first <properties> element, could be null
-	 * @param jslprops2 second <properties element, could be null
+	 * @param jslprops2 second <properties> element, could be null
 	 * @return whether JSLProperties contain the same property names/values
 	 */
 	public static boolean equals(JSLProperties jslprops1, JSLProperties jslprops2) {

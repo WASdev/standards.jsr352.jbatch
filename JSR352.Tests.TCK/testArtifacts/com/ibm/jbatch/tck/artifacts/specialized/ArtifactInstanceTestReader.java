@@ -21,7 +21,7 @@ import java.io.Serializable;
 import javax.batch.api.chunk.ItemReader;
 
 @javax.inject.Named("artifactInstanceTestReader")
-public class ArtifactInstanceTestReader implements ItemReader<String> {
+public class ArtifactInstanceTestReader implements ItemReader {
     
 	@Override
 	public void open(Serializable checkpoint) throws Exception {

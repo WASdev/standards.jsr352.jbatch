@@ -16,72 +16,67 @@
  */
 package com.ibm.jbatch.container.services.impl;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 
-import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 public class CDIBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
-    private final static Logger logger = Logger.getLogger(CDIBatchArtifactFactoryImpl.class.getName());
-    private final static String CLASSNAME = CDIBatchArtifactFactoryImpl.class.getName();
+	private final static Logger logger = Logger.getLogger(CDIBatchArtifactFactoryImpl.class.getName());
+	private final static String CLASSNAME = CDIBatchArtifactFactoryImpl.class.getName();
 
-    @Override
-    public Object load(String batchId) {
-        String methodName = "load";
+	@Override
+	public Object load(String batchId) {
+		String methodName = "load";
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(CLASSNAME, methodName, "Loading batch artifact id = " + batchId);
-        }
+		logger.entering(CLASSNAME, methodName, "Loading batch artifact id = " + batchId);
 
-        Object loadedArtifact = getArtifactById(batchId);
+		Object loadedArtifact = getArtifactById(batchId);
 
-        if (loadedArtifact == null) {
-            throw new IllegalArgumentException("Could not load any artifacts with batch id=" + batchId);
-        }
+		if (loadedArtifact != null) {
+			logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", loaded artifact instance: " + loadedArtifact
+					+ " of type: " + loadedArtifact.getClass().getCanonicalName());
+		} else {
+			logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", FAILED to load artifact instance");
+		}
+		return loadedArtifact;
+	}
 
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", loaded artifact instance: " + loadedArtifact
-                    + " of type: " + loadedArtifact.getClass().getCanonicalName());
-        }
-        return loadedArtifact;
-    }
+	private Object getArtifactById(String id) {
 
-    private Object getArtifactById(String id) {
+		Object artifactInstance = null;
 
-        Object artifactInstance = null;
+		try {
+			InitialContext initialContext = new InitialContext();
+			BeanManager bm = (BeanManager) initialContext.lookup("java:comp/BeanManager");
+			Bean bean = bm.getBeans(id).iterator().next();
+			Class clazz = bean.getBeanClass();
+			artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
+		} catch (Exception e) {
+			// Don't throw an exception but simply return null;
+			logger.fine("Tried but failed to load artifact with id: " + id + ", Exception = " + e);
+		}
 
-        try {
-            InitialContext initialContext = new InitialContext();
-            BeanManager bm = (BeanManager) initialContext.lookup("java:comp/BeanManager");
-            Bean bean = bm.getBeans(id).iterator().next();
-            Class clazz = bean.getBeanClass();
-            artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
-        } catch (Exception e) {
-            throw new BatchContainerRuntimeException("Tried but failed to load artifact with id: " + id, e);
-        }
+		return artifactInstance;
+	}
 
-        return artifactInstance;
-    }
+	@Override
+	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+		// TODO Auto-generated method stub
 
-    @Override
-    public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
+	}
 
-    }
+	@Override
+	public void shutdown() throws BatchContainerServiceException {
+		// TODO Auto-generated method stub
 
-    @Override
-    public void shutdown() throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
-
-    }
+	}
 
 
 }

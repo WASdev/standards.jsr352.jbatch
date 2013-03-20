@@ -20,7 +20,7 @@ import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.util.Properties;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.Metric;
@@ -589,6 +589,8 @@ public class ChunkTests {
     @org.junit.Test
     public void testChunkTimeBasedDefaultCheckpoint() throws Exception {
         String METHOD = "testChunkTimeBasedDefaultCheckpoint";
+        
+        String DEFAULT_SLEEP_TIME = "500";
 
         try {
             Reporter.log("Create job parameters for execution #1:<p>");
@@ -599,6 +601,7 @@ public class ChunkTests {
             jobParams.put("execution.number", "1");
             jobParams.put("readrecord.fail", "31");
             jobParams.put("app.arraysize", "30");
+            jobParams.put("app.sleeptime", System.getProperty("ChunkTests.testChunkTimeBasedDefaultCheckpoint.sleep",DEFAULT_SLEEP_TIME));
 
             Reporter.log("Locate job XML file: chunkTimeBasedDefaultCheckpoint.xml<p>");
 
@@ -630,6 +633,8 @@ public class ChunkTests {
     @org.junit.Test
     public void testChunkTimeBasedTimeLimit0() throws Exception {
         String METHOD = "testChunkTimeBasedDefaultCheckpoint";
+        
+        String DEFAULT_SLEEP_TIME = "500";
 
         try {
             Reporter.log("Create job parameters for execution #1:<p>");
@@ -640,6 +645,8 @@ public class ChunkTests {
             jobParams.put("execution.number", "1");
             jobParams.put("readrecord.fail", "31");
             jobParams.put("app.arraysize", "30");
+            
+            jobParams.put("app.sleeptime", System.getProperty("ChunkTests.testChunkTimeBasedTimeLimit0.sleep",DEFAULT_SLEEP_TIME));
 
             Reporter.log("Locate job XML file: chunkTimeLimit0.xml<p>");
 
@@ -674,12 +681,15 @@ public class ChunkTests {
     public void testChunkTimeBased10Seconds() throws Exception {
     	
     	 String METHOD = "testChunkTimeBased10Seconds";
+    	 
+    	 String DEFAULT_SLEEP_TIME = "500";
 
     	try {
 	        Properties jobParams = new Properties();
 	        jobParams.put("execution.number", "1");
 	        jobParams.put("readrecord.fail", "31");
 	        jobParams.put("app.arraysize", "30");
+	        jobParams.put("app.sleeptime", System.getProperty("ChunkTests.testChunkTimeBased10Seconds.sleep",DEFAULT_SLEEP_TIME));
 	
 	
 	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunkTimeBasedCheckpoint", jobParams);
@@ -712,6 +722,8 @@ public class ChunkTests {
     @org.junit.Test
     public void testChunkRestartTimeBasedCheckpoint() throws Exception {
         String METHOD = "testChunkRestartTimeBasedCheckpoint";
+        
+        String DEFAULT_SLEEP_TIME = "500";
 
         try {
             Reporter.log("Create job parameters for execution #1:<p>");
@@ -722,8 +734,9 @@ public class ChunkTests {
             jobParams.put("execution.number", "1");
             jobParams.put("readrecord.fail", "12");
             jobParams.put("app.arraysize", "30");
+            jobParams.put("app.sleeptime", System.getProperty("ChunkTests.testChunkRestartTimeBasedCheckpoint.sleep",DEFAULT_SLEEP_TIME));
 
-            Reporter.log("Locate job XML file: chunkTimeBasedCheckpoint.xml<p>");
+
 
             Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
             TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunkTimeBasedCheckpoint", jobParams);
@@ -778,6 +791,9 @@ public class ChunkTests {
     public void testChunkRestartTimeBasedDefaultCheckpoint() throws Exception {
 
         String METHOD = "testChunkRestartTimeBasedDefaultCheckpoint";
+        
+        String DEFAULT_SLEEP_TIME = "500";
+        
         try {
             Reporter.log("Create job parameters for execution #1:<p>");
             Properties jobParams = new Properties();
@@ -787,6 +803,7 @@ public class ChunkTests {
             jobParams.put("execution.number", "1");
             jobParams.put("readrecord.fail", "2");
             jobParams.put("app.arraysize", "30");
+            jobParams.put("app.sleeptime", System.getProperty("ChunkTests.testChunkRestartTimeBasedDefaultCheckpoint.sleep",DEFAULT_SLEEP_TIME));
 
             Reporter.log("Locate job XML file: chunkTimeBasedDefaultCheckpoint.xml<p>");
 
@@ -1618,7 +1635,7 @@ public class ChunkTests {
 
         Reporter.log("---------------------------<p>");
         // System.out.print("getStepName(): " + step.getStepName() + " - ");
-        Reporter.log("getJobExecutionId(): " + step.getExecutionId() + " - ");
+        Reporter.log("getJobExecutionId(): " + step.getStepExecutionId() + " - ");
         // System.out.print("getStepExecutionId(): " + step.getStepExecutionId()
         // + " - ");
         Metric[] metrics = step.getMetrics();

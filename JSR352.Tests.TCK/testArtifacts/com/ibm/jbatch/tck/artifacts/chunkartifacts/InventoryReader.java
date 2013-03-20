@@ -35,7 +35,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryCheckpointData;
 import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryRecord;
 
 @javax.inject.Named("inventoryReader")
-public class InventoryReader extends AbstractItemReader<InventoryRecord> {
+public class InventoryReader extends AbstractItemReader {
 
 	private static final String CLASSNAME = InventoryReader.class.getName();
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
@@ -44,10 +44,10 @@ public class InventoryReader extends AbstractItemReader<InventoryRecord> {
 	protected DataSource dataSource = null;
 	
     @Inject
-    JobContext<?> jobCtx;
+    JobContext jobCtx;
 	
     @Inject
-    StepContext<?,?> stepCtx;
+    StepContext stepCtx;
     
 
 	int readerIndex = 0; //the number of items that have already been read

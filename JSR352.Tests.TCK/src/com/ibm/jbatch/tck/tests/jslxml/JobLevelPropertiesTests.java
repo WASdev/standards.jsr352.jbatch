@@ -22,7 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
@@ -36,16 +36,16 @@ import org.testng.annotations.Test;
 public class JobLevelPropertiesTests {
 
 	private JobOperatorBridge jobOp = null;
-
-	private int PROPERTIES_COUNT = 3;
 	
 	private String FOO_VALUE = "bar";
 
 	/**
 	 * @testName: testJobLevelPropertiesCount
 	 * @assertion: Section 5.1.3 Job Level Properties
-	 * @test_Strategy: set a list of properties to job should add them to the job context properties
-	 * 
+	 * @test_Strategy: set a list of properties to job should add them to the job context properties.
+	 * 				   Also tests that job parameters and other JSL properties (from other levels of nested elements) do
+	 *                 not appear in JobContext.getProperties().  A naming convention is used rather than counting
+	 *                 so as not to prevent a runtime from adding some unknown-to-TCK impl-specific properties. 
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -54,20 +54,19 @@ public class JobLevelPropertiesTests {
 	public void testJobLevelPropertiesCount() throws Exception {
 		
 		String METHOD = "testJobLevelPropertiesCount";
+		String SHOULD_BE_UNAVAILABLE_PROP_PREFIX = "com.ibm.jbatch.tck.tests.jslxml.JobLevelPropertiesTests";
+		Properties jobParams = new Properties();
+		jobParams.put(SHOULD_BE_UNAVAILABLE_PROP_PREFIX + ".parm1", "should.not.appear.in.job.context.properties");
 		
 		try {
 			Reporter.log("starting job");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_count");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_count", jobParams);
 	
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			assertWithMessage("Job completed", "VERY GOOD INVOCATION", jobExec.getExitStatus());
 			Reporter.log("job completed");
 			
-			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 0;
-		
-			assertWithMessage("Properties count", PROPERTIES_COUNT, count);
-			
-			Reporter.log("Job batchlet return code is the job.properties size " + count);
 		} catch (Exception e) {
             handleException(METHOD, e);
         }
@@ -76,7 +75,7 @@ public class JobLevelPropertiesTests {
 	/**
 	 * @testName: testJobLevelPropertiesPropertyValue
 	 * @assertion: Section 5.1.3 Job Level Properties
-	 * @test_Strategy: set a job property value should equal value set on job context property 
+	 * @test_Strategy: set a job property value should equal value set on job context property.  
 	 * 
 	 * @throws FileNotFoundException
 	 * @throws IOException
@@ -87,12 +86,13 @@ public class JobLevelPropertiesTests {
 		
 		String METHOD = "testJobLevelPropertiesPropertyValue";
 
+
 		try {
 			Reporter.log("starting job");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_value");
 	
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());			
 			Reporter.log("job completed");
 			
 			assertWithMessage("Property value", FOO_VALUE, jobExec.getExitStatus());
@@ -102,39 +102,7 @@ public class JobLevelPropertiesTests {
             handleException(METHOD, e);
         }
 	}
-	
-	/**
-	 * @testName: testJobLevelPropertiesEmpty
-	 * @assertion: Section 5.1.3 Job Level Properties
-	 * @test_Strategy: set a job property value should equal value set on job context property 
-	 * 
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	@Test @org.junit.Test
-	public void testJobLevelPropertiesEmpty() throws Exception {
-		
-		String METHOD = "testJobLevelPropertiesEmpty";
-		
-		try {
-			Reporter.log("starting job");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_level_properties_count_zero");
-	
-			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
-			Reporter.log("job completed");
-			
-			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 100;
-		
-			assertWithMessage("Properties count", 0, count);
-			
-			Reporter.log("Job batchlet return code is the job.properties size " + count);
-		} catch (Exception e) {
-            handleException(METHOD, e);
-        }
-	}
-	
+
 	/**
 	 * @testName: testJobLevelPropertiesShouldNotBeAvailableThroughStepContext
 	 * @assertion: Section 5.1.3 Job Level Properties

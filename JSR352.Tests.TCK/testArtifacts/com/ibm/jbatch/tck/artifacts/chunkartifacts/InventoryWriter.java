@@ -22,7 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
@@ -32,7 +32,7 @@ import javax.sql.DataSource;
 import com.ibm.jbatch.tck.artifacts.chunktypes.InventoryRecord;
 
 @javax.inject.Named("inventoryWriter")
-public class InventoryWriter extends AbstractItemWriter<InventoryRecord> {
+public class InventoryWriter extends AbstractItemWriter {
 
     protected DataSource dataSource = null;
 
@@ -60,7 +60,7 @@ public class InventoryWriter extends AbstractItemWriter<InventoryRecord> {
     }
 
     @Override
-    public void writeItems(List<InventoryRecord> records) throws Exception {
+    public void writeItems(List<Object> records) throws Exception {
 
 
         int itemID = -1;
@@ -72,9 +72,9 @@ public class InventoryWriter extends AbstractItemWriter<InventoryRecord> {
         try {
             connection = ConnectionHelper.getConnection(dataSource);
 
-            for (InventoryRecord record : records) {
-                itemID = record.getItemID();
-                quantity = record.getQuantity();
+            for (Object record : records) {
+                itemID = ((InventoryRecord)record).getItemID();
+                quantity = ((InventoryRecord)record).getQuantity();
 
                 statement = connection.prepareStatement(ConnectionHelper.INSERT_ORDER);
                 statement.setInt(1, itemID);

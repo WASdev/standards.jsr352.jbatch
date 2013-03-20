@@ -31,7 +31,7 @@ public class ThreadTrackingJobListener extends AbstractJobListener {
 	public final static String GOOD_EXIT = "GOOD_EXIT";
 	
     @Inject 
-    private JobContext<Thread> jobCtx = null; 
+    private JobContext jobCtx = null; 
     
 	@Override
 	public void beforeJob() throws Exception {
@@ -40,7 +40,7 @@ public class ThreadTrackingJobListener extends AbstractJobListener {
 
 	@Override
 	public void afterJob() throws Exception {
-		Thread t = jobCtx.getTransientUserData();
+		Thread t = (Thread)jobCtx.getTransientUserData();
 		if (t == null) {
 			jobCtx.setExitStatus(GOOD_EXIT);
 		} else {

@@ -1,6 +1,14 @@
 /*
  * Appended by build tooling.
  */
+
+public List<com.ibm.jbatch.container.jsl.TransitionElement> getTransitionElements() {
+    return new ArrayList<com.ibm.jbatch.container.jsl.TransitionElement>();
+}
+    
+/*
+ * Appended by build tooling.
+ */
 public String toString() {
 	StringBuffer buf = new StringBuffer(100);
 	buf.append("Split: id=" + id);
@@ -15,16 +23,5 @@ public String toString() {
 		}
 	}
 	buf.append("\nnextFromAttribute =" + nextFromAttribute);
-	buf.append("\nTransition elements: \n");
-	if (transitionElements == null) {
-		buf.append("<none>");
-	} else {
-		int j = 0;
-		for ( com.ibm.jbatch.container.jsl.TransitionElement e : transitionElements) {
-			buf.append("transition element[" + j + "]:" + e + "\n");
-			j++;
-		}
-	}
-	buf.append("\n");
 	return buf.toString();
 }

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
@@ -43,7 +43,7 @@ public class ParallelExecutionTests {
 
 	private final static Logger logger = Logger.getLogger(ParallelExecutionTests.class.getName());
 
-	private static final int TIME_TO_SLEEP_BEFORE_ISSUING_STOP = 1900; 
+	private static final String TIME_TO_SLEEP_BEFORE_ISSUING_STOP = "1900"; 
 
 	private static JobOperatorBridge jobOp = null;
 
@@ -107,20 +107,30 @@ public class ParallelExecutionTests {
 		String METHOD = "testInvokeJobWithOnePartitionedStepExitStatus";
 		begin(METHOD);
 
+		String DEFAULT_SLEEP_TIME = "2000";
+
 		try {
-			Reporter.log("Locate job XML file: job_partitioned_1step.xml<p>");
+			Properties jobParameters = new Properties();
+
+			String sleepTime = System.getProperty("ParallelExecutionTests.testInvokeJobWithOnePartitionedStepExitStatus.sleep",DEFAULT_SLEEP_TIME);
+			jobParameters.put("sleep.time", sleepTime);
 
 			Reporter.log("Invoke startJobAndWaitForResult<p>");
-			JobExecution jobExecution = jobOp.startJobAndWaitForResult("job_partitioned_1step_exitStatusTest");
+			JobExecution jobExecution = jobOp.startJobAndWaitForResult("job_partitioned_1step_exitStatusTest",jobParameters);
 
 			Reporter.log("JobExecution getBatchStatus()="+jobExecution.getBatchStatus()+"<p>");
 			assertObjEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
-			List<StepExecution<?>> stepExecutions = jobOp.getStepExecutions(jobExecution.getExecutionId());
+			List<StepExecution> stepExecutions = jobOp.getStepExecutions(jobExecution.getExecutionId());
+			assertObjEquals(1, stepExecutions.size());
 
-			for (StepExecution<?> stepEx : stepExecutions) {
-				assertObjEquals("VERY GOOD INVOCATION 11", stepEx.getExitStatus());
+			for (StepExecution stepEx : stepExecutions) {
+				assertObjEquals("STEP EXIT STATUS: 11", stepEx.getExitStatus());
+				assertObjEquals(BatchStatus.COMPLETED, stepEx.getBatchStatus());
 			}
+
+			assertObjEquals("JOB EXIT STATUS: 11", jobExecution.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
 		} catch (Exception e) {
 			handleException(METHOD, e);
@@ -154,9 +164,11 @@ public class ParallelExecutionTests {
 			Reporter.log("Invoke startJobWithoutWaitingForResult<p>");
 			JobExecution jobExecution =  jobOp.startJobWithoutWaitingForResult("job_batchlet_longrunning_partitioned", overrideJobParams);
 
-			Reporter.log("Sleep for " + TIME_TO_SLEEP_BEFORE_ISSUING_STOP);
 			//Sleep long enough for parallel steps to fan out
-			Thread.sleep(TIME_TO_SLEEP_BEFORE_ISSUING_STOP);
+			int sleepTime = Integer.parseInt(System.getProperty("ParallelExecutionTests.testStopRunningPartitionedStep.sleep",TIME_TO_SLEEP_BEFORE_ISSUING_STOP));
+			Reporter.log("Sleep for " + TIME_TO_SLEEP_BEFORE_ISSUING_STOP);
+			Thread.sleep(sleepTime);
+
 
 			Reporter.log("Invoke stopJobAndWaitForResult<p>");
 			jobOp.stopJobAndWaitForResult(jobExecution);
@@ -195,9 +207,10 @@ public class ParallelExecutionTests {
 			Reporter.log("Invoke startJobWithoutWaitingForResult<p>");
 			JobExecution origJobExecution = jobOp.startJobWithoutWaitingForResult("job_batchlet_longrunning_partitioned", jobParams);
 
-			Reporter.log("Sleep for " + TIME_TO_SLEEP_BEFORE_ISSUING_STOP);
 			// Sleep long enough for parallel steps to fan out
-			Thread.sleep(TIME_TO_SLEEP_BEFORE_ISSUING_STOP);
+			int sleepTime = Integer.parseInt(System.getProperty("ParallelExecutionTests.testStopRestartRunningPartitionedStep.sleep",TIME_TO_SLEEP_BEFORE_ISSUING_STOP));
+			Reporter.log("Sleep for " + TIME_TO_SLEEP_BEFORE_ISSUING_STOP);
+			Thread.sleep(sleepTime);
 
 			Reporter.log("Invoke stopJobAndWaitForResult<p>");
 			jobOp.stopJobAndWaitForResult(origJobExecution);
@@ -338,10 +351,11 @@ public class ParallelExecutionTests {
 	 * 
 	 * @test_Strategy: A chunk is partitioned into 3 partitions each with their
 	 * own checkpointing. The collector, analyzer, and reducer, each append to
-	 * the exit status to verify that they are called in the correct order. The
-	 * persistent data is used to remember how many times the step has been run.
-	 * If the data is not persisted correctly the partitioned steps will not be
-	 * able to complete because the persisted count will not get incremented One
+	 * the exit status to verify that they are called in the correct order. (The
+	 * 'C' in the exit status String represents a call to the (C)ollector and
+	 * the 'A' a call to the (A)nalyzer). The persistent data is used to remember 
+	 * how many times the step has been run. If the data is not persisted correctly 
+	 * the partitioned steps will not be * able to complete because the persisted count will not get incremented One
 	 * of the partitions completes on the first attempt. The other two fail and
 	 * must be restarted. We verify that the completed partition is not rerun
 	 * since it does not append any data to the exit status.
@@ -354,40 +368,67 @@ public class ParallelExecutionTests {
 		try {
 			Reporter.log("Create job parameters for execution #1:<p>");
 			Properties jobParams = new Properties();
-			Reporter.log("readrecord.fail=12<p>");
+			Reporter.log("readrecord.fail=23<p>");
 			Reporter.log("app.arraysize=30<p>");
 			Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
 			Reporter.log("app.next.writepoints=0,5,10,15,20,25,30<p>");
-			jobParams.put("readrecord.fail", "12");
+			jobParams.put("readrecord.fail", "23");
 			jobParams.put("app.arraysize", "30");
 			jobParams.put("app.writepoints", "0,10,20,30");
-			jobParams.put("app.next.writepoints", "10,20,30");
+			jobParams.put("app.next.writepoints", "20,30");
 
 			Reporter.log("Locate job XML file: chunkrestartPartitionedCheckpt10.xml<p>");
 
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunkrestartPartitionedCheckpt10", jobParams);
 
-			Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
-			Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
-			assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
-			assertWithMessage("Testing execution #1", "nullBeginCACACACACACACACACARollbackAfter", execution1.getExitStatus());
+			{ // Use block to reduce copy/paste errors
+				Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
+				Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
+				assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
 
-			long jobInstanceId = execution1.getInstanceId();
-			long lastExecutionId = execution1.getExecutionId();
-			Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
-			Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
+				// '2' each from partition that gets through the first two chunks and fails during the third
+				// '4' for the partition that gets through all three chunks, plus one call for end of partition
+				int CA_PAIRS = 2 + 2 + 4;   
+				String CA = "CA"; // This is a (C)ollector(A)nalyzerPair
 
-			Reporter.log("Invoke restartJobAndWaitForResult with execution id: " + lastExecutionId + "<p>");
-			TCKJobExecutionWrapper exec = jobOp.restartJobAndWaitForResult(lastExecutionId, jobParams);
+				String expectedExitStatus = "null"; // verifies clean exit status
+				expectedExitStatus += "Begin";    // From PartitionReducer beginPartitionedStep()
+				for (int i = 0; i < CA_PAIRS; i++, expectedExitStatus += CA);
+				expectedExitStatus += "Rollback"; // From PartitionReducer rollbackPartitionedStep()
+				expectedExitStatus += "After";    // From PartitionReducer afterPartitionedStepCompletion()
 
-			lastExecutionId = exec.getExecutionId();
-			Reporter.log("execution #2 JobExecution getBatchStatus()=" + exec.getBatchStatus() + "<p>");
-			Reporter.log("execution #2 JobExecution getExitStatus()=" + exec.getExitStatus() + "<p>");
-			Reporter.log("execution #2 Job instance id=" + exec.getInstanceId() + "<p>");
-			assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, exec.getBatchStatus());
-			assertWithMessage("Testing execution #2", "nullBeginCACACACACACACACABeforeAfter", exec.getExitStatus());
-			assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());
+				// Should be: "nullBeginCACACACACACACACARollbackAfter"
+				assertWithMessage("Testing execution #1", expectedExitStatus, execution1.getExitStatus());
+			}
+
+			{
+				long execution1Id = execution1.getExecutionId();
+				long execution1InstanceId = execution1.getInstanceId();
+				Reporter.log("Invoke restartJobAndWaitForResult with execution id: " + execution1Id + "<p>");
+				TCKJobExecutionWrapper execution2 = jobOp.restartJobAndWaitForResult(execution1Id, jobParams);
+
+				Reporter.log("execution #2 JobExecution getBatchStatus()=" + execution2.getBatchStatus() + "<p>");
+				Reporter.log("execution #2 JobExecution getExitStatus()=" + execution2.getExitStatus() + "<p>");
+				Reporter.log("execution #2 Job instance id=" + execution2.getInstanceId() + "<p>");
+				Reporter.log("execution #2 Job execution id=" + execution2.getExecutionId() + "<p>");
+				
+				// '2' for each of the two partitions that process chunks #2, #3, and each make one C+A call 
+				// at the end of the partition and '0' for the partition already complete.
+				int CA_PAIRS = 2 + 2;
+				String CA = "CA"; // This is a (C)ollector(A)nalyzerPair
+
+				String expectedExitStatus = "null"; // verifies clean exit status
+				expectedExitStatus += "Begin";    // From PartitionReducer beginPartitionedStep()
+				for (int i = 0; i < CA_PAIRS; i++, expectedExitStatus += CA);
+				expectedExitStatus += "Before"; // From PartitionReducer beforePartitionedStepCompletion()
+				expectedExitStatus += "After";    // From PartitionReducer afterPartitionedStepCompletion()
+
+				// Should be: "nullBeginCACACACABeforeAfter"
+				assertWithMessage("Testing execution #2 exit status", expectedExitStatus, execution2.getExitStatus());
+				assertWithMessage("Testing execution #2 batch status", BatchStatus.COMPLETED, execution2.getBatchStatus());
+				assertWithMessage("Testing execution #2 instance ID", execution1InstanceId, execution2.getInstanceId());
+			}
 
 		} catch (Exception e) {
 			handleException(METHOD, e);

@@ -29,7 +29,7 @@ public class CountInvocationsStepListener extends AbstractStepListener {
 	private final static Logger logger = Logger.getLogger(CountInvocationsStepListener.class.getName());
 	
     @Inject 
-    private JobContext<MyCounter> jobCtx = null; 
+    private JobContext jobCtx = null; 
     
     public static int STATIC_BEFORE_COUNT = 0;
     public static int STATIC_AFTER_COUNT = 0;
@@ -41,7 +41,7 @@ public class CountInvocationsStepListener extends AbstractStepListener {
 			ctr.incrementBeforeCount();
 			jobCtx.setTransientUserData(ctr);
 		} else if (jobCtx.getTransientUserData() instanceof MyCounter) {
-			MyCounter ctr = jobCtx.getTransientUserData();
+			MyCounter ctr = (MyCounter)jobCtx.getTransientUserData();
 			ctr.incrementBeforeCount();
 		} else {
 			logger.fine("In beforeStep(), not MyCounter");
@@ -52,7 +52,7 @@ public class CountInvocationsStepListener extends AbstractStepListener {
 	@Override
 	public void afterStep() throws Exception {
 		if (jobCtx.getTransientUserData() instanceof MyCounter) {
-			MyCounter ctr = jobCtx.getTransientUserData();
+			MyCounter ctr = (MyCounter)jobCtx.getTransientUserData();
 			ctr.incrementAfterCount();
 			jobCtx.setExitStatus(ctr.getBeforeCount() + "," + ctr.getAfterCount());
 		} else {

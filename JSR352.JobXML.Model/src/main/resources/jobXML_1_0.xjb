@@ -38,11 +38,6 @@
         <jaxb:bindings node="//xsd:complexType[@name='Split']/xsd:sequence/xsd:element[@name='flow']">
             <jaxb:property name="flows"/>
         </jaxb:bindings>
-        <jaxb:bindings node="//xsd:complexType[@name='Split']/xsd:sequence/xsd:group[1]">
-            <jaxb:property name="transitionElements">
-                <jaxb:baseType name="com.ibm.jbatch.container.jsl.TransitionElement"/>
-             </jaxb:property>
-        </jaxb:bindings>
         <jaxb:bindings node="//xsd:complexType[@name='Flow']/xsd:sequence/xsd:choice[1]">
             <jaxb:property name="executionElements">
                 <jaxb:baseType name="com.ibm.jbatch.container.jsl.ExecutionElement"/>

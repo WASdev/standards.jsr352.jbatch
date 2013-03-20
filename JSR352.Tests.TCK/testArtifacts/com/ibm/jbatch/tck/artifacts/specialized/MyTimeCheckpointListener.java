@@ -17,10 +17,9 @@ package com.ibm.jbatch.tck.artifacts.specialized;
  * limitations under the License.
 */
 
-import java.io.Externalizable;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.AbstractChunkListener;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
@@ -50,7 +49,7 @@ public class MyTimeCheckpointListener extends AbstractChunkListener {
     JobContext jobCtx;
     
     @Inject
-    StepContext<Integer, Externalizable> stepCtx;
+    StepContext stepCtx;
 
     public MyTimeCheckpointListener(){
 
@@ -105,7 +104,7 @@ public class MyTimeCheckpointListener extends AbstractChunkListener {
     }
     
     @Override
-    public void onError() {
+    public void onError(Exception e) {
     	logger.fine("CHUNKLISTENER: onError");
     }
 

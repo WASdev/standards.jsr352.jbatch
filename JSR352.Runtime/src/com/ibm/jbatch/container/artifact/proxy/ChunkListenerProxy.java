@@ -49,9 +49,9 @@ public class ChunkListenerProxy extends AbstractProxy<ChunkListener> implements 
     }
 
     @Override
-    public void onError() throws Exception {
+    public void onError(Exception ex) throws Exception {
         try {
-            this.delegate.onError();
+            this.delegate.onError(ex);
         } catch (Exception e) {
         	this.stepContext.setException(e);
             throw new BatchContainerRuntimeException(e);

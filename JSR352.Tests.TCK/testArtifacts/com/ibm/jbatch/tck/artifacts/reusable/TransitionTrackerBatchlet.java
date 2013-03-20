@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.jbatch.tck.artifacts.specialized;
+package com.ibm.jbatch.tck.artifacts.reusable;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -27,8 +27,8 @@ import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
-@javax.inject.Named("flowTransitionToStepTestBatchlet")
-public class FlowTransitionToStepTestBatchlet extends AbstractBatchlet {
+@javax.inject.Named("transitionTrackerBatchlet")
+public class TransitionTrackerBatchlet extends AbstractBatchlet {
 
 	public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION"; 
 
@@ -36,12 +36,12 @@ public class FlowTransitionToStepTestBatchlet extends AbstractBatchlet {
 	JobContext jobCtx;
     
     @Inject
-	StepContext<Object,  TransitionListPersistent> stepCtx = null;
+	StepContext stepCtx = null;
     
 	@Override
 	public String process() throws Exception {
 
-		TransitionListPersistent data = (TransitionListPersistent) jobCtx.getTransientUserData();
+		TransitionListPersistent data = (TransitionListPersistent)jobCtx.getTransientUserData();
 		if( data != null) {
 			data.getTransitionList().add(stepCtx.getStepName());
 		} else {
@@ -80,7 +80,6 @@ public class FlowTransitionToStepTestBatchlet extends AbstractBatchlet {
 				ClassNotFoundException {
 			transitionList = (ArrayList<String>) in.readObject();
 		}
-		
 		
 	}
 

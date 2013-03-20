@@ -18,16 +18,20 @@ package com.ibm.jbatch.tck.tests.jslxml;
 
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
+import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 
+import com.ibm.jbatch.tck.artifacts.reusable.MyBatchletImpl;
 import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentUserData;
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
@@ -86,7 +90,7 @@ public class StepExecutionTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_1step");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 
 			assertObjEquals(1, steps.size());
 
@@ -124,14 +128,19 @@ public class StepExecutionTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_4steps");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 			assertObjEquals(4, steps.size());
 
+			Set<Long> stepExecutionsSeen = new HashSet<Long>();
 			for (StepExecution step : steps) {
 				// check that each step completed successfully
 				showStepState(step);
 				Reporter.log("Step status = " + step.getBatchStatus() + "<p>");
 				assertObjEquals(BatchStatus.COMPLETED, step.getBatchStatus());
+				
+				// Let's also make sure all four have unique IDs, to make sure the JobExecution id isn't being used say
+				assertWithMessage("New StepExecution id", !stepExecutionsSeen.contains(step.getStepExecutionId()));
+				stepExecutionsSeen.add(step.getStepExecutionId());
 			}
 			Reporter.log("Job execution status = " + jobExec.getBatchStatus() + "<p>");
 			assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
@@ -158,7 +167,7 @@ public class StepExecutionTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_failElement");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 			assertObjEquals(1, steps.size());
 			for (StepExecution step : steps) {
 				// check that each step completed successfully
@@ -193,7 +202,7 @@ public class StepExecutionTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_stopElement");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 			assertObjEquals(1, steps.size());
 			for (StepExecution step : steps) {
 				// check that each step completed successfully
@@ -206,7 +215,7 @@ public class StepExecutionTests {
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
-	}
+	} 
 
 	/*
 	 * @testName: testPersistedStepData
@@ -235,7 +244,7 @@ public class StepExecutionTests {
 
 			//This job should only have one step.
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 			StepExecution stepExec = steps.get(0);
 			assertObjEquals(1, steps.size());
 
@@ -264,14 +273,14 @@ public class StepExecutionTests {
 
 
 	/*
-	 * @testName: testStepContainment
+	 * @testName: testStepExecutionExitStatus
 	 * @assertion: FIXME
 	 * @test_Strategy: FIXME
 	 */
 	@Test
 	@org.junit.Test  
-	public void testStepContainment() throws Exception {
-		String METHOD = "testStepContainment";
+	public void testStepExecutionExitStatus() throws Exception {
+		String METHOD = "testStepExecutionExitStatus";
 		begin(METHOD);
 
 		try {
@@ -281,37 +290,31 @@ public class StepExecutionTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_failElement");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 			assertObjEquals(1, steps.size());
-			for (StepExecution step : steps) {
-				// check that each step completed successfully
-				// TODO: shouldn't the step status be failed here ???
-				showStepState(step);
-			}
-
-			String[] containment = null;
-			for (StepExecution step : steps) {
-				if (step.getStepName().equals("step1")) {
-					containment = step.getStepContainment();
-				}
-			}
-
-			Reporter.log("StepExecution.getStepContainment()="+getStepContainmentCSV(containment)+"<p>");
-			assertObjEquals("", getStepContainmentCSV(containment));
+			
+			StepExecution step = steps.get(0);
+			showStepState(step);
+			assertWithMessage("Check step exit status", MyBatchletImpl.GOOD_EXIT_STATUS, step.getExitStatus());
+			assertWithMessage("Check step batch status", BatchStatus.COMPLETED, step.getBatchStatus());
+			Reporter.log("Job batch status =" + jobExec.getBatchStatus() + "<p>");
+			Reporter.log("Job exit status =" + jobExec.getExitStatus() + "<p>");
+			assertWithMessage("Check job batch status", BatchStatus.FAILED, jobExec.getBatchStatus());
+			assertWithMessage("Check job exit status", "TEST_FAIL", jobExec.getExitStatus());
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
 	}
 
 	/*
-	 * @testName: testStepInFlowContainment
+	 * @testName: testStepInFlowStepExecution
 	 * @assertion: FIXME
 	 * @test_Strategy: FIXME
 	 */
 	@Test
 	@org.junit.Test  
-	public void testStepInFlowContainment() throws Exception {
-		String METHOD = "testStepInFlowContainment";
+	public void testStepInFlowStepExecution() throws Exception {
+		String METHOD = "testStepInFlowStepExecution";
 		begin(METHOD);
 
 		try {
@@ -320,23 +323,20 @@ public class StepExecutionTests {
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("flow_transition_to_step");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 			assertObjEquals(4, steps.size());
 			for (StepExecution step : steps) {
-				// check that each step completed successfully
-				// TODO: shouldn't the step status be failed here ???
 				showStepState(step);
+				// Conveniently all four steps have same exit and batch status.
+				assertWithMessage("Check step exit status", MyBatchletImpl.GOOD_EXIT_STATUS, step.getExitStatus());
+				assertWithMessage("Check step batch status", BatchStatus.COMPLETED, step.getBatchStatus());
 			}
 
-			String[] containment = null;
-			for (StepExecution step : steps) {
-				if (step.getStepName().equals("flow1step3")) {
-					containment = step.getStepContainment();
-				}
-			}
-
-			Reporter.log("StepExecution.getStepContainment()="+getStepContainmentCSV(containment)+"<p>");
-			assertObjEquals("flow1", getStepContainmentCSV(containment));
+			// Now check job level status
+			Reporter.log("Job batch status =" + jobExec.getBatchStatus() + "<p>");
+			Reporter.log("Job exit status =" + jobExec.getExitStatus() + "<p>");
+			assertWithMessage("Check job batch status", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			assertWithMessage("Check job exit status", "flow1step1, flow1step2, flow1step3, step1", jobExec.getExitStatus());
 
 		} catch (Exception e) {
 			handleException(METHOD, e);
@@ -344,96 +344,44 @@ public class StepExecutionTests {
 	}
 
 	/*
-	 * @testName: testStepInFlowInSplitContainment
+	 * @testName: testStepInFlowInSplitStepExecution
 	 * @assertion: FIXME
 	 * @test_Strategy: FIXME
 	 */
 	@Test
 	@org.junit.Test  
-	public void testStepInFlowInSplitContainment() throws Exception {
-		String METHOD = "testStepInFlowInSplitContainment";
+	public void testStepInFlowInSplitStepExecution() throws Exception {
+		String METHOD = "testStepInFlowInSplitStepExecution";
 		begin(METHOD);
 
 		try {
-			Reporter.log("Locate job XML file: job_batchlet_failElement.xml<p>");
+			Reporter.log("Locate job XML file: split_batchlet_4steps.xml<p>");
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_split_batchlet_4steps");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_batchlet_4steps");
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
+			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
 			assertObjEquals(4, steps.size());
 			for (StepExecution step : steps) {
-				// check that each step completed successfully
-				// TODO: shouldn't the step status be failed here ???
 				showStepState(step);
+				// Conveniently all four steps have same exit and batch status.
+				assertWithMessage("Check step exit status", MyBatchletImpl.GOOD_EXIT_STATUS, step.getExitStatus());
+				assertWithMessage("Check step batch status", BatchStatus.COMPLETED, step.getBatchStatus());
 			}
+			Reporter.log("Job batch status =" + jobExec.getBatchStatus() + "<p>");
+			Reporter.log("Job exit status =" + jobExec.getExitStatus() + "<p>");
+			assertWithMessage("Check job batch status", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			assertWithMessage("Check job exit status", "COMPLETED", jobExec.getExitStatus());
 
-			String[] containment = null;
-			for (StepExecution step : steps) {
-				if (step.getStepName().equals("step1")) {
-					containment = step.getStepContainment();
-				}
-			}
-
-			Reporter.log("StepExecution.getStepContainment()="+getStepContainmentCSV(containment)+"<p>");
-			assertObjEquals("split1,flow1", getStepContainmentCSV(containment));
-
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-	}
-
-	/*
-	 * @testName: testPartitionedStepContainment
-	 * @assertion: FIXME
-	 * @test_Strategy: FIXME
-	 */
-	@Test
-	@org.junit.Test  
-	public void testPartitionedStepContainment() throws Exception {
-		String METHOD = "testPartitionedStepContainment";
-		begin(METHOD);
-
-		try {
-			Reporter.log("Locate job XML file: job_batchlet_longrunning_partitioned_inflow.xml<p>");
-			Reporter.log("Create job parameters<p>");
-			Properties overrideJobParams = new Properties();
-			Reporter.log("run.indefinitely=false<p>");
-			overrideJobParams.setProperty("run.indefinitely" , "false");
-
-			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_batchlet_longrunning_partitioned_inflow", overrideJobParams);
-
-			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
-			List<StepExecution<?>> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
-			assertObjEquals(3, steps.size());
-			for (StepExecution step : steps) {
-				// check that each step completed successfully
-				// TODO: shouldn't the step status be failed here ???
-				showStepState(step);
-			}
-
-			String[] containment = null;
-			for (StepExecution step : steps) {
-				if (step.getStepName().equals("step1")) {
-					containment = step.getStepContainment();
-				}
-			}
-
-			Reporter.log("StepExecution.getStepContainment()="+getStepContainmentCSV(containment)+"<p>");
-			assertObjEquals("flow1", getStepContainmentCSV(containment));
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
 	}
 
 	private void showStepState(StepExecution step) {
-
-
 		Reporter.log("---------------------------<p>");
 		Reporter.log("getStepName(): " + step.getStepName() + " - ");
-		Reporter.log("getJobExecutionId(): " + step.getExecutionId() + " - ");
-		//System.out.print("getStepExecutionId(): " + step.getStepExecutionId() + " - ");
+		Reporter.log("getStepExecutionId(): " + step.getStepExecutionId() + " - ");
 		Metric[] metrics = step.getMetrics();
 
 		for (int i = 0; i < metrics.length; i++) {
@@ -442,7 +390,6 @@ public class StepExecutionTests {
 
 		Reporter.log("getStartTime(): " + step.getStartTime() + " - ");
 		Reporter.log("getEndTime(): " + step.getEndTime() + " - ");
-		//System.out.print("getLastUpdateTime(): " + step.getLastUpdateTime() + " - ");
 		Reporter.log("getBatchStatus(): " + step.getBatchStatus() + " - ");
 		Reporter.log("getExitStatus(): " + step.getExitStatus()+"<p>");
 		Reporter.log("---------------------------<p>");
@@ -454,22 +401,4 @@ public class StepExecutionTests {
 		throw e;
 	}
 
-	public static String getStepContainmentCSV(String[] stepContainment) {
-
-		if (stepContainment == null) {
-			return "";
-		}
-
-		StringBuilder strBuilder = new StringBuilder();
-
-		for (int i = 0; i < stepContainment.length; i++) {
-			strBuilder.append(stepContainment[i]);
-
-			if (i < stepContainment.length - 1) {
-				strBuilder.append(",");
-			}
-
-		}
-		return strBuilder.toString();
-	}
 }

@@ -31,6 +31,7 @@
 				<property name="execution.number" value="#{jobParameters['execution.number']}" />
 				<property name="readrecord.fail" value="#{jobParameters['readrecord.fail']}" />
 				<property name="app.arraysize" value="#{jobParameters['app.arraysize']}" />
+				<property name="app.sleeptime" value="#{jobParameters['app.sleeptime']}" />
    	         </properties>
 		 </reader>
 		 <processor ref="doSomethingArrayItemProcessorImpl"/>

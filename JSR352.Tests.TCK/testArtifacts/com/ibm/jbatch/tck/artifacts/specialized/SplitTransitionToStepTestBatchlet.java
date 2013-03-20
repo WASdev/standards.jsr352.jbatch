@@ -36,7 +36,7 @@ public class SplitTransitionToStepTestBatchlet extends AbstractBatchlet {
 	JobContext jobCtx;
     
     @Inject
-	StepContext<Object,  TransitionListPersistent> stepCtx = null;
+	StepContext stepCtx = null;
     
 	@Override
 	public String process() throws Exception {

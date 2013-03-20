@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 
 import com.ibm.jbatch.container.IExecutionElementController;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.jsl.model.Batchlet;
 import com.ibm.jbatch.jsl.model.Chunk;
@@ -36,7 +36,7 @@ public class ExecutionElementControllerFactory {
     private final static String CLASSNAME = ExecutionElementControllerFactory.class.getName();
     private final static Logger logger = Logger.getLogger(CLASSNAME);
 
-    public static IExecutionElementController getExecutionElementController(RuntimeJobExecutionHelper jobExecutionImpl, ExecutionElement executionElement) {
+    public static IExecutionElementController getExecutionElementController(RuntimeJobContextJobExecutionBridge jobExecutionImpl, ExecutionElement executionElement) {
 
         String methodName = "getExecutionElementController";
         

@@ -37,7 +37,7 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used to build subjobs from splits.
      * 
      */
-    public static JSLJob buildSubJob(Long parentJobExecutionId, JobContext<?> jobContext, Split split, Flow flow, Properties[] subJobParameters) {
+    public static JSLJob buildSubJob(Long parentJobExecutionId, JobContext jobContext, Split split, Flow flow, Properties[] subJobParameters) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
@@ -64,7 +64,7 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used for partitioned steps.
      * 
      */
-    public static JSLJob buildSubJob(Long parentJobInstanceId, JobContext<?> jobContext, Step step, int partitionInstance) {
+    public static JSLJob buildSubJob(Long parentJobInstanceId, JobContext jobContext, Step step, int partitionInstance) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();

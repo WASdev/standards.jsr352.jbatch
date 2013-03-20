@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -109,7 +109,7 @@ public class DependencyInjectionUtility {
      *            An instance of the batch artifact
      * @return an ArrayList<Field> of fields annotated with @JobContext
      */
-    private static void injectBatchContextFields(Object artifact, JobContext<?> jobCtx, StepContext<?,?> stepCtx) {
+    private static void injectBatchContextFields(Object artifact, JobContext jobCtx, StepContext stepCtx) {
 
         // Go through declared field annotations
         for (final Field field : artifact.getClass().getDeclaredFields()) {

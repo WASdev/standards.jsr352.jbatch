@@ -35,7 +35,6 @@ CREATE TABLE STEPEXECUTIONINSTANCEDATA(
 	batchstatus         character varying (512),
     exitstatus			character varying (512),
     stepname			character varying (512),
-    stepcontainmentcsv 	character varying (512),
 	readcount			integer,
 	writecount			integer,
 	commitcount         integer,

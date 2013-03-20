@@ -22,7 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
@@ -54,7 +54,11 @@ public class StepLevelPropertiesTests {
 	public void testStepLevelPropertiesCount() throws Exception {
 
 		String METHOD = "testStepLevelPropertiesCount";
-
+		String SHOULD_BE_UNAVAILABLE_PROP_PREFIX = "com.ibm.jbatch.tck.tests.jslxml.StepLevelPropertiesTests";
+		
+		Properties jobParams = new Properties();
+		jobParams.put(SHOULD_BE_UNAVAILABLE_PROP_PREFIX + ".parm1", "should.not.appear.in.step.context.properties");
+		
 		try {
 
 			Reporter.log("starting job");
@@ -62,13 +66,8 @@ public class StepLevelPropertiesTests {
 
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			assertWithMessage("Job completed", "VERY GOOD INVOCATION", jobExec.getExitStatus());
 			Reporter.log("job completed");
-
-			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 0;
-
-			assertWithMessage("Properties count", PROPERTIES_COUNT, count);
-
-			Reporter.log("Job batchlet return code is the step.properties size " + count);
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
@@ -100,39 +99,6 @@ public class StepLevelPropertiesTests {
 			assertWithMessage("Property value", FOO_VALUE, jobExec.getExitStatus());
 
 			Reporter.log("Job batchlet return code is the step property foo value " + FOO_VALUE);
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-	}
-
-	/**
-	 * @testName: testStepLevelPropertiesEmpty
-	 * @assertion: Section 5.2.3 Step Level Properties
-	 * @test_Strategy: set a step property value should equal value set on step context property 
-	 * 
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	@Test @org.junit.Test
-	public void testStepLevelPropertiesEmpty() throws Exception {
-
-		String METHOD = "testStepLevelPropertiesEmpty";
-
-		try {
-
-			Reporter.log("starting job");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("step_level_properties_count_zero");
-
-			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
-			Reporter.log("job completed");
-
-			int count = jobExec.getExitStatus() != null ? Integer.parseInt(jobExec.getExitStatus()) : 100;
-
-			assertWithMessage("Properties count", 0, count);
-
-			Reporter.log("Job batchlet return code is the step.properties size " + count);
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}

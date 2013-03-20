@@ -27,7 +27,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
 
 @javax.inject.Named("doSomethingItemWriterImpl")
-public class DoSomethingItemWriterImpl extends AbstractItemWriter<ReadRecord> {
+public class DoSomethingItemWriterImpl extends AbstractItemWriter {
 
 	private final static Logger logger = Logger.getLogger(DoSomethingItemWriterImpl.class.getName());
 	
@@ -42,10 +42,10 @@ public class DoSomethingItemWriterImpl extends AbstractItemWriter<ReadRecord> {
 	}
 	
 	@Override
-	public void writeItems(List<ReadRecord> myData) throws Exception {
+	public void writeItems(List<Object> myData) throws Exception {
 		logger.fine("writeMyData receives chunk size=" + myData.size());
 		for  (int i = 0; i< myData.size(); i++) {
-			logger.fine("myData=" + myData.get(i).getCount());
+			logger.fine("myData=" + ((ReadRecord)myData.get(i)).getCount());
 		}
 	}
 	

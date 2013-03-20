@@ -18,6 +18,11 @@ package javax.batch.operations;
 
 public class JobExecutionAlreadyCompleteException extends Exception {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public JobExecutionAlreadyCompleteException() {
 		// TODO Auto-generated constructor stub
 	}

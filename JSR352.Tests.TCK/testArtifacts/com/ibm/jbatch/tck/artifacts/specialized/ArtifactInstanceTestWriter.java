@@ -1,4 +1,4 @@
-/*
+/* 
  * Copyright 2012 International Business Machines Corp.
  * 
  * See the NOTICE file distributed with this work for additional information
@@ -21,13 +21,11 @@ import java.util.List;
 import javax.batch.api.chunk.ItemWriter;
 
 @javax.inject.Named("artifactInstanceTestWriter")
-public class ArtifactInstanceTestWriter implements ItemWriter<String> {
+public class ArtifactInstanceTestWriter implements ItemWriter {
 	
 	@Override
 	public void open(Serializable checkpoint) throws Exception {
-		// TODO Auto-generated method stub
-		System.out.println("AJM: ATIWriter open?");
-		
+		// TODO Auto-generated method stub		
 	}
 
 	@Override
@@ -37,7 +35,7 @@ public class ArtifactInstanceTestWriter implements ItemWriter<String> {
 	}
 
 	@Override
-	public void writeItems(List<String> items) throws Exception {
+	public void writeItems(List<Object> items) throws Exception {
 		// TODO Auto-generated method stub
 		
 	}

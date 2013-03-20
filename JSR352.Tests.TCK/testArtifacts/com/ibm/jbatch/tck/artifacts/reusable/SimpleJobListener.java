@@ -18,7 +18,7 @@ package com.ibm.jbatch.tck.artifacts.reusable;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.listener.AbstractJobListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
@@ -30,7 +30,7 @@ public class SimpleJobListener extends AbstractJobListener {
 	private final static Logger logger = Logger.getLogger(SimpleJobListener.class.getName());
 	
     @Inject 
-    private JobContext<Object> jobCtx = null; 
+    private JobContext jobCtx = null; 
     
     @Inject    
     @BatchProperty(name="setTransientData")

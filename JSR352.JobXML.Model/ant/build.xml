@@ -6,7 +6,7 @@
   <property name="generate.dir" value = "${proj.dir}/jaxbgen"/>
   <property name="generate.pkg.dir" value = "${generate.dir}/com/ibm/jbatch/jsl/model"/>
   <property name="work.dir" value = "${proj.dir}/work"/>
-  <property name="stubs.dir" value = "${proj.dir}/toStringStubs"/>
+  <property name="stubs.dir" value = "${proj.dir}/toStringAndExtraAppendedCodeStubs"/>
 	
   <target name="generateJAXB">
 		<taskdef name="xjc" classname="com.ibm.jtc.jax.tools.xjc.XJC2Task">

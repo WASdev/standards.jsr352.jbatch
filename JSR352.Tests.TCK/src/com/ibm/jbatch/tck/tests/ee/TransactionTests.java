@@ -21,7 +21,7 @@ import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
@@ -222,12 +222,15 @@ public class TransactionTests {
 	public void testGlobalTranNoExceptions() throws Exception {
 		String METHOD = "testGlobalTranNoExceptions";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "0";
 
 		try {
 			Integer initInventory = 99;
 			Integer forcedFailCount = 0;
 			Integer itemCount = 5;
-			Integer dummyDelay = 0;
+			Integer dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranNoExceptions().sleep",DEFAULT_SLEEP_TIME));
 
 
 			Integer expectedInventory = this.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
@@ -273,12 +276,15 @@ public class TransactionTests {
 	public void testGlobalTranForcedExceptionWithRollback() throws Exception {
 		String METHOD = "testGlobalTranForcedExceptionWithRollback";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "0";
 
 		try {
 			Integer initInventory = 99;
 			Integer forcedFailCount = 20;
 			Integer itemCount = 9;
-			Integer dummyDelay = 0;
+			Integer dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionWithRollback.sleep",DEFAULT_SLEEP_TIME));
 
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
 			Integer expectedCompletedOrders = this.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
@@ -322,12 +328,15 @@ public class TransactionTests {
 	public void testGlobalTranForcedExceptionCheckpointRestart() throws Exception {
 		String METHOD = "testGlobalTranForcedExceptionCheckpointRestart";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "0";
 
 		try {
 			Integer initInventory = 99;
 			Integer forcedFailCount = 20;
 			Integer itemCount = 9;
-			Integer dummyDelay = 0;
+			Integer dummyDelay =
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestart.sleep",DEFAULT_SLEEP_TIME));
 
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
 			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
@@ -387,6 +396,8 @@ public class TransactionTests {
 	public void testGlobalTranForcedTimeoutCheckpointRestartDefault() throws Exception {
 		String METHOD = "testGlobalTranForcedTimeoutCheckpointRestartDefault";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "0";
 
 		try {
 
@@ -395,7 +406,9 @@ public class TransactionTests {
 			Integer forcedFailCount = 0;
 			Integer itemCount = 9;
 			// set to zero
-			Integer dummyDelay = 0; //delay in milliseconds
+			Integer dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedTimeoutCheckpointRestartDefault.sleep",DEFAULT_SLEEP_TIME));
+			
 			Integer globalTimeout = 1; //seconds
 
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
@@ -441,12 +454,16 @@ public class TransactionTests {
 	public void testGlobalTranForcedExceptionCheckpointRestartShortDelay() throws Exception {
 		String METHOD = "testGlobalTranForcedExceptionCheckpointRestartShortDelay";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME_1 = "10000";
+		String DEFAULT_SLEEP_TIME_2 = "0";
 
 		try {
 			Integer initInventory = 99;
 			Integer forcedFailCount = 15;
 			Integer itemCount = 9;
-			Integer dummyDelay = 10000;
+			Integer dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.1",DEFAULT_SLEEP_TIME_1));
 
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
 			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
@@ -478,7 +495,8 @@ public class TransactionTests {
 			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null +" OrderCount="+ expectedCompletedOrders , jobExec.getExitStatus());
 
 			forcedFailCount = 0;
-			dummyDelay = 0;
+			dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.2",DEFAULT_SLEEP_TIME_2));
 			jobParams.put("forced.fail.count", forcedFailCount.toString());
 
 			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
@@ -507,12 +525,15 @@ public class TransactionTests {
 	public void testGlobalTranForcedExceptionCheckpointRestartMultiple() throws Exception {
 		String METHOD = "testGlobalTranForcedExceptionCheckpointRestartMultiple";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "10000";
 
 		try {
 			Integer initInventory = 99;
 			Integer forcedFailCount = 15;
 			Integer itemCount = 9;
-			Integer dummyDelay = 10000;
+			Integer dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultiple.sleep",DEFAULT_SLEEP_TIME));
 
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
 			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
@@ -593,12 +614,15 @@ public class TransactionTests {
 	public void testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg() throws Exception {
 		String METHOD = "testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "10000";
 
 		try {
 			Integer initInventory = 99;
 			Integer forcedFailCount = 15;
 			Integer itemCount = 9;
-			Integer dummyDelay = 10000;
+			Integer dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg.sleep",DEFAULT_SLEEP_TIME));
 
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
 			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
@@ -675,13 +699,17 @@ public class TransactionTests {
 	public void testGlobalTranForcedTimeoutCheckpointRestart() throws Exception {
 		String METHOD = "testGlobalTranForcedTimeoutCheckpointRestart";
 		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME_1 = "10000";
+		String DEFAULT_SLEEP_TIME_2 = "0";
 
 		try {
 
 			Integer initInventory = 99;
 			Integer forcedFailCount = 15;
 			Integer itemCount = 9;
-			Integer dummyDelay = 10000; //delay in milliseconds
+			Integer dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.1",DEFAULT_SLEEP_TIME_1));
 			Integer globalTimeout = 1; //seconds
 
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
@@ -714,7 +742,8 @@ public class TransactionTests {
 
 
 			forcedFailCount = 0;
-			dummyDelay = 0;
+			dummyDelay = 
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.2",DEFAULT_SLEEP_TIME_2));
 			jobParams.put("forced.fail.count", forcedFailCount.toString());
 			jobParams.put("dummy.delay.seconds", dummyDelay.toString());
 

@@ -31,7 +31,7 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 public class NumbersSkipWriteListener implements SkipWriteListener {
 
 	@Inject
-    StepContext<?,?> stepCtx;
+    StepContext stepCtx;
 
     private final static String sourceClass = NumbersSkipWriteListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);

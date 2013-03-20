@@ -31,7 +31,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.NumbersCheckpointData;
 import com.ibm.jbatch.tck.artifacts.chunktypes.NumbersRecord;
 
 @javax.inject.Named("retryInitReader")
-public class RetryInitReader extends AbstractItemReader<NumbersRecord> {
+public class RetryInitReader extends AbstractItemReader {
 
 	protected DataSource dataSource = null;
 

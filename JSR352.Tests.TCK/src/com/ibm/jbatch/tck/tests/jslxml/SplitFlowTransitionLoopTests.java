@@ -18,25 +18,18 @@ package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
-
-import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
 import org.junit.Before;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+
+import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
 public class SplitFlowTransitionLoopTests {
 
@@ -53,9 +46,6 @@ public class SplitFlowTransitionLoopTests {
 	 *                 
 	 *                 ** split spawns jobs to multiple threads, therefore steps might not run in order listed.
 	 * 
-	 * <properties>
-	 *	<property name="temp.file" value="#{jobParameters['temp.file']}"/>
-	 * </properties>
 	 * <split id="split1">
 	 *    <flow id="split1Flow" next="flow2">
 	 *		<step id="split1FlowStep1" next="split1FlowSplit">
@@ -96,34 +86,9 @@ public class SplitFlowTransitionLoopTests {
 		String METHOD = "testSplitFlowTransitionLoopSplitFlowSplit";
 
 		try {
-			List<String> stepsInJob = new ArrayList<String>();
-			stepsInJob.add("split1FlowStep1");
-			stepsInJob.add("split1FlowStep2");
-			stepsInJob.add("split1FlowSplitFlow1Step");
-			stepsInJob.add("split1FlowSplitFlow2Step");
-			stepsInJob.add("flow2step1");
-			stepsInJob.add("flow2step2");
-
-			Reporter.log("creating new temp file");
-			File tempFile = File.createTempFile("tck", null);
-			Properties jobParameters = new Properties();
-			Reporter.log("temp.file=" + tempFile.getAbsolutePath());
-			jobParameters.setProperty("temp.file" , tempFile.getAbsolutePath());
-
 			Reporter.log("starting job");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_flow_transition_loop_splitflowsplit", jobParameters);
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_flow_transition_loop_splitflowsplit", null);
 			Reporter.log("Job Status = " + jobExec.getBatchStatus());
-
-			InputStream in = new FileInputStream(tempFile);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-			String line = reader.readLine(); 
-			assertWithMessage("checking if temp file was written", line != null);
-			while (line != null) {
-				assertWithMessage("Split Flow transitioning step match", stepsInJob.contains(line));
-				line = reader.readLine();
-			}
-			Reporter.log("deleting temp file");
-			tempFile.delete();
 
 			assertWithMessage("Job completed", BatchStatus.COMPLETED, jobExec.getBatchStatus());
 			Reporter.log("job completed");

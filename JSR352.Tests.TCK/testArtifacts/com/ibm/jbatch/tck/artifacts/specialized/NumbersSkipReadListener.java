@@ -30,7 +30,7 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 public class NumbersSkipReadListener implements SkipReadListener {
 
 	@Inject
-    StepContext<?,?> stepCtx;
+    StepContext stepCtx;
 
     private final static String sourceClass = NumbersSkipReadListener.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);

@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.Decider;
 import javax.batch.runtime.StepExecution;
 import javax.batch.runtime.context.JobContext;
@@ -34,25 +34,25 @@ public class DeciderTestsDecider implements Decider, StatusConstants {
 	 * a count to ensure we don't wrongly re-run a step multiple times.
 	 */
 	@Inject
-    JobContext<Integer> jobCtx;
+    JobContext jobCtx;
 
     @Inject    
     @BatchProperty(name=SPECIAL_EXIT_STATUS)
     String specialExitStatus;    
     
 	@Override
-	public String decide(StepExecution<?>[] stepExecutions) {	
+	public String decide(StepExecution[] stepExecutions) {	
 		if (stepExecutions.length != 1) {
 			throw new IllegalStateException("Expecting stepExecutions array of size 1, found one of size = " + stepExecutions.length);
 		}
-		StepExecution<?> stepExec = stepExecutions[0];
+		StepExecution stepExec = stepExecutions[0];
 		String coreExitStatus = coreExitStatus(stepExec);
-		Integer count = jobCtx.getTransientUserData();
+		Integer count = (Integer)jobCtx.getTransientUserData();
 		String retVal = count.toString() + ":" + coreExitStatus;
 		return retVal;
 	}
 	
-	private String coreExitStatus(StepExecution<?> stepExec) {		
+	private String coreExitStatus(StepExecution stepExec) {		
 		String action = (String)stepExec.getUserPersistentData();
 		String currentExitStatus = stepExec.getExitStatus();
 		

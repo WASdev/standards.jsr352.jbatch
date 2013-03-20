@@ -81,7 +81,7 @@ public class BatchTransactionServiceImpl implements ITransactionManagementServic
      * getTransactionManager(javax.batch.runtime.context.StepContext)
      */
     @Override
-    public TransactionManagerAdapter getTransactionManager(StepContext<?, ?> stepContext) throws TransactionManagementException {
+    public TransactionManagerAdapter getTransactionManager(StepContext stepContext) throws TransactionManagementException {
         logger.entering(CLASSNAME, "getTransactionManager", stepContext);
 
         TransactionManagerAdapter transactionManager = null;
@@ -121,7 +121,7 @@ public class BatchTransactionServiceImpl implements ITransactionManagementServic
      *         timeout value is 180
      * 
      */
-    private int getTransactionTimeout(final StepContext<?, ?> stepContext) {
+    private int getTransactionTimeout(final StepContext stepContext) {
         logger.entering(CLASSNAME, "getTransactionTimeout", stepContext);
         Properties p = stepContext.getProperties();
         int timeout = DEFAULT_TRAN_TIMEOUT; // default as per spec.

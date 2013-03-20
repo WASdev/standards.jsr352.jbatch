@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemWriter;
 import javax.inject.Inject;
 
@@ -29,7 +29,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 @javax.inject.Named("skipWriter")
-public class SkipWriter implements ItemWriter<ReadRecord> {
+public class SkipWriter implements ItemWriter {
 
 	private final static Logger logger = Logger.getLogger(SkipWriter.class.getName());
 	
@@ -109,7 +109,7 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 	}
 	
 	@Override
-	public void writeItems(List<ReadRecord> myData) throws Exception {
+	public void writeItems(List<Object> myData) throws Exception {
 		
 		logger.fine("writeMyData receives chunk size=" + myData.size());
 		int i;
@@ -138,7 +138,7 @@ public class SkipWriter implements ItemWriter<ReadRecord> {
 		
 		for  (i = 0; i < myData.size(); i++) {
 			
-			writerDataArray[idx] = myData.get(i).getCount();
+			writerDataArray[idx] = ((ReadRecord)myData.get(i)).getCount();
 			idx++;
 		}
 		for (i = 0; i < arraysize; i++){

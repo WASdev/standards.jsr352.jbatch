@@ -30,7 +30,7 @@ import javax.sql.DataSource;
 import com.ibm.jbatch.tck.artifacts.chunktypes.NumbersRecord;
 
 @javax.inject.Named("retryInitWriter")
-public class RetryInitWriter extends AbstractItemWriter<NumbersRecord> {
+public class RetryInitWriter extends AbstractItemWriter {
 	
 	
 	protected DataSource dataSource = null;
@@ -41,7 +41,7 @@ public class RetryInitWriter extends AbstractItemWriter<NumbersRecord> {
 	}
 	
 	@Override
-	public void writeItems(List<NumbersRecord> records) throws SQLException {
+	public void writeItems(List<Object> records) throws SQLException {
 		
 		int item = -1;
 		int quantity = -1;
@@ -50,9 +50,9 @@ public class RetryInitWriter extends AbstractItemWriter<NumbersRecord> {
 		PreparedStatement statement = null;
 		
 		try {
-			for (NumbersRecord record : records) {
-				item = record.getItem();
-				quantity = record.getQuantity();
+			for (Object record : records) {
+				item = ((NumbersRecord)record).getItem();
+				quantity = ((NumbersRecord)record).getQuantity();
 				
 				connection = RetryConnectionHelper.getConnection(dataSource);
 	

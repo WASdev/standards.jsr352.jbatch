@@ -16,17 +16,15 @@
  */
 package com.ibm.jbatch.container.util;
 
-import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.impl.JobControllerImpl;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 
 /*
@@ -40,34 +38,29 @@ public class BatchWorkUnit implements Runnable {
 	private String CLASSNAME = BatchWorkUnit.class.getName();
 	private Logger logger = Logger.getLogger(BatchWorkUnit.class.getPackage().getName());
 
-	private RuntimeJobExecutionHelper jobExecutionImpl = null;
+	private RuntimeJobContextJobExecutionBridge jobExecutionImpl = null;
 	private IBatchKernelService batchKernel = null;
 	private final JobControllerImpl controller;
 
 	private BlockingQueue<PartitionDataWrapper> analyzerQueue;
-	private Stack<String> subJobExitStatusQueue;
 	private BlockingQueue<BatchWorkUnit> completedThreadQueue;
 	private boolean notifyCallbackWhenDone;
 	
-	private List<String> containment = null;
-	
-	private RuntimeJobExecutionHelper rootJobExecution = null;
+	private RuntimeJobContextJobExecutionBridge rootJobExecution = null;
 
-	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionHelper jobExecutionImpl) {
-		this(batchKernel, jobExecutionImpl, null, null, null, null, jobExecutionImpl, true);
+	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl) {
+		this(batchKernel, jobExecutionImpl, null, null, jobExecutionImpl, true);
 	}
 
-    public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecutionHelper jobExecutionImpl,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue, Stack<String> subJobExitStatusQueue,
-            BlockingQueue<BatchWorkUnit> completedThreadQueue, List<String> containment, RuntimeJobExecutionHelper rootJobExecution,
+    public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl,
+            BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchWorkUnit> completedThreadQueue, 
+            RuntimeJobContextJobExecutionBridge rootJobExecution,
             boolean notifyCallbackWhenDone) {
         this.setBatchKernel(batchKernel);
         this.setJobExecutionImpl(jobExecutionImpl);
         this.setAnalyzerQueue(analyzerQueue);
-        this.setSubJobExitStatus(subJobExitStatusQueue);
         this.setCompletedThreadQueue(completedThreadQueue);
         this.setNotifyCallbackWhenDone(notifyCallbackWhenDone);
-        this.setContainment(containment);
         
         //if root is null we don't want to find the children on a query
         //this is only for partitioned steps since the partitioned steps are only seen internally
@@ -77,12 +70,9 @@ public class BatchWorkUnit implements Runnable {
         } else {
             this.setRootJobExecution(rootJobExecution);
         }
-        
 
-        controller = new JobControllerImpl(this.getJobExecutionImpl(), this.containment, this.rootJobExecution);
+        controller = new JobControllerImpl(this.getJobExecutionImpl(), this.rootJobExecution);
         controller.setAnalyzerQueue(this.analyzerQueue);
-        controller.setSubJobExitStatusQueue(subJobExitStatusQueue);
-
     }
 
 	public JobControllerImpl getController() {
@@ -102,9 +92,6 @@ public class BatchWorkUnit implements Runnable {
 					+ ", executionId=" + getJobExecutionImpl().getExecutionId());
 			logger.fine("==========================================================");
 		}
-
-
-
 
 		try {
 			controller.executeJob();
@@ -169,11 +156,11 @@ public class BatchWorkUnit implements Runnable {
 		return batchKernel;
 	}
 
-	public void setJobExecutionImpl(RuntimeJobExecutionHelper jobExecutionImpl) {
+	public void setJobExecutionImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl) {
 		this.jobExecutionImpl = jobExecutionImpl;
 	}
 
-	public RuntimeJobExecutionHelper getJobExecutionImpl() {
+	public RuntimeJobContextJobExecutionBridge getJobExecutionImpl() {
 		return jobExecutionImpl;
 	}
 
@@ -192,14 +179,6 @@ public class BatchWorkUnit implements Runnable {
     public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
         this.analyzerQueue = analyzerQueue;
     }
-    
-    public Stack<String> getSubJobExitStatusQueue() {
-        return subJobExitStatusQueue;
-    }
-
-    public void setSubJobExitStatus(Stack<String> subJobExitStatusQueue2) {
-        this.subJobExitStatusQueue = subJobExitStatusQueue2;
-    }
 
     public BlockingQueue<BatchWorkUnit> getCompletedThreadQueue() {
         return completedThreadQueue;
@@ -209,19 +188,11 @@ public class BatchWorkUnit implements Runnable {
         this.completedThreadQueue = completedThreadQueue;
     }
 
-    public List<String> getContainment() {
-        return containment;
-    }
-
-    public void setContainment(List<String> containment) {
-        this.containment = containment;
-    }
-
-    public RuntimeJobExecutionHelper getRootJobExecution() {
+    public RuntimeJobContextJobExecutionBridge getRootJobExecution() {
         return rootJobExecution;
     }
 
-    public void setRootJobExecution(RuntimeJobExecutionHelper rootJobExecution) {
+    public void setRootJobExecution(RuntimeJobContextJobExecutionBridge rootJobExecution) {
         this.rootJobExecution = rootJobExecution;
     }
 

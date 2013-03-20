@@ -15,9 +15,16 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<job id="batchletStopOnEndOn" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
+
+<!-- **********************************************************************************************************
+      NOTE:  The Java test has a simplified copy of this JSL for ease in understanding the complicated
+      transition logic.
+      
+      PLEASE KEEP THAT IN SYNCH WITH THIS JSL TO ENABLE SOMEONE TO UNDERSTAND WHAT WE'RE DOING HERE ! 
+     ********************************************************************************************************** -->
+<job id="overrideOnAttributeValuesUponRestartBatchlet" xmlns="http://xmlns.jcp.org/xml/ns/javaee">
 	<step id="step1">
-		<batchlet ref="batchletStopOnEndOn">
+		<batchlet ref="overrideOnAttributeValuesUponRestartBatchlet">
 			<properties>
 				<property name="execution.number" value="#{jobParameters['execution.number']}"/>
 			</properties>
@@ -27,17 +34,17 @@
 		<fail on="*" exit-status="FAILURE"/>  
 	</step>
 	<step id="step2">
-		<batchlet ref="batchletStopOnEndOn">
+		<batchlet ref="overrideOnAttributeValuesUponRestartBatchlet">
 			<properties>
 				<property name="execution.number" value="#{jobParameters['execution.number']}"/>
 			</properties>
 		</batchlet>		
-		<fail on="#{jobParameters['step2.fail']}" exit-status="SUCCESS"/>  <!-- 2nd run = ES.STEP2, after = ES.FAIL -->
+		<fail on="#{jobParameters['step2.fail']}" exit-status="EXPECTED_FAILURE"/>  <!-- 2nd run = ES.STEP2, after = ES.FAIL -->
 		<next on="#{jobParameters['step2.next']}" to="step3"/>             <!-- 2nd run = ES.XXX, after = ES.STEP2 -->		
 		<fail on="*" exit-status="FAILURE"/>                <!-- Distinguish between first /fail element via @exit-status. --> 
 	</step>
 	<step id="step3">
-		<batchlet ref="batchletStopOnEndOn">
+		<batchlet ref="overrideOnAttributeValuesUponRestartBatchlet">
 			<properties>
 				<property name="execution.number" value="#{jobParameters['execution.number']}"/>
 			</properties>

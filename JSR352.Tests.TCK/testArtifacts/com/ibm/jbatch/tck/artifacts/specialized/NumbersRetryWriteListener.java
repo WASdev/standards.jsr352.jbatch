@@ -28,12 +28,12 @@ import org.testng.Reporter;
 import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 @javax.inject.Named("numbersRetryWriteListener")
-public class NumbersRetryWriteListener implements RetryWriteListener<Object> {
+public class NumbersRetryWriteListener implements RetryWriteListener {
 	 private final static String sourceClass = NumbersRetryWriteListener.class.getName();
 	    private final static Logger logger = Logger.getLogger(sourceClass);
 	    
 	    @Inject
-	    StepContext<?,?> stepCtx;
+	    StepContext stepCtx;
 
 	    @Override
 	    public void onRetryWriteException(List w, Exception e) {

@@ -20,14 +20,14 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.inject.Inject;
 
 import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 
 @javax.inject.Named("doSomethingArrayItemProcessorImpl")
-public class DoSomethingArrayItemProcessorImpl implements ItemProcessor<ReadRecord, ReadRecord> {
+public class DoSomethingArrayItemProcessorImpl implements ItemProcessor {
 	
 	private final static Logger logger = Logger.getLogger(DoSomethingArrayItemProcessorImpl.class.getName());
 
@@ -42,7 +42,7 @@ public class DoSomethingArrayItemProcessorImpl implements ItemProcessor<ReadReco
 	private int update = 100;
 	
 	@Override
-	public ReadRecord processItem(ReadRecord record) throws Exception {
+	public ReadRecord processItem(Object record) throws Exception {
 		
 		if (appProcessFilterItem != null) {
 			if (!initSkipNumber) {
@@ -61,7 +61,7 @@ public class DoSomethingArrayItemProcessorImpl implements ItemProcessor<ReadReco
 		
 		count++;
 		
-		ReadRecord processedRecord = record;
+		ReadRecord processedRecord = (ReadRecord)record;
 		int currData = processedRecord.getCount();
 		processedRecord.setRecord(currData + update);
 		return processedRecord;

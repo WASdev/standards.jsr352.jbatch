@@ -18,13 +18,14 @@ package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.tck.artifacts.specialized.ThreadTrackingJobListener;
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
 import org.junit.BeforeClass;
@@ -56,6 +57,82 @@ public class ContextAndListenerTests {
 		jobOp = new JobOperatorBridge();
 	}
 
+	/*
+	 * @testName: testExamineJobContextInArtifact
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
+	@Test
+	@org.junit.Test 
+	public void testExamineJobContextInArtifact() throws Exception {
+
+		String METHOD = "testOneArtifactIsJobAndStepListener";
+
+		try {
+
+			Reporter.log("Locate job XML file: oneArtifactIsJobAndStepListener.xml<p>");
+
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			Reporter.log("app.timeinterval=10<p>");
+			jobParams.put("app.timeinterval", "10");
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+			JobExecution execution1 = jobOp.startJobAndWaitForResult("JobContextTestBatchlet", jobParams);
+		
+			
+			String testString = "JobName=job1;JobInstanceId=" + jobOp.getJobInstance(execution1.getExecutionId()).getInstanceId() + ";JobExecutionId=" + execution1.getExecutionId();
+			Reporter.log("EXPECTED JobExecution getBatchStatus()=COMPLETED<p>");
+			Reporter.log("ACTUAL JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("EXPECTED JobExecution getExitStatus()="+testString+"<p>");
+			Reporter.log("ACTUAL JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing batch status", BatchStatus.COMPLETED, execution1.getBatchStatus());
+			assertWithMessage("Testing exit status", testString, execution1.getExitStatus());
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+	
+	/*
+	 * @testName: testExamineJobContextInArtifact
+	 * @assertion: FIXME
+	 * @test_Strategy: FIXME
+	 */
+	@Test
+	@org.junit.Test 
+	public void testExamineStepContextInArtifact() throws Exception {
+
+		String METHOD = "testOneArtifactIsJobAndStepListener";
+
+		try {
+
+			Reporter.log("Locate job XML file: oneArtifactIsJobAndStepListener.xml<p>");
+
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			Reporter.log("app.timeinterval=10<p>");
+			jobParams.put("app.timeinterval", "10");
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+			JobExecution execution1 = jobOp.startJobAndWaitForResult("StepContextTestBatchlet", jobParams);
+		
+			List<StepExecution> steps = jobOp.getStepExecutions(execution1.getExecutionId());
+			
+			assertWithMessage("list of step executions == 1", steps.size() == 1);
+			
+			String testString = "StepName=step1;StepExecutionId=" + steps.get(0).getStepExecutionId();
+			Reporter.log("EXPECTED JobExecution getBatchStatus()=COMPLETED<p>");
+			Reporter.log("ACTUAL JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("EXPECTED JobExecution getExitStatus()="+testString+"<p>");
+			Reporter.log("ACTUAL JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing batch status", BatchStatus.COMPLETED, execution1.getBatchStatus());
+			assertWithMessage("Testing exit status", testString, execution1.getExitStatus());
+			
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+	
 	/*
 	 * @testName: testOneArtifactIsJobAndStepListener
 	 * @assertion: FIXME
@@ -162,105 +239,7 @@ public class ContextAndListenerTests {
 		}
 	}
 	
-	
-	/*
-	 * @testName: testJobAndStepListenersJobContext
-	 * @assertion: Confirms that job-level and step-level listeners are accessing the same JobContext
-	 * @test_Strategy: Uses get/setTransientData on this JobContext object
-	 */
-	@Test
-	@org.junit.Test 
-	public void testJobAndStepListenersJobContext() throws Exception {
 
-		String METHOD = "testJobAndStepListenersJobContext";
-
-		try {
-			String expectedStr = "FROM_BEFORE_JOB";
-
-			Reporter.log("Locate job XML file: job_and_step_listeners.xml<p>");
-
-			Properties jobParams = new Properties();
-			jobParams.setProperty("setTransientData", "true");
-			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-			JobExecution execution1 = jobOp.startJobAndWaitForResult("job_and_step_listeners", jobParams);
-
-			Reporter.log("EXPECTED JobExecution getBatchStatus()=COMPLETED<p>");
-			Reporter.log("ACTUAL JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-			Reporter.log("EXPECTED JobExecution getExitStatus()="+expectedStr+"<p>");
-			Reporter.log("ACTUAL JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-			assertWithMessage("Testing batch status", BatchStatus.COMPLETED, execution1.getBatchStatus());
-			assertWithMessage("Testing exit status", expectedStr, execution1.getExitStatus());
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-	}
-	
-	/*
-	 * @testName: testJobAndStepListenersJobContextParameterization
-	 * @assertion: Confirms that job-level and step-level listeners are accessing the same JobContext
-	 * @test_Strategy: This builds on the last test a bit by using the same JSL, and a parameter to
-	 *                 trigger a different transient user data type.   Taken together they amount to 
-	 *                 a bit more than individually. 
-	 */
-	@Test
-	@org.junit.Test 
-	public void testJobAndStepListenersJobContext2() throws Exception {
-
-		String METHOD = "testJobAndStepListenersJobContext2";
-
-		try {
-			String expectedStr = "2,2";
-
-			Reporter.log("Locate job XML file: job_and_step_listeners.xml<p>");
-
-			Properties jobParams = new Properties();
-			jobParams.setProperty("setTransientData", "false");
-			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-			JobExecution execution1 = jobOp.startJobAndWaitForResult("job_and_step_listeners", jobParams);
-
-			Reporter.log("EXPECTED JobExecution getBatchStatus()=COMPLETED<p>");
-			Reporter.log("ACTUAL JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-			Reporter.log("EXPECTED JobExecution getExitStatus()="+"getJobStatus"+"<p>");
-			Reporter.log("ACTUAL JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-			assertWithMessage("Testing batch status", BatchStatus.COMPLETED, execution1.getBatchStatus());
-			assertWithMessage("Testing exit status", expectedStr, execution1.getExitStatus());
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-	}
-	
-	
-	/*
-	 * @testName: testJobAndPartitionedStepListeners
-	 * @assertion: Tests that the step listener for a partitioned step runs on the same thread as the job listener (which 
-	 *             runs on the main thread).
-	 * @test_Strategy: Relies on setting and unsetting the JobContext transient data.
-	 */
-	@Test
-	@org.junit.Test 
-	public void testJobAndPartitionedStepListeners() throws Exception {
-
-		String METHOD = "testJobAndPartitionedStepListeners";
-
-		try {
-			String expectedStr = ThreadTrackingJobListener.GOOD_EXIT;
-
-			Reporter.log("Locate job XML file: partitioned_thread_tracking_job_and_step_listeners.xml<p>");
-
-			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
-			JobExecution execution1 = jobOp.startJobAndWaitForResult("partitioned_thread_tracking_job_and_step_listeners");
-
-			Reporter.log("EXPECTED JobExecution getBatchStatus()=COMPLETED<p>");
-			Reporter.log("ACTUAL JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-			Reporter.log("EXPECTED JobExecution getExitStatus()="+"getJobStatus"+"<p>");
-			Reporter.log("ACTUAL JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-			assertWithMessage("Testing batch status", BatchStatus.COMPLETED, execution1.getBatchStatus());
-			assertWithMessage("Testing exit status", expectedStr, execution1.getExitStatus());
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-	}
-	
 	@AfterClass
 	public static void cleanup() throws Exception {
 		jobOp.destroy();

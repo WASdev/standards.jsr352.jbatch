@@ -22,7 +22,7 @@ import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
@@ -368,6 +368,8 @@ public class ExecutionTests {
 	@org.junit.Test
 	public void testInvokeJobWithUserStop() throws Exception {
 		String METHOD = "testInvokeJobWithUserStop";
+		final String DEFAULT_SLEEP_TIME = "1000";
+		
 		begin(METHOD);
 
 		try {
@@ -381,8 +383,9 @@ public class ExecutionTests {
 			Reporter.log("Invoking startJobWithoutWaitingForResult for Execution #1<p>");
 			JobExecution jobExec = jobOp.startJobWithoutWaitingForResult("job_batchlet_longrunning", jobParameters);
 
-			Reporter.log("Thread.sleep(1000)");
-			Thread.sleep(1000);
+			int sleepTime = Integer.parseInt(System.getProperty("ExecutionTests.testInvokeJobWithUserStop.sleep",DEFAULT_SLEEP_TIME));
+			Reporter.log("Thread.sleep(" + sleepTime + ")<p>");
+			Thread.sleep(sleepTime);
 
 			Reporter.log("Invoking stopJobAndWaitForResult for Execution #1<p>");
 			jobOp.stopJobAndWaitForResult(jobExec);

@@ -27,7 +27,7 @@ import org.testng.Reporter;
 
 
 @javax.inject.Named("myRetryWriteListener")
-public class MyRetryWriteListener implements RetryWriteListener<Object> {
+public class MyRetryWriteListener implements RetryWriteListener {
 	 private final static String sourceClass = MyRetryWriteListener.class.getName();
 	    private final static Logger logger = Logger.getLogger(sourceClass);
 	    

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.enterprise.context.Dependent;
@@ -19,7 +19,6 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.util.AnnotationLiteral;
-
 
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.util.DependencyInjectionUtility;

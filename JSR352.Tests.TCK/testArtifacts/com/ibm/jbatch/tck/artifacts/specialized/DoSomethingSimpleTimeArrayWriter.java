@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -30,7 +30,7 @@ import com.ibm.jbatch.tck.artifacts.chunktypes.ReadRecord;
 import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 
 @javax.inject.Named("doSomethingSimpleTimeArrayWriter")
-public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRecord> {
+public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter {
 
 	private final static Logger logger = Logger.getLogger(DoSomethingSimpleTimeArrayWriter.class.getName());
 	
@@ -53,7 +53,7 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
     String timeintervalString;
 	
 	     @Inject 
-	 private StepContext<MyTransient, MyPersistentRestartUserData> stepCtx = null;
+	 private StepContext stepCtx = null;
 	
 	int arraysize;
 	long currwritetime;
@@ -63,9 +63,9 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
 		logger.fine("openWriter");
 		
 	    MyPersistentRestartUserData myData = null;
-        if ((myData = stepCtx.getPersistentUserData()) != null) {        	
+        if ((myData = (MyPersistentRestartUserData)stepCtx.getPersistentUserData()) != null) {        	
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(myData.getExecutionNumber() + 1, null));
-        	logger.fine("AJM: iteration = " + stepCtx.getPersistentUserData().getExecutionNumber());
+        	logger.fine("AJM: iteration = " + ((MyPersistentRestartUserData)stepCtx.getPersistentUserData()).getExecutionNumber());
         } else {        
         	stepCtx.setPersistentUserData(new MyPersistentRestartUserData(1, null));
         }
@@ -104,7 +104,7 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
 	}
 	
 	@Override
-	public void writeItems(List<ReadRecord> myData) throws Exception {
+	public void writeItems(List<Object> myData) throws Exception {
 		
 		logger.fine("writeMyData receives chunk size=" + myData.size());
 		int i;
@@ -130,7 +130,7 @@ public class DoSomethingSimpleTimeArrayWriter extends AbstractItemWriter<ReadRec
         //ts = date.getTime();
 		
 		for  (i = 0; i < myData.size(); i++) {
-			writerDataArray[idx] = myData.get(i).getCount();
+			writerDataArray[idx] = ((ReadRecord)myData.get(i)).getCount();
 			idx++;
 		}
 		for (i = 0; i < arraysize; i++){

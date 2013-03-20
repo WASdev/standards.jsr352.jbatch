@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>javax.batch</groupId>
     <artifactId>jbatch</artifactId>
-    <version>1.0-b17</version>
+    <version>1.0-b19</version>
     <packaging>pom</packaging>
 	<name>JSR-352 RI</name>
 	<description>
@@ -69,15 +69,13 @@
 		<parent-path>${user.dir}/</parent-path>
     </properties>
     <modules>
-        <module>JSR352.Annotations</module>
         <module>JSR352.API</module>
         <module>JSR352.JobXML.Model</module>
-		<module>JSR352.Runtime</module>
-		<module>JSR352.RI.SPI</module>
-		<module>JSR352.TCK.SPI</module>
-		<module>JSR352.Tests.TCK</module>
-		<module>JSR352.Aggregation/api</module>
-		<module>JSR352.Aggregation/runtime</module>
+        <module>JSR352.Runtime</module>
+        <module>JSR352.RI.SPI</module>
+        <module>JSR352.TCK.SPI</module>
+        <module>JSR352.Tests.TCK</module>
+        <module>JSR352.Aggregation/runtime</module>
     </modules>
 </project>
 

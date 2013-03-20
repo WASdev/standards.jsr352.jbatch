@@ -23,9 +23,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemReader;
-import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
@@ -40,7 +39,7 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 
 
 @javax.inject.Named("numbersReader")
-public class NumbersReader extends AbstractItemReader<NumbersRecord> {
+public class NumbersReader extends AbstractItemReader {
 
 	private static final String CLASSNAME = NumbersReader.class.getName();
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
@@ -53,7 +52,7 @@ public class NumbersReader extends AbstractItemReader<NumbersRecord> {
 	private int testState = STATE_NORMAL;
 	
     @Inject
-    StepContext<?,?> stepCtx;
+    StepContext stepCtx;
     
     @Inject    
     @BatchProperty(name="forced.fail.count.read")

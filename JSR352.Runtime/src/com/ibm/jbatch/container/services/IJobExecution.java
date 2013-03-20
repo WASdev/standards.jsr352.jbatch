@@ -5,6 +5,8 @@ import java.util.Properties;
 
 import javax.batch.runtime.JobExecution;
 
+import com.ibm.jbatch.container.context.impl.JobContextImpl;
+
 public interface IJobExecution extends JobExecution {
 
 	public void setBatchStatus(String status);
@@ -22,4 +24,6 @@ public interface IJobExecution extends JobExecution {
 	public void setJobParameters(Properties jProps);
 	
 	public long getInstanceId();
+
+	public void setJobContext(JobContextImpl jobContext);
 }

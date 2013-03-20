@@ -18,8 +18,8 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
+import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -39,10 +39,10 @@ public class DeciderTestsBatchlet extends AbstractBatchlet implements StatusCons
     private final static Logger logger = Logger.getLogger(sourceClass);
 
     @Inject
-    StepContext<String, String> stepCtx;
+    StepContext stepCtx;
 
     @Inject
-    JobContext<Integer> jobCtx;
+    JobContext jobCtx;
 
     @Inject    
     @BatchProperty(name=ACTION)
@@ -81,7 +81,7 @@ public class DeciderTestsBatchlet extends AbstractBatchlet implements StatusCons
      * Allow us to count how many times this step has run.
      */
     private void after() {
-    	Integer count = jobCtx.getTransientUserData();
+    	Integer count = (Integer)jobCtx.getTransientUserData();
     	if (count == null) {
     		count = new Integer(1);
     	} else {

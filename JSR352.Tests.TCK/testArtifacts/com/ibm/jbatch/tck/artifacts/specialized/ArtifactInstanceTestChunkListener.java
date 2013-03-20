@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
-import javax.batch.annotation.BatchProperty;
+import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.ChunkListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
@@ -88,7 +88,7 @@ public class ArtifactInstanceTestChunkListener implements ChunkListener {
 	}
 
 	@Override
-	public void onError() throws Exception {
+	public void onError(Exception e) throws Exception {
 		// TODO Auto-generated method stub
 
 	}

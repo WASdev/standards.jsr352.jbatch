@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
@@ -163,7 +163,7 @@ public class MetricsTests {
 					MetricsStepListener.GOOD_EXIT_STATUS_READ,
 					execution1.getExitStatus());
 
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution step = null;
@@ -237,7 +237,7 @@ public class MetricsTests {
 			assertWithMessage("Testing execution #1", BatchStatus.COMPLETED,
 					execution1.getBatchStatus());
 
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution step = null;
@@ -313,7 +313,7 @@ public class MetricsTests {
 					MetricsStepListener.GOOD_EXIT_STATUS_PROCESS,
 					execution1.getExitStatus());
 
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution step = null;
@@ -382,7 +382,7 @@ public class MetricsTests {
 			Reporter.log("execution #1 JobExecution getExitStatus()="
 					+ execution1.getExitStatus() + "<p>");
 
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution step = null;
@@ -443,7 +443,7 @@ public class MetricsTests {
 			Reporter.log("execution #1 JobExecution getExitStatus()="
 					+ execution1.getExitStatus() + "<p>");
 
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution step = null;
@@ -506,7 +506,7 @@ public class MetricsTests {
 
 			Reporter.log("Obtaining StepExecutions for execution id: "
 					+ execution1.getExecutionId() + "<p>");
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution tempstep = null;
@@ -565,7 +565,7 @@ public class MetricsTests {
 
 			Reporter.log("Obtaining StepExecutions for execution id: "
 					+ execution1.getExecutionId() + "<p>");
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution tempstep = null;
@@ -629,7 +629,7 @@ public class MetricsTests {
 
 			Reporter.log("Obtaining StepExecutions for execution id: "
 					+ execution1.getExecutionId() + "<p>");
-			List<StepExecution<?>> stepExecutions = jobOp
+			List<StepExecution> stepExecutions = jobOp
 					.getStepExecutions(execution1.getExecutionId());
 
 			StepExecution tempstep = null;

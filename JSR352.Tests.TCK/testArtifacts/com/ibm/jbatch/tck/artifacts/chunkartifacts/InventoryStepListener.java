@@ -39,10 +39,10 @@ public class InventoryStepListener extends AbstractStepListener implements Statu
     private final static Logger logger = Logger.getLogger(sourceClass);
 
     @Inject
-    StepContext<?, ?> stepCtx;
+    StepContext stepCtx;
 
     @Inject
-    JobContext<?> jobCtx;
+    JobContext jobCtx;
 
     //protected String jndiName = "jdbc/orderDB";
 

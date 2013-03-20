@@ -20,11 +20,7 @@
     <split id="split1">
 	    <flow id="split1Flow" >
 			<step id="split1FlowStep1" next="split1FlowSplit">
-				<batchlet ref="splitFlowTransitionLoopTestBatchlet">
-					<properties>
-						<property name="temp.file" value="#{jobParameters['temp.file']}"/>
-					</properties>
-				</batchlet>
+				<batchlet ref="splitFlowTransitionLoopTestBatchlet"/>
 			</step>
 			<split id="split1FlowSplit" next="split1FlowStep2">
 				<flow id="split1FlowSplitFlow1">

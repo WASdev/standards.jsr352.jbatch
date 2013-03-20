@@ -19,8 +19,7 @@ package com.ibm.jbatch.container.status;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
-import javax.batch.api.partition.PartitionPlan;
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.persistence.PersistentDataWrapper;
@@ -28,95 +27,95 @@ import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 
 public class StepStatus implements Serializable {
 
-	/**
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private long stepExecutionId;
-	private BatchStatus batchStatus;
-	private String exitStatus;
-	private int startCount;    
-	private PersistentDataWrapper persistentUserData;
-	private PartitionPlan plan;
+    private long stepExecutionId;
+    private BatchStatus batchStatus;
+    private String exitStatus;
+    private int startCount;
+    private PersistentDataWrapper persistentUserData;
+    private Integer numPartitions;
 
-	public StepStatus(long stepExecutionId) {
-		this.startCount = 1;
-		this.stepExecutionId = stepExecutionId;
-		this.batchStatus = BatchStatus.STARTING;
-	}
+    public StepStatus(long stepExecutionId) {
+        this.startCount = 1;
+        this.stepExecutionId = stepExecutionId;
+        this.batchStatus = BatchStatus.STARTING;
+    }
 
-	public void setBatchStatus(BatchStatus batchStatus) {
-		this.batchStatus = batchStatus;
-	}
+    public void setBatchStatus(BatchStatus batchStatus) {
+        this.batchStatus = batchStatus;
+    }
 
-	public BatchStatus getBatchStatus() {
-		return batchStatus;
-	} 
+    public BatchStatus getBatchStatus() {
+        return batchStatus;
+    }
 
-	@Override
-	public String toString() {        
-		StringBuffer buf = new StringBuffer();
-		buf.append("stepExecutionId: " + stepExecutionId);        
-		buf.append(",batchStatus: " + batchStatus);
-		buf.append(",exitStatus: " + exitStatus);
-		buf.append(",startCount: " + startCount);
-		buf.append(",persistentUserData: " + persistentUserData);
-		buf.append(",plan: " + plan);
-		return buf.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("stepExecutionId: " + stepExecutionId);
+        buf.append(",batchStatus: " + batchStatus);
+        buf.append(",exitStatus: " + exitStatus);
+        buf.append(",startCount: " + startCount);
+        buf.append(",persistentUserData: " + persistentUserData);
+        buf.append(",numPartitions: " + numPartitions);
+        return buf.toString();
+    }
 
-	public long getStepExecutionId() {
-		return stepExecutionId;
-	}
+    public long getStepExecutionId() {
+        return stepExecutionId;
+    }
 
-	public int getStartCount() {
-		return startCount;
-	}
+    public int getStartCount() {
+        return startCount;
+    }
 
-	public void incrementStartCount() {
-		startCount++;
-	}
+    public void incrementStartCount() {
+        startCount++;
+    }
 
-	public void setExitStatus(String exitStatus) {
-		this.exitStatus = exitStatus;
-	}
+    public void setExitStatus(String exitStatus) {
+        this.exitStatus = exitStatus;
+    }
 
-	public String getExitStatus() {
-		return exitStatus;
-	}
+    public String getExitStatus() {
+        return exitStatus;
+    }
 
-	public void setPersistentUserData(PersistentDataWrapper persistentUserData) {
-		this.persistentUserData = persistentUserData;
-	}
+    public void setPersistentUserData(PersistentDataWrapper persistentUserData) {
+        this.persistentUserData = persistentUserData;
+    }
 
-	public Serializable getPersistentUserData() {
-		if (this.persistentUserData != null) {
-			byte[] persistentToken = this.persistentUserData.getPersistentDataBytes();
-			ByteArrayInputStream persistentByteArrayInputStream = new ByteArrayInputStream(persistentToken);
-			TCCLObjectInputStream persistentOIS = null;
+    public Serializable getPersistentUserData() {
+        if (this.persistentUserData != null) {
+            byte[] persistentToken = this.persistentUserData.getPersistentDataBytes();
+            ByteArrayInputStream persistentByteArrayInputStream = new ByteArrayInputStream(persistentToken);
+            TCCLObjectInputStream persistentOIS = null;
 
-			Serializable persistentObject = null;
+            Serializable persistentObject = null;
 
-			try {
-				persistentOIS = new TCCLObjectInputStream(persistentByteArrayInputStream);
-				persistentObject = (Serializable)persistentOIS.readObject();
-			} catch (Exception e) {
-				throw new BatchContainerRuntimeException(e);
-			}
+            try {
+                persistentOIS = new TCCLObjectInputStream(persistentByteArrayInputStream);
+                persistentObject = (Serializable) persistentOIS.readObject();
+            } catch (Exception e) {
+                throw new BatchContainerRuntimeException(e);
+            }
 
-			return persistentObject;
-		} else {
-			return null;
-		}
-	}
+            return persistentObject;
+        } else {
+            return null;
+        }
+    }
 
-	public void setPlan(PartitionPlan plan) {
-		this.plan = plan;
-	}
+    public Integer getNumPartitions() {
+        return numPartitions;
+    }
 
-	public PartitionPlan getPlan() {
-		return plan;
-	}
+    public void setNumPartitions(Integer numPartitions) {
+        this.numPartitions = numPartitions;
+    }
 
 }

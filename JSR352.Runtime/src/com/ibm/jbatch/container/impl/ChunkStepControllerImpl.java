@@ -17,7 +17,6 @@
 package com.ibm.jbatch.container.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.Serializable;
 import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.CheckpointAlgorithm;
-import javax.batch.operations.JobOperator.BatchStatus;
-
+import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.artifact.proxy.CheckpointAlgorithmProxy;
 import com.ibm.jbatch.container.artifact.proxy.ChunkListenerProxy;
@@ -47,7 +45,7 @@ import com.ibm.jbatch.container.artifact.proxy.SkipWriteListenerProxy;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobExecutionHelper;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.persistence.CheckpointAlgorithmFactory;
 import com.ibm.jbatch.container.persistence.CheckpointData;
 import com.ibm.jbatch.container.persistence.CheckpointDataKey;
@@ -56,9 +54,7 @@ import com.ibm.jbatch.container.persistence.ItemCheckpointAlgorithm;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
-import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
-import com.ibm.jbatch.container.util.PartitionDataWrapper.PartitionEventType;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.jsl.model.Chunk;
 import com.ibm.jbatch.jsl.model.ItemProcessor;
@@ -105,19 +101,10 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     long writeSkipCount = 0;
     boolean rollbackRetry = false;
 
-    public ChunkStepControllerImpl(RuntimeJobExecutionHelper jobExecutionImpl, Step step) {
+    public ChunkStepControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Step step) {
         super(jobExecutionImpl, step);
         // TODO Auto-generated constructor stub
     }
-
-    // TODO: complete refactoring, remove starts/end comment and remove old
-    // read-process-write loop
-    // mostly works but a few failures like
-    // " WRITE: the chunk write did not at the correct boundry (idx) ->11"
-    // need to debug some more
-    /*
-     * Refactoring starts here
-     */
 
     /**
      * Utility Class to hold statuses at each level of Read-Process-Write loop
@@ -612,27 +599,15 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         chunkProxy.afterChunk();
                     }
                     
+                    this.persistStepExitStatusAndUserData();
+                    
                     this.chkptAlg.beginCheckpoint();
                     
                     transactionManager.commit();
                     
                     this.chkptAlg.endCheckpoint();
                     
-                    if (collectorProxy != null) {
-
-                    	Serializable data = this.collectorProxy.collectPartitionData();
-
-                        if (this.analyzerStatusQueue != null) {
-                            // Invoke the partition analayzer at the end of each step if
-                            // the step runs
-
-                            PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
-                            dataWrapper.setCollectorData(data);
-                            dataWrapper.setEventType(PartitionEventType.ANALYZE_COLLECTOR_DATA);
-                            analyzerStatusQueue.add(dataWrapper);
-                        }
-
-                    }                                        
+                    invokeCollectorIfPresent();
                     
                     // exit loop when last record is written
                     if (status.isFinished()) {
@@ -653,14 +628,16 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 }
 
             }
-            
-        } catch (Throwable e) {
+        } catch (Exception e) {
         	for (ChunkListenerProxy chunkProxy : chunkListeners) {
-                chunkProxy.onError();
+                chunkProxy.onError(e);
             }
             transactionManager.rollback();
-            logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop, transaction is being rolled back.", e);
-            throw new BatchContainerRuntimeException(e);
+            logger.warning("Caught exception in chunk processing");
+            throw e;
+        } catch (Throwable t) {
+            logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", t);
+            throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
         }
         logger.exiting(sourceClass, "invokeChunk");
     }
@@ -675,33 +652,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
             invokeChunk();
         } catch (Exception re) {
             throw new BatchContainerServiceException(re);
-        } finally {
-            if (collectorProxy != null) {
-
-            	Serializable data = this.collectorProxy.collectPartitionData();
-
-                if (this.analyzerStatusQueue != null) {
-                    // Invoke the partition analayzer at the end of each step if
-                    // the step runs
-
-                    PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
-                    dataWrapper.setCollectorData(data);
-                    dataWrapper.setEventType(PartitionEventType.ANALYZE_COLLECTOR_DATA);
-                    analyzerStatusQueue.add(dataWrapper);
-                }
-
-            }
-
-            if (this.analyzerStatusQueue != null) {
-                PartitionDataWrapper dataWrapper = new PartitionDataWrapper();
-                dataWrapper.setBatchStatus(stepStatus.getBatchStatus());
-                dataWrapper.setExitStatus(stepStatus.getExitStatus());
-                dataWrapper.setEventType(PartitionEventType.ANALYZE_STATUS);
-                analyzerStatusQueue.add(dataWrapper);
-            }
-        }
-
-        // TODO invoke analyzeExitStatus in analyzer if it exists
+        } 
     }
 
     private CheckpointAlgorithm getCheckpointAlgorithm(int itemCount, int timeInterval) {

@@ -19,8 +19,8 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 import java.util.Random;
 import java.util.logging.Logger;
 
-import javax.batch.annotation.BatchProperty;
 import javax.batch.api.AbstractBatchlet;
+import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
@@ -33,7 +33,7 @@ import com.ibm.jbatch.tck.artifacts.reusable.StopOnBulletinBoardTestData;
 public class MyLongRunningBatchletImpl extends AbstractBatchlet {
 
 	@Inject
-	JobContext<?> jobCtx;
+	JobContext jobCtx;
 
 	@Inject    
 	@BatchProperty(name="run.indefinitely")
@@ -46,7 +46,7 @@ public class MyLongRunningBatchletImpl extends AbstractBatchlet {
 	private boolean throwExcOnThree = false;
 
 	@Inject 
-	private StepContext<MyTransient, StopOnBulletinBoardTestData> stepCtx = null; 
+	private StepContext stepCtx = null; 
 
 	private final static String sourceClass = MyLongRunningBatchletImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
@@ -58,7 +58,7 @@ public class MyLongRunningBatchletImpl extends AbstractBatchlet {
 	private void begin() throws Exception {
 		logger.fine("MyLongRunningBatchletImpl.begin()");
 
-		StopOnBulletinBoardTestData testData = stepCtx.getPersistentUserData();
+		StopOnBulletinBoardTestData testData = (StopOnBulletinBoardTestData) stepCtx.getPersistentUserData();
 		if (testData == null) {
 			testData = new StopOnBulletinBoardTestData();
 			stepCtx.setPersistentUserData(testData);
@@ -118,10 +118,15 @@ public class MyLongRunningBatchletImpl extends AbstractBatchlet {
 		}               
 
 		if (maxTimesReached)   {
+			
+			
 			String currentExitStatus = jobCtx.getExitStatus();  
 			if (currentExitStatus != null) {
 				jobCtx.setExitStatus("GOOD.STEP." + currentExitStatus);
 			} else {
+				// Throw this in there in case anyone could somehow think  the first setExitStatus wins.
+				// This makes it crystal clear this isn't the case.
+				jobCtx.setExitStatus("NOT.FINAL.ONE.SHOULD.HAVE.NO.EFFECT");
 				jobCtx.setExitStatus("GOOD.STEP");
 			}
 			return "BATCHLET RAN TO COMPLETION";

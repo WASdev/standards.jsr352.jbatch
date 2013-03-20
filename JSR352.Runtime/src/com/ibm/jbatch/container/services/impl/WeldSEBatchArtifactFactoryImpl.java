@@ -51,7 +51,11 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
         Object loadedArtifact = getArtifactById(batchId);
 
         if (loadedArtifact == null) {
-            throw new IllegalArgumentException("Could not load any artifacts with batch id=" + batchId);
+            
+            logger.exiting(CLASSNAME, methodName, "Returning null artifact for id: " + batchId);
+            
+            return loadedArtifact;
+
         }
 
         if (logger.isLoggable(Level.FINER)) {
@@ -63,8 +67,11 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
     private Object getArtifactById(String id) {
 
+
+        
         Object artifactInstance = null;
 
+        try {
         WeldContainer weld = new Weld().initialize();
         BeanManager bm = weld.getBeanManager();
 
@@ -73,8 +80,12 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
         Class clazz = bean.getBeanClass();
         
         artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
-
+        } catch (Exception e) {
+            // Don't throw an exception but simply return null;
+            logger.fine("Tried but failed to load artifact with id: " + id + ", Exception = " + e);
+        }
         return artifactInstance;
+        
     }
 
     @Override

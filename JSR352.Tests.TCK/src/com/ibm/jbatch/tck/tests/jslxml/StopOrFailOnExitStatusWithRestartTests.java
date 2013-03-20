@@ -19,12 +19,9 @@ package com.ibm.jbatch.tck.tests.jslxml;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
-import java.util.logging.Logger;
 
-import javax.batch.operations.JobOperator.BatchStatus;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
 import org.junit.BeforeClass;
@@ -39,19 +36,12 @@ public class StopOrFailOnExitStatusWithRestartTests {
 
 	private static JobOperatorBridge jobOp;
 
-	private Set<Long> completedExecutions = new HashSet<Long>();
-
-	private final static Logger logger = Logger.getLogger(StopOrFailOnExitStatusWithRestartTests.class.getName());
-
-	private int threadWaitTime = Integer.parseInt(System.getProperty("junit.thread.sleep.time", "500"));
-
 	private void begin(String str) {
 		Reporter.log("Begin test method: " + str+"<p>");
 	}
 
 	public static void setup(String[] args, Properties props) throws Exception {
 		String METHOD = "setup";
-
 		try {
 			jobOp = new JobOperatorBridge();
 		} catch (Exception e) {
@@ -80,6 +70,8 @@ public class StopOrFailOnExitStatusWithRestartTests {
 		String METHOD = "testInvokeJobWithUserStopAndRestart";
 		begin(METHOD);
 
+		final String DEFAULT_SLEEP_TIME = "5000";
+
 		try {
 			Reporter.log("Locate job XML file: job_batchlet_longrunning.xml<p>");
 
@@ -94,8 +86,9 @@ public class StopOrFailOnExitStatusWithRestartTests {
 			long execID = execution1.getExecutionId(); 
 			Reporter.log("StopRestart: Started job with execId=" + execID + "<p>");
 
-			Reporter.log("Sleep " + threadWaitTime + "<p>");
-			Thread.sleep(threadWaitTime); 
+			int sleepTime = Integer.parseInt(System.getProperty("StopOrFailOnExitStatusWithRestartTests.testInvokeJobWithUserStop.sleep",DEFAULT_SLEEP_TIME));
+			Reporter.log("Sleep " +  sleepTime  + "<p>");
+			Thread.sleep(sleepTime); 
 
 			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
 			assertWithMessage("Hopefully job isn't finished already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
@@ -109,7 +102,8 @@ public class StopOrFailOnExitStatusWithRestartTests {
 					BatchStatus.STOPPED, execution1.getBatchStatus());  
 
 			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getExitStatus()+"<p>");
-			assertObjEquals("BATCHLET CANCELED BEFORE COMPLETION", execution1.getExitStatus());
+			assertWithMessage("If this assert fails with an exit status of STOPPED, try increasing the sleep time. It's possible" +
+					"the JobOperator stop is being issued before the Batchlet has a chance to run.", "BATCHLET CANCELED BEFORE COMPLETION", execution1.getExitStatus());
 
 			Reporter.log("Create job parameters for execution #2:<p>");
 			Reporter.log("run.indefinitely=false<p>");
@@ -184,102 +178,7 @@ public class StopOrFailOnExitStatusWithRestartTests {
 		}
 	}
 
-	/*
-	 * Obviously would be nicer to have more granular tests for some of this function,
-	 * but here we're going a different route and saying, if it's going to require
-	 * restart it will have some complexity, so let's test a few different functions
-	 * in one longer restart scenario.
-	 */
-	/*
-	 * @testName: testStopOnEndOn
-	 * @assertion: FIXME
-	 * @test_Strategy: FIXME
-	 */
-	@Test
-	@org.junit.Test
-	public void testStopOnEndOn() throws Exception {
 
-		String METHOD = "testStopOnEndOn";
-
-		try {
-			Reporter.log("Create job parameters for execution #1:<p>");
-			Properties jobParams = new Properties();
-			Reporter.log("execution.number=1<p>");
-			Reporter.log("step1.stop=ES.STEP1<p>");
-			Reporter.log("step1.next=ES.XXX<p>");
-			Reporter.log("step2.fail=ES.STEP2<p>");
-			Reporter.log("step2.next=ES.XXX<p>");
-			jobParams.setProperty("execution.number", "1");
-			jobParams.setProperty("step1.stop", "ES.STEP1");
-			jobParams.setProperty("step1.next", "ES.XXX");
-			jobParams.setProperty("step2.fail", "ES.STEP2");
-			jobParams.setProperty("step2.next", "ES.XXX");
-
-			Reporter.log("Locate job XML file: batchletStopOnEndOn.xml<p>");
-
-			Reporter.log("Invoke startJobAndWaitForResult");
-			TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("batchletStopOnEndOn", jobParams);
-
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-			Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
-			assertWithMessage("Testing execution #1", BatchStatus.STOPPED, execution1.getBatchStatus());
-			assertWithMessage("Testing execution #1", "STOPPED", execution1.getExitStatus());
-
-			long jobInstanceId = execution1.getInstanceId();
-			//TODO - we think this will change so we restart by instanceId, for now the draft spec
-			// says to restart by execution Id.
-			long lastExecutionId = execution1.getExecutionId();
-
-			{
-				Reporter.log("Create job parameters for execution #3:<p>");
-				Properties restartJobParameters = new Properties();
-				Reporter.log("execution.number=2<p>");
-				Reporter.log("step1.stop=ES.STOP<p>");
-				Reporter.log("step1.next=ES.STEP1<p>");
-				restartJobParameters.setProperty("execution.number", "2");
-				restartJobParameters.setProperty("step1.stop", "ES.STOP");
-				restartJobParameters.setProperty("step1.next", "ES.STEP1");
-				Reporter.log("Invoke restartJobAndWaitForResult with executionId: " + lastExecutionId + "<p>");
-				//JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId);
-				TCKJobExecutionWrapper exec = jobOp.restartJobAndWaitForResult(lastExecutionId,restartJobParameters);
-				lastExecutionId = exec.getExecutionId();
-				Reporter.log("execution #2 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
-				Reporter.log("execution #2 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
-				Reporter.log("execution #2 Job instance id="+exec.getInstanceId()+"<p>");
-				assertWithMessage("Testing execution #2", BatchStatus.FAILED, exec.getBatchStatus());
-				assertWithMessage("Testing execution #2", "SUCCESS", exec.getExitStatus());
-				assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());  
-			}
-
-			{
-				Reporter.log("Create job parameters for execution #3:<p>");
-				Properties restartJobParameters = new Properties();
-				Reporter.log("execution.number=3<p>");
-				Reporter.log("step1.stop=ES.STOP<p>");
-				Reporter.log("step1.next=ES.STEP1<p>");
-				Reporter.log("step2.fail=ES.FAIL<p>");
-				Reporter.log("step2.next=ES.STEP2<p>");
-				restartJobParameters.setProperty("execution.number", "3");
-				restartJobParameters.setProperty("step1.stop", "ES.STOP");
-				restartJobParameters.setProperty("step1.next", "ES.STEP1");
-				restartJobParameters.setProperty("step2.fail", "ES.FAIL");
-				restartJobParameters.setProperty("step2.next", "ES.STEP2");
-				Reporter.log("Invoke restartJobAndWaitForResult with executionId: " + lastExecutionId + "<p>");
-				//JobExecution exec = jobOp.restartJobAndWaitForResult(jobInstanceId);
-				TCKJobExecutionWrapper exec = jobOp.restartJobAndWaitForResult(lastExecutionId,restartJobParameters);
-				lastExecutionId = exec.getExecutionId();
-				Reporter.log("execution #3 JobExecution getBatchStatus()="+exec.getBatchStatus()+"<p>");
-				Reporter.log("execution #3 JobExecution getExitStatus()="+exec.getExitStatus()+"<p>");
-				Reporter.log("execution #3 Job instance id="+exec.getInstanceId()+"<p>");
-				assertWithMessage("Testing execution #3", BatchStatus.COMPLETED, exec.getBatchStatus());
-				assertWithMessage("Testing execution #3", "COMPLETED", exec.getExitStatus());
-				assertWithMessage("Testing execution #3", jobInstanceId, exec.getInstanceId());  
-			}
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-
-	}
 
 	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");

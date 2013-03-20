@@ -20,9 +20,9 @@ import java.util.Date;
 import java.util.Properties;
 
 import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobOperator.BatchStatus;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.NoSuchJobExecutionException;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 

@@ -24,6 +24,11 @@ import java.util.logging.Logger;
 
 import javax.batch.operations.JobOperator;
 
+/**
+ * BatchRuntime represents the JSR 352 Batch Runtime.
+ * It provides factory access to the JobOperator interface.
+ *
+ */
 public class BatchRuntime {
 
     private final static String sourceClass = BatchRuntime.class.getName();
@@ -32,8 +37,7 @@ public class BatchRuntime {
 	/**
 	* The getJobOperator factory method returns
 	* an instance of the JobOperator interface.
-	* Repeated calls to this method returns the
-	* same instance.
+	*
 	* @return JobOperator instance.
 	*/
 	

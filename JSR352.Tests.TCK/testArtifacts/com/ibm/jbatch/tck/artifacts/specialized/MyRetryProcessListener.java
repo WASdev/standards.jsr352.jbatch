@@ -26,7 +26,7 @@ import org.testng.Reporter;
 
 
 @javax.inject.Named("myRetryProcessListener")
-public class MyRetryProcessListener implements RetryProcessListener<Object> {
+public class MyRetryProcessListener implements RetryProcessListener {
 	 private final static String sourceClass = MyRetryProcessListener.class.getName();
 	    private final static Logger logger = Logger.getLogger(sourceClass);
 	    
