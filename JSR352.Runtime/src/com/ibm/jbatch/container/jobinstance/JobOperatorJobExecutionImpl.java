@@ -57,7 +57,6 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 		this.jobName = jobName;
 	}
 
-    
 	public void setJobContext(JobContextImpl jobContext) {
 		this.jobContext = jobContext;
 	}
@@ -99,7 +98,11 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 								JDBCPersistenceManagerImpl.CREATE_TIME);
 			}
 		}
-		return new Date(createTime.getTime());
+		
+		if (createTime != null){
+			return new Date(createTime.getTime());
+		}
+		else return createTime;
 	}
 
 	@Override
@@ -113,7 +116,10 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 			}
 		}
 		
-		return new Date(endTime.getTime());
+		if (endTime != null){
+			return new Date(endTime.getTime());
+		}
+		else return endTime;
 	}
 
 	@Override
@@ -155,7 +161,10 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 			}
 		}
 
-		return new Date(this.updateTime.getTime());
+		if (updateTime != null) {
+			return new Date(this.updateTime.getTime());
+		}
+		else return updateTime;
 	}
 
 	@Override
@@ -176,7 +185,10 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 			}
 		}
 		
-		return new Date(startTime.getTime());
+		if (startTime != null){
+			return new Date(startTime.getTime());
+		}
+		else return startTime;
 	}
 	
 	@Override

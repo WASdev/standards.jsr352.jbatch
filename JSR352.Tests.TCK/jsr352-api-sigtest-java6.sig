@@ -111,7 +111,7 @@ meth public abstract java.lang.String process() throws java.lang.Exception
 meth public abstract void stop() throws java.lang.Exception
 
 CLSS public abstract interface javax.batch.api.Decider
-meth public abstract java.lang.String decide(javax.batch.runtime.StepExecution<?>[]) throws java.lang.Exception
+meth public abstract java.lang.String decide(javax.batch.runtime.StepExecution[]) throws java.lang.Exception
 
 CLSS public abstract javax.batch.api.chunk.AbstractCheckpointAlgorithm
 cons public <init>()
@@ -122,19 +122,19 @@ meth public void beginCheckpoint() throws java.lang.Exception
 meth public void endCheckpoint() throws java.lang.Exception
 supr java.lang.Object
 
-CLSS public abstract javax.batch.api.chunk.AbstractItemReader<%0 extends java.lang.Object>
+CLSS public abstract javax.batch.api.chunk.AbstractItemReader
 cons public <init>()
-intf javax.batch.api.chunk.ItemReader<{javax.batch.api.chunk.AbstractItemReader%0}>
-meth public abstract {javax.batch.api.chunk.AbstractItemReader%0} readItem() throws java.lang.Exception
+intf javax.batch.api.chunk.ItemReader
+meth public abstract java.lang.Object readItem() throws java.lang.Exception
 meth public java.io.Serializable checkpointInfo() throws java.lang.Exception
 meth public void close() throws java.lang.Exception
 meth public void open(java.io.Serializable) throws java.lang.Exception
 supr java.lang.Object
 
-CLSS public abstract javax.batch.api.chunk.AbstractItemWriter<%0 extends java.lang.Object>
+CLSS public abstract javax.batch.api.chunk.AbstractItemWriter
 cons public <init>()
-intf javax.batch.api.chunk.ItemWriter<{javax.batch.api.chunk.AbstractItemWriter%0}>
-meth public abstract void writeItems(java.util.List<{javax.batch.api.chunk.AbstractItemWriter%0}>) throws java.lang.Exception
+intf javax.batch.api.chunk.ItemWriter
+meth public abstract void writeItems(java.util.List<java.lang.Object>) throws java.lang.Exception
 meth public java.io.Serializable checkpointInfo() throws java.lang.Exception
 meth public void close() throws java.lang.Exception
 meth public void open(java.io.Serializable) throws java.lang.Exception
@@ -146,90 +146,90 @@ meth public abstract int checkpointTimeout() throws java.lang.Exception
 meth public abstract void beginCheckpoint() throws java.lang.Exception
 meth public abstract void endCheckpoint() throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.ItemProcessor<%0 extends java.lang.Object, %1 extends java.lang.Object>
-meth public abstract {javax.batch.api.chunk.ItemProcessor%1} processItem({javax.batch.api.chunk.ItemProcessor%0}) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.ItemProcessor
+meth public abstract java.lang.Object processItem(java.lang.Object) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.ItemReader<%0 extends java.lang.Object>
+CLSS public abstract interface javax.batch.api.chunk.ItemReader
+meth public abstract java.io.Serializable checkpointInfo() throws java.lang.Exception
+meth public abstract java.lang.Object readItem() throws java.lang.Exception
+meth public abstract void close() throws java.lang.Exception
+meth public abstract void open(java.io.Serializable) throws java.lang.Exception
+
+CLSS public abstract interface javax.batch.api.chunk.ItemWriter
 meth public abstract java.io.Serializable checkpointInfo() throws java.lang.Exception
 meth public abstract void close() throws java.lang.Exception
 meth public abstract void open(java.io.Serializable) throws java.lang.Exception
-meth public abstract {javax.batch.api.chunk.ItemReader%0} readItem() throws java.lang.Exception
-
-CLSS public abstract interface javax.batch.api.chunk.ItemWriter<%0 extends java.lang.Object>
-meth public abstract java.io.Serializable checkpointInfo() throws java.lang.Exception
-meth public abstract void close() throws java.lang.Exception
-meth public abstract void open(java.io.Serializable) throws java.lang.Exception
-meth public abstract void writeItems(java.util.List<{javax.batch.api.chunk.ItemWriter%0}>) throws java.lang.Exception
+meth public abstract void writeItems(java.util.List<java.lang.Object>) throws java.lang.Exception
 
 CLSS public abstract javax.batch.api.chunk.listener.AbstractChunkListener
 cons public <init>()
 intf javax.batch.api.chunk.listener.ChunkListener
 meth public void afterChunk() throws java.lang.Exception
 meth public void beforeChunk() throws java.lang.Exception
-meth public void onError() throws java.lang.Exception
+meth public void onError(java.lang.Exception) throws java.lang.Exception
 supr java.lang.Object
 
-CLSS public abstract javax.batch.api.chunk.listener.AbstractItemProcessListener<%0 extends java.lang.Object, %1 extends java.lang.Object>
+CLSS public abstract javax.batch.api.chunk.listener.AbstractItemProcessListener
 cons public <init>()
-intf javax.batch.api.chunk.listener.ItemProcessListener<{javax.batch.api.chunk.listener.AbstractItemProcessListener%0},{javax.batch.api.chunk.listener.AbstractItemProcessListener%1}>
-meth public void afterProcess({javax.batch.api.chunk.listener.AbstractItemProcessListener%0},{javax.batch.api.chunk.listener.AbstractItemProcessListener%1}) throws java.lang.Exception
-meth public void beforeProcess({javax.batch.api.chunk.listener.AbstractItemProcessListener%0}) throws java.lang.Exception
-meth public void onProcessError({javax.batch.api.chunk.listener.AbstractItemProcessListener%0},java.lang.Exception) throws java.lang.Exception
+intf javax.batch.api.chunk.listener.ItemProcessListener
+meth public void afterProcess(java.lang.Object,java.lang.Object) throws java.lang.Exception
+meth public void beforeProcess(java.lang.Object) throws java.lang.Exception
+meth public void onProcessError(java.lang.Object,java.lang.Exception) throws java.lang.Exception
 supr java.lang.Object
 
-CLSS public abstract javax.batch.api.chunk.listener.AbstractItemReadListener<%0 extends java.lang.Object>
+CLSS public abstract javax.batch.api.chunk.listener.AbstractItemReadListener
 cons public <init>()
-intf javax.batch.api.chunk.listener.ItemReadListener<{javax.batch.api.chunk.listener.AbstractItemReadListener%0}>
-meth public void afterRead({javax.batch.api.chunk.listener.AbstractItemReadListener%0}) throws java.lang.Exception
+intf javax.batch.api.chunk.listener.ItemReadListener
+meth public void afterRead(java.lang.Object) throws java.lang.Exception
 meth public void beforeRead() throws java.lang.Exception
 meth public void onReadError(java.lang.Exception) throws java.lang.Exception
 supr java.lang.Object
 
-CLSS public abstract javax.batch.api.chunk.listener.AbstractItemWriteListener<%0 extends java.lang.Object>
+CLSS public abstract javax.batch.api.chunk.listener.AbstractItemWriteListener
 cons public <init>()
-intf javax.batch.api.chunk.listener.ItemWriteListener<{javax.batch.api.chunk.listener.AbstractItemWriteListener%0}>
-meth public void afterWrite(java.util.List<{javax.batch.api.chunk.listener.AbstractItemWriteListener%0}>) throws java.lang.Exception
-meth public void beforeWrite(java.util.List<{javax.batch.api.chunk.listener.AbstractItemWriteListener%0}>) throws java.lang.Exception
-meth public void onWriteError(java.util.List<{javax.batch.api.chunk.listener.AbstractItemWriteListener%0}>,java.lang.Exception) throws java.lang.Exception
+intf javax.batch.api.chunk.listener.ItemWriteListener
+meth public void afterWrite(java.util.List<java.lang.Object>) throws java.lang.Exception
+meth public void beforeWrite(java.util.List<java.lang.Object>) throws java.lang.Exception
+meth public void onWriteError(java.util.List<java.lang.Object>,java.lang.Exception) throws java.lang.Exception
 supr java.lang.Object
 
 CLSS public abstract interface javax.batch.api.chunk.listener.ChunkListener
 meth public abstract void afterChunk() throws java.lang.Exception
 meth public abstract void beforeChunk() throws java.lang.Exception
-meth public abstract void onError() throws java.lang.Exception
+meth public abstract void onError(java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.ItemProcessListener<%0 extends java.lang.Object, %1 extends java.lang.Object>
-meth public abstract void afterProcess({javax.batch.api.chunk.listener.ItemProcessListener%0},{javax.batch.api.chunk.listener.ItemProcessListener%1}) throws java.lang.Exception
-meth public abstract void beforeProcess({javax.batch.api.chunk.listener.ItemProcessListener%0}) throws java.lang.Exception
-meth public abstract void onProcessError({javax.batch.api.chunk.listener.ItemProcessListener%0},java.lang.Exception) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.listener.ItemProcessListener
+meth public abstract void afterProcess(java.lang.Object,java.lang.Object) throws java.lang.Exception
+meth public abstract void beforeProcess(java.lang.Object) throws java.lang.Exception
+meth public abstract void onProcessError(java.lang.Object,java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.ItemReadListener<%0 extends java.lang.Object>
-meth public abstract void afterRead({javax.batch.api.chunk.listener.ItemReadListener%0}) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.listener.ItemReadListener
+meth public abstract void afterRead(java.lang.Object) throws java.lang.Exception
 meth public abstract void beforeRead() throws java.lang.Exception
 meth public abstract void onReadError(java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.ItemWriteListener<%0 extends java.lang.Object>
-meth public abstract void afterWrite(java.util.List<{javax.batch.api.chunk.listener.ItemWriteListener%0}>) throws java.lang.Exception
-meth public abstract void beforeWrite(java.util.List<{javax.batch.api.chunk.listener.ItemWriteListener%0}>) throws java.lang.Exception
-meth public abstract void onWriteError(java.util.List<{javax.batch.api.chunk.listener.ItemWriteListener%0}>,java.lang.Exception) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.listener.ItemWriteListener
+meth public abstract void afterWrite(java.util.List<java.lang.Object>) throws java.lang.Exception
+meth public abstract void beforeWrite(java.util.List<java.lang.Object>) throws java.lang.Exception
+meth public abstract void onWriteError(java.util.List<java.lang.Object>,java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.RetryProcessListener<%0 extends java.lang.Object>
-meth public abstract void onRetryProcessException({javax.batch.api.chunk.listener.RetryProcessListener%0},java.lang.Exception) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.listener.RetryProcessListener
+meth public abstract void onRetryProcessException(java.lang.Object,java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.RetryReadListener<%0 extends java.lang.Object>
+CLSS public abstract interface javax.batch.api.chunk.listener.RetryReadListener
 meth public abstract void onRetryReadException(java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.RetryWriteListener<%0 extends java.lang.Object>
-meth public abstract void onRetryWriteException(java.util.List<{javax.batch.api.chunk.listener.RetryWriteListener%0}>,java.lang.Exception) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.listener.RetryWriteListener
+meth public abstract void onRetryWriteException(java.util.List<java.lang.Object>,java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.SkipProcessListener<%0 extends java.lang.Object>
-meth public abstract void onSkipProcessItem({javax.batch.api.chunk.listener.SkipProcessListener%0},java.lang.Exception) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.listener.SkipProcessListener
+meth public abstract void onSkipProcessItem(java.lang.Object,java.lang.Exception) throws java.lang.Exception
 
 CLSS public abstract interface javax.batch.api.chunk.listener.SkipReadListener
 meth public abstract void onSkipReadItem(java.lang.Exception) throws java.lang.Exception
 
-CLSS public abstract interface javax.batch.api.chunk.listener.SkipWriteListener<%0 extends java.lang.Object>
-meth public abstract void onSkipWriteItem(java.util.List<{javax.batch.api.chunk.listener.SkipWriteListener%0}>,java.lang.Exception) throws java.lang.Exception
+CLSS public abstract interface javax.batch.api.chunk.listener.SkipWriteListener
+meth public abstract void onSkipWriteItem(java.util.List<java.lang.Object>,java.lang.Exception) throws java.lang.Exception
 
 CLSS public abstract javax.batch.api.listener.AbstractJobListener
 cons public <init>()
@@ -280,7 +280,6 @@ CLSS public abstract interface javax.batch.api.partition.PartitionMapper
 meth public abstract javax.batch.api.partition.PartitionPlan mapPartitions() throws java.lang.Exception
 
 CLSS public abstract interface javax.batch.api.partition.PartitionPlan
-intf java.io.Serializable
 meth public abstract boolean getPartitionsOverride()
 meth public abstract int getPartitions()
 meth public abstract int getThreads()
@@ -325,6 +324,7 @@ cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
 supr java.lang.Exception
+hfds serialVersionUID
 
 CLSS public javax.batch.operations.JobExecutionIsRunningException
 cons public <init>()
@@ -355,7 +355,7 @@ meth public abstract int getJobInstanceCount(java.lang.String) throws javax.batc
 meth public abstract java.util.List<java.lang.Long> getRunningExecutions(java.lang.String) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobException
 meth public abstract java.util.List<javax.batch.runtime.JobExecution> getJobExecutions(javax.batch.runtime.JobInstance) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobInstanceException
 meth public abstract java.util.List<javax.batch.runtime.JobInstance> getJobInstances(java.lang.String,int,int) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobException
-meth public abstract java.util.List<javax.batch.runtime.StepExecution<?>> getStepExecutions(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
+meth public abstract java.util.List<javax.batch.runtime.StepExecution> getStepExecutions(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
 meth public abstract java.util.Properties getParameters(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
 meth public abstract java.util.Set<java.lang.String> getJobNames() throws javax.batch.operations.JobSecurityException
 meth public abstract javax.batch.runtime.JobExecution getJobExecution(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
@@ -465,17 +465,18 @@ meth public static javax.batch.runtime.Metric$MetricType valueOf(java.lang.Strin
 meth public static javax.batch.runtime.Metric$MetricType[] values()
 supr java.lang.Enum<javax.batch.runtime.Metric$MetricType>
 
-CLSS public abstract interface javax.batch.runtime.StepExecution<%0 extends java.io.Serializable>
+CLSS public abstract interface javax.batch.runtime.StepExecution
+meth public abstract java.io.Serializable getUserPersistentData()
 meth public abstract java.lang.String getExitStatus()
 meth public abstract java.lang.String getStepName()
 meth public abstract java.util.Date getEndTime()
 meth public abstract java.util.Date getStartTime()
 meth public abstract javax.batch.runtime.BatchStatus getBatchStatus()
 meth public abstract javax.batch.runtime.Metric[] getMetrics()
-meth public abstract long getExecutionId()
-meth public abstract {javax.batch.runtime.StepExecution%0} getUserPersistentData()
+meth public abstract long getStepExecutionId()
 
-CLSS public abstract interface javax.batch.runtime.context.JobContext<%0 extends java.lang.Object>
+CLSS public abstract interface javax.batch.runtime.context.JobContext
+meth public abstract java.lang.Object getTransientUserData()
 meth public abstract java.lang.String getExitStatus()
 meth public abstract java.lang.String getJobName()
 meth public abstract java.util.Properties getProperties()
@@ -483,11 +484,12 @@ meth public abstract javax.batch.runtime.BatchStatus getBatchStatus()
 meth public abstract long getExecutionId()
 meth public abstract long getInstanceId()
 meth public abstract void setExitStatus(java.lang.String)
-meth public abstract void setTransientUserData({javax.batch.runtime.context.JobContext%0})
-meth public abstract {javax.batch.runtime.context.JobContext%0} getTransientUserData()
+meth public abstract void setTransientUserData(java.lang.Object)
 
-CLSS public abstract interface javax.batch.runtime.context.StepContext<%0 extends java.lang.Object, %1 extends java.io.Serializable>
+CLSS public abstract interface javax.batch.runtime.context.StepContext
+meth public abstract java.io.Serializable getPersistentUserData()
 meth public abstract java.lang.Exception getException()
+meth public abstract java.lang.Object getTransientUserData()
 meth public abstract java.lang.String getExitStatus()
 meth public abstract java.lang.String getStepName()
 meth public abstract java.util.Properties getProperties()
@@ -495,10 +497,8 @@ meth public abstract javax.batch.runtime.BatchStatus getBatchStatus()
 meth public abstract javax.batch.runtime.Metric[] getMetrics()
 meth public abstract long getStepExecutionId()
 meth public abstract void setExitStatus(java.lang.String)
-meth public abstract void setPersistentUserData({javax.batch.runtime.context.StepContext%1})
-meth public abstract void setTransientUserData({javax.batch.runtime.context.StepContext%0})
-meth public abstract {javax.batch.runtime.context.StepContext%0} getTransientUserData()
-meth public abstract {javax.batch.runtime.context.StepContext%1} getPersistentUserData()
+meth public abstract void setPersistentUserData(java.io.Serializable)
+meth public abstract void setTransientUserData(java.lang.Object)
 
 CLSS public abstract interface !annotation javax.inject.Qualifier
  anno 0 java.lang.annotation.Documented()

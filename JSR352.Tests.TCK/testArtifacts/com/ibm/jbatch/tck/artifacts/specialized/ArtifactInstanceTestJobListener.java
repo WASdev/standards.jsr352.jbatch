@@ -20,7 +20,9 @@ import javax.batch.api.BatchProperty;
 import javax.batch.api.listener.JobListener;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class ArtifactInstanceTestJobListener implements JobListener {
 
     @Inject 

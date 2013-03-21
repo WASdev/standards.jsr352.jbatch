@@ -8,10 +8,10 @@
 	<taskdef resource="testngtasks" classpath="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar"/>
 
 	<!-- NOTE: Set this to an Oracle jre prior to running the task to generate the sigtest signature file -->
-	<property name="sigtest.java7.home" value=""/>
+	<property name="sigtest.java7.home" value="C:/SunJava7"/>
 	
 	<!-- NOTE: Set this to an Oracle jre prior to running the task to generate the sigtest signature file -->
-	<property name="sigtest.java6.home" value=""/>
+	<property name="sigtest.java6.home" value="C:/SunJava6"/>
 	
 	<path id="build.classpath">
 		<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar"/>
