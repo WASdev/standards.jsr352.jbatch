@@ -44,7 +44,7 @@ public class PartitionMapperPropertyResolverImpl extends
 		partitionMapper.setRef(this.replaceAllProperties(partitionMapper.getRef(), submittedProps, parentProps));
 		
         // Resolve all the properties defined for this step
-        Properties currentProps = null;
+		Properties currentProps = parentProps;
         if (partitionMapper.getProperties() != null) {
             currentProps = this.resolveElementProperties(partitionMapper.getProperties().getPropertyList(), submittedProps, parentProps);
         }

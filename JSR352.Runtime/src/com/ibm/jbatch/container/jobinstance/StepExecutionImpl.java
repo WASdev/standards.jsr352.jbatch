@@ -164,7 +164,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 	}
 
 	@Override
-	public Serializable getUserPersistentData() {
+	public Serializable getPersistentUserData() {
 		if (stepContext != null){
 			return this.stepContext.getPersistentUserData();
 		}
@@ -244,7 +244,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     	this.endTime = endts;
     }
     
-    public void setpersistentUserData(Serializable data){
+    public void setPersistentUserData(Serializable data){
     	this.persistentUserData = data;
     }
 

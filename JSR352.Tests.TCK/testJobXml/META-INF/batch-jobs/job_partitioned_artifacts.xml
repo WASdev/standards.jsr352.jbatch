@@ -28,6 +28,7 @@
 	    		<properties>
 	    			<property name="failThisPartition" value="#{jobParameters['failThisPartition']}" />
 	    			<property name="numPartitionsProp" value="#{jobParameters['numPartitionsProp']}"/>
+	    			<property name="partitionsOverride" value="#{jobParameters['partitionsOverride']}"/>
 	    		</properties>
 	    	</mapper>	    
     	

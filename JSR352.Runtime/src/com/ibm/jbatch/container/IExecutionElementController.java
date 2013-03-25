@@ -24,7 +24,7 @@ import com.ibm.jbatch.container.util.PartitionDataWrapper;
 
 public interface IExecutionElementController extends IController {
 
-    public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException, Exception;
+    public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException;
     
     public void setStepContext(StepContextImpl stepContext);
     

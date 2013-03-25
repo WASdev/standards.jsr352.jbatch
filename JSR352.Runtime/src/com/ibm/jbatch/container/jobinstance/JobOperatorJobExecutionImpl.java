@@ -33,27 +33,27 @@ import com.ibm.jbatch.spi.TaggedJobExecution;
 
 public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExecution {
 
-    private final static String sourceClass = JobOperatorJobExecutionImpl.class.getName();
-    private final static Logger logger = Logger.getLogger(sourceClass);
-    
-	private static ServicesManager servicesManager = ServicesManagerImpl.getInstance();
-    private static IPersistenceManagerService _persistenceManagementService = servicesManager.getPersistenceManagerService();
+	private final static String sourceClass = JobOperatorJobExecutionImpl.class.getName();
+	private final static Logger logger = Logger.getLogger(sourceClass);
 
-    private long executionID = 0L;
-    private long instanceID = 0L;
-    
-    Timestamp createTime;
-    Timestamp startTime;
-    Timestamp endTime;
-    Timestamp updateTime;
-    Properties parameters;
-    String batchStatus;
-    String exitStatus;
-    Properties jobProperties = null;
-    String jobName = null;
+	private static ServicesManager servicesManager = ServicesManagerImpl.getInstance();
+	private static IPersistenceManagerService _persistenceManagementService = servicesManager.getPersistenceManagerService();
+
+	private long executionID = 0L;
+	private long instanceID = 0L;
+
+	Timestamp createTime;
+	Timestamp startTime;
+	Timestamp endTime;
+	Timestamp updateTime;
+	Properties parameters;
+	String batchStatus;
+	String exitStatus;
+	Properties jobProperties = null;
+	String jobName = null;
 	private JobContextImpl jobContext = null;
-    
-    public void setJobName(String jobName) {
+
+	public void setJobName(String jobName) {
 		this.jobName = jobName;
 	}
 
@@ -65,23 +65,19 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 		this.executionID = executionId;
 		this.instanceID = instanceId;
 	}
-	
+
 	@Override
 	public BatchStatus getBatchStatus() {
-		
+
 		BatchStatus batchStatus  = null;
-		
+
 		if (this.jobContext != null){
 			batchStatus = this.jobContext.getBatchStatus();
 			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
 		}
 		else {
 			// old job, retrieve from the backend
-			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-				batchStatus = BatchStatus.valueOf(((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.BATCH_STATUS));
-			} else {
-				throw new UnsupportedOperationException("Only JDBC-based persistence currently supported for this function.");
-			}
+			batchStatus = BatchStatus.valueOf(_persistenceManagementService.jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.BATCH_STATUS));
 			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
 		}
 		return batchStatus;
@@ -91,14 +87,9 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 	public Date getCreateTime() {
 
 		if (this.jobContext == null) {
-
-			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl) {
-				createTime = ((JDBCPersistenceManagerImpl) _persistenceManagementService)
-						.jobOperatorQueryJobExecutionTimestamp(executionID,
-								JDBCPersistenceManagerImpl.CREATE_TIME);
-			}
+			createTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID,JDBCPersistenceManagerImpl.CREATE_TIME);
 		}
-		
+
 		if (createTime != null){
 			return new Date(createTime.getTime());
 		}
@@ -108,14 +99,11 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 	@Override
 	public Date getEndTime() {
 
-		
+
 		if (this.jobContext == null) {
-		
-			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-				endTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.END_TIME);
-			}
+			endTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.END_TIME);
 		}
-		
+
 		if (endTime != null){
 			return new Date(endTime.getTime());
 		}
@@ -129,15 +117,12 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 
 	@Override
 	public String getExitStatus() {
-		
+
 		if (this.jobContext != null){
 			return this.jobContext.getExitStatus();
 		}
 		else {
-			// old job, retrieve from the backend
-			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-				exitStatus = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.EXIT_STATUS);
-			}
+			exitStatus = _persistenceManagementService.jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.EXIT_STATUS);
 			return exitStatus;
 		}
 
@@ -150,15 +135,11 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
 			updateTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.UPDATE_TIME);
 		}
-		*/
-		
+		 */
+
 		if (this.jobContext == null) {
 
-			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl) {
-				this.updateTime = ((JDBCPersistenceManagerImpl) _persistenceManagementService)
-						.jobOperatorQueryJobExecutionTimestamp(executionID,
-								JDBCPersistenceManagerImpl.UPDATE_TIME);
-			}
+				this.updateTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.UPDATE_TIME);
 		}
 
 		if (updateTime != null) {
@@ -169,36 +150,33 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 
 	@Override
 	public Date getStartTime() {
-		
+
 		// if and only if we are accessing the JDBC impl, get the requested timestamp
 		/*
 		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
 			startTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.START_TIME);
 		}
-		*/
-		
-		
+		 */
+
+
 		if (this.jobContext == null) {
-		
-			if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-				startTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.START_TIME);
-			}
+			startTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.START_TIME);
 		}
-		
+
 		if (startTime != null){
 			return new Date(startTime.getTime());
 		}
 		else return startTime;
 	}
-	
+
 	@Override
 	public Properties getJobParameters() {
 		// TODO Auto-generated method stub
 		return jobProperties;
 	}
-	
+
 	// IMPL specific setters
-	
+
 	public void setBatchStatus(String status) {
 		batchStatus = status;
 	}
@@ -214,14 +192,14 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 	public void setExecutionId(long id) {
 		executionID = id;
 	}
-	
+
 	public void setJobInstanceId(long jobInstanceID){
 		instanceID = jobInstanceID;
 	}
 
 	public void setExitStatus(String status) {
 		exitStatus = status;
-	
+
 	}
 
 	public void setInstanceId(long id) {
@@ -235,7 +213,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 	public void setStartTime(Timestamp ts) {
 		startTime = ts;
 	}
-	
+
 	public void setJobParameters(Properties jProps){
 		jobProperties = jProps;
 	}
@@ -254,17 +232,17 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 	public long getInstanceId() {
 		return instanceID;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-	    buf.append("createTime=" + createTime);
-	    buf.append(",batchStatus=" + batchStatus);
-	    buf.append(",exitStatus=" + exitStatus);
-	    buf.append(",jobName=" + jobName);
-	    buf.append(",instanceId=" + instanceID);
-	    buf.append(",executionId=" + executionID);
-	    return buf.toString();
+		buf.append("createTime=" + createTime);
+		buf.append(",batchStatus=" + batchStatus);
+		buf.append(",exitStatus=" + exitStatus);
+		buf.append(",jobName=" + jobName);
+		buf.append(",instanceId=" + instanceID);
+		buf.append(",executionId=" + executionID);
+		return buf.toString();
 	}
 
 }

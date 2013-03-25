@@ -41,7 +41,9 @@ public class MyPartitionMapper implements PartitionMapper {
     @BatchProperty
     private String failThisPartition = "-1";
 
-    
+    @Inject
+    @BatchProperty
+    private String partitionsOverride = null;
 
 	
 	@Override
@@ -66,6 +68,11 @@ public class MyPartitionMapper implements PartitionMapper {
 		PartitionPlan partitionPlan = new MyPartitionPlan();
 		partitionPlan.setPartitions(numPartitions);
 		partitionPlan.setPartitionProperties(props);
+		if ("true".equals(partitionsOverride)) {
+		    partitionPlan.setPartitionsOverride(true);
+		} else {
+		    partitionPlan.setPartitionsOverride(false);
+		}
 		
 		return partitionPlan;
 		

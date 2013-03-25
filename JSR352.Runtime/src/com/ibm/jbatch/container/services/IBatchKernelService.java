@@ -37,11 +37,11 @@ import com.ibm.jbatch.spi.services.IBatchServiceBase;
 
 public interface IBatchKernelService extends IBatchServiceBase {
 
-	IJobExecution getJobExecution(long executionId);
+	IJobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException;
 
-	IJobExecution restartJob(long executionID) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
+	IJobExecution restartJob(long executionID) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException;
 
-	IJobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
+	IJobExecution restartJob(long executionID, Properties overrideJobParameters) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException;
 
 	IJobExecution startJob(String jobXML) throws JobStartException;
 
@@ -75,7 +75,7 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
     BatchWorkUnit buildRestartableBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
             BlockingQueue<PartitionDataWrapper> analyzerQueue,
-            BlockingQueue<BatchWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
+            BlockingQueue<BatchWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException; 
 
 
 }

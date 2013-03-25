@@ -24,6 +24,8 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
+import javax.batch.operations.JobExecutionIsRunningException;
+import javax.batch.operations.JobRestartException;
 import javax.batch.operations.NoSuchJobException;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
@@ -262,6 +264,165 @@ public class JobOperatorTests {
 				seenException = true;
 			}
 			assertWithMessage("Caught JobExecutionAlreadyCompleteException for bad restart #2" , seenException);
+
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+
+	}
+	
+	/*
+	 * @testName: testJobOperatorAbandonJobDuringARestart
+	 * 
+	 * @assertion: testJobOperatorAbandonJobDuringARestart
+	 * @test_Strategy: start a job that is configured to fail. Change configuration of job to cause the job to sleep for 5 seconds. Restart job
+	 *                 and let it run without waiting for completion.  TAttempt to abandon the job and confirm a JobExecutionIsRunningException
+	 *                 is caught.
+	 *                 
+	 *                  
+	 * @throws JobExecutionAlreadyCompleteException
+	 * @throws NoSuchJobExecutionException
+	 * @throws JobExecutionNotMostRecentException 
+	 * @throws JobRestartException
+	 *                 
+	 */
+	@Test
+	@org.junit.Test
+	public void testJobOperatorAbandonJobDuringARestart() throws Exception {
+
+		String METHOD = "testJobOperatorRestartAlreadyCompleteException";
+		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "5000";
+
+		try {
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			jobParams.put("execution.number", "1");
+			Reporter.log("execution.number=1<p>");
+			String sleepTime = System.getProperty("JobOperatorTests.testJobOperatorTestAbandonActiveRestart.sleep",DEFAULT_SLEEP_TIME);
+			jobParams.put("sleep.time", sleepTime);
+			Reporter.log("sleep.time=" + sleepTime + "<p>");
+			
+
+			Reporter.log("Locate job XML file: abandonActiveRestart.xml<p>");
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+			TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("abandonActiveRestart", jobParams);
+
+			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
+			assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
+
+			long jobInstanceId = execution1.getInstanceId();
+			long firstExecutionId = execution1.getExecutionId();
+			TCKJobExecutionWrapper exec = null;
+			Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
+			Reporter.log("Got Job execution id: " + firstExecutionId + "<p>");
+			
+			jobParams = new Properties();
+			jobParams.put("execution.number", "2");
+			Reporter.log("execution.number=2<p>");
+			sleepTime = System.getProperty("JobOperatorTests.testJobOperatorTestAbandonActiveRestart.sleep",DEFAULT_SLEEP_TIME);
+			jobParams.put("sleep.time", sleepTime);
+			Reporter.log("sleep.time=" + sleepTime + "<p>");
+			
+			Reporter.log("Invoke restartJobWithoutWaitingForResult for execution id: " + firstExecutionId + "<p>");
+			exec = jobOp.restartJobWithoutWaitingForResult(firstExecutionId, jobParams);
+			long secondExecutionId = exec.getExecutionId();			
+			{
+				Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + firstExecutionId + "<p>");
+				
+				boolean seen = false;
+				try {
+					jobOp.abandonJobExecution(secondExecutionId);
+				}
+				catch (JobExecutionIsRunningException jobRunningEx){
+					Reporter.log("Caught JobExecutionIsRunningException as expected<p>");
+					seen = true;
+				}
+				assertWithMessage("Caught JobExecutionIsRunningException for abandon attempt during restart" , seen);
+				
+			}
+
+		} catch (Exception e) {
+			handleException(METHOD, e);
+		}
+
+	}
+	
+	/*
+	 * @testName: testJobOperatorRestartJobAlreadyAbandoned
+	 * 
+	 * @assertion: testJobOperatorRestartJobAlreadyAbandoned
+	 * @test_Strategy: start a job that is configured to fail. Once Job fails, abandon it.
+	 *                 Attempt to restart the already abandon the job and confirm a JobRestartException
+	 *                 is caught.
+	 *                 
+	 *                  
+	 * @throws JobExecutionAlreadyCompleteException
+	 * @throws NoSuchJobExecutionException
+	 * @throws JobExecutionNotMostRecentException 
+	 * @throws JobRestartException
+	 *                 
+	 */
+	@Test
+	@org.junit.Test
+	public void testJobOperatorRestartJobAlreadyAbandoned() throws Exception {
+
+		String METHOD = "testJobOperatorRestartAlreadyCompleteException";
+		begin(METHOD);
+		
+		String DEFAULT_SLEEP_TIME = "1";
+
+		try {
+			Reporter.log("Create job parameters for execution #1:<p>");
+			Properties jobParams = new Properties();
+			jobParams.put("execution.number", "1");
+			Reporter.log("execution.number=1<p>");
+			String sleepTime = System.getProperty("JobOperatorTests.testJobOperatorTestRestartAlreadAbandonedJob.sleep",DEFAULT_SLEEP_TIME);
+			jobParams.put("sleep.time", sleepTime);
+			Reporter.log("sleep.time=" + sleepTime + "<p>");
+			
+
+			Reporter.log("Locate job XML file: abandonActiveRestart.xml<p>");
+
+			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+			TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("abandonActiveRestart", jobParams);
+
+			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			Reporter.log("execution #1 JobExecution getExitStatus()="+execution1.getExitStatus()+"<p>");
+			assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
+			assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
+			long jobInstanceId = execution1.getInstanceId();
+			long firstExecutionId = execution1.getExecutionId();
+			
+			jobOp.abandonJobExecution(firstExecutionId);
+			
+			Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
+			Reporter.log("Got Job execution id: " + firstExecutionId + "<p>");
+			
+			jobParams = new Properties();
+			jobParams.put("execution.number", "2");
+			Reporter.log("execution.number=2<p>");
+			
+			Reporter.log("Invoke restartJobWithoutWaitingForResult for execution id: " + firstExecutionId + "<p>");
+						
+			{
+				Reporter.log("Invoke restartJobAndWaitForResult for execution id: " + firstExecutionId + "<p>");
+				
+				boolean seen = false;
+				try {
+					jobOp.restartJobWithoutWaitingForResult(firstExecutionId, jobParams);
+				}
+				catch (JobRestartException jobRestartEx){
+					Reporter.log("Caught JobRestartException as expected<p>");
+					seen = true;
+				}
+				assertWithMessage("Caught JobRestartException for abandon attempt during restart" , seen);
+				
+			}
 
 		} catch (Exception e) {
 			handleException(METHOD, e);

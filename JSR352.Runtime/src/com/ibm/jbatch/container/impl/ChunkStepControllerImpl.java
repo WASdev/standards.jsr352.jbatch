@@ -330,7 +330,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
             throw new BatchContainerRuntimeException(e);
         }
 
-        logger.exiting(sourceClass, "readItem", itemRead);
+        logger.exiting(sourceClass, "readItem", itemRead==null ? "<null>" : itemRead);
         return itemRead;
     }
 
@@ -443,7 +443,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
             throw new BatchContainerRuntimeException(e);
         }
 
-        logger.exiting(sourceClass, "processItem", processedItem);
+        logger.exiting(sourceClass, "processItem", processedItem==null ? "<null>" : processedItem);
         return processedItem;
     }
 

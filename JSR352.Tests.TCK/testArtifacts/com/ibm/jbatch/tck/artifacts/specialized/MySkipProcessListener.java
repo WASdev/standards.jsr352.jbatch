@@ -31,34 +31,34 @@ import com.ibm.jbatch.tck.artifacts.reusable.MyParentException;
 @javax.inject.Named("mySkipProcessListener")
 public class MySkipProcessListener implements SkipProcessListener {
 
-    @Inject
-    JobContext jobCtx;
+	@Inject
+	JobContext jobCtx;
 
-    @Inject
-    StepContext stepCtx;
+	@Inject
+	StepContext stepCtx;
 
-    private final static String sourceClass = MySkipProcessListener.class.getName();
-    private final static Logger logger = Logger.getLogger(sourceClass);
+	private final static String sourceClass = MySkipProcessListener.class.getName();
+	private final static Logger logger = Logger.getLogger(sourceClass);
 
-    public static final String GOOD_EXIT_STATUS = "MySkipProcessListener: GOOD STATUS, GOOD OBJ PASSED";
-    public static final String BAD_EXIT_STATUS = "MySkipProcessListener: BAD STATUS";
+	public static final String GOOD_EXIT_STATUS = "MySkipProcessListener: GOOD STATUS, GOOD OBJ PASSED";
+	public static final String BAD_EXIT_STATUS = "MySkipProcessListener: BAD STATUS";
 
-    @Override
-    public void onSkipProcessItem(Object item, Exception e) {
-        Reporter.log("In onSkipProcessItem()" + e + "<p>");
+	@Override
+	public void onSkipProcessItem(Object item, Exception e) {
+		Reporter.log("In onSkipProcessItem()" + e + "<p>");
 
-        ReadRecord input = (ReadRecord)item;
-        
+		ReadRecord input = (ReadRecord)item;
+
 		if (item != null){
 			logger.finer("In onSkipProcessItem(), item count = " + input.getCount());
-        
-        if (e instanceof MyParentException) {
-        	Reporter.log("SKIPLISTENER: onSkipProcessItem, exception is an instance of: MyParentException<p>");
-            jobCtx.setExitStatus(GOOD_EXIT_STATUS);
-        } else {
-        	Reporter.log("SKIPLISTENER: onSkipProcessItem, exception is NOT an instance of: MyParentException<p>");
-            jobCtx.setExitStatus(BAD_EXIT_STATUS);
-        }
+
+			if (e instanceof MyParentException) {
+				Reporter.log("SKIPLISTENER: onSkipProcessItem, exception is an instance of: MyParentException<p>");
+				jobCtx.setExitStatus(GOOD_EXIT_STATUS);
+			} else {
+				Reporter.log("SKIPLISTENER: onSkipProcessItem, exception is NOT an instance of: MyParentException<p>");
+				jobCtx.setExitStatus(BAD_EXIT_STATUS);
+			}
 		}
-    }
+	}
 }

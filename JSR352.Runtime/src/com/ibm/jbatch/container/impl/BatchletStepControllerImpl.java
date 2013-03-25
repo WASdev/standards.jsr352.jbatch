@@ -79,7 +79,7 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 			logger.fine("Set process() return value = " + processRetVal + " for possible use as exitStatus");
 			stepContext.setBatchletProcessRetVal(processRetVal);
 
-			logger.exiting(sourceClass, sourceMethod, exitStatus);
+			logger.exiting(sourceClass, sourceMethod, exitStatus==null ? "<null>" : exitStatus);
 		}
 	}
 

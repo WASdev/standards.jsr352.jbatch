@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.container.services.impl;
 
 import java.io.ByteArrayInputStream;
@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.Metric;
@@ -55,6 +56,7 @@ import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.exception.PersistenceException;
+import com.ibm.jbatch.container.impl.PartitionedStepBuilder;
 import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.container.jobinstance.JobOperatorJobExecutionImpl;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
@@ -76,54 +78,54 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 	private IBatchConfig batchConfig = null;
 
-    protected DataSource dataSource = null;
-    protected String jndiName = null;
-    
+	protected DataSource dataSource = null;
+	protected String jndiName = null;
+
 	protected String driver = ""; 
 	protected String schema = "";
 	protected String url = ""; 
 	protected String userId = "";
 	protected String pwd = "";
-	
+
 	/* (non-Javadoc)
 	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#init(com.ibm.jbatch.container.IBatchConfig)
 	 */
 	@Override
 	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
 		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
-		
+
 		this.batchConfig = batchConfig;
-		
+
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
-		
+
 		if (!batchConfig.isJ2seMode()) {
 			jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-			
+
 			logger.config("JNDI name = " + jndiName);
-			
+
 			if (jndiName == null || jndiName.equals("")) {
 				throw new BatchContainerServiceException("JNDI name is not defined.");
 			}
-			
+
 			try {
 				Context ctx = new InitialContext();
 				dataSource = (DataSource) ctx.lookup(jndiName);
-				
+
 			} catch (NamingException e) {
 				logger.severe("Lookup failed for JNDI name: " + jndiName + 
 						".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
 				throw new BatchContainerServiceException(e);
 			}
-			
+
 		} else {
 			driver = batchConfig.getDatabaseConfigurationBean().getJdbcDriver();
 			url = batchConfig.getDatabaseConfigurationBean().getJdbcUrl();
 			userId = batchConfig.getDatabaseConfigurationBean().getDbUser();
 			pwd = batchConfig.getDatabaseConfigurationBean().getDbPassword();
-			
+
 			logger.config("driver: " + driver + ", url: " + url);
 		}
-		
+
 		try {
 			// only auto-create on Derby
 			if(isDerby()) {	
@@ -136,10 +138,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			logger.severe(e.getLocalizedMessage());
 			throw new BatchContainerServiceException(e);
 		}
-		
+
 		logger.config("Exiting CLASSNAME.init()");
 	}
-	
+
 	/**
 	 * Checks if the default schema JBATCH or the schema defined in batch-config exists.
 	 * 
@@ -162,7 +164,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.exiting(CLASSNAME, "isSchemaValid", false);
 		return false;
 	}
-	
+
 	private boolean isDerby() throws SQLException {
 		logger.entering(CLASSNAME, "isDerby");
 		Connection conn = getConnectionToDefaultSchema();
@@ -171,7 +173,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.exiting(CLASSNAME, "isDerby", derby);
 		return derby;
 	}
-	
+
 	/**
 	 * Creates the default schema JBATCH or the schema defined in batch-config.
 	 * 
@@ -185,11 +187,11 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		PreparedStatement ps = null;
 		ps = conn.prepareStatement("CREATE SCHEMA " + schema);
 		ps.execute();
-	      
-	    cleanupConnection(conn, null, ps);
-	    logger.exiting(CLASSNAME, "createSchema");
+
+		cleanupConnection(conn, null, ps);
+		logger.exiting(CLASSNAME, "createSchema");
 	}
-	
+
 	/**
 	 * Checks if all the runtime batch table exists. If not, it creates them.
 	 *  
@@ -197,7 +199,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private void checkAllTables() throws SQLException {
 		logger.entering(CLASSNAME, "checkAllTables");
-		
+
 		createIfNotExists(CHECKPOINTDATA_TABLE, CREATE_TAB_CHECKPOINTDATA);
 		executeStatement(CREATE_CHECKPOINTDATA_INDEX);
 		createIfNotExists(JOBINSTANCEDATA_TABLE, CREATE_TAB_JOBINSTANCEDATA);
@@ -206,13 +208,13 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				CREATE_TAB_EXECUTIONINSTANCEDATA);
 		createIfNotExists(STEPEXECUTIONINSTANCEDATA_TABLE,
 				CREATE_TAB_STEPEXECUTIONINSTANCEDATA);
-		
+
 		createIfNotExists(JOBSTATUS_TABLE, CREATE_TAB_JOBSTATUS);
 		createIfNotExists(STEPSTATUS_TABLE, CREATE_TAB_STEPSTATUS);	
-		
+
 		logger.exiting(CLASSNAME, "checkAllTables");
 	}
-	
+
 	/**
 	 * Creates tableName using the createTableStatement DDL.
 	 * 
@@ -222,7 +224,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private void createIfNotExists(String tableName, String createTableStatement) throws SQLException {
 		logger.entering(CLASSNAME, "createIfNotExists", new Object[] {tableName, createTableStatement});
-		
+
 		Connection conn = getConnection();
 		DatabaseMetaData dbmd = conn.getMetaData();
 		ResultSet rs = dbmd.getTables(null, schema, tableName, null);
@@ -232,11 +234,11 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			ps = conn.prepareStatement(createTableStatement);
 			ps.executeUpdate();
 		}
-	      
-	    cleanupConnection(conn, rs, ps);
-	    logger.exiting(CLASSNAME, "createIfNotExists");
+
+		cleanupConnection(conn, rs, ps);
+		logger.exiting(CLASSNAME, "createIfNotExists");
 	}
-	
+
 	/**
 	 * Executes the provided SQL statement
 	 * 
@@ -245,19 +247,19 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private void executeStatement(String statement) throws SQLException {
 		logger.entering(CLASSNAME, "executeStatement", statement);
-		
+
 		Connection conn = getConnection();
 		PreparedStatement ps = null;
-		
+
 		ps = conn.prepareStatement(statement);
 		ps.executeUpdate();
-	      
-	    cleanupConnection(conn, ps);
-	    logger.exiting(CLASSNAME, "executeStatement");
+
+		cleanupConnection(conn, ps);
+		logger.exiting(CLASSNAME, "executeStatement");
 	}
 
-	
-    /* (non-Javadoc)
+
+	/* (non-Javadoc)
 	 * @see com.ibm.jbatch.container.services.impl.AbstractPersistenceManagerImpl#createCheckpointData(com.ibm.ws.batch.container.checkpoint.CheckpointDataKey, com.ibm.ws.batch.container.checkpoint.CheckpointData)
 	 */
 	@Override
@@ -272,9 +274,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	@Override
 	public CheckpointData getCheckpointData(CheckpointDataKey key) {
-		logger.entering(CLASSNAME, "getCheckpointData", key);
+		logger.entering(CLASSNAME, "getCheckpointData", key==null ? "<null>" : key);
 		CheckpointData checkpointData = queryCheckpointData(key.getCommaSeparatedKey());
-		logger.exiting(CLASSNAME, "getCheckpointData", checkpointData);
+		logger.exiting(CLASSNAME, "getCheckpointData", checkpointData==null ? "<null>" : checkpointData);
 		return checkpointData;
 	}
 
@@ -288,11 +290,11 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		if(data != null) {
 			updateCheckpointData(key.getCommaSeparatedKey(), value);
 		} else {
-		    createCheckpointData(key, value);
+			createCheckpointData(key, value);
 		}
 		logger.exiting(CLASSNAME, "updateCheckpointData");
 	}
-	
+
 
 	/**
 	 * @return the database connection and sets it to the default schema JBATCH or the schema defined in batch-config.
@@ -302,7 +304,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	protected Connection getConnection() throws SQLException {
 		logger.finest("Entering: " + CLASSNAME + ".getConnection");
 		Connection connection = null;
-		
+
 		if(!batchConfig.isJ2seMode()) {
 			logger.finest("J2EE mode, getting connection from data source");
 			connection = dataSource.getConnection();
@@ -318,11 +320,11 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			logger.finest("autocommit="+connection.getAutoCommit());
 		}
 		setSchemaOnConnection(connection);
-		
+
 		logger.finest("Exiting: " + CLASSNAME + ".getConnection() with conn =" + connection);
-        return connection;
+		return connection;
 	}
-	
+
 	/**
 	 * @return the database connection. The schema is set to whatever default its used by the underlying database.
 	 * @throws SQLException
@@ -330,7 +332,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	protected Connection getConnectionToDefaultSchema() throws SQLException {
 		logger.finest("Entering getConnectionToDefaultSchema");
 		Connection connection = null;
-		
+
 		if(!batchConfig.isJ2seMode()) {
 			logger.finest("J2EE mode, getting connection from data source");
 			try {
@@ -359,15 +361,15 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.finest("Exiting from getConnectionToDefaultSchema, conn= " +connection);
 		return connection;
 	}
-	
+
 	private void logException(String msg, Exception e) {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		e.printStackTrace(pw);
-		
+
 		logger.log(Level.SEVERE, msg +  "; Exception stack trace: " + sw);
 	}
-	
+
 	/**
 	 * Set the default schema JBATCH or the schema defined in batch-config on the connection object.
 	 * 
@@ -376,17 +378,17 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private void setSchemaOnConnection(Connection connection) throws SQLException {
 		logger.finest("Entering " + CLASSNAME +".setSchemaOnConnection()");
-		
+
 		PreparedStatement ps = null;
 		ps = connection.prepareStatement("SET SCHEMA ?");
 		ps.setString(1, schema);
 		ps.executeUpdate(); 
-		
+
 		ps.close();
-	    
+
 		logger.finest("Exiting " + CLASSNAME +".setSchemaOnConnection()");
 	}
-	
+
 	/**
 	 * select data from DB table
 	 * 
@@ -430,8 +432,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.exiting(CLASSNAME, "queryCheckpointData");
 		return data;	
 	}
-	
-	
+
+
 	/**
 	 * insert data to DB table
 	 * 
@@ -482,7 +484,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		logger.exiting(CLASSNAME, "insertCheckpointData");
 	}
-	
+
 	/**
 	 * update data in DB table
 	 * 
@@ -534,7 +536,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		logger.exiting(CLASSNAME, "updateCheckpointData");
 	}
-	
+
 	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts) {
 		Connection conn = null;
 		PreparedStatement statement = null;
@@ -542,7 +544,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("update executioninstancedata set " + timestampToUpdate + " = ? where jobexecid = ?");
-			
+
 			statement.setTimestamp(1, ts);	
 			statement.setObject(2, key);
 			statement.executeUpdate();
@@ -552,7 +554,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			cleanupConnection(conn, null, statement);
 		}
 	}
-	
+
 	public void jobExecutionStatusStringUpdate(long key, String statusToUpdate, String statusString, Timestamp updatets) {
 		Connection conn = null;
 		PreparedStatement statement = null;
@@ -563,7 +565,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("update executioninstancedata set " + statusToUpdate + " = ?, updatetime = ? where jobexecid = ?");
-			
+
 
 			statement.setString(1, statusString);
 			statement.setTimestamp(2, updatets);
@@ -590,7 +592,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			cleanupConnection(conn, null, statement);
 		}
 	}
-	
+
 
 	/**
 	 * closes connection, result set and statement
@@ -601,8 +603,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private void cleanupConnection(Connection conn, ResultSet rs, PreparedStatement statement) {
 
-		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Entering",  new Object[] {conn, rs, statement});
-		
+		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Entering",  new Object[] {conn, rs==null ? "<null>" : rs, statement==null ? "<null>" : statement});
+
 		if (statement != null) {
 			try {
 				statement.close();
@@ -618,7 +620,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				throw new PersistenceException(e);
 			}
 		}
-		
+
 		if (conn != null) {
 			try {
 				conn.close();
@@ -634,7 +636,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Exiting");
 	}
-	
+
 	/**
 	 * closes connection and statement
 	 * 
@@ -644,7 +646,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	private void cleanupConnection(Connection conn, PreparedStatement statement) {
 
 		logger.logp(Level.FINEST, CLASSNAME, "cleanupConnection", "Entering",  new Object[] {conn, statement});
-		
+
 		if (statement != null) {
 			try {
 				statement.close();
@@ -652,7 +654,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				throw new PersistenceException(e);
 			}
 		}
-		
+
 		if (conn != null) {
 			try {
 				conn.close();
@@ -672,12 +674,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 	@Override
 	public int jobOperatorGetJobInstanceCount(String jobName) {
-		
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		int count;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_COUNT);
@@ -685,10 +687,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			rs = statement.executeQuery();
 			rs.next();
 			count = rs.getInt("jobinstancecount");
-			
+
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-	}
+		}
 		finally {
 			cleanupConnection(conn, rs, statement);
 		}
@@ -704,7 +706,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		List<Long> data = new ArrayList<Long>();
-	
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_IDS);
@@ -720,7 +722,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		finally {
 			cleanupConnection(conn, rs, statement);
 		}
-	
+
 		if (data.size() > 0){
 			try {
 				return data.subList(start, start+count);
@@ -731,18 +733,22 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		else return data;
 	}
-	
+
 	@Override
-	public Map<Long, String> jobOperatorGetJobInstanceData() {
+	public Map<Long, String> jobOperatorGetExternalJobInstanceData() {
 
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		HashMap<Long, String> data = new HashMap<Long,String>();
-	
+
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select distinct jobinstanceid, name from jobinstancedata");
+			
+			// Filter out 'subjob' parallel execution entries which start with the special character
+			final String filter = "not like '" + PartitionedStepBuilder.JOB_ID_SEPARATOR + "%'";
+					
+			statement = conn.prepareStatement("select distinct jobinstanceid, name from jobinstancedata where name " + filter );
 			rs = statement.executeQuery();
 			while (rs.next()) {
 				long id = rs.getLong("jobinstanceid");
@@ -755,18 +761,18 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		finally {
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return data;
 	}
 
 
 	public Timestamp jobOperatorQueryJobExecutionTimestamp(long key, String requestedTimestamp){
-		
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		Timestamp timestamp = null;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select " + requestedTimestamp + " from executioninstancedata where jobexecid = ?");
@@ -781,18 +787,18 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		finally {
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return timestamp;
 	}
-	
+
 	// Get Batch or Exit Status
 	public String jobOperatorQueryJobExecutionStatus(long key, String requestedStatus){
-		
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		String status = null;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select " + requestedStatus + " from executioninstancedata where jobexecid = ?");
@@ -800,30 +806,34 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			rs = statement.executeQuery();
 			while (rs.next()) {
 				status = rs.getString(requestedStatus);
-				}
+			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
 		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return status;
 	}
-	
-	public long jobOperatorQueryJobExecutionJobInstanceId(long executionID){
-		
+
+	public long jobOperatorQueryJobExecutionJobInstanceId(long executionID) throws NoSuchJobExecutionException {
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		long jobinstanceID = 0;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select jobinstanceid from executioninstancedata where jobexecid = ?");
 			statement.setLong(1, executionID);
 			rs = statement.executeQuery();
-			while (rs.next()) {
+			if (rs.next()) {
 				jobinstanceID = rs.getLong("jobinstanceid");
+			} else {
+				String msg = "Did not find job instance associated with executionID =" + executionID;
+				logger.fine(msg);
+				throw new NoSuchJobExecutionException(msg);
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
@@ -831,7 +841,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		finally {
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return jobinstanceID;
 	}
 
@@ -842,14 +852,14 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		ResultSet rs = null;
 		Properties props = null;
 		ObjectInputStream objectIn = null;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select parameters from executioninstancedata where jobexecid = ?"); 
 			statement.setLong(1, executionId);
 			rs = statement.executeQuery();
 			while (rs.next()) {
-				
+
 				// get the object based data
 				byte[] buf = rs.getBytes("parameters");
 				if (buf != null) {
@@ -873,9 +883,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return props;
-		
+
 	}
 
 
@@ -884,8 +894,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		
-		
+
+
 		long jobexecid = 0;
 		long stepexecid = 0;
 		String stepname = null;
@@ -904,10 +914,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Timestamp endTS = null;
 		StepExecutionImpl stepEx = null;
 		ObjectInputStream objectIn = null;
-		
+
 		List<StepExecution> data = new ArrayList<StepExecution>();
-		
-	
+
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select * from stepexecutioninstancedata where jobexecid = ?"); 
@@ -936,9 +946,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 					objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
 					persistentData = (Serializable)objectIn.readObject();
 				}
-				
+
 				stepEx = new StepExecutionImpl(jobexecid, stepexecid);
-				
+
 				stepEx.setBatchStatus(BatchStatus.valueOf(batchstatus));
 				stepEx.setExitStatus(exitstatus);
 				stepEx.setStepName(stepname);
@@ -952,8 +962,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				stepEx.setWriteSkipCount(writeSkipCount);
 				stepEx.setStartTime(startTS);
 				stepEx.setEndTime(endTS);	
-				stepEx.setpersistentUserData(persistentData);
-				
+				stepEx.setPersistentUserData(persistentData);
+
 				data.add(stepEx);
 			}
 		} catch (SQLException e) {
@@ -965,10 +975,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return data;
 	}
-	
+
 	public void jobOperatorUpdateBatchStatusWithUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets) {
 		Connection conn = null;
 		PreparedStatement statement = null;
@@ -979,12 +989,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("update executioninstancedata set " + statusToUpdate + " = ?, updatetime = ?, createtime = ? where jobexecid = ?");
-			
+
 			statement.setString(1, statusString);
 			statement.setTimestamp(2, updatets);
 			statement.setTimestamp(3, updatets);
 			statement.setLong(4, key);
-			
+
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1007,7 +1017,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			cleanupConnection(conn, null, statement);
 		}
 	}
-	
+
 	public void jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets){
 		Connection conn = null;
 		PreparedStatement statement = null;
@@ -1018,12 +1028,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("update executioninstancedata set " + statusToUpdate + " = ?, starttime = ?, updatetime = ? where jobexecid = ?");
-			
+
 			statement.setString(1, statusString);
 			statement.setTimestamp(2, updatets);
 			statement.setTimestamp(3, updatets);
 			statement.setLong(4, key);
-			
+
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -1063,7 +1073,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		JobOperatorJobExecutionImpl jobEx = null;
 		ObjectInputStream objectIn = null;
 		String jobName = null;
-	
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.jobinstanceid, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B on A.jobinstanceid = B.jobinstanceid where jobexecid = ?"); 
@@ -1075,18 +1085,18 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				endtime = rs.getTimestamp("endtime");
 				updatetime = rs.getTimestamp("updatetime");
 				instanceId = rs.getLong("jobinstanceid");
-				
+
 				// get the object based data
 				batchStatus = rs.getString("batchstatus");
 				exitStatus = rs.getString("exitstatus");
-				
+
 				// get the object based data
 				Properties params = null;
 				byte[] buf = rs.getBytes("parameters");
 				params = (Properties)deserializeObject(buf);
-				
+
 				jobName = rs.getString("name");
-				
+
 				jobEx = new JobOperatorJobExecutionImpl(jobExecutionId, instanceId);
 				jobEx.setCreateTime(createtime);
 				jobEx.setStartTime(starttime);
@@ -1115,7 +1125,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		return jobEx;
 	}
-	
+
 	@Override
 	public List<IJobExecution> jobOperatorGetJobExecutions(long jobInstanceId) {
 		Connection conn = null;
@@ -1129,13 +1139,14 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		long instanceId = 0;
 		String batchStatus = null;
 		String exitStatus = null;
+		String jobName = null;
 		List<IJobExecution> data = new ArrayList<IJobExecution>();
 		JobOperatorJobExecutionImpl jobEx = null;
 		ObjectInputStream objectIn = null;
-	
+
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select jobexecid, createtime, starttime, endtime, updatetime, parameters, batchstatus, exitstatus  from executioninstancedata where jobinstanceid = ?"); 
+			statement = conn.prepareStatement("select A.jobexecid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B ON A.jobinstanceid = B.jobinstanceid where A.jobinstanceid = ?"); 
 			statement.setLong(1, jobInstanceId);
 			rs = statement.executeQuery();
 			while (rs.next()) {
@@ -1144,15 +1155,14 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				starttime = rs.getTimestamp("starttime");
 				endtime = rs.getTimestamp("endtime");
 				updatetime = rs.getTimestamp("updatetime");
-				
-				// get the object based data
 				batchStatus = rs.getString("batchstatus");
 				exitStatus = rs.getString("exitstatus");
-				
+				jobName = rs.getString("name");
+
 				// get the object based data
 				byte[] buf = rs.getBytes("parameters");
 				Properties params = (Properties)deserializeObject(buf);
-				
+
 				jobEx = new JobOperatorJobExecutionImpl(jobExecutionId, instanceId);
 				jobEx.setCreateTime(createtime);
 				jobEx.setStartTime(starttime);
@@ -1160,7 +1170,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				jobEx.setLastUpdateTime(updatetime);
 				jobEx.setBatchStatus(batchStatus);
 				jobEx.setExitStatus(exitStatus);
-				
+				jobEx.setJobName(jobName);
+
 				data.add(jobEx);
 			}
 		} catch (SQLException e) {
@@ -1181,14 +1192,14 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		return data;
 	}
-	
+
 	@Override
 	public Set<Long> jobOperatorGetRunningExecutions(String jobName){
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		Set<Long> executionIds = new HashSet<Long>();
-	
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("SELECT A.jobexecid FROM executioninstancedata AS A INNER JOIN jobinstancedata AS B ON A.jobinstanceid = B.jobinstanceid WHERE A.batchstatus IN (?,?) AND B.name = ?"); 
@@ -1207,14 +1218,14 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		return executionIds;		
 	}
-	
+
 	@Override
 	public String getJobCurrentTag(long jobInstanceId) {
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		String apptag = null;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement(SELECT_JOBINSTANCEDATA_APPTAG); 
@@ -1229,13 +1240,13 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return apptag;
 	}
-	
+
 	@Override
 	public void purge(String apptag) {
-		
+
 		logger.entering(CLASSNAME, "purge", apptag);
 		String deleteJobs = "DELETE FROM jobinstancedata WHERE apptag = ?";
 		String deleteJobExecutions = "DELETE FROM executioninstancedata " 
@@ -1249,7 +1260,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				+ "ON A.jobinstanceid = B.jobinstanceid INNER JOIN stepexecutioninstancedata AS C "
 				+ "ON B.jobexecid = C.jobexecid "
 				+ "WHERE A.apptag = ?)";
-		
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		try {
@@ -1257,11 +1268,11 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			statement = conn.prepareStatement(deleteStepExecutions);
 			statement.setString(1, apptag);
 			statement.executeUpdate();
-			
+
 			statement = conn.prepareStatement(deleteJobExecutions);
 			statement.setString(1, apptag);
 			statement.executeUpdate();
-			
+
 			statement = conn.prepareStatement(deleteJobs);
 			statement.setString(1, apptag);
 			statement.executeUpdate();
@@ -1273,21 +1284,21 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			cleanupConnection(conn, null, statement);
 		}
 		logger.exiting(CLASSNAME, "purge");
-		
+
 	}
 
 	@Override
 	public JobStatus getJobStatusFromExecution(long executionId) {
-		
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		JobStatus retVal = null;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select A.obj from jobstatus as A inner join " + 
-											"executioninstancedata as B on A.id = B.jobinstanceid where B.jobexecid = ?");
+					"executioninstancedata as B on A.id = B.jobinstanceid where B.jobexecid = ?");
 			statement.setLong(1, executionId);
 			rs = statement.executeQuery();
 			byte[] buf = null;
@@ -1303,28 +1314,32 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.exiting(CLASSNAME, "executeQuery");
 		return retVal;	
 	}
-	
-	public long getJobInstanceIdByExecutionId(long executionId){
+
+	public long getJobInstanceIdByExecutionId(long executionId) throws NoSuchJobExecutionException {
 		long instanceId= 0;
-		
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select jobinstanceid from executioninstancedata where jobexecid = ?");
 			statement.setObject(1, executionId);
 			rs = statement.executeQuery();
-			while (rs.next()) {
+			if (rs.next()) {
 				instanceId = rs.getLong("jobinstanceid");
+			} else {
+				String msg = "Did not find job instance associated with executionID =" + executionId;
+				logger.fine(msg);
+				throw new NoSuchJobExecutionException(msg);
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
 		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
-		
+
 		return instanceId;
 	}
 
@@ -1372,12 +1387,42 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#createJobInstance(java.lang.String, java.lang.String, java.lang.String, java.util.Properties)
 	 */
 	@Override
-	public JobInstance createJobInstance(String name, String apptag, String jobXml, Properties jobParameters) {
+	public JobInstance createSubJobInstance(String name, String apptag) {
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		JobInstanceImpl jobInstance = null;
-		
+
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement("INSERT INTO jobinstancedata (name, apptag) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
+			statement.setString(1, name);
+			statement.setString(2, apptag); 
+			statement.executeUpdate();
+			rs = statement.getGeneratedKeys();
+			if(rs.next()) {
+				long jobInstanceID = rs.getLong(1);
+				jobInstance = new JobInstanceImpl(jobInstanceID);
+				jobInstance.setJobName(name);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		return jobInstance;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#createJobInstance(java.lang.String, java.lang.String, java.lang.String, java.util.Properties)
+	 */
+	@Override
+	public JobInstance createJobInstance(String name, String apptag, String jobXml) {
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		JobInstanceImpl jobInstance = null;
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("INSERT INTO jobinstancedata (name, apptag) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -1387,7 +1432,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			rs = statement.getGeneratedKeys();
 			if(rs.next()) {
 				long jobInstanceID = rs.getLong(1);
-				jobInstance = new JobInstanceImpl(jobXml, jobParameters, jobInstanceID);
+				jobInstance = new JobInstanceImpl(jobInstanceID, jobXml);
 				jobInstance.setJobName(name);
 			}
 		} catch (SQLException e) {
@@ -1399,7 +1444,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	}
 
 	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#createJobExecution(com.ibm.jbatch.container.jsl.Navigator, javax.batch.runtime.JobInstance, java.util.Properties, com.ibm.jbatch.container.context.impl.JobContextImpl)
+	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#createJobExecution(com.ibm.jbatch.container.jsl.JobNavigator, javax.batch.runtime.JobInstance, java.util.Properties, com.ibm.jbatch.container.context.impl.JobContextImpl)
 	 */
 	@Override
 	public RuntimeJobContextJobExecutionBridge createJobExecution(JobInstance jobInstance, Properties jobParameters, BatchStatus batchStatus) {
@@ -1444,18 +1489,18 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
 		String exitStatus = stepContext.getExitStatus();
 		String stepName = stepContext.getStepName();
-		
-    	long readCount = 0;
-    	long writeCount = 0;
-    	long commitCount = 0;
-    	long rollbackCount = 0;
-    	long readSkipCount = 0;
-    	long processSkipCount = 0;
-    	long filterCount = 0;
-    	long writeSkipCount = 0;
-    	Timestamp startTime = stepContext.getStartTimeTS();
-    	Timestamp endTime = stepContext.getEndTimeTS();
-    	
+
+		long readCount = 0;
+		long writeCount = 0;
+		long commitCount = 0;
+		long rollbackCount = 0;
+		long readSkipCount = 0;
+		long processSkipCount = 0;
+		long filterCount = 0;
+		long writeSkipCount = 0;
+		Timestamp startTime = stepContext.getStartTimeTS();
+		Timestamp endTime = stepContext.getEndTimeTS();
+
 		Metric[] metrics = stepContext.getMetrics();
 		for (int i = 0; i < metrics.length; i++) {
 			if (metrics[i].getType().equals(MetricImpl.MetricType.READ_COUNT)) {
@@ -1479,28 +1524,28 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Serializable persistentData = stepContext.getPersistentUserData();
 
 		stepExecution = createStepExecution(rootJobExecId, batchStatus, exitStatus, stepName, readCount, 
-			writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime,
-			endTime, persistentData);
+				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime,
+				endTime, persistentData);
 
 		return stepExecution;
 	}
 
 
 	private StepExecutionImpl createStepExecution(long rootJobExecId,  String batchStatus, String exitStatus, String stepName, long readCount, 
-		long writeCount, long commitCount, long rollbackCount, long readSkipCount, long processSkipCount, long filterCount,
-		long writeSkipCount, Timestamp startTime, Timestamp endTime, Serializable persistentData) {
+			long writeCount, long commitCount, long rollbackCount, long readSkipCount, long processSkipCount, long filterCount,
+			long writeSkipCount, Timestamp startTime, Timestamp endTime, Serializable persistentData) {
 
-		logger.entering(CLASSNAME, "createStepExecution", new Object[] {rootJobExecId, batchStatus, exitStatus, stepName, readCount, 
-			writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime,
-			endTime, persistentData});
+		logger.entering(CLASSNAME, "createStepExecution", new Object[] {rootJobExecId, batchStatus, exitStatus==null ? "<null>" : exitStatus, stepName, readCount, 
+				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime == null ? "<null>" : startTime,
+				endTime==null ? "<null>" :endTime , persistentData==null ? "<null>" : persistentData});
 
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		StepExecutionImpl stepExecution = null;
 		String query = "INSERT INTO stepexecutioninstancedata (jobexecid, batchstatus, exitstatus, stepname, readcount," 
-			+ "writecount, commitcount, rollbackcount, readskipcount, processskipcount, filtercount, writeskipcount, starttime,"
-			+ "endtime, persistentdata) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "writecount, commitcount, rollbackcount, readskipcount, processskipcount, filtercount, writeskipcount, starttime,"
+				+ "endtime, persistentdata) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		try {
 			conn = getConnection();
@@ -1517,16 +1562,16 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			statement.setLong(10, processSkipCount);
 			statement.setLong(11, filterCount);
 			statement.setLong(12, writeSkipCount);
-            statement.setTimestamp(13, startTime);
-            statement.setTimestamp(14, endTime);
+			statement.setTimestamp(13, startTime);
+			statement.setTimestamp(14, endTime);
 			statement.setObject(15, serializeObject(persistentData));
-            
+
 			statement.executeUpdate();
 			rs = statement.getGeneratedKeys();
 			if(rs.next()) {
 				long stepExecutionId = rs.getLong(1);
 				stepExecution = new StepExecutionImpl(rootJobExecId, stepExecutionId);
-        		stepExecution.setStepName(stepName);
+				stepExecution.setStepName(stepName);
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
@@ -1549,18 +1594,18 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
 		String exitStatus = stepContext.getExitStatus();
 		String stepName = stepContext.getStepName();
-		
-    	long readCount = 0;
-    	long writeCount = 0;
-    	long commitCount = 0;
-    	long rollbackCount = 0;
-    	long readSkipCount = 0;
-    	long processSkipCount = 0;
-    	long filterCount = 0;
-    	long writeSkipCount = 0;
-    	Timestamp startTime = stepContext.getStartTimeTS();
-    	Timestamp endTime = stepContext.getEndTimeTS();
-    	
+
+		long readCount = 0;
+		long writeCount = 0;
+		long commitCount = 0;
+		long rollbackCount = 0;
+		long readSkipCount = 0;
+		long processSkipCount = 0;
+		long filterCount = 0;
+		long writeSkipCount = 0;
+		Timestamp startTime = stepContext.getStartTimeTS();
+		Timestamp endTime = stepContext.getEndTimeTS();
+
 		Metric[] metrics = stepContext.getMetrics();
 		for (int i = 0; i < metrics.length; i++) {
 			if (metrics[i].getType().equals(MetricImpl.MetricType.READ_COUNT)) {
@@ -1584,27 +1629,27 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Serializable persistentData = stepContext.getPersistentUserData();
 
 		updateStepExecution(stepExecutionId, rootJobExecId, batchStatus, exitStatus, stepName, readCount, 
-			writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, 
-			writeSkipCount, startTime, endTime, persistentData);
+				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, 
+				writeSkipCount, startTime, endTime, persistentData);
 
 	}
-	
+
 
 	private void updateStepExecution(long stepExecutionId, long jobExecId,  String batchStatus, String exitStatus, String stepName, long readCount, 
-		long writeCount, long commitCount, long rollbackCount, long readSkipCount, long processSkipCount, long filterCount,
-		long writeSkipCount, Timestamp startTime, Timestamp endTime, Serializable persistentData) {
+			long writeCount, long commitCount, long rollbackCount, long readSkipCount, long processSkipCount, long filterCount,
+			long writeSkipCount, Timestamp startTime, Timestamp endTime, Serializable persistentData) {
 
-		logger.entering(CLASSNAME, "updateStepExecution", new Object[] {stepExecutionId, jobExecId, batchStatus, exitStatus, stepName, readCount, 
-			writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime,
-			endTime, persistentData});
+		logger.entering(CLASSNAME, "updateStepExecution", new Object[] {stepExecutionId, jobExecId, batchStatus, exitStatus==null ? "<null>" : exitStatus, stepName, readCount, 
+				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime==null ? "<null>" : startTime,
+				endTime==null ? "<null>" : endTime, persistentData==null ? "<null>" : persistentData});
 
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		StepExecutionImpl stepExecution = null;
 		String query = "UPDATE stepexecutioninstancedata SET jobexecid = ?, batchstatus = ?, exitstatus = ?, stepname = ?,  readcount = ?," 
-			+ "writecount = ?, commitcount = ?, rollbackcount = ?, readskipcount = ?, processskipcount = ?, filtercount = ?, writeskipcount = ?,"
-			+ " starttime = ?, endtime = ?, persistentdata = ? WHERE stepexecid = ?";
+				+ "writecount = ?, commitcount = ?, rollbackcount = ?, readskipcount = ?, processskipcount = ?, filtercount = ?, writeskipcount = ?,"
+				+ " starttime = ?, endtime = ?, persistentdata = ? WHERE stepexecid = ?";
 
 		try {
 			conn = getConnection();
@@ -1621,10 +1666,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			statement.setLong(10, processSkipCount);
 			statement.setLong(11, filterCount);
 			statement.setLong(12, writeSkipCount);
-            statement.setTimestamp(13, startTime);
-            statement.setTimestamp(14, endTime);
+			statement.setTimestamp(13, startTime);
+			statement.setTimestamp(14, endTime);
 			statement.setObject(15, serializeObject(persistentData));
-          	statement.setLong(16, stepExecutionId); 
+			statement.setLong(16, stepExecutionId); 
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
@@ -1652,7 +1697,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			statement.setLong(1, jobInstanceId);
 			statement.setBytes(2, serializeObject(jobStatus));
 			statement.executeUpdate();
-			
+
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
 		} catch (IOException e) {
@@ -1669,7 +1714,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	@Override
 	public JobStatus getJobStatus(long instanceId) {
-    	logger.entering(CLASSNAME, "getJobStatus", instanceId);
+		logger.entering(CLASSNAME, "getJobStatus", instanceId);
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
@@ -1694,16 +1739,16 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
-    	logger.exiting(CLASSNAME, "getJobStatus", jobStatus);
+		logger.exiting(CLASSNAME, "getJobStatus", jobStatus);
 		return jobStatus;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#updateJobStatus(long, com.ibm.jbatch.container.status.JobStatus)
 	 */
 	@Override
 	public void updateJobStatus(long instanceId, JobStatus jobStatus) {
-    	logger.entering(CLASSNAME, "updateJobStatus", new Object[] {instanceId, jobStatus});
+		logger.entering(CLASSNAME, "updateJobStatus", new Object[] {instanceId, jobStatus});
 		Connection conn = null;
 		PreparedStatement statement = null;
 		try {
@@ -1753,14 +1798,14 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	@Override
 	public StepStatus getStepStatus(long instanceId, String stepName) {
-    	logger.entering(CLASSNAME, "getStepStatus", new Object[] {instanceId, stepName});
+		logger.entering(CLASSNAME, "getStepStatus", new Object[] {instanceId, stepName});
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
 		RuntimeJobContextJobExecutionBridge jobExecution = null;
 		String query = "SELECT obj FROM stepstatus WHERE id IN ("
-			+ "SELECT B.stepexecid FROM executioninstancedata A INNER JOIN stepexecutioninstancedata B ON A.jobexecid = B.jobexecid " 
-			+ "WHERE A.jobinstanceid = ? and B.stepname = ?)";
+				+ "SELECT B.stepexecid FROM executioninstancedata A INNER JOIN stepexecutioninstancedata B ON A.jobexecid = B.jobexecid " 
+				+ "WHERE A.jobinstanceid = ? and B.stepname = ?)";
 		StepStatus stepStatus = null;
 
 		try {
@@ -1781,7 +1826,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
-    	logger.exiting(CLASSNAME, "getStepStatus", stepStatus);
+		logger.exiting(CLASSNAME, "getStepStatus", stepStatus==null ? "<null>" : stepStatus);
 		return stepStatus;
 	}
 
@@ -1790,7 +1835,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	@Override
 	public void updateStepStatus(long stepExecutionId, StepStatus stepStatus) {
-    	logger.entering(CLASSNAME, "updateStepStatus", new Object[] {stepExecutionId, stepStatus});
+		logger.entering(CLASSNAME, "updateStepStatus", new Object[] {stepExecutionId, stepStatus});
 		Connection conn = null;
 		PreparedStatement statement = null;
 		try {
@@ -1808,7 +1853,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		logger.exiting(CLASSNAME, "updateStepStatus");
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#getTagName(long)
 	 */
@@ -1838,36 +1883,36 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		return apptag;
 	}
 
-    @Override
-    public long getMostRecentExecutionId(long jobInstanceId) {
-    	logger.entering(CLASSNAME, "getMostRecentExecutionId", jobInstanceId);
-    	long mostRecentId = -1;
-    	Connection conn = null;
-    	PreparedStatement statement = null;
-    	ResultSet rs = null;
-    	String query = "SELECT jobexecid FROM executioninstancedata WHERE jobinstanceid = ? ORDER BY createtime DESC";
+	@Override
+	public long getMostRecentExecutionId(long jobInstanceId) {
+		logger.entering(CLASSNAME, "getMostRecentExecutionId", jobInstanceId);
+		long mostRecentId = -1;
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		String query = "SELECT jobexecid FROM executioninstancedata WHERE jobinstanceid = ? ORDER BY createtime DESC";
 
-	try {
-	 	conn = getConnection();
-	    	statement = conn.prepareStatement(query);
-	    	statement.setLong(1, jobInstanceId);
-	    	rs = statement.executeQuery();
-	    	if(rs.next()) {
-			mostRecentId = rs.getLong(1);
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement(query);
+			statement.setLong(1, jobInstanceId);
+			rs = statement.executeQuery();
+			if(rs.next()) {
+				mostRecentId = rs.getLong(1);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
 		}
-	} catch (SQLException e) {
-		throw new PersistenceException(e);
-	} finally {
-		cleanupConnection(conn, rs, statement);
+		logger.exiting(CLASSNAME, "getMostRecentExecutionId");
+		return mostRecentId;
 	}
-	logger.exiting(CLASSNAME, "getMostRecentExecutionId");
-    	return mostRecentId;
-    }
-    
-    @Override
-    public void shutdown() throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
 
-    }
+	@Override
+	public void shutdown() throws BatchContainerServiceException {
+		// TODO Auto-generated method stub
+
+	}
 
 }

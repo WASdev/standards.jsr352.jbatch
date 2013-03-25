@@ -57,8 +57,6 @@ public class MySkipWriteListener implements SkipWriteListener {
     			logger.finer("In onSkipProcessItem(), item count = " + input.getCount());
     			inputOK = true;
     		}
-    		
-    		
         }
 
         if (e instanceof MyParentException && inputOK) {

@@ -39,7 +39,7 @@ public class FlowPropertyResolverImpl extends AbstractPropertyResolver<Flow>  {
     	flow.setId(this.replaceAllProperties(flow.getId(), submittedProps, parentProps));
     	flow.setNextFromAttribute(this.replaceAllProperties(flow.getNextFromAttribute(), submittedProps, parentProps));
     	
-        Properties currentProps = null;
+    	Properties currentProps = parentProps;
 
         for (final ExecutionElement next : flow.getExecutionElements()) {
             if (next instanceof Step) {

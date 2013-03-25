@@ -48,7 +48,7 @@ public class PartitionPlanPropertyResolverImpl extends
 		partitionPlan.setThreads(this.replaceAllProperties(partitionPlan.getThreads(), submittedProps, parentProps));
 		
         // Resolve all the properties defined for this step
-        Properties currentProps = null;
+		Properties currentProps = parentProps;
         if (partitionPlan.getProperties() != null) {
         	
         	List<JSLProperties> jslProps = partitionPlan.getProperties();

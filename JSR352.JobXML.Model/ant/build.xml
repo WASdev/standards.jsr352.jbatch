@@ -38,7 +38,7 @@
 	     Though it seems like there is a way to do this   
 	       http://confluence.highsource.org/display/J2B/Inheritance+plugin
 	     I'm not sure if the IBM JDK version of the JAXB RI is extensible in this way, and don't want to create a 
-	     headache if/when this code is pulled into a WAS build.
+	     headache if/when this code is pulled into a build.
 	     
 	     (Even so, there's no requirement to gen during build time, but still...)
 	     
@@ -68,7 +68,7 @@
 	     Though it seems like there is a way to do this   
 	       http://confluence.highsource.org/display/J2B/Inheritance+plugin
 	     I'm not sure if the IBM JDK version of the JAXB RI is extensible in this way, and don't want to create a 
-	     headache if/when this code is pulled into a WAS build.
+	     headache if/when this code is pulled into a build.
 	     
 	     (Even so, there's no requirement to gen during build time, but still...)
 	     
@@ -93,9 +93,9 @@
 	</target>
 
 	<target name="addInterfaces" depends="AddExecutionElement.Intf.ToJAXBs, AddTransitionElement.Intf.ToJAXBs"/>
-	<target name="generate" depends="generateJAXB, addInterfaces, addToStrings"/>
+	<target name="generate" depends="generateJAXB, addInterfaces, addExtraCodes"/>
 	
-	<macrodef name="appendToString">
+	<macrodef name="appendExtraCode">
 	  <attribute name="class"/>
 	  <sequential>
 		 <concat destfile="${generate.dir}/@{class}.java.tmp" force="no">
@@ -107,7 +107,7 @@
  		</concat>
 		<concat destfile="${generate.pkg.dir}/@{class}.java" force="no">
 		 	<path path="${generate.dir}/@{class}.java.tmp"/>
-		 	<path path="${stubs.dir}/@{class}ToString.java"/>
+		 	<path path="${stubs.dir}/@{class}ExtraCode.java"/>
 		 	<footer filtering="no">
 }</footer> <!-- No, I don't know how to do the whitespace/newline any better .-->
  		</concat>
@@ -115,13 +115,18 @@
 	  </sequential>
 	</macrodef>
 	
-	<target name="addToStrings">
-		<appendToString class="Batchlet"/>
-		<appendToString class="Chunk"/>
-		<appendToString class="Flow"/>
-		<appendToString class="JSLJob"/>
-		<appendToString class="Split"/>
-		<appendToString class="Step"/>
+	<target name="addExtraCodes">
+		<appendExtraCode class="Batchlet"/>
+		<appendExtraCode class="Chunk"/>
+		<appendExtraCode class="Decision"/>
+		<appendExtraCode class="End"/>
+		<appendExtraCode class="Fail"/>
+		<appendExtraCode class="Flow"/>
+		<appendExtraCode class="JSLJob"/>
+		<appendExtraCode class="Next"/>
+		<appendExtraCode class="Split"/>
+		<appendExtraCode class="Step"/>
+		<appendExtraCode class="Stop"/>
 	</target>
 	
 </project>

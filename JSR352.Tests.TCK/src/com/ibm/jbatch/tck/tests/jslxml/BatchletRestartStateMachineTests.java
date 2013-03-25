@@ -194,7 +194,7 @@ public class BatchletRestartStateMachineTests {
 	/*
 	 * @testName: testAllowStartIfCompleteRestartExecution
 	 * @assertion:    1. @restart attribute on <stop> transition element
-	 * @assertion:    2. tests difference between allow-start-if-complete = true or false (default)
+	 *           :    2. tests difference between allow-start-if-complete = true or false (default)
 	 * @test_Strategy: 
 	 * 
 	 * For N in (1,2,3,4,5), we expect executions 1-5 to each end in batch status of STOPPED, 
@@ -269,7 +269,7 @@ public class BatchletRestartStateMachineTests {
 		}
 
 	}
-
+	
 	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
 		Reporter.log(methodName + " failed<p>");

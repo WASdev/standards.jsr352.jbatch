@@ -127,12 +127,12 @@ public class BatchTransactionServiceImpl implements ITransactionManagementServic
         int timeout = DEFAULT_TRAN_TIMEOUT; // default as per spec.
         if (p != null && !p.isEmpty()) {
 
-            String timeOut = p.getProperty("javax.transaction.global.timeout");
+            String propertyTimeOut = p.getProperty("javax.transaction.global.timeout");
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "javax.transaction.global.timeout = {0}", timeOut);
+                logger.log(Level.FINE, "javax.transaction.global.timeout = {0}", propertyTimeOut==null ? "<null>" : propertyTimeOut);
             }
-            if (timeOut != null && !timeOut.isEmpty()) {
-                timeout = Integer.parseInt(timeOut, 10);
+            if (propertyTimeOut != null && !propertyTimeOut.isEmpty()) {
+                timeout = Integer.parseInt(propertyTimeOut, 10);
             }
         }
         logger.exiting(CLASSNAME, "getTransactionTimeout", timeout);

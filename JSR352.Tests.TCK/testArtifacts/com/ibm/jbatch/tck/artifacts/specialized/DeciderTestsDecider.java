@@ -53,7 +53,7 @@ public class DeciderTestsDecider implements Decider, StatusConstants {
 	}
 	
 	private String coreExitStatus(StepExecution stepExec) {		
-		String action = (String)stepExec.getUserPersistentData();
+		String action = (String)stepExec.getPersistentUserData();
 		String currentExitStatus = stepExec.getExitStatus();
 		
 		// "Normally" we just pass set 'normalExitStatus' as exit status.

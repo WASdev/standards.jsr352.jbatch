@@ -29,7 +29,7 @@ public class DeciderProxy extends AbstractProxy<Decider> implements Decider {
     }
 
 	@Override
-	public String decide(StepExecution[] stepExecutions) throws Exception {
+	public String decide(StepExecution[] stepExecutions) {
 		try {
 			return delegate.decide(stepExecutions);
 		} catch (Exception e) {

@@ -92,6 +92,12 @@ public class JobOperatorBridge {
 
 		return new TCKJobExecutionWrapper(terminatedJobExecution, jobOp);
 	}
+	
+	public TCKJobExecutionWrapper restartJobWithoutWaitingForResult(long oldExecutionId, Properties jobParameters) throws NoSuchJobExecutionException, NoSuchJobException, JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, JobSecurityException, JobExecutionTimeoutException {
+		Long execID = (Long)jobOp.restart(oldExecutionId, jobParameters);
+		JobExecution jobExecution = jobOp.getJobExecution(execID);
+		return new TCKJobExecutionWrapper(jobExecution, jobOp);
+	}
 
 	public void abandonJobExecution(long executionId) throws NoSuchJobInstanceException, JobExecutionIsRunningException, JobSecurityException, NoSuchJobExecutionException {
 		jobOp.abandon(executionId);        
@@ -164,15 +170,6 @@ public class JobOperatorBridge {
 	public JobExecution getJobExecution(long executionId) throws NoSuchJobExecutionException, JobSecurityException{
 		return jobOp.getJobExecution(executionId);
 	}
-
-	//TODO - when JobOperator introduces a deregister we should call it.
-	public void destroy() {
-
-	}
-
-
-
-
 
 	public List<JobInstance> getJobInstances(String jobName, int start, int end) throws NoSuchJobException, JobSecurityException {
 		return jobOp.getJobInstances(jobName, start, end);

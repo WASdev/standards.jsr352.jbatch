@@ -16,15 +16,21 @@
 */
 package com.ibm.jbatch.container.jsl;
 
+import com.ibm.jbatch.jsl.model.Flow;
 
+public interface FlowNavigator {
+	/**
+	 * 
+	 * @param restartOn
+	 * @return
+	 * @throws IllegalTransitionException 
+	 */
+    public ExecutionElement getFirstExecutionElementInFlow(String restartOn) throws IllegalTransitionException ;
+    
+	/**
+	 * Enforces "can't revisit already visited steps rule".  Also enforces rules about disallowing transitioning outside of the flow
+	 */
+    public Transition getNextTransitionInFlow(ExecutionElement currentExecutionElem, String currentStepExitStatus) throws IllegalTransitionException;
 
-public interface Navigator<T> {          
-    
-    public ExecutionElement getFirstExecutionElement(String restartOn);
-    
-    public T getJSL();
-    
-    public String getId();
-    
-    public Transition getNextTransition(ExecutionElement currentExecutionElem, String currentStepExitStatus);
+	public Flow getFlow();
 }

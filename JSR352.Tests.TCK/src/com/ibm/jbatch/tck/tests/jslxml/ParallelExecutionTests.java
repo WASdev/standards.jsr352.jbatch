@@ -434,7 +434,154 @@ public class ParallelExecutionTests {
 			handleException(METHOD, e);
 		}
 	}
+	
+	/*
+     * @testName: testPartitionedMapperOverrideFalseOnRestart
+     * 
+     * @assertion: Section 8.7. Partitioned artifact and Chunk processing order.
+     * Partition mapper can generate a plan that will determine partition
+     * instances and properties.
+     * 
+     * @test_Strategy: 
+     */
+    @Test
+    @org.junit.Test
+    public void testPartitionedMapperOverrideFalseOnRestart() throws Exception {
+        String METHOD = "testPartitionedMapperOverrideFalse";
+        begin(METHOD);
 
+        try {
+            Reporter.log("Locate job XML file: job_partitioned_artifacts.xml<p>");
+
+            Reporter.log("Create Job parameters for Execution #1<p>");
+            Properties jobParams = new Properties();
+            Reporter.log("numPartitionsProp=3<p>");
+            Reporter.log("failThisPartition=0<p>");
+            //append "CA" to expected exit status for each partition
+            jobParams.setProperty("numPartitionsProp" , "3"); 
+            jobParams.setProperty("failThisPartition" , "0"); //Remember we are 0 based
+            jobParams.setProperty("partitionsOverride", "false");
+
+            Reporter.log("Invoke startJobAndWaitForResult<p>");
+            JobExecution execution = jobOp.startJobAndWaitForResult("job_partitioned_artifacts", jobParams);
+
+            Reporter.log("Execution exit status = " +  execution.getExitStatus()+"<p>");
+            assertObjEquals("nullBeginCACACARollbackAfter", execution.getExitStatus());
+
+            Reporter.log("Execution status = " + execution.getBatchStatus()+"<p>");
+            assertObjEquals(BatchStatus.FAILED,execution.getBatchStatus());
+            
+            Reporter.log("Set restart job parameters<p>");
+            jobParams.setProperty("numPartitionsProp" , "7"); 
+            jobParams.setProperty("failThisPartition" , "5"); //Remember we are 0 based
+            jobParams.setProperty("partitionsOverride", "false");
+            
+            JobExecution execution2 = jobOp.restartJobAndWaitForResult(execution.getExecutionId(), jobParams);
+            Reporter.log("Execution exit status = " +  execution2.getExitStatus()+"<p>");
+            assertObjEquals("nullBeginCABeforeAfter", execution2.getExitStatus());
+            
+        } catch (Exception e) {
+            handleException(METHOD, e);
+        }
+    }
+
+    
+    /*
+     * @testName: testPartitionedMapperOverrideTrueDiffPartitionNumOnRestart
+     * 
+     * @assertion: 
+     * 
+     * @test_Strategy: 
+     */
+    @Test
+    @org.junit.Test
+    public void testPartitionedMapperOverrideTrueDiffPartitionNumOnRestart() throws Exception {
+        String METHOD = "testPartitionedMapperOverrideFalse";
+        begin(METHOD);
+
+        try {
+            Reporter.log("Locate job XML file: job_partitioned_artifacts.xml<p>");
+
+            Reporter.log("Create Job parameters for Execution #1<p>");
+            Properties jobParams = new Properties();
+            Reporter.log("numPartitionsProp=3<p>");
+            Reporter.log("failThisPartition=0<p>");
+            //append "CA" to expected exit status for each partition
+            jobParams.setProperty("numPartitionsProp" , "2"); 
+            jobParams.setProperty("failThisPartition" , "0"); //Remember we are 0 based
+            jobParams.setProperty("partitionsOverride", "false");
+
+            Reporter.log("Invoke startJobAndWaitForResult<p>");
+            JobExecution execution = jobOp.startJobAndWaitForResult("job_partitioned_artifacts", jobParams);
+
+            Reporter.log("Execution exit status = " +  execution.getExitStatus()+"<p>");
+            assertObjEquals("nullBeginCACARollbackAfter", execution.getExitStatus());
+
+            Reporter.log("Execution status = " + execution.getBatchStatus()+"<p>");
+            assertObjEquals(BatchStatus.FAILED,execution.getBatchStatus());
+            
+            Reporter.log("Set restart job parameters<p>");
+            jobParams.setProperty("numPartitionsProp" , "4"); 
+            jobParams.setProperty("failThisPartition" , "3"); //Remember we are 0 based
+            jobParams.setProperty("partitionsOverride", "true");
+            
+            JobExecution execution2 = jobOp.restartJobAndWaitForResult(execution.getExecutionId(), jobParams);
+            Reporter.log("Execution exit status = " +  execution2.getExitStatus()+"<p>");
+            assertObjEquals("nullBeginCACACACARollbackAfter", execution2.getExitStatus());
+            
+        } catch (Exception e) {
+            handleException(METHOD, e);
+        }
+    }
+    
+    /*
+     * @testName: testPartitionedMapperOverrideTrueDiffPartitionNumOnRestart
+     * 
+     * @assertion: 
+     * 
+     * @test_Strategy: 
+     */
+    @Test
+    @org.junit.Test
+    public void testPartitionedMapperOverrideTrueSamePartitionNumOnRestart() throws Exception {
+        String METHOD = "testPartitionedMapperOverrideFalse";
+        begin(METHOD);
+
+        try {
+            Reporter.log("Locate job XML file: job_partitioned_artifacts.xml<p>");
+
+            Reporter.log("Create Job parameters for Execution #1<p>");
+            Properties jobParams = new Properties();
+            Reporter.log("numPartitionsProp=3<p>");
+            Reporter.log("failThisPartition=0<p>");
+            //append "CA" to expected exit status for each partition
+            jobParams.setProperty("numPartitionsProp" , "3"); 
+            jobParams.setProperty("failThisPartition" , "0"); //Remember we are 0 based
+            jobParams.setProperty("partitionsOverride", "false");
+
+            Reporter.log("Invoke startJobAndWaitForResult<p>");
+            JobExecution execution = jobOp.startJobAndWaitForResult("job_partitioned_artifacts", jobParams);
+
+            Reporter.log("Execution exit status = " +  execution.getExitStatus()+"<p>");
+            assertObjEquals("nullBeginCACACARollbackAfter", execution.getExitStatus());
+
+            Reporter.log("Execution status = " + execution.getBatchStatus()+"<p>");
+            assertObjEquals(BatchStatus.FAILED,execution.getBatchStatus());
+            
+            Reporter.log("Set restart job parameters<p>");
+            jobParams.setProperty("numPartitionsProp" , "3"); 
+            jobParams.setProperty("failThisPartition" , "1"); //Remember we are 0 based
+            jobParams.setProperty("partitionsOverride", "true");
+            
+            JobExecution execution2 = jobOp.restartJobAndWaitForResult(execution.getExecutionId(), jobParams);
+            Reporter.log("Execution exit status = " +  execution2.getExitStatus()+"<p>");
+            assertObjEquals("nullBeginCACACARollbackAfter", execution2.getExitStatus());
+            
+        } catch (Exception e) {
+            handleException(METHOD, e);
+        }
+    }
+    
 	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
 		Reporter.log(methodName + " failed<p>");

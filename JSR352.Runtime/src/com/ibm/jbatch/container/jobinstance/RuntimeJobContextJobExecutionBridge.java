@@ -25,13 +25,12 @@ import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.artifact.proxy.ListenerFactory;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
-import com.ibm.jbatch.container.jsl.Navigator;
+import com.ibm.jbatch.container.jsl.JobNavigator;
 import com.ibm.jbatch.container.services.IJobExecution;
-import com.ibm.jbatch.jsl.model.JSLJob;
 
 public class RuntimeJobContextJobExecutionBridge {
 
-	private Navigator<JSLJob> jobNavigator = null;
+	private JobNavigator jobNavigator = null;
 	private JobInstance jobInstance;
 	private long executionId;
 	private String restartOn; 
@@ -79,7 +78,7 @@ public class RuntimeJobContextJobExecutionBridge {
 		return jobInstance;
 	}
 
-	public Navigator<JSLJob> getJobNavigator() {
+	public JobNavigator getJobNavigator() {
 		return jobNavigator;
 	}
 

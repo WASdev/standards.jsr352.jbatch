@@ -120,6 +120,7 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
         if (js == null) {
             throw new IllegalStateException("Couldn't find entry to update for id = " + jobInstanceId);
         }
+        js.setRestartOn(null);
         js.setLatestExecutionId(newExecutionId);
         persistJobStatus(jobInstanceId, js);                
     }
@@ -143,7 +144,7 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
 
         StepStatus stepStatus = _persistenceManager.getStepStatus(jobInstanceId, stepId);
 
-        logger.exiting(CLASSNAME, method, stepStatus);
+        logger.exiting(CLASSNAME, method, stepStatus==null ? "<null>" : stepStatus);
         return stepStatus;
     }
 

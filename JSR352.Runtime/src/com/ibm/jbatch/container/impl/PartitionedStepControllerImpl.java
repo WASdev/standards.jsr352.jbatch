@@ -293,7 +293,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		// Deal with the results.
 		checkCompletedWork();
 	}
-	private void buildSubJobBatchWorkUnits() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+	private void buildSubJobBatchWorkUnits() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException  {
 		synchronized (subJobs) {		
 			//check if we've already issued a stop
 			if (jobExecutionImpl.getJobContext().getBatchStatus().equals(BatchStatus.STOPPING)){

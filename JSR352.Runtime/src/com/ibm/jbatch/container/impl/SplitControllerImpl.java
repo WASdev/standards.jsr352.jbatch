@@ -27,6 +27,7 @@ import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
+import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.AbortedBeforeStartException;
@@ -66,7 +67,6 @@ public class SplitControllerImpl implements IExecutionElementController {
 
 		servicesManager = ServicesManagerImpl.getInstance();
 		batchKernel = servicesManager.getBatchKernelService();
-
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 	}
 
 	@Override
-	public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException, JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
+	public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException, JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
 		String sourceMethod = "execute";
 		if (logger.isLoggable(Level.FINER)) {
 			logger.entering(sourceClass, sourceMethod);
@@ -106,11 +106,9 @@ public class SplitControllerImpl implements IExecutionElementController {
 
 		// Build all sub jobs from flows in split
 		synchronized (subJobs) {
-
 			for (Flow flow : flows) {
 				subJobs.add(PartitionedStepBuilder.buildSubJob(jobExecutionImpl.getExecutionId(), jobExecutionImpl.getJobContext(), this.split, flow, null));
 			}
-
 			for (JSLJob job : subJobs) {
 				int count = batchKernel.getJobInstanceCount(job.getId());
 				if (count == 0) {
@@ -121,7 +119,6 @@ public class SplitControllerImpl implements IExecutionElementController {
 					throw new IllegalStateException("There is an inconsistency somewhere in the internal subjob creation");
 				}
 			}
-
 		}
 
 		// Then start or restart all subjobs in parallel

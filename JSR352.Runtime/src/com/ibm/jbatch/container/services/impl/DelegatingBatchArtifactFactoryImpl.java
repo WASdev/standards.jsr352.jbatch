@@ -82,19 +82,21 @@ public class DelegatingBatchArtifactFactoryImpl implements IBatchArtifactFactory
 
         ArtifactMap artifactMap = initArtifactMapFromClassLoader(tccl);
 
-		Object loadedArtifact = artifactMap.getArtifactById(batchId);
+		Object loadedArtifact = null;
+        if (artifactMap != null) {
+        	loadedArtifact = artifactMap.getArtifactById(batchId);
+        }
 
 		if (loadedArtifact == null) {
 			if (logger.isLoggable(Level.FINER)) {
 	            logger.log(Level.FINER, "Artifact not found in batch.xml, trying classloader");
 	        }
 			
-			
 			try {
 				Class<?> artifactClass = Thread.currentThread().getContextClassLoader().loadClass(batchId);
-				
-				if(artifactClass != null)
+				if(artifactClass != null) {
 					loadedArtifact = artifactClass.newInstance();
+				}
 			} catch (ClassNotFoundException e) {
 				throw new BatchContainerRuntimeException("Tried but failed to load artifact with id: " + batchId, e);
 			} catch (InstantiationException e) {
@@ -114,23 +116,20 @@ public class DelegatingBatchArtifactFactoryImpl implements IBatchArtifactFactory
 	}
 
     private ArtifactMap initArtifactMapFromClassLoader(ClassLoader loader) {
-
         ArtifactMap artifactMap = new ArtifactMap();
         
         InputStream is = getBatchXMLStreamFromClassLoader(loader);
-        artifactMap = populateArtifactMapFromStream(artifactMap, is);
+        if (is == null) {
+        	return null; 
+        } else {
+        	artifactMap = populateArtifactMapFromStream(artifactMap, is);
+        }
         
         return artifactMap;
     }
 
 	protected InputStream getBatchXMLStreamFromClassLoader(ClassLoader loader) {
-		InputStream is = loader.getResourceAsStream(BATCH_XML);
-
-		if (is == null) {
-			throw new IllegalStateException("Unable to load batch.xml");
-		}
-
-		return is;
+		return loader.getResourceAsStream(BATCH_XML);
 	}
 
 	/*
@@ -140,7 +139,6 @@ public class DelegatingBatchArtifactFactoryImpl implements IBatchArtifactFactory
 	 */
 	protected ArtifactMap populateArtifactMapFromStream(ArtifactMap tempMap, InputStream is) {
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-
 
 		try {
 			XMLStreamReader xmlStreamReader = xmlInputFactory.createXMLStreamReader(is);

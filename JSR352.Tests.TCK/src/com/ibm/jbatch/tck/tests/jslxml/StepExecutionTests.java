@@ -250,7 +250,7 @@ public class StepExecutionTests {
 
 			Reporter.log("execution #1 StepExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
 			assertObjEquals(BatchStatus.FAILED, stepExec.getBatchStatus());
-			assertObjEquals(4, ((MyPersistentUserData)stepExec.getUserPersistentData()).getData());
+			assertObjEquals(4, ((MyPersistentUserData)stepExec.getPersistentUserData()).getData());
 
 			//jobParameters.setProperty("force.failure" , "false");
 			Reporter.log("Invoke restartJobAndWaitForResult with execution id: " + jobExec.getExecutionId() + "<p>");
@@ -263,7 +263,7 @@ public class StepExecutionTests {
 
 			Reporter.log("execution #1 StepExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
 			assertObjEquals(BatchStatus.COMPLETED, stepExec.getBatchStatus());
-			assertObjEquals(5, ((MyPersistentUserData)stepExec.getUserPersistentData()).getData());		
+			assertObjEquals(5, ((MyPersistentUserData)stepExec.getPersistentUserData()).getData());		
 
 		} catch (Exception e) {
 			handleException(METHOD, e);

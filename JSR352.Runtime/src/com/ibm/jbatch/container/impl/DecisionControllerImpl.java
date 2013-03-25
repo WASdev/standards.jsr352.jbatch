@@ -26,7 +26,6 @@ import javax.batch.runtime.StepExecution;
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.DeciderProxy;
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
-import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
@@ -49,7 +48,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
     
     protected Decision decision;
 
-	private PartitionAnalyzerProxy analyzerProxy;
+
 	
 	protected List<StepExecution> stepExecutions = null;
 	
@@ -86,7 +85,7 @@ public class DecisionControllerImpl implements IExecutionElementController {
    
 
     @Override
-    public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws Exception {
+    public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) {
 
         String deciderId = decision.getRef();
         List<Property> propList = (decision.getProperties() == null) ? null : decision.getProperties().getPropertyList();
@@ -109,6 +108,9 @@ public class DecisionControllerImpl implements IExecutionElementController {
         }
 
         String exitStatus = deciderProxy.decide(this.stepExecutions.toArray(new StepExecution[stepExecutions.size()]));
+        
+        //Set the value returned from the decider as the job context exit status.
+        this.jobExecutionImpl.getJobContext().setExitStatus(exitStatus);
         
         return new InternalExecutionElementStatus(exitStatus);
 

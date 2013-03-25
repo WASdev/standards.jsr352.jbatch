@@ -159,11 +159,11 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 				 * This order has been reversed to keep it consistent with when we invoke job, split, and flow listeners
 				 */
 				transitionToFinalStatus();
-
-
 			}
 		} catch (Throwable t) {
 
+			// Hold onto this for now, we'll wrapper and rethrow once we call
+			// afterStep() and persist the execution status.
 			throwable = t;
 
 			StringWriter sw = new StringWriter();
@@ -187,8 +187,19 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			invokePostStepArtifacts();
 
 			if (stepContext.getBatchStatus() != null) {
+				
+				// Now that all step-level artifacts have had a chance to
+				// run, we set the exit status to one of the defaults if
+				// it is still unset.
 				defaultExitStatusIfNecessary();
+				
+				// Persist with exit status
 				persistStepExitStatusAndUserData();
+				
+				// This doesn't contradict the notion that we only persist the
+				// step exit status after all step-level exit statuses have run, 
+				// because this only runs on the partitions, which now are
+				// sending their partition level statuses back to the main thread.
 				sendStatusFromPartitionToAnalyzerIfPresent();
 			}
 
@@ -334,11 +345,12 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			// is a restart and we need to get the previously persisted data
 			((StepContextImpl) stepContext).setPersistentUserData(stepStatus.getPersistentUserData());
 			if (runOnRestart()) {
+				// Seems better to let the start count get incremented without getting a step execution than
+				// vice versa (in an unexpected error case).
+				stepStatus.incrementStartCount();
 				// create new step execution
 				StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
-
 				((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
-				stepStatus.incrementStartCount();
 			} else {
 				return RunOnRestart.ALREADY_COMPLETE;
 			}
@@ -386,7 +398,8 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			}
 		}
 
-		// Check restart limit, the spec default is '0'.
+		// Check restart limit.
+		// The spec default is '0', which we get by initializing to '0' in the next line
 		int startLimit = 0;
 		String startLimitString = step.getStartLimit();
 		if (startLimitString != null) {
@@ -407,12 +420,12 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			if (newStepStartCount > startLimit) {
 				// TODO - should I fail the job or do something more specific
 				// here than blowing up?
-				throw new IllegalArgumentException("For stepId: " + step.getId() + ", tried to start step for the " + newStepStartCount
+				throw new IllegalStateException("For stepId: " + step.getId() + ", tried to start step for the " + newStepStartCount
 						+ " time, but startLimit = " + startLimit);
 			} else {
 				if (logger.isLoggable(Level.FINE)) {
 					logger.fine("Starting (possibly restarting) step: " + step.getId() + ", since newStepStartCount = " + newStepStartCount
-							+ "and startLimit=" + startLimit);
+							+ " and startLimit=" + startLimit);
 				}
 			}
 		}
@@ -428,4 +441,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		this.analyzerStatusQueue = analyzerQueue;
 	}
 
+	public String toString() {
+		return "BaseStepControllerImpl for step = " + step.getId();
+	}
 }

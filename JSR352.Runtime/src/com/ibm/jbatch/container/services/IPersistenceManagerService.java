@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
@@ -43,7 +44,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
     
 	public int jobOperatorGetJobInstanceCount(String jobName);
 	
-	public Map<Long, String> jobOperatorGetJobInstanceData();
+	public Map<Long, String> jobOperatorGetExternalJobInstanceData();
 	
 	public List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count);
 
@@ -51,7 +52,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public String jobOperatorQueryJobExecutionStatus(long key, String requestedStatus);
 	
-	public long jobOperatorQueryJobExecutionJobInstanceId(long executionID);
+	public long jobOperatorQueryJobExecutionJobInstanceId(long executionID) throws NoSuchJobExecutionException;
 	
 	public void jobExecutionStatusStringUpdate(long key, String statusToUpdate, String statusString, Timestamp updatets);
 	
@@ -77,7 +78,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public JobStatus getJobStatusFromExecution(long executionId);
 	
-	public long getJobInstanceIdByExecutionId(long executionId);
+	public long getJobInstanceIdByExecutionId(long executionId) throws NoSuchJobExecutionException;
 	
 	// JOBINSTANCEDATA
 	/**
@@ -89,7 +90,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	 * @param jobParameters parameters used for this job
 	 * @return the job instance
 	 */
-	public JobInstance createJobInstance(String name, String apptag, String jobXml, Properties jobParameters);
+	public JobInstance createJobInstance(String name, String apptag, String jobXml);
 	
 	// EXECUTIONINSTANCEDATA
 	/**
@@ -193,5 +194,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	void createCheckpointData(CheckpointDataKey key, CheckpointData value);
 
 	long getMostRecentExecutionId(long jobInstanceId);
+
+	JobInstance createSubJobInstance(String name, String apptag);
 
 }

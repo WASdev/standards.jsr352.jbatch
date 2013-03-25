@@ -42,7 +42,7 @@ public class StepPropertyResolverImpl extends AbstractPropertyResolver<Step> {
         step.setStartLimit(this.replaceAllProperties(step.getStartLimit(), submittedProps, parentProps));
 
         // Resolve all the properties defined for this step
-        Properties currentProps = null;
+        Properties currentProps = parentProps;
         if (step.getProperties() != null) {
             currentProps = this.resolveElementProperties(step.getProperties().getPropertyList(), submittedProps, parentProps);
         }

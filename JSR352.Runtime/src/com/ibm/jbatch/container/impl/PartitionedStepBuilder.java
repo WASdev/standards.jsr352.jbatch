@@ -31,7 +31,7 @@ import com.ibm.jbatch.jsl.model.Step;
 
 public class PartitionedStepBuilder {
 
-	public static final String JOB_ID_SEPARATOR = "_";  // Must be permissible in NCName
+	public static final String JOB_ID_SEPARATOR = ":";  // Use something permissible in NCName to allow us to key off of.
     /*
      * Build a generated job with only one flow in it to submit to the
      * BatchKernel. This is used to build subjobs from splits.

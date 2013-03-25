@@ -19,6 +19,8 @@ package com.ibm.jbatch.tck.artifacts.reusable;
 import java.util.logging.Logger;
 
 import javax.batch.api.AbstractBatchlet;
+import javax.batch.runtime.context.JobContext;
+import javax.inject.Inject;
 
 
 @javax.inject.Named("myBatchletImpl")
@@ -28,9 +30,17 @@ public class MyBatchletImpl extends AbstractBatchlet {
     private volatile static int count = 1;
     
     public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
+    
+    @Inject
+    JobContext jobCtx;
 	
 	@Override
 	public String process() throws Exception {	
+	    
+	    String curStatus = jobCtx.getExitStatus();
+	    
+	    jobCtx.setExitStatus(curStatus + "UnusedExitStatusForPartitions");
+	    
 		logger.fine("Running batchlet process(): " + count);
 		
 		count++;

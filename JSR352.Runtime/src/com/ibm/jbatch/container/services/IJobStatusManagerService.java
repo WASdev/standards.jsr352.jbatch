@@ -46,6 +46,10 @@ public interface IJobStatusManagerService extends IBatchServiceBase {
     public void updateJobBatchStatus(long jobInstanceId, BatchStatus batchStatus) throws BatchContainerServiceException;
     public void updateJobExecutionStatus(long jobInstanceId, BatchStatus batchStatus, String exitStatus) throws BatchContainerServiceException;
     public void updateJobStatusFromJSLStop(long jobInstanceId, String restartOn) throws BatchContainerServiceException;
+    
+    /*
+     * A side effect of this method is that it nulls out the 'restartOn' value from the previous execution gets zeroed out.
+     */
     public void updateJobStatusWithNewExecution(long jobInstanceId, long newExecutionId) throws BatchContainerServiceException;
 	
 

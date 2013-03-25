@@ -17,7 +17,6 @@
 package com.ibm.jbatch.container.jobinstance;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 import javax.batch.runtime.JobInstance;
 
@@ -35,11 +34,15 @@ public class JobInstanceImpl implements JobInstance, Serializable {
     private JobInstanceImpl() {        
     }
 
-    public JobInstanceImpl(String jobXML, Properties jobParameters, long instanceId) {        
-        this.jobXML = jobXML;
+    public JobInstanceImpl(long instanceId) {
         this.jobInstanceId = instanceId;        
     }
 
+    public JobInstanceImpl(long instanceId, String jobXML) {
+        this.jobXML = jobXML;
+        this.jobInstanceId = instanceId;        
+    }
+    
     @Override
     public long getInstanceId() {
         return jobInstanceId;
@@ -64,8 +67,12 @@ public class JobInstanceImpl implements JobInstance, Serializable {
         StringBuffer buf = new StringBuffer();
         buf.append(" jobName: " + jobName);
         buf.append(" jobInstance id: " + jobInstanceId);
-        int concatLen = jobXML.length() > 300 ? 300 : jobXML.length();
-        buf.append(" jobXML: " + jobXML.subSequence(0, concatLen) + "...truncated ...\n");
+        if (jobXML != null) {
+        	int concatLen = jobXML.length() > 300 ? 300 : jobXML.length();
+        	buf.append(" jobXML: " + jobXML.subSequence(0, concatLen) + "...truncated ...\n");
+        } else {
+        	buf.append(" jobXML = null");
+        }
         return buf.toString();
 
     }

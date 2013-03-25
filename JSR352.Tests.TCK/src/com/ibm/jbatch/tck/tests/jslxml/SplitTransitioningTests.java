@@ -137,7 +137,7 @@ public class SplitTransitioningTests {
 	}
 
 	/**
-	 * @testName: testFlowTransitionToDecision
+	 * @testName: testSplitTransitionToDecision
 	 * @assertion: Section 5.4 Split
 	 * @test_Strategy: 1. setup a job consisting of one split (w/ 2 flows) and one decision
 	 * 				   2. start job 
@@ -150,9 +150,9 @@ public class SplitTransitioningTests {
 	 * @throws InterruptedException
 	 */
 	@Test @org.junit.Test
-	public void testFlowTransitionToDecision() throws Exception {
+	public void testSplitTransitionToDecision() throws Exception {
 
-		String METHOD = "testFlowTransitionToDecision";
+		String METHOD = "testSplitTransitionToDecision";
 
 		try {
 			String exitStatus = "ThatsAllFolks";

@@ -18,6 +18,7 @@ package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.batch.runtime.BatchStatus;
@@ -26,6 +27,7 @@ import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 
+import com.ibm.jbatch.tck.artifacts.reusable.MyPersistentRestartUserData;
 import com.ibm.jbatch.tck.artifacts.specialized.MyItemProcessListenerImpl;
 import com.ibm.jbatch.tck.artifacts.specialized.MyItemReadListenerImpl;
 import com.ibm.jbatch.tck.artifacts.specialized.MyItemWriteListenerImpl;
@@ -271,9 +273,6 @@ public class ChunkTests {
             assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
 
             long jobInstanceId = execution1.getInstanceId();
-            // TODO - we think this will change so we restart by instanceId, for
-            // now the draft spec
-            // says to restart by execution Id.
             long lastExecutionId = execution1.getExecutionId();
             Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
@@ -345,9 +344,6 @@ public class ChunkTests {
             assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
 
             long jobInstanceId = execution1.getInstanceId();
-            // TODO - we think this will change so we restart by instanceId, for
-            // now the draft spec
-            // says to restart by execution Id.
             long lastExecutionId = execution1.getExecutionId();
             Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
@@ -420,9 +416,6 @@ public class ChunkTests {
             assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
 
             long jobInstanceId = execution1.getInstanceId();
-            // TODO - we think this will change so we restart by instanceId, for
-            // now the draft spec
-            // says to restart by execution Id.
             long lastExecutionId = execution1.getExecutionId();
             Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
@@ -540,9 +533,6 @@ public class ChunkTests {
             assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
 
             long jobInstanceId = execution1.getInstanceId();
-            // TODO - we think this will change so we restart by instanceId, for
-            // now the draft spec
-            // says to restart by execution Id.
             long lastExecutionId = execution1.getExecutionId();
             Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
@@ -746,9 +736,6 @@ public class ChunkTests {
             assertWithMessage("Testing execution #1", "FALSE: 0", execution1.getExitStatus());
 
             long jobInstanceId = execution1.getInstanceId();
-            // TODO - we think this will change so we restart by instanceId, for
-            // now the draft spec
-            // says to restart by execution Id.
             long lastExecutionId = execution1.getExecutionId();
             Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
@@ -814,12 +801,9 @@ public class ChunkTests {
             assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
             assertWithMessage("Testing execution #1", "TRUE: 0", execution1.getExitStatus());
 
-            long jobInstanceId; //  = execution1.getInstanceId();
+            long jobInstanceId; 
             JobInstance jobInstance = jobOp.getJobInstance(execution1.getExecutionId());
             jobInstanceId = jobInstance.getInstanceId();
-            // TODO - we think this will change so we restart by instanceId, for
-            // now the draft spec
-            // says to restart by execution Id.
             long lastExecutionId = execution1.getExecutionId();
             Reporter.log("Got Job instance id: " + jobInstanceId + "<p>");
             Reporter.log("Got Job execution id: " + lastExecutionId + "<p>");
@@ -1631,13 +1615,66 @@ public class ChunkTests {
     }
 
 
+    /*
+     * @testName: testUserDataIsPersistedAfterCheckpoint
+     * @assertion: 
+     * 
+     * @test_Strategy: start a job configured to a item-count of 10 configured to fail on the 12 item read.  
+     *                 Verify that persisted step data is available even if step did not complete.
+     */
+    @Test
+    @org.junit.Test
+    public void testUserDataIsPersistedAfterCheckpoint() throws Exception {
+
+        String METHOD = "testChunkRestartItemCount10";
+        try {
+            Reporter.log("Create job parameters for execution #1:<p>");
+            Properties jobParams = new Properties();
+            Reporter.log("execution.number=1<p>");
+            Reporter.log("readrecord.fail=12<p>");
+            Reporter.log("app.arraysize=30<p>");
+            Reporter.log("app.writepoints=0,5,10,15,20,25,30<p>");
+            Reporter.log("app.next.writepoints=0,5,10,15,20,25,30<p>");
+            jobParams.put("execution.number", "1");
+            jobParams.put("readrecord.fail", "12");
+            jobParams.put("app.arraysize", "30");
+            jobParams.put("app.checkpoint.position" , "0");
+            jobParams.put("app.writepoints", "0,10,20,30");
+            jobParams.put("app.next.writepoints", "10,20,30");
+
+            Reporter.log("Locate job XML file: chunkrestartCheckpt10.xml<p>");
+
+            Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
+            TCKJobExecutionWrapper execution1 = jobOp.startJobAndWaitForResult("chunkrestartCheckpt10", jobParams);
+            Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
+            Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
+            assertWithMessage("Testing execution #1", BatchStatus.FAILED, execution1.getBatchStatus());
+            assertWithMessage("Testing execution #1", "FAILED", execution1.getExitStatus());
+            
+            List<StepExecution> stepExecs = jobOp.getStepExecutions(execution1.getExecutionId());
+            
+            MyPersistentRestartUserData persistedStepData = null;
+            for (StepExecution stepExec : stepExecs) {
+                if (stepExec.getStepName().equals("step1")) {
+                    persistedStepData = (MyPersistentRestartUserData) stepExec.getPersistentUserData();
+                    break;
+                }
+            }
+            
+            assertWithMessage("Testing execution #1", 1, persistedStepData.getExecutionNumber());
+            
+
+        } catch (Exception e) {
+            handleException(METHOD, e);
+        }
+
+    }
+    
     private void showStepState(StepExecution step) {
 
         Reporter.log("---------------------------<p>");
-        // System.out.print("getStepName(): " + step.getStepName() + " - ");
         Reporter.log("getJobExecutionId(): " + step.getStepExecutionId() + " - ");
-        // System.out.print("getStepExecutionId(): " + step.getStepExecutionId()
-        // + " - ");
+
         Metric[] metrics = step.getMetrics();
 
         for (int i = 0; i < metrics.length; i++) {
@@ -1646,8 +1683,6 @@ public class ChunkTests {
 
         Reporter.log("getStartTime(): " + step.getStartTime() + " - ");
         Reporter.log("getEndTime(): " + step.getEndTime() + " - ");
-        // System.out.print("getLastUpdateTime(): " + step.getLastUpdateTime() +
-        // " - ");
         Reporter.log("getBatchStatus(): " + step.getBatchStatus() + " - ");
         Reporter.log("getExitStatus(): " + step.getExitStatus());
         Reporter.log("---------------------------<p>");

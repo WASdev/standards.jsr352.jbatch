@@ -37,7 +37,7 @@ public class DecisionPropertyResolverImpl extends AbstractPropertyResolver<Decis
         decision.setRef(this.replaceAllProperties(decision.getRef(), submittedProps, parentProps));
         
         // Resolve all the properties defined for this decision
-        Properties currentProps = null;
+        Properties currentProps = parentProps;
         if (decision.getProperties() != null) {
             currentProps = this.resolveElementProperties(decision.getProperties().getPropertyList(), submittedProps, parentProps);
         }
