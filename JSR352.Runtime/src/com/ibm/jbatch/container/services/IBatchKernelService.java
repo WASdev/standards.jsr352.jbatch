@@ -29,6 +29,7 @@ import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.util.BatchParallelWorkUnit;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
@@ -57,25 +58,28 @@ public interface IBatchKernelService extends IBatchServiceBase {
 
 	BatchSecurityHelper getBatchSecurityHelper();
 
-    List<BatchWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchWorkUnit> completedQueue, 
+    List<BatchParallelWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
+            BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchParallelWorkUnit> completedQueue, 
             RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobStartException;
 
-    List<BatchWorkUnit> buildRestartableParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchWorkUnit> completedQueue, 
+    List<BatchParallelWorkUnit> buildRestartableParallelJobs(List<JSLJob> jobModels, Properties[] partitionProperties,
+            BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchParallelWorkUnit> completedQueue, 
             RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
     void startGeneratedJob(BatchWorkUnit batchWork);
 
     void restartGeneratedJob(BatchWorkUnit batchWork) throws JobRestartException;
 
-    BatchWorkUnit buildNewBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
+    BatchParallelWorkUnit buildRestartableBatchParallelWorkUnit(JSLJob jobModel, Properties partitionProps,
             BlockingQueue<PartitionDataWrapper> analyzerQueue,
-            BlockingQueue<BatchWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobStartException;
+            BlockingQueue<BatchParallelWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException;
 
-    BatchWorkUnit buildRestartableBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
-            BlockingQueue<PartitionDataWrapper> analyzerQueue,
-            BlockingQueue<BatchWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException; 
+	BatchParallelWorkUnit buildNewBatchParallelWorkUnit(JSLJob jobModel,
+			Properties partitionProps,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue,
+			BlockingQueue<BatchParallelWorkUnit> completedQueue,
+			RuntimeJobContextJobExecutionBridge rootJobExecution)
+			throws JobStartException; 
 
 
 }

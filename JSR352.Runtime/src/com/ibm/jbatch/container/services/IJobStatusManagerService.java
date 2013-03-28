@@ -49,6 +49,8 @@ public interface IJobStatusManagerService extends IBatchServiceBase {
     
     /*
      * A side effect of this method is that it nulls out the 'restartOn' value from the previous execution gets zeroed out.
+     * 
+     * Also sets BatchStatus to STARTING
      */
     public void updateJobStatusWithNewExecution(long jobInstanceId, long newExecutionId) throws BatchContainerServiceException;
 	

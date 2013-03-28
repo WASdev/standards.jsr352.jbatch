@@ -37,13 +37,9 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
     private static Logger logger = Logger.getLogger(JobStatusManagerImpl.class.getPackage().getName());
     private IPersistenceManagerService _persistenceManager;    
 
-    private String _jobId;
-
-
     @Override
     public void shutdown() throws BatchContainerServiceException {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -122,6 +118,7 @@ public class JobStatusManagerImpl implements IJobStatusManagerService {
         }
         js.setRestartOn(null);
         js.setLatestExecutionId(newExecutionId);
+        js.setBatchStatus(BatchStatus.STARTING);
         persistJobStatus(jobInstanceId, js);                
     }
 

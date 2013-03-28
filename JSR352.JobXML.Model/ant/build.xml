@@ -123,7 +123,9 @@
 		<appendExtraCode class="Fail"/>
 		<appendExtraCode class="Flow"/>
 		<appendExtraCode class="JSLJob"/>
+		<appendExtraCode class="JSLProperties"/>
 		<appendExtraCode class="Next"/>
+		<appendExtraCode class="Property"/>
 		<appendExtraCode class="Split"/>
 		<appendExtraCode class="Step"/>
 		<appendExtraCode class="Stop"/>

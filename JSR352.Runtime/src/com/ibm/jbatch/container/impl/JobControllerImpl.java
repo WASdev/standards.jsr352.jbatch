@@ -38,7 +38,6 @@ import com.ibm.jbatch.container.artifact.proxy.ListenerFactory;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
-import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
@@ -47,7 +46,6 @@ import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
-import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
@@ -87,6 +85,9 @@ public class JobControllerImpl implements IController {
 	// this execution.
 	private volatile IExecutionElementController currentStoppableElementController = null;
 
+	public JobControllerImpl(RuntimeJobContextJobExecutionBridge jobExecution) {
+		this (jobExecution, jobExecution);
+	}
 
 	public JobControllerImpl(RuntimeJobContextJobExecutionBridge jobExecution, RuntimeJobContextJobExecutionBridge rootJobExecution) {
 		this.jobExecution = jobExecution;
@@ -101,160 +102,144 @@ public class JobControllerImpl implements IController {
 		setupListeners();
 	}
 
-	private void setContextProperties() {
-		JSLJob jobModel = jobExecution.getJobNavigator().getJSLJob();
-		JSLProperties jslProps = jobModel.getProperties();
-
-		if (jslProps != null) {
-			Properties contextProps = jobContext.getProperties();
-			for (Property property : jslProps.getPropertyList()) {
-				contextProps.setProperty(property.getName(), property.getValue());
-			}	
-		}
-
-	}
-
-	private void setupListeners() {
-		JSLJob jobModel = jobExecution.getJobNavigator().getJSLJob();   
-
-		InjectionReferences injectionRef = new InjectionReferences(jobContext, null, null);
-
-		listenerFactory = new ListenerFactory(jobModel, injectionRef);
-		jobExecution.setListenerFactory(listenerFactory);
-	}
-
-	private boolean isJobStopping() {
-		if (BatchStatus.STOPPING.equals(jobContext.getBatchStatus())) {
-			updateJobBatchStatus(BatchStatus.STOPPED);
-			logger.fine("Exiting job execution since it is stopping state; a stop has been issued.");
-			return true;
-		} else {
-			logger.finest("Job execution not detected as stopping.");
-			return false;
-		}
-	}
 	public void executeJob() {
-
-		final String methodName = "executeJob";
-		if (logger.isLoggable(Level.FINE)) {
-			logger.entering(CLASSNAME, methodName);
-		}
-
-		Throwable throwable = null;
-		BatchStatus currentStatus = null;
+		String methodName = "executeJob";
+		logger.entering(CLASSNAME, methodName);
 
 		try {
-
-			updateJobBatchStatus(BatchStatus.STARTING);
-
 			// Periodic check for stopping job
-			if (isJobStopping()) {
-				return;
+			if (!jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) { 
+
+				// Now that we're ready to start invoking artifacts, set the status to 'STARTED'
+				markJobStarted();
+
+				jobListenersBeforeJob();
+
+				// --------------------
+				// The BIG loop transitioning 
+				// within the job !!!
+				// --------------------
+				doExecutionLoop();
 			}
 
-			updateJobBatchStatus(BatchStatus.STARTED);
-
-			List<JobListenerProxy> jobListeners = listenerFactory.getJobListeners();
-
-			// Call @BeforeJob on all the job listeners
-			for (JobListenerProxy listenerProxy : jobListeners) {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(methodName + " Invoking @BeforeJob on jobListener: " + listenerProxy.getDelegate() + " of type: " + listenerProxy.getDelegate().getClass());
-				}
-				listenerProxy.beforeJob();
-			}
-
-			// Periodic check for stopping job
-			if (isJobStopping()) {
-				return;
-			}
-
-			// --------------------
-			//
-			// The BIG loop!!!
-			//
-			// --------------------
-			doExecutionLoop();
-
-			currentStatus = jobContext.getBatchStatus();
-			if (currentStatus == null) {
-				throw new IllegalStateException("Job BatchStatus should have been set by now");
-			}
 		} catch (Throwable t) {
 			// We still want to try to call the afterJob() listener and persist the batch and exit
 			// status for the failure in an orderly fashion.  So catch and continue.
-			throwable = t;
 			logWarning("Caught throwable in main execution loop", t);
-			currentStatus = BatchStatus.FAILED;
 			updateJobBatchStatus(BatchStatus.FAILED);
 		}
 
-		endOfJob(currentStatus, throwable);
-		
-		if (logger.isLoggable(Level.FINE)) {
-			logger.exiting(CLASSNAME, methodName);
-		}
-		
+		endOfJob();
+
+		logger.exiting(CLASSNAME, methodName);
 		return;
 	}
 
+	private void markJobStarted() {
+		updateJobBatchStatus(BatchStatus.STARTED);
+		long time = System.currentTimeMillis();
+		Timestamp timestamp = new Timestamp(time);
+		jobExecution.setLastUpdateTime(timestamp);
+		jobExecution.setStartTime(timestamp);
+		persistenceService.markJobStarted(jobExecution.getExecutionId(), timestamp);
+	}
+	
 	/*
-	 * Probably we'll eventually need to be more careful about one of these methods themselves
-	 * throwing an uncaught exception.   But the lack of more complete error handling doesn't seem to affect
-	 * any API, so we'll cross that bridge when we come to it.
+	 *  Follow similar pattern for end of step in BaseStepControllerImpl
+	 *  
+	 *  1. Execute the very last artifacts (jobListener)
+	 *  2. transition to final batch status
+	 *  3. default ExitStatus if necessary
+	 *  4. persist statuses and end time data
+	 *  
+	 *  We don't want to give up on the orderly process of 2,3,4, if we blow up 
+	 *  in after job, so catch that and keep on going.
 	 */
-	private void endOfJob(BatchStatus currentStatus, Throwable caughtException) {
-		
-		// Call @AfterJob on all the job listeners
-		List<JobListenerProxy> jobListeners = listenerFactory.getJobListeners();
-		for (JobListenerProxy listenerProxy : jobListeners) {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine(" Invoking @AfterJob on jobListener: " + listenerProxy.getDelegate() + " of type: " + listenerProxy.getDelegate().getClass());
-			}
-			listenerProxy.afterJob();
-		}	
+	private void endOfJob() {
 
-		// Update batch status which may already have been set by a JSL <stop> or <fail> decision directive.
-		if (!(currentStatus.equals(BatchStatus.FAILED) || currentStatus.equals(BatchStatus.STOPPED))) {
-			updateJobBatchStatus(BatchStatus.COMPLETED);
+		// 1. Execute the very last artifacts (jobListener)
+		try {
+			jobListenersAfterJob();
+		} catch (Throwable t) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			t.printStackTrace(pw);
+			logger.warning("Error invoking jobListener.afterJob(). Stack trace: " + sw.toString());
+			updateJobBatchStatus(BatchStatus.FAILED);
 		}
 		
-		// Now that all job artifacts have run, we can default job exit status
+		// 2. transition to final batch status
+		transitionToFinalBatchStatus();
+
+		// 3. default ExitStatus if necessary
 		if (jobContext.getExitStatus() == null) {
 			logger.fine("No job-level exitStatus set, defaulting to job batch Status = " + jobContext.getBatchStatus());
 			jobContext.setExitStatus(jobContext.getBatchStatus().name());
 		}
 
-		// Persist exit status, setting default if not set
+	    // 4. persist statuses and end time data
 		logger.fine("Job complete for job id=" + jobExecution.getJobInstance().getJobName() + ", executionId=" + jobExecution.getExecutionId() 
 				+ ", batchStatus=" + jobContext.getBatchStatus() + ", exitStatus=" + jobContext.getExitStatus());
-		jobStatusService.updateJobExecutionStatus(jobExecution.getInstanceId(), jobContext.getBatchStatus(), jobContext.getExitStatus());
-		//set update time onto the runtime JobExecution Obj - should I also update the status string here too?
-		long time = System.currentTimeMillis();
-		Timestamp updateTS = new Timestamp(time);
-		jobExecution.setLastUpdateTime(updateTS);
-		jobExecution.setEndTime(updateTS);
-		persistenceService.jobExecutionStatusStringUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.EXIT_STATUS, jobContext.getExitStatus(), updateTS);
-		persistenceService.jobExecutionTimestampUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.END_TIME, updateTS);
+		persistJobBatchAndExitStatus();
+		
+	}
 
-		if (caughtException != null) {
-			logger.fine("Rethrowing earlier caught exception wrapped.");
-			throw new BatchContainerRuntimeException(caughtException);
+	private void persistJobBatchAndExitStatus() {
+		BatchStatus batchStatus = jobContext.getBatchStatus();
+				
+		// Take a current timestamp for last updated no matter what the status.
+		long time = System.currentTimeMillis();
+		Timestamp timestamp = new Timestamp(time);
+		jobExecution.setLastUpdateTime(timestamp);
+
+		// Perhaps these should be coordinated in a tran but probably better still would be
+		// rethinking the table design to let the database provide us consistently with a single update.
+		jobStatusService.updateJobBatchStatus(jobInstanceId, batchStatus);
+		jobStatusService.updateJobExecutionStatus(jobExecution.getInstanceId(), jobContext.getBatchStatus(), jobContext.getExitStatus());
+		
+		if (batchStatus.equals(BatchStatus.COMPLETED) || batchStatus.equals(BatchStatus.STOPPED) ||  
+				batchStatus.equals(BatchStatus.FAILED)) {
+			
+			jobExecution.setEndTime(timestamp);
+			persistenceService.updateWithFinalExecutionStatusesAndTimestamps(jobExecution.getExecutionId(), 
+					batchStatus, jobContext.getExitStatus(), timestamp);
+		} else {
+			throw new IllegalStateException("Not expected to encounter batchStatus of " + batchStatus +" at this point.  Aborting.");
 		}
 	}
 	
-	private void logWarning(String msg, Throwable t) {
-		StringWriter sw = new StringWriter();
-		t.printStackTrace(new PrintWriter(sw));
-		logger.warning(msg + " with Throwable message: " + t.getMessage() + ", and stack trace: " + sw.toString());
-	}
+	 /**
+	 * The only valid states at this point are STARTED or STOPPING.   Shouldn't have
+	 * been able to get to COMPLETED, STOPPED, or FAILED at this point in the code.
+	 */
 
+	private void transitionToFinalBatchStatus() {
+		BatchStatus currentBatchStatus = jobContext.getBatchStatus();
+		if (currentBatchStatus.equals(BatchStatus.STARTED)) {
+			updateJobBatchStatus(BatchStatus.COMPLETED);
+		} else if (currentBatchStatus.equals(BatchStatus.STOPPING)) {
+			updateJobBatchStatus(BatchStatus.STOPPED);
+		} else if (currentBatchStatus.equals(BatchStatus.FAILED)) {
+			updateJobBatchStatus(BatchStatus.FAILED);  // Should have already been done but maybe better for possible code refactoring to have it here.
+		} else {
+			throw new IllegalStateException("Step batch status should not be in a " + currentBatchStatus.name() + " state");
+		}
+	}
+	
+	private void updateJobBatchStatus(BatchStatus batchStatus) {
+		logger.fine("Setting job batch status to: " + batchStatus);
+		jobContext.setBatchStatus(batchStatus);
+	}
+		
 	private void doExecutionLoop() throws Exception {
+
 		final String methodName = "doExecutionLoop";
+		StepContextImpl stepContext = null;
+		ExecutionElement previousExecutionElement = null;
+		IExecutionElementController previousElementController = null;
+		ExecutionElement currentExecutionElement = null;
 
 		JobContextImpl jobContext = jobExecution.getJobContext();
-
-		ExecutionElement currentExecutionElement = null;
 		try {
 			currentExecutionElement = jobNavigator.getFirstExecutionElementInJob(jobExecution.getRestartOn());
 		} catch (IllegalTransitionException e) {
@@ -263,26 +248,21 @@ public class JobControllerImpl implements IController {
 			throw new IllegalArgumentException(errorMsg, e);
 		}
 
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("First execution element = " + currentExecutionElement.getId());
-		}
-
-		StepContextImpl stepContext = null;
-
-		ExecutionElement previousExecutionElement = null;
-
-		IExecutionElementController previousElementController = null;
+		logger.fine("First execution element = " + currentExecutionElement.getId());
 
 		while (true) {
 
+			if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
+				logger.fine(methodName + " Exiting execution loop as job is now in stopping state.");
+				return;
+
+			}
 			if (!(currentExecutionElement instanceof Step) && !(currentExecutionElement instanceof Decision) 
 					&& !(currentExecutionElement instanceof Flow) && !(currentExecutionElement instanceof Split)) {
 				throw new IllegalStateException("Found unknown currentExecutionElement type = " + currentExecutionElement.getClass().getName());
 			}
 
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Next execution element = " + currentExecutionElement.getId());
-			}
+			logger.fine("Next execution element = " + currentExecutionElement.getId());
 
 			IExecutionElementController elementController = 
 					ExecutionElementControllerFactory.getExecutionElementController(jobExecution, currentExecutionElement);
@@ -298,8 +278,7 @@ public class JobControllerImpl implements IController {
 				} else if (previousExecutionElement instanceof Decision) {
 					throw new BatchContainerRuntimeException("A decision cannot precede another decision.");
 				} else if (previousExecutionElement instanceof Step) {
-					// the context from the
-					// previous execution element
+					// the context from the previous execution element
 					StepExecution lastStepExecution = getLastStepExecution((Step) previousExecutionElement);
 
 					((DecisionControllerImpl)elementController).setStepExecution((Step)previousExecutionElement, lastStepExecution);
@@ -311,14 +290,10 @@ public class JobControllerImpl implements IController {
 
 				} else if (previousExecutionElement instanceof Flow) {
 
-					// get last step in flow
 					Step last = getLastStepInTheFlow(previousExecutionElement);
-
-					// get last step StepExecution
 					StepExecution lastStepExecution = getLastStepExecution(last);
 
 					((DecisionControllerImpl)elementController).setStepExecution((Flow)previousExecutionElement, lastStepExecution);
-
 				}
 
 			} else if (currentExecutionElement instanceof Step) {
@@ -333,11 +308,7 @@ public class JobControllerImpl implements IController {
 
 			// check for stop before every executing each execution element
 			if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
-				updateJobBatchStatus(BatchStatus.STOPPED);
-
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(methodName + " Exiting as job has been stopped");
-				}
+				logger.fine(methodName + " Exiting execution loop as job is now in stopping state.");
 				return;
 			}
 
@@ -361,13 +332,21 @@ public class JobControllerImpl implements IController {
 				executionElementStatus = elementController.execute(this.rootJobExecution);
 
 			} catch (AbortedBeforeStartException e) {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine("Execution failed before even getting to execute execution element = " + currentExecutionElement.getId());
-				}
 				logger.warning("Execution failed, InstanceId: " + this.jobInstanceId + ", executionId = " + this.jobExecution.getExecutionId());
 				throw new BatchContainerRuntimeException("Execution failed before even getting to execute execution element = " + 
 						currentExecutionElement.getId() + "; breaking out of execution loop.");                
 			}
+
+			//
+			// We have to be careful here as we are mediating between the batch status of the execution element (e.g. step), which is what
+			// has been returned, and the batch status of the job, which is our primary concern in this class.   
+			//	
+			// Another thing to watch out for is the fact that the job batch and exit status and the step batch and exit status are externals,
+			// visible via JobOperator JobExecution/StepExecution.   On the other hand, there is no external for a flow batch/exit status, and
+			// none for that of an individual partition.   These are just implementation details.  For that matter, the use of the "JobControllerImpl"
+			// to execute flows-within-splits and partitions-within-partitioned steps, via the "subjob" concept... also produces batch and exit statuses
+			// which are not external but only implementation details.
+			// 
 
 			// Throw an exception on fail 
 			if (executionElementStatus.getBatchStatus().equals(BatchStatus.FAILED)) {
@@ -378,7 +357,8 @@ public class JobControllerImpl implements IController {
 			// JSL Stop
 			if (executionElementStatus.getBatchStatus().equals(BatchStatus.STOPPED)) {
 				String restartOn = executionElementStatus.getRestartOn();
-				jslStop(executionElementStatus, executionElementStatus.getExitStatus(), restartOn);
+				jobContext.setExitStatus(executionElementStatus.getExitStatus());
+				jslStop(restartOn);
 				return;
 			}
 
@@ -387,18 +367,10 @@ public class JobControllerImpl implements IController {
 			this.currentStoppableElementController = null; 
 			previousElementController = elementController;
 
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Done executing element=" + currentExecutionElement.getId() + ", exitStatus=" + executionElementStatus);
-			}
+			logger.fine("Done executing element=" + currentExecutionElement.getId() + ", exitStatus=" + executionElementStatus);
 
-			// If we are currently in STOPPING state, then we can now move transition to STOPPED state.
 			if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
-
-				updateJobBatchStatus(BatchStatus.STOPPED);
-
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(methodName + " Exiting as job has been stopped");
-				} 
+				logger.fine(methodName + " Exiting as job has been stopped");
 				return;
 			}
 
@@ -412,9 +384,7 @@ public class JobControllerImpl implements IController {
 			}
 
 			if (nextTransition == null) {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(methodName + "Looks like we're done, nothing left to execute.");
-				}
+				logger.fine(methodName + "No next execution element, and no transition element found either.  Looks like we're done and ready for COMPLETED state.");
 				return;
 			}
 
@@ -424,89 +394,94 @@ public class JobControllerImpl implements IController {
 				// previous execution element into the decider
 				previousExecutionElement = currentExecutionElement;
 				currentExecutionElement = nextTransition.getNextExecutionElement();
-
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(methodName + " , Looping through to next execution element=" + currentExecutionElement.getId());
-				}
 			} else if (nextTransition.getTransitionElement() != null) {
-				// TODO - update job status mgr
-				TransitionElement transitionElement = nextTransition.getTransitionElement();
-
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(methodName + " , Looping through to next control element=" + transitionElement);
-				}
-
-				if (transitionElement instanceof Stop) {
-					String restartOn = ((Stop) transitionElement).getRestart();
-
-					if (logger.isLoggable(Level.FINE)) {
-						logger.fine(methodName + " , next control element is a <stop> : " + transitionElement + " with restartOn=" + restartOn);
-					}
-
-					String newExitStatus = ((Stop) transitionElement).getExitStatus();
-					if (newExitStatus != null && !newExitStatus.isEmpty()) { // overrides with exit status in JSL @exit-status
-						jobContext.setExitStatus(newExitStatus);  
-						if (logger.isLoggable(Level.FINE)) {
-							logger.fine(methodName + " , on stop, setting new JSL-specified exit status to: " + newExitStatus);
-						}
-					} else {
-						//exit status from job context is used
-						newExitStatus = jobContext.getExitStatus();
-					}
-
-					InternalExecutionElementStatus internalStopStatus = new InternalExecutionElementStatus(BatchStatus.STOPPED, newExitStatus);
-					jslStop(internalStopStatus, newExitStatus, restartOn);
-
-					if (logger.isLoggable(Level.FINE)) {
-						logger.fine(methodName + " Exiting stopped job");
-					}
-					return;
-
-				} else if (transitionElement instanceof End) {
-					if (logger.isLoggable(Level.FINE)) {
-						logger.fine(methodName + " , next control element is an <end>: " + transitionElement);
-					}
-					updateJobBatchStatus(BatchStatus.COMPLETED);
-					String newExitStatus = ((End) transitionElement).getExitStatus();
-					if (newExitStatus != null && !newExitStatus.isEmpty()) { // overrides with exit status in JSL @exit-status
-						jobContext.setExitStatus(newExitStatus); 
-						if (logger.isLoggable(Level.FINE)) {
-							logger.fine(methodName + " , on end, setting new JSL-specified exit status to: " + newExitStatus);
-						}
-					} else {
-						//exit status from job context is used
-						newExitStatus = jobContext.getExitStatus();
-					}
-				} else if (transitionElement instanceof Fail) {
-					if (logger.isLoggable(Level.FINE)) {
-						logger.fine(methodName + " , next control element is a <fail>: " + transitionElement);
-					}
-					updateJobBatchStatus(BatchStatus.FAILED);
-					String newExitStatus = ((Fail) transitionElement).getExitStatus();
-					if (newExitStatus != null && !newExitStatus.isEmpty()) { // overrides
-						// with
-						jobContext.setExitStatus(newExitStatus); // exit status
-						// in
-						if (logger.isLoggable(Level.FINE)) {
-							logger.fine(methodName + " , on fail, setting new JSL-specified exit status to: " + newExitStatus);
-						}
-					} // <fail> @exit-status
-					else {
-						//exit status from job context is used
-						newExitStatus = jobContext.getExitStatus();
-					}
-				} else {
-					throw new IllegalStateException("Not sure how we'd get here but better than looping.");
-				}
-				return;
+				handleTerminatingTransitionElement(nextTransition.getTransitionElement());
+				logger.finer(methodName + " , Breaking out of execution loop after processing terminating transition element.");
+				return;  // break out of loop
 			} else {
-
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine(methodName + " Exiting as there are no more execution elements= ");
-				}
-				return;
+				throw new IllegalStateException("Not sure how we'd end up in this state...aborting rather than looping.");
 			}
 		}
+	}
+
+	// overrides with exit status in JSL @exit-status
+	private void updateExitStatusFromJSL(String exitStatusFromJSL) {
+		if (exitStatusFromJSL != null) {
+			jobContext.setExitStatus(exitStatusFromJSL);  
+			logger.fine("On stop, setting new JSL-specified exit status to: " + exitStatusFromJSL);
+		}
+	}
+
+	private void handleTerminatingTransitionElement(TransitionElement transitionElement) {
+
+		logger.fine("Found terminating transition element (stop, end, or fail).");
+
+		if (transitionElement instanceof Stop) {
+
+			Stop stopElement = (Stop)transitionElement;
+			String restartOn = stopElement.getRestart();
+			String exitStatusFromJSL = stopElement.getExitStatus();
+			logger.fine("Next transition element is a <stop> : " + transitionElement + " with restartOn=" + restartOn + 
+					" , and JSL exit status = " + exitStatusFromJSL);
+
+			updateExitStatusFromJSL(exitStatusFromJSL);
+			jslStop(restartOn);
+
+		} else if (transitionElement instanceof End) {
+
+			End endElement = (End)transitionElement;
+			String exitStatusFromJSL = endElement.getExitStatus();
+			logger.fine("Next transition element is an <end> : " + transitionElement + 
+					" with JSL exit status = " + exitStatusFromJSL);
+			updateExitStatusFromJSL(exitStatusFromJSL);
+
+		} else if (transitionElement instanceof Fail) {
+
+			Fail failElement = (Fail)transitionElement;
+			String exitStatusFromJSL = failElement.getExitStatus();
+			logger.fine("Next transition element is a <fail> : " + transitionElement + 
+					" with JSL exit status = " + exitStatusFromJSL);
+			updateJobBatchStatus(BatchStatus.FAILED);
+			updateExitStatusFromJSL(exitStatusFromJSL);
+		} else {
+			throw new IllegalStateException("Not sure how we'd get here...aborting.");
+		}
+	}
+
+	private void setupListeners() {
+		JSLJob jobModel = jobExecution.getJobNavigator().getJSLJob();   
+		InjectionReferences injectionRef = new InjectionReferences(jobContext, null, null);
+		listenerFactory = new ListenerFactory(jobModel, injectionRef);
+		jobExecution.setListenerFactory(listenerFactory);
+	}
+
+	// Call beforeJob() on all the job listeners
+	private void jobListenersBeforeJob() {
+		List<JobListenerProxy> jobListeners = listenerFactory.getJobListeners();
+		for (JobListenerProxy listenerProxy : jobListeners) {
+			if (logger.isLoggable(Level.FINE)) {
+				logger.fine("Invoking beforeJob() on jobListener: " + listenerProxy.getDelegate() + " of type: " + listenerProxy.getDelegate().getClass());
+			}
+			listenerProxy.beforeJob();
+		}
+	}
+
+	// Call afterJob() on all the job listeners
+	private void jobListenersAfterJob() {
+		List<JobListenerProxy> jobListeners = listenerFactory.getJobListeners();
+		for (JobListenerProxy listenerProxy : jobListeners) {
+			if (logger.isLoggable(Level.FINE)) {
+				logger.fine(" Invoking afterJob() on jobListener: " + listenerProxy.getDelegate() + " of type: " + listenerProxy.getDelegate().getClass());
+			}
+			listenerProxy.afterJob();
+		}	
+	}
+
+
+	private void logWarning(String msg, Throwable t) {
+		StringWriter sw = new StringWriter();
+		t.printStackTrace(new PrintWriter(sw));
+		logger.warning(msg + " with Throwable message: " + t.getMessage() + ", and stack trace: " + sw.toString());
 	}
 
 	private List<StepExecution> getSplitStepExecutions(
@@ -549,86 +524,54 @@ public class JobControllerImpl implements IController {
 		return last;
 	}
 
+	/*
+	 * The thought here is that while we don't persist all the transitions in batch status (given
+	 * we plan to persist at the very end), we do persist STOPPING right away, since if we end up
+	 * "stuck in STOPPING" we at least will have a record in the database.
+	 */
+	private void batchStatusStopping() {
+		updateJobBatchStatus(BatchStatus.STOPPING);
+		long time = System.currentTimeMillis();
+		Timestamp timestamp = new Timestamp(time);
+		jobExecution.setLastUpdateTime(timestamp);
+		persistenceService.updateBatchStatusOnly(jobExecution.getExecutionId(), BatchStatus.STOPPING, timestamp);
+	}
+	
 	@Override
 	public void stop() {
 		if (jobContext.getBatchStatus().equals(BatchStatus.STARTING) ||
 				jobContext.getBatchStatus().equals(BatchStatus.STARTED)) {
-
-			updateJobBatchStatus(BatchStatus.STOPPING);
+			
+			batchStatusStopping();
+			
 			if (this.currentStoppableElementController != null) {
 				this.currentStoppableElementController.stop();
 			}
 		} else {
-			//TODO do we need to throw an error if the batchlet is already stopping/stopped
-			//a stop gets issued twice
+			logger.info("Stop ignored since batch status for job is already set to: " + jobContext.getBatchStatus());
 		}
-
 	}
 
-	private void updateJobBatchStatus(BatchStatus batchStatus) {
-		String methodName = "updateJobBatchStatus";
+	private void setContextProperties() {
+		JSLJob jobModel = jobExecution.getJobNavigator().getJSLJob();
+		JSLProperties jslProps = jobModel.getProperties();
 
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine(methodName + " Setting job batch status to: " + batchStatus);
+		if (jslProps != null) {
+			Properties contextProps = jobContext.getProperties();
+			for (Property property : jslProps.getPropertyList()) {
+				contextProps.setProperty(property.getName(), property.getValue());
+			}	
 		}
-
-		jobContext.setBatchStatus(batchStatus);
-		jobStatusService.updateJobBatchStatus(jobInstanceId, batchStatus);
-
-		//set update time onto the runtime JobExecution Obj - should I also update the status string here too?
-		long time = System.currentTimeMillis();
-		Timestamp timestamp = new Timestamp(time);
-		jobExecution.setLastUpdateTime(timestamp);
-
-		switch (batchStatus) {
-		case STARTING:
-			//perisistence call to update batch status and update time
-			JobExecutionHelper.updateBatchStatusUPDATEonly(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
-			break;
-		case STARTED:
-			//perisistence call to update batch status and update time and start time
-			// Timestamp startTS = new Timestamp(time);
-			JobExecutionHelper.updateBatchStatusSTART(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
-			break;
-		case STOPPING:
-			//perisistence call to update batch status and update time
-			JobExecutionHelper.updateBatchStatusUPDATEonly(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
-			break;
-		case STOPPED:
-			//perisistence call to update batch status and update time and stop time
-			// Timestamp stopTS = new Timestamp(time);
-			JobExecutionHelper.updateBatchStatusSTOP(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
-			break;
-		case COMPLETED:
-			//perisistence call to update batch status and update time and end time
-			// Timestamp stopTS = new Timestamp(time);
-			JobExecutionHelper.updateBatchStatusCOMPLETED(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
-			break;
-		case FAILED:
-			//perisistence call to update batch status and update time and end time
-			// Timestamp endTS = new Timestamp(time);
-			JobExecutionHelper.updateBatchStatusFAILED(jobExecution.getExecutionId(), batchStatus.name(), timestamp);
-			break;
-		default:
-			//?
-		}
-
-		// update job execution instance information keyed by execution id
-		//if (persistenceService instanceof JDBCPersistenceManagerImpl){	
-		//	persistenceService.jobExecutionStatusStringUpdate(jobExecution.getExecutionId(), JDBCPersistenceManagerImpl.BATCH_STATUS, ExecutionStatus.getStringValue(batchStatus), updateTS);
-		//}
-
 	}
 
 	public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
 		this.analyzerQueue = analyzerQueue;
 	}
 
-	private void jslStop(InternalExecutionElementStatus status, String exitStatus, String restartOn) {
-		logger.fine("Logging JSL stop(): status = " + status + ", exitStatus = " + exitStatus + ", restartOn = " +restartOn );
-		updateJobBatchStatus(BatchStatus.STOPPED);
+	private void jslStop(String restartOn) {
+		logger.fine("Logging JSL stop(): exitStatus = " + jobContext.getExitStatus() + ", restartOn = " +restartOn );
+		batchStatusStopping();
 		jobStatusService.updateJobStatusFromJSLStop(jobInstanceId, restartOn);
-		jobContext.setExitStatus(exitStatus);  
 		return;
 	}
 

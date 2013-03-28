@@ -38,6 +38,8 @@ import com.ibm.jbatch.spi.services.IBatchServiceBase;
 
 public interface IPersistenceManagerService extends IBatchServiceBase {
 	
+	public enum TimestampType { CREATE, END, LAST_UPDATED, STARTED };
+	
     /**
      * JOB OPERATOR ONLY METHODS
      */
@@ -48,21 +50,21 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count);
 
-	public Timestamp jobOperatorQueryJobExecutionTimestamp(long key, String timetype);
+	public Timestamp jobOperatorQueryJobExecutionTimestamp(long key, TimestampType timetype);
 	
-	public String jobOperatorQueryJobExecutionStatus(long key, String requestedStatus);
+	public String jobOperatorQueryJobExecutionBatchStatus(long key);
+	
+	public String jobOperatorQueryJobExecutionExitStatus(long key);
 	
 	public long jobOperatorQueryJobExecutionJobInstanceId(long executionID) throws NoSuchJobExecutionException;
-	
-	public void jobExecutionStatusStringUpdate(long key, String statusToUpdate, String statusString, Timestamp updatets);
-	
-	public void jobExecutionTimestampUpdate(long key, String timestampToUpdate, Timestamp ts);
-	
+
 	public List<StepExecution> getStepExecutionIDListQueryByJobID(long execid);
 	
-	public void jobOperatorUpdateBatchStatusWithUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
+	public void updateBatchStatusOnly(long executionId, BatchStatus batchStatus, Timestamp timestamp);
 	
-	public void jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(long key, String statusToUpdate, String statusString, Timestamp updatets);
+	public void markJobStarted(long key, Timestamp startTS);
+
+	public void updateWithFinalExecutionStatusesAndTimestamps(long key, BatchStatus batchStatus, String exitStatus, Timestamp updatets);
 	
 	public IJobExecution jobOperatorGetJobExecution(long jobExecutionId);
 
@@ -196,5 +198,6 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	long getMostRecentExecutionId(long jobInstanceId);
 
 	JobInstance createSubJobInstance(String name, String apptag);
+
 
 }

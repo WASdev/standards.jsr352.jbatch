@@ -13,81 +13,106 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package com.ibm.jbatch.tck.artifacts.specialized;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.listener.StepListener;
 import javax.batch.runtime.context.JobContext;
+import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
 public class ArtifactInstanceTestStepListener implements StepListener {
 
-    @Inject 
+    @Inject
     JobContext jobCtx;
-    
-    @Inject    
-    @BatchProperty(name="step.property")
+
+    @Inject
+    StepContext stepCtx;
+
+    @Inject
+    @BatchProperty(name = "step.property")
     String stepPropertyString;
-    
-    static String prop1 = "stepListenerA";
-    static String prop2 = "stepListenerB";
-    
-    static boolean sawProp1 = false;
-    static boolean sawProp2 = false;
-    
+
+    public static final String prop1 = "stepListenerA";
+    public static final String prop2 = "stepListenerB";
+
     int instance1Count = 0;
     int instance2Count = 0;
-    
-    boolean saw2Listeners = false;
-    static boolean uniqueInstance1 = false;
-    static boolean uniqueInstance2 = false;
-    
-    String passedInProp;
-	
-	@Override
-	public void beforeStep() throws Exception {
-		if (stepPropertyString.equals(prop1)){
-			sawProp1 = true;
-			instance1Count++;
-			
-		}
-		else if (stepPropertyString.equals(prop2)){
-			sawProp2 = true;
-			instance2Count++;
-		}
-	}
 
-	@Override
-	public void afterStep() throws Exception {
-		if (sawProp1 && sawProp2){
-			saw2Listeners = true;
-		}
-		
-		if ((stepPropertyString.equals(prop1)) && instance1Count == 1){
-			uniqueInstance1 = true;
-		}
-		
-		if ((stepPropertyString.equals(prop2)) && instance2Count == 1){
-			uniqueInstance2 = true;
-		}
-		
-		String currentStatus = jobCtx.getExitStatus();
-		
-		if (currentStatus != null && currentStatus.equals("BAD")){			return;
-		}
-		
-		if ((saw2Listeners && uniqueInstance2 && !uniqueInstance1) || (saw2Listeners && !uniqueInstance2 && uniqueInstance1)){
-			jobCtx.setExitStatus(jobCtx.getExitStatus()+"StepListener");
-			uniqueInstance1 = false;
-			uniqueInstance2 = false;
-		}
-		else {
-			jobCtx.setExitStatus("STEP_BAD");
-		}
-			
-	}
+    boolean uniqueInstance1 = false;
+    boolean uniqueInstance2 = false;
+    
+    private boolean saw2Listeners = false;
+
+
+    String passedInProp;
+
+    @Override
+    public void beforeStep() throws Exception {
+        
+        synchronized(stepCtx) {
+            if (stepCtx.getTransientUserData() == null) {
+                Map<String, Boolean> dataMap = new ConcurrentHashMap<String, Boolean>();
+                dataMap.put("sawProp1", false);
+                dataMap.put("sawProp2", false);
+                
+                //init the chunk listener props here too. We init here because we know we 
+                //are the first listener since the transient data is null. 
+                dataMap.put("sawChunkProp1", false);
+                dataMap.put("sawChunkProp2", false);
+
+                stepCtx.setTransientUserData(dataMap);
+            }
+        }
+
+        Map<String, Boolean> instanceData = (Map<String, Boolean>) stepCtx.getTransientUserData();
+
+        if (stepPropertyString.equals(prop1)) {
+            instanceData.put("sawProp1", true);
+
+            instance1Count++;
+
+        } else if (stepPropertyString.equals(prop2)) {
+            instanceData.put("sawProp2", true);
+            instance2Count++;
+        }
+    }
+
+    @Override
+    public void afterStep() throws Exception {
+        Map<String, Boolean> instanceData = (Map<String, Boolean>) stepCtx.getTransientUserData();
+
+        if (instanceData.get("sawProp1") && instanceData.get("sawProp2")) {
+            saw2Listeners = true;
+        }
+
+
+        if ((stepPropertyString.equals(prop1)) && instance1Count == 1) {
+            uniqueInstance1 = true;
+        }
+
+        if ((stepPropertyString.equals(prop2)) && instance2Count == 1) {
+            uniqueInstance2 = true;
+        }
+
+        String currentStatus = jobCtx.getExitStatus();
+
+        if (currentStatus != null && currentStatus.equals("BAD")) {
+            return;
+        }
+        
+        if (saw2Listeners && (uniqueInstance1 ^ uniqueInstance2)) {
+            jobCtx.setExitStatus(jobCtx.getExitStatus() + "StepListener");
+        } else {
+            jobCtx.setExitStatus("STEP_BAD");
+        }
+        
+    }
 
 }

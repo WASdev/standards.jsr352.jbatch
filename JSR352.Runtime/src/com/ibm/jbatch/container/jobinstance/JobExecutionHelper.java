@@ -16,7 +16,6 @@
  */
 package com.ibm.jbatch.container.jobinstance;
 
-import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,10 +29,8 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
-import com.ibm.jbatch.container.jsl.ModelResolverFactory;
-import com.ibm.jbatch.container.jsl.ModelSerializer;
-import com.ibm.jbatch.container.jsl.ModelSerializerFactory;
 import com.ibm.jbatch.container.jsl.JobNavigator;
+import com.ibm.jbatch.container.jsl.ModelResolverFactory;
 import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.modelresolver.PropertyResolver;
 import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
@@ -41,7 +38,6 @@ import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
-import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.JobStatus;
@@ -78,11 +74,6 @@ public class JobExecutionHelper {
 		propResolver.substituteProperties(jobModel, jobParameters);
 
 		return NavigatorFactory.createJobNavigator(jobModel);
-	}
-
-	private static String getJobXml(JSLJob jobModel) {
-		ModelSerializer<JSLJob> serializer = ModelSerializerFactory.createJobModelSerializer();
-		return serializer.serializeModel(jobModel);
 	}
 
 	private static JobContextImpl getJobContext(JobNavigator jobNavigator) {
@@ -238,47 +229,23 @@ public class JobExecutionHelper {
 		return _persistenceManagementService.jobOperatorGetJobExecution(jobExecutionId);
 	}
 
+	/*
 	public static void updateBatchStatusUPDATEonly(long executionId, String batchStatusString, Timestamp ts){
 		// update the batch status col and the updateTS col
 		_persistenceManagementService.jobOperatorUpdateBatchStatusWithUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, ts);
 	}
 
-	public static void updateBatchStatusSTART(long executionId, String batchStatusString, Timestamp startTs){
+	public static void updateBatchStatusSTARTED(long executionId, Timestamp startTs){
 		// update the batch status col and the updateTS col
-
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, startTs);
+		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, BatchStatus.STARTED, startTs);
 	}
 
-	public static void updateBatchStatusSTOP(long executionId, String batchStatusString, Timestamp stopTs){
+	public static void updateBatchStatusEND(long executionId, BatchStatus batchStatus, Timestamp endTs){
 		// update the batch status col and the updateTS col
-
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, stopTs);
+		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, batchStatus, endTs);
 	}
-
-	public static void updateBatchStatusCOMPLETED(long executionId, String batchStatusString, Timestamp completedTs){
-		// update the batch status col and the updateTS col
-
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, completedTs);
-	}
-
-	public static void updateBatchStatusENDED(long executionId, String batchStatusString, Timestamp endedTs){
-		// update the batch status col and the updateTS col
-
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, endedTs);
-	}
-
-	public static void updateBatchStatusFAILED(long executionId, String batchStatusString, Timestamp failedTs){
-		// update the batch status col and the updateTS col
-
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, failedTs);
-	}
-
-
-
-	//    public static StepExecution getStepExecution(String key){
-	//    	return _persistenceManagementService.getStepExecutionQueryID(key);
-	//    }
-
+*/
+	
 	public static JobInstance getJobInstance(long executionId){
 		JobStatus jobStatus = _jobStatusManagerService.getJobStatusFromExecutionId(executionId);
 		JobInstanceImpl jobInstance = jobStatus.getJobInstance();

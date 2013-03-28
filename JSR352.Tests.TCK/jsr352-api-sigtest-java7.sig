@@ -46,6 +46,15 @@ meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
 
+CLSS public java.lang.RuntimeException
+cons protected <init>(java.lang.String,java.lang.Throwable,boolean,boolean)
+cons public <init>()
+cons public <init>(java.lang.String)
+cons public <init>(java.lang.String,java.lang.Throwable)
+cons public <init>(java.lang.Throwable)
+supr java.lang.Exception
+hfds serialVersionUID
+
 CLSS public java.lang.Throwable
 cons protected <init>(java.lang.String,java.lang.Throwable,boolean,boolean)
 cons public <init>()
@@ -323,12 +332,20 @@ meth public static javax.batch.api.partition.PartitionReducer$PartitionStatus va
 meth public static javax.batch.api.partition.PartitionReducer$PartitionStatus[] values()
 supr java.lang.Enum<javax.batch.api.partition.PartitionReducer$PartitionStatus>
 
+CLSS public javax.batch.operations.BatchRuntimeException
+cons public <init>()
+cons public <init>(java.lang.String)
+cons public <init>(java.lang.String,java.lang.Throwable)
+cons public <init>(java.lang.Throwable)
+supr java.lang.RuntimeException
+hfds serialVersionUID
+
 CLSS public javax.batch.operations.JobExecutionAlreadyCompleteException
 cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.JobExecutionIsRunningException
@@ -336,7 +353,7 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.JobExecutionNotMostRecentException
@@ -344,7 +361,7 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.JobExecutionNotRunningException
@@ -352,30 +369,30 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public abstract interface javax.batch.operations.JobOperator
-meth public abstract int getJobInstanceCount(java.lang.String) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobException
-meth public abstract java.util.List<java.lang.Long> getRunningExecutions(java.lang.String) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobException
-meth public abstract java.util.List<javax.batch.runtime.JobExecution> getJobExecutions(javax.batch.runtime.JobInstance) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobInstanceException
-meth public abstract java.util.List<javax.batch.runtime.JobInstance> getJobInstances(java.lang.String,int,int) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobException
-meth public abstract java.util.List<javax.batch.runtime.StepExecution> getStepExecutions(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
-meth public abstract java.util.Properties getParameters(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
-meth public abstract java.util.Set<java.lang.String> getJobNames() throws javax.batch.operations.JobSecurityException
-meth public abstract javax.batch.runtime.JobExecution getJobExecution(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
-meth public abstract javax.batch.runtime.JobInstance getJobInstance(long) throws javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
-meth public abstract long restart(long,java.util.Properties) throws javax.batch.operations.JobExecutionAlreadyCompleteException,javax.batch.operations.JobExecutionNotMostRecentException,javax.batch.operations.JobRestartException,javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
-meth public abstract long start(java.lang.String,java.util.Properties) throws javax.batch.operations.JobSecurityException,javax.batch.operations.JobStartException
-meth public abstract void abandon(long) throws javax.batch.operations.JobExecutionIsRunningException,javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
-meth public abstract void stop(long) throws javax.batch.operations.JobExecutionNotRunningException,javax.batch.operations.JobSecurityException,javax.batch.operations.NoSuchJobExecutionException
+meth public abstract int getJobInstanceCount(java.lang.String)
+meth public abstract java.util.List<java.lang.Long> getRunningExecutions(java.lang.String)
+meth public abstract java.util.List<javax.batch.runtime.JobExecution> getJobExecutions(javax.batch.runtime.JobInstance)
+meth public abstract java.util.List<javax.batch.runtime.JobInstance> getJobInstances(java.lang.String,int,int)
+meth public abstract java.util.List<javax.batch.runtime.StepExecution> getStepExecutions(long)
+meth public abstract java.util.Properties getParameters(long)
+meth public abstract java.util.Set<java.lang.String> getJobNames()
+meth public abstract javax.batch.runtime.JobExecution getJobExecution(long)
+meth public abstract javax.batch.runtime.JobInstance getJobInstance(long)
+meth public abstract long restart(long,java.util.Properties)
+meth public abstract long start(java.lang.String,java.util.Properties)
+meth public abstract void abandon(long)
+meth public abstract void stop(long)
 
 CLSS public javax.batch.operations.JobRestartException
 cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.JobSecurityException
@@ -383,7 +400,7 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.JobStartException
@@ -391,7 +408,7 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.NoSuchJobException
@@ -399,7 +416,7 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.NoSuchJobExecutionException
@@ -407,7 +424,7 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.operations.NoSuchJobInstanceException
@@ -415,7 +432,7 @@ cons public <init>()
 cons public <init>(java.lang.String)
 cons public <init>(java.lang.String,java.lang.Throwable)
 cons public <init>(java.lang.Throwable)
-supr java.lang.Exception
+supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
 CLSS public javax.batch.runtime.BatchRuntime
@@ -471,7 +488,7 @@ meth public static javax.batch.runtime.Metric$MetricType[] values()
 supr java.lang.Enum<javax.batch.runtime.Metric$MetricType>
 
 CLSS public abstract interface javax.batch.runtime.StepExecution
-meth public abstract java.io.Serializable getUserPersistentData()
+meth public abstract java.io.Serializable getPersistentUserData()
 meth public abstract java.lang.String getExitStatus()
 meth public abstract java.lang.String getStepName()
 meth public abstract java.util.Date getEndTime()

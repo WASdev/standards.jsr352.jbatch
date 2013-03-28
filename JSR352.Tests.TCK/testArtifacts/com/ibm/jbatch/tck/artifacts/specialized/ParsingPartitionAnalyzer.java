@@ -18,16 +18,21 @@ public class ParsingPartitionAnalyzer extends AbstractPartitionAnalyzer {
     @Inject
 	StepContext stepCtx;
     
+    private int counter = 0;
+    
 	@Override
 	public void analyzeStatus(BatchStatus batchStatus, String exitStatus)
 			throws Exception {
+	    
+	    counter++;
+	    
 		String goodPrefix = MyParallelSubJobsExitStatusBatchlet.GOOD_EXIT_STATUS;
 		int idx = goodPrefix.length() + 1;
 		if (!exitStatus.startsWith(goodPrefix)) {
 			throw new IllegalStateException("Expected exit status to start with: " + goodPrefix + ", but found :" + exitStatus);
 		}
-		String endPart = exitStatus.substring(idx);
-		jobCtx.setExitStatus("JOB EXIT STATUS: " + endPart);
-		stepCtx.setExitStatus("STEP EXIT STATUS: " + endPart);
+	
+		jobCtx.setExitStatus("JOB EXIT STATUS: " + counter);
+		stepCtx.setExitStatus("STEP EXIT STATUS: " + counter);
 	}
 }

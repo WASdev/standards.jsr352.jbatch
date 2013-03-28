@@ -47,7 +47,7 @@ public class PartitionPlanPropertyResolverImpl extends
 		partitionPlan.setPartitions(this.replaceAllProperties(partitionPlan.getPartitions(), submittedProps, parentProps));
 		partitionPlan.setThreads(this.replaceAllProperties(partitionPlan.getThreads(), submittedProps, parentProps));
 		
-        // Resolve all the properties defined for this step
+        // Resolve all the properties defined for this plan
 		Properties currentProps = parentProps;
         if (partitionPlan.getProperties() != null) {
         	
@@ -55,6 +55,10 @@ public class PartitionPlanPropertyResolverImpl extends
         	
         	if (jslProps != null) {
         		for (JSLProperties jslProp : jslProps) {
+        		    //for partition properties perform substitution on the partition attribute
+        		    if (jslProp.getPartition() != null) {
+        		        jslProp.setPartition(this.replaceAllProperties(jslProp.getPartition(), submittedProps, parentProps));
+        		    }
                     currentProps = this.resolveElementProperties(jslProp.getPropertyList(), submittedProps, parentProps);            		
             	}	
         	}

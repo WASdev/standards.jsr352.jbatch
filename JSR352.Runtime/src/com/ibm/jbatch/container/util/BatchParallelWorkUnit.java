@@ -18,10 +18,9 @@ package com.ibm.jbatch.container.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.impl.JobControllerImpl;
@@ -34,27 +33,41 @@ import com.ibm.jbatch.container.services.IBatchKernelService;
  * The stop seems like it should be synchronous from the JobOperator's
  * perspective, as it returns a 'success' boolean.
  */
-public class BatchWorkUnit implements Runnable {
+public class BatchParallelWorkUnit extends BatchWorkUnit {
 
-	private String CLASSNAME = BatchWorkUnit.class.getName();
-	private Logger logger = Logger.getLogger(BatchWorkUnit.class.getPackage().getName());
+	private String CLASSNAME = BatchParallelWorkUnit.class.getName();
+	private Logger logger = Logger.getLogger(BatchParallelWorkUnit.class.getPackage().getName());
 
-	protected RuntimeJobContextJobExecutionBridge jobExecutionImpl = null;
-	protected IBatchKernelService batchKernel = null;
-	protected final JobControllerImpl controller;
+	private final JobControllerImpl controller;
 
-	protected boolean notifyCallbackWhenDone;
+	private BlockingQueue<PartitionDataWrapper> analyzerQueue;
+	private BlockingQueue<BatchParallelWorkUnit> completedThreadQueue;
 
-	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl) {
-		this(batchKernel, jobExecutionImpl, true);
+	private RuntimeJobContextJobExecutionBridge rootJobExecution = null;
+
+	public BatchParallelWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl) {
+		this(batchKernel, jobExecutionImpl, null, null, jobExecutionImpl, true);
 	}
 
-	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl,
+	public BatchParallelWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchParallelWorkUnit> completedThreadQueue, 
+			RuntimeJobContextJobExecutionBridge rootJobExecution,
 			boolean notifyCallbackWhenDone) {
-		this.setBatchKernel(batchKernel);
-		this.setJobExecutionImpl(jobExecutionImpl);
-		this.setNotifyCallbackWhenDone(notifyCallbackWhenDone);
-		this.controller = new JobControllerImpl(jobExecutionImpl);
+		super(batchKernel, jobExecutionImpl, notifyCallbackWhenDone);
+		this.setAnalyzerQueue(analyzerQueue);
+		this.setCompletedThreadQueue(completedThreadQueue);
+
+		//if root is null we don't want to find the children on a query
+		//this is only for partitioned steps since the partitioned steps are only seen internally
+		//externally it is still considered only 1 step
+		if (rootJobExecution == null) {
+			this.setRootJobExecution(jobExecutionImpl);
+		} else {
+			this.setRootJobExecution(rootJobExecution);
+		}
+
+		controller = new JobControllerImpl(this.getJobExecutionImpl(), this.rootJobExecution);
+		controller.setAnalyzerQueue(this.analyzerQueue);
 	}
 
 	public JobControllerImpl getController() {
@@ -109,43 +122,40 @@ public class BatchWorkUnit implements Runnable {
 			}
 
 			throw new BatchContainerRuntimeException("This job failed unexpectedly.", t);
-		}  
+		}  finally {
+			// Put this in finally to minimize chance of tying up threads.
+			if (this.completedThreadQueue != null) {
+				completedThreadQueue.add(this);
+			}
+		}
 
 		if (logger.isLoggable(Level.FINER)) {
 			logger.exiting(CLASSNAME, method);
 		}
 	}
 
-	protected BatchStatus getBatchStatus() {
-		return jobExecutionImpl.getJobContext().getBatchStatus();
+	public BlockingQueue<PartitionDataWrapper> getAnalyzerQueue() {
+		return analyzerQueue;
 	}
 
-	protected String getExitStatus() {
-		return jobExecutionImpl.getJobContext().getExitStatus();
+	public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
+		this.analyzerQueue = analyzerQueue;
 	}
 
-	public void setBatchKernel(IBatchKernelService batchKernel) {
-		this.batchKernel = batchKernel;
+	public BlockingQueue<BatchParallelWorkUnit> getCompletedThreadQueue() {
+		return completedThreadQueue;
 	}
 
-	public IBatchKernelService getBatchKernel() {
-		return batchKernel;
+	public void setCompletedThreadQueue(BlockingQueue<BatchParallelWorkUnit> completedThreadQueue) {
+		this.completedThreadQueue = completedThreadQueue;
 	}
 
-	public void setJobExecutionImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl) {
-		this.jobExecutionImpl = jobExecutionImpl;
+	public RuntimeJobContextJobExecutionBridge getRootJobExecution() {
+		return rootJobExecution;
 	}
 
-	public RuntimeJobContextJobExecutionBridge getJobExecutionImpl() {
-		return jobExecutionImpl;
-	}
-
-	public void setNotifyCallbackWhenDone(boolean notifyCallbackWhenDone) {
-		this.notifyCallbackWhenDone = notifyCallbackWhenDone;
-	}
-
-	public boolean isNotifyCallbackWhenDone() {
-		return notifyCallbackWhenDone;
+	public void setRootJobExecution(RuntimeJobContextJobExecutionBridge rootJobExecution) {
+		this.rootJobExecution = rootJobExecution;
 	}
 
 }

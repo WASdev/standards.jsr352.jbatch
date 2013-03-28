@@ -1,10 +1,13 @@
 package test.junit;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
@@ -63,5 +66,23 @@ public class ImplSpecificJobOperatorTests {
 				}
 			}
 		}
+	}
+	
+	@Test
+	public void twoRestartsConsecutively() throws Exception {
+		JobOperator jo = BatchRuntime.getJobOperator();
+		long exec1Id = jo.start("runtimejunit1", null);
+		JobExecution exec1 = jo.getJobExecution(exec1Id);
+		Thread.sleep(5000);
+		assertEquals(BatchStatus.FAILED, exec1.getBatchStatus());
+		
+		long exec2Id = jo.restart(exec1Id, null);
+		JobExecution exec2 = jo.getJobExecution(exec2Id);
+		Thread.sleep(5000);
+		assertEquals(BatchStatus.FAILED, exec2.getBatchStatus());
+		
+		long exec3Id = jo.restart(exec2Id, null);
+		long exec4Id = jo.restart(exec2Id, null);
+		
 	}
 }

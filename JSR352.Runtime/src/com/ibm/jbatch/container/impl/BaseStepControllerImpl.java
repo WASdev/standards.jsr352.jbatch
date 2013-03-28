@@ -37,6 +37,7 @@ import com.ibm.jbatch.container.AbortedBeforeStartException;
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
+import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
 import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
@@ -75,10 +76,6 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 	protected TransactionManagerAdapter	transactionManager = null;
 
-	private enum RunOnRestart {
-		ALREADY_COMPLETE, RUN
-	};
-
 	private static IPersistenceManagerService _persistenceManagementService = ServicesManagerImpl.getInstance().getPersistenceManagerService();
 
 	private static IJobStatusManagerService _jobStatusService = (IJobStatusManagerService) ServicesManagerImpl.getInstance().getJobStatusManagerService();
@@ -102,9 +99,282 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 	protected abstract void invokePreStepArtifacts();
 
 	protected abstract void invokePostStepArtifacts();
-	
+
 	// This is only useful from the partition threads
 	protected abstract void sendStatusFromPartitionToAnalyzerIfPresent();
+
+	@Override
+	public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException  {
+
+		this.rootJobExecution = rootJobExecution;
+
+		// Here we're just setting up to decide if we're going to run the step or not (if it's already complete and 
+		// allow-start-if-complete=false.
+		try {
+			boolean executeStep = shouldStepBeExecuted();
+			if (!executeStep) {
+				logger.fine("Not going to run this step.  Returning previous exit status of: " + stepStatus.getExitStatus());
+				return new InternalExecutionElementStatus(stepStatus.getExitStatus());
+			} 
+		} catch (Throwable t) {
+			rethrowWithMsg("Caught throwable while determining if step should be executed.  Failing job.", t);
+		}
+
+		// At this point we have a StepExecution.  Setup so that we're ready to invoke artifacts.
+		try {
+			startStep();
+		} catch (Throwable t) {
+			updateBatchStatus(BatchStatus.FAILED);
+			rethrowWithMsg("Caught throwable while starting step.  Failing job.", t);
+		}
+
+		// At this point artifacts are in the picture so we want to try to invoke afterStep() on a failure.
+		try {
+			invokePreStepArtifacts();    //Call PartitionReducer and StepListener(s)
+			invokeCoreStep();
+		} catch (Throwable t1) {
+			// We're going to continue on so that we can execute the afterStep() and analyzer
+			try {
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				t1.printStackTrace(pw);
+				logger.warning("Caught exception executing step: " + sw.toString());
+				updateBatchStatus(BatchStatus.FAILED);
+			} catch(Throwable t2) {
+				// Since the first one is the original first failure, let's rethrow t1 and not the second error,
+				// but we'll log a severe error pointing out that the failure didn't get persisted..
+				// We won't try to call the afterStep() in this case either.
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				t2.printStackTrace(pw);
+				logger.severe("ERROR PERSISTING BATCH STATUS FAILED.  STEP EXECUTION STATUS TABLES MIGHT HAVE CONSISTENCY ISSUES" +
+						"AND/OR UNEXPECTED ENTRIES. " +  ": Stack trace: " + sw.toString());
+				rethrowWithMsg("Not only did step execution fail but we couldn't persist the resulting FAILED status. Status records may " +
+						" now be inconsistent or misleading in some way.  Throwing first failure exception.", t1);
+			}
+		}
+
+		//
+		// At this point we may have already failed the step, but we still try to invoke the end of step artifacts.
+		//
+		try {
+			//Call PartitionAnalyzer, PartitionReducer and StepListener(s)
+			invokePostStepArtifacts();   
+		} catch (Throwable t) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			t.printStackTrace(pw);
+			logger.warning("Error invoking end of step artifacts. Stack trace: " + sw.toString());
+			updateBatchStatus(BatchStatus.FAILED);
+		}
+
+		//
+		// No more application code is on the path from here on out (excluding the call to the PartitionAnalyzer
+		// analyzeStatus().  If an exception bubbles up and leaves the statuses inconsistent or incorrect then so be it; 
+		// maybe there's a runtime bug that will need to be fixed.
+		// 
+		try {
+			// Now that all step-level artifacts have had a chance to run, 
+			// we set the exit status to one of the defaults if it is still unset.
+
+			// This is going to be the very last sequence of calls from the step running on the main thread,
+			// since the call back to the partition analyzer only happens on the partition threads.
+			// On the partition threads, then, we harden the status at the partition level before we
+			// send it back to the main thread.
+			persistUserData();
+			transitionToFinalBatchStatus();
+			defaultExitStatusIfNecessary();
+			persistExitStatusAndEndTimestamp();
+		} catch (Throwable t) {
+			// Don't let an exception caught here prevent us from persisting the failed batch status.
+			updateBatchStatus(BatchStatus.FAILED);
+			rethrowWithMsg("Failure ending step execution", t);
+		} 
+
+		//
+		// Only happens on main thread.
+		//
+		sendStatusFromPartitionToAnalyzerIfPresent();
+
+		logger.finer("Returning step batchStatus: " + stepStatus.getBatchStatus() + 
+				", exitStatus: " + stepStatus.getExitStatus()); 
+
+		// This internal status happens to be identical to an externally-meaningful status 
+		// (corresponding to a JobOperator-visible batch+exit status) but this will not generally be the case.
+		return new InternalExecutionElementStatus(stepStatus.getBatchStatus(), stepStatus.getExitStatus());
+	}
+
+	private void defaultExitStatusIfNecessary() {
+		String stepExitStatus = stepContext.getExitStatus();
+		String processRetVal = stepContext.getBatchletProcessRetVal(); 
+		if (stepExitStatus != null) {
+			logger.fine("Returning with user-set exit status: " + stepExitStatus);
+		} else if (processRetVal != null) {
+			logger.fine("Returning with exit status from batchlet.process(): " + processRetVal);
+			stepContext.setExitStatus(processRetVal);
+		} else {
+			logger.fine("Returning with default exit status");
+			stepContext.setExitStatus(stepContext.getBatchStatus().name());
+		}
+	}
+
+	private void startStep() {
+		// Update status
+		statusStarting();
+		//Set Step context properties
+		setContextProperties();
+		//Set up step artifacts like step listeners, partition reducers
+		setupStepArtifacts();
+		// Move batch status to started.
+		updateBatchStatus(BatchStatus.STARTED);
+		
+		long time = System.currentTimeMillis();
+		Timestamp startTS = new Timestamp(time);
+		stepContext.setStartTime(startTS);
+		
+		_persistenceManagementService.updateStepExecution(rootJobExecution.getExecutionId(), stepContext);
+	}
+	
+
+	/**
+	 * The only valid states at this point are STARTED,STOPPING, or FAILED.
+	 * been able to get to STOPPED, or COMPLETED yet at this point in the code.
+	 */
+	private void transitionToFinalBatchStatus() {
+		BatchStatus currentBatchStatus = stepContext.getBatchStatus();
+		if (currentBatchStatus.equals(BatchStatus.STARTED)) {
+			updateBatchStatus(BatchStatus.COMPLETED);
+		} else if (currentBatchStatus.equals(BatchStatus.STOPPING)) {
+			updateBatchStatus(BatchStatus.STOPPED);
+		} else if (currentBatchStatus.equals(BatchStatus.FAILED)) {
+			updateBatchStatus(BatchStatus.FAILED);           // Should have already been done but maybe better for possible code refactoring to have it here.
+		} else {
+			throw new IllegalStateException("Step batch status should not be in a " + currentBatchStatus.name() + " state");
+		}
+	}
+
+	protected void updateBatchStatus(BatchStatus updatedBatchStatus) {
+		logger.fine("Updating batch status from : " + stepStatus.getBatchStatus() + ", to: " + updatedBatchStatus);
+		stepStatus.setBatchStatus(updatedBatchStatus);
+		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
+		stepContext.setBatchStatus(updatedBatchStatus);
+	}
+
+	protected boolean shouldStepBeExecuted() throws AbortedBeforeStartException {
+
+		if (logger.isLoggable(Level.FINER)) {
+			logger.finer("In shouldStepBeExecuted() with stepContext =  " + this.stepContext);
+		}
+
+		this.stepStatus = _jobStatusService.getStepStatus(jobInstance.getInstanceId(), step.getId());
+		if (stepStatus == null) {
+			logger.finer("No existing step status found.  Create new step execution and proceed to execution.");
+			// create new step execution
+			StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
+			// create new step status for this run
+			stepStatus = _jobStatusService.createStepStatus(stepExecution.getStepExecutionId());
+			((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
+			return true;
+		} else {
+			logger.finer("Existing step status found.");
+			// if a step status already exists for this instance id. It means this
+			// is a restart and we need to get the previously persisted data
+			((StepContextImpl) stepContext).setPersistentUserData(stepStatus.getPersistentUserData());
+			if (shouldStepBeExecutedOnRestart()) {
+				// Seems better to let the start count get incremented without getting a step execution than
+				// vice versa (in an unexpected error case).
+				stepStatus.incrementStartCount();
+				// create new step execution
+				StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
+				((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	private boolean shouldStepBeExecutedOnRestart() throws AbortedBeforeStartException {
+		BatchStatus stepBatchStatus = stepStatus.getBatchStatus();
+		if (stepBatchStatus.equals(BatchStatus.COMPLETED)) {
+			// A bit of parsing involved since the model gives us a String not a
+			// boolean, but it should default to 'false', which is the spec'd default.
+			if (!Boolean.parseBoolean(step.getAllowStartIfComplete())) {
+				logger.fine("Step: " + step.getId() + " already has batch status of COMPLETED, so won't be run again since it does not allow start if complete.");
+				return false;
+			} else {
+				logger.fine("Step: " + step.getId() + " already has batch status of COMPLETED, and allow-start-if-complete is set to 'true'");
+			}
+		}
+
+		// The spec default is '0', which we get by initializing to '0' in the next line
+		int startLimit = 0;
+		String startLimitString = step.getStartLimit();
+		if (startLimitString != null) {
+			try {
+				startLimit = Integer.parseInt(startLimitString);
+			} catch (NumberFormatException e) {
+				throw new IllegalArgumentException("Could not parse start limit value.  Received NumberFormatException for start-limit value:  " + startLimitString 
+						+ " for stepId: " + step.getId() + ", with start-limit=" + step.getStartLimit());
+			}
+		}
+
+		if (startLimit < 0) {
+			throw new IllegalArgumentException("Found negative start-limit of " + startLimit + "for stepId: " + step.getId());
+		}
+
+		if (startLimit > 0) {
+			int newStepStartCount = stepStatus.getStartCount() + 1;
+			if (newStepStartCount > startLimit) {
+				throw new AbortedBeforeStartException("For stepId: " + step.getId() + ", tried to start step for the " + newStepStartCount
+						+ " time, but startLimit = " + startLimit);
+			} else {
+				logger.fine("Starting (possibly restarting) step: " + step.getId() + ", since newStepStartCount = " + newStepStartCount
+						+ " and startLimit=" + startLimit);
+			}
+		}
+		return true;
+	}
+
+
+	protected void statusStarting() {
+		stepStatus.setBatchStatus(BatchStatus.STARTING);
+		_jobStatusService.updateJobCurrentStep(jobInstance.getInstanceId(), step.getId());
+		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
+		stepContext.setBatchStatus(BatchStatus.STARTING);
+	}
+
+	protected void persistUserData() {
+		ByteArrayOutputStream persistentBAOS = new ByteArrayOutputStream();
+		ObjectOutputStream persistentDataOOS = null;
+
+		try {
+			persistentDataOOS = new ObjectOutputStream(persistentBAOS);
+			persistentDataOOS.writeObject(stepContext.getPersistentUserData());
+			persistentDataOOS.close();
+		} catch (Exception e) {
+			throw new BatchContainerServiceException("Cannot persist the persistent user data for the step.", e);
+		}
+
+		stepStatus.setPersistentUserData(new PersistentDataWrapper(persistentBAOS.toByteArray()));
+		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
+	}
+
+	protected void persistExitStatusAndEndTimestamp() {
+		stepStatus.setExitStatus(stepContext.getExitStatus());
+		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
+
+		// set the end time metric before flushing
+		long time = System.currentTimeMillis();
+		Timestamp endTS = new Timestamp(time);
+		stepContext.setEndTime(endTS);
+
+		_persistenceManagementService.updateStepExecution(rootJobExecution.getExecutionId(), stepContext);
+	}
+
+	private StepExecutionImpl getNewStepExecution(long rootJobExecutionId, StepContextImpl stepContext) {
+		return _persistenceManagementService.createStepExecution(rootJobExecutionId, stepContext);
+	}
 
 	private void setContextProperties() {
 		JSLProperties jslProps = step.getProperties();
@@ -128,309 +398,10 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 		ITransactionManagementService transMgr = ServicesManagerImpl.getInstance().getTransactionManagementService();
 		transactionManager = transMgr.getTransactionManager(stepContext);
-
 	}
 
 	public void setStepContext(StepContextImpl stepContext) {
 		this.stepContext = stepContext;
-	}
-
-	@Override
-	public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException  {
-
-		Throwable throwable = null;
-
-		this.rootJobExecution = rootJobExecution;
-
-		try {
-			RunOnRestart rc = preInvokeStep();
-
-			if (rc.equals(RunOnRestart.ALREADY_COMPLETE)) {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine("Not going to run this step.  Returning previous exit status of: " + stepStatus.getExitStatus());
-				}
-
-				return new InternalExecutionElementStatus(stepStatus.getExitStatus());
-
-			} else {
-				invokeCoreStep();
-
-				/**
-				 * This order has been reversed to keep it consistent with when we invoke job, split, and flow listeners
-				 */
-				transitionToFinalStatus();
-			}
-		} catch (Throwable t) {
-
-			// Hold onto this for now, we'll wrapper and rethrow once we call
-			// afterStep() and persist the execution status.
-			throwable = t;
-
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			t.printStackTrace(pw);
-
-			logger.warning(sourceClass + ": caught exception/error: " + t.getMessage() + " : Stack trace: " + sw.toString());
-
-			// If null, this says that the preInvoke failed before we even got
-			// into the 'starting' state,
-			// so we won't count it as an attempt. There's no record of this
-			// step having executed.
-			if (stepContext.getBatchStatus() != null) {
-				stepContext.setBatchStatus(BatchStatus.FAILED);
-				logger.fine(sourceClass + ": setting step BatchStatus to FAILED");
-			} else {
-				logger.fine(sourceClass + ": no step BatchStatus to set");
-			}
-		} finally {
-			//CALL ANALYZER AND LOGICALTX and listeners
-			invokePostStepArtifacts();
-
-			if (stepContext.getBatchStatus() != null) {
-				
-				// Now that all step-level artifacts have had a chance to
-				// run, we set the exit status to one of the defaults if
-				// it is still unset.
-				defaultExitStatusIfNecessary();
-				
-				// Persist with exit status
-				persistStepExitStatusAndUserData();
-				
-				// This doesn't contradict the notion that we only persist the
-				// step exit status after all step-level exit statuses have run, 
-				// because this only runs on the partitions, which now are
-				// sending their partition level statuses back to the main thread.
-				sendStatusFromPartitionToAnalyzerIfPresent();
-			}
-
-		}
-
-		// Again, the purpose of this distinction is to not count against the start-limit if
-		// we don't really make it to the point of executing the artifacts
-		// It's arguable if we should make such a distinction but we do indeed.
-		if (stepContext.getBatchStatus() == null) {
-			logger.warning("Aborting before start for stepId=" + step.getId());
-			throw new AbortedBeforeStartException("Thrown for stepId=" + step.getId());
-		} else if (throwable != null) {
-			throw new RuntimeException("Wrappering earlier uncaught exception: ", throwable);
-		} else {
-			if (logger.isLoggable(Level.FINER)) {
-				logger.finer("Returning step exitStatus: " + stepContext.getExitStatus()); 
-			}
-
-			// This internal status happens to be identical to an 
-			// externally-meaningful status (corresponding to a JobOperator-visible batch+exit status)
-			// but this will not generally be the case.
-			return new InternalExecutionElementStatus(stepContext.getBatchStatus(), stepContext.getExitStatus());
-		}
-	}
-
-
-	private void defaultExitStatusIfNecessary() {
-		String stepExitStatus = stepContext.getExitStatus();
-		String processRetVal = stepContext.getBatchletProcessRetVal(); 
-		if (stepExitStatus != null) {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Returning with user-set exit status: " + stepExitStatus);
-			}
-		} else if (processRetVal != null) {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Returning with exit status from batchlet.process(): " + processRetVal);
-			}
-			stepContext.setExitStatus(processRetVal);
-		} else {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Returning with default exit status");
-			}
-			stepContext.setExitStatus(stepContext.getBatchStatus().name());
-		}
-	}
-
-	protected void statusStarting() {
-		stepStatus.setBatchStatus(BatchStatus.STARTING);
-		_jobStatusService.updateJobCurrentStep(jobInstance.getInstanceId(), step.getId());
-		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
-		stepContext.setBatchStatus(BatchStatus.STARTING);
-		long time = System.currentTimeMillis();
-		Timestamp startTS = new Timestamp(time);
-		stepContext.setStartTime(startTS);
-	}
-
-	protected void statusStarted() {
-		stepStatus.setBatchStatus(BatchStatus.STARTED);
-		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
-		stepContext.setBatchStatus(BatchStatus.STARTED);
-	}
-
-	protected void statusStopped() {
-		stepStatus.setBatchStatus(BatchStatus.STOPPED);
-		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
-		stepContext.setBatchStatus(BatchStatus.STOPPED);
-	}
-
-	protected void statusCompleted() {
-		stepStatus.setBatchStatus(BatchStatus.COMPLETED);
-		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
-		stepContext.setBatchStatus(BatchStatus.COMPLETED);
-	}
-
-	private void transitionToFinalStatus() {
-		BatchStatus currentBatchStatus = stepContext.getBatchStatus();
-
-		if (currentBatchStatus.equals(BatchStatus.STARTING)) {
-			throw new IllegalStateException("Step batch status should not be in a STARTING state");
-		}
-
-		// Transition to "COMPLETED"
-		if (currentBatchStatus.equals(BatchStatus.STARTED)) {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Transitioning step status to COMPLETED for step: " + step.getId());
-			}
-			statusCompleted();
-			// Transition to "STOPPED"            
-		} else if (currentBatchStatus.equals(BatchStatus.STOPPING)) {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Transitioning step status to STOPPED for step: " + step.getId());
-			}
-			statusStopped();
-		}        
-	}
-
-	protected void persistStepExitStatusAndUserData() {
-
-		ByteArrayOutputStream persistentBAOS = new ByteArrayOutputStream();
-		ObjectOutputStream persistentDataOOS = null;
-
-		try {
-			persistentDataOOS = new ObjectOutputStream(persistentBAOS);
-			persistentDataOOS.writeObject(stepContext.getPersistentUserData());
-			persistentDataOOS.close();
-		} catch (Exception e) {
-			throw new BatchContainerServiceException("Cannot persist the persistent user data for the step.", e);
-		}
-
-		stepStatus.setPersistentUserData(new PersistentDataWrapper(persistentBAOS.toByteArray()));
-		stepStatus.setExitStatus(stepContext.getExitStatus());
-		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
-
-		// set the end time metric before flushing
-		long time = System.currentTimeMillis();
-		Timestamp endTS = new Timestamp(time);
-		stepContext.setEndTime(endTS);
-
-		_persistenceManagementService.updateStepExecution(rootJobExecution.getExecutionId(), stepContext);
-	}
-
-	private StepExecutionImpl getNewStepExecution(long rootJobExecutionId, StepContextImpl stepContext) {
-		return _persistenceManagementService.createStepExecution(rootJobExecutionId, stepContext);
-	}
-
-	protected RunOnRestart preInvokeStep() {
-
-		if (logger.isLoggable(Level.FINER)) {
-			logger.finer("In preInvokeStep() with stepContext =  " + this.stepContext);
-		}
-
-		this.stepStatus = _jobStatusService.getStepStatus(jobInstance.getInstanceId(), step.getId());
-		if (stepStatus == null) {
-
-			// create new step execution
-			StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
-			// create new step status for this run
-			stepStatus = _jobStatusService.createStepStatus(stepExecution.getStepExecutionId());
-			((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
-
-		} else {
-			// if a step status already exists for this instance id. It means this
-			// is a restart and we need to get the previously persisted data
-			((StepContextImpl) stepContext).setPersistentUserData(stepStatus.getPersistentUserData());
-			if (runOnRestart()) {
-				// Seems better to let the start count get incremented without getting a step execution than
-				// vice versa (in an unexpected error case).
-				stepStatus.incrementStartCount();
-				// create new step execution
-				StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
-				((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
-			} else {
-				return RunOnRestart.ALREADY_COMPLETE;
-			}
-		}
-
-		// Update status
-		statusStarting();
-
-		//Set Step context properties
-		setContextProperties();
-
-		//SET UP STEP ARTIFACTS LIKE LISTENERS OR LOGICALTX
-		setupStepArtifacts();
-
-		// Update status
-		statusStarted();
-
-		//INVOKE PRE STEP LISTENERS OR TX's
-		invokePreStepArtifacts();
-
-		return RunOnRestart.RUN;
-	}
-
-	/*
-	 * Currently blows up if we're over the start limit rather than failing and
-	 * allowing more orderly processing within this class.
-	 */
-	private boolean runOnRestart() {
-		// TODO - maybe some more validation is required?
-
-		BatchStatus stepBatchStatus = stepStatus.getBatchStatus();
-		if (stepBatchStatus.equals(BatchStatus.COMPLETED)) {
-			// A bit of parsing involved since the model gives us a String not a
-			// boolean, but it
-			// should default to 'false', which is the spec'd default.
-			if (!Boolean.parseBoolean(step.getAllowStartIfComplete())) {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine("Step: " + step.getId() + " already has batch status of COMPLETED, so won't be run again since it does not allow start if complete.");
-				}
-				return false;
-			} else {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine("Step: " + step.getId() + " already has batch status of COMPLETED, and allow-start-if-complete is set to 'true'");
-				}
-			}
-		}
-
-		// Check restart limit.
-		// The spec default is '0', which we get by initializing to '0' in the next line
-		int startLimit = 0;
-		String startLimitString = step.getStartLimit();
-		if (startLimitString != null) {
-			try {
-				startLimit = Integer.parseInt(startLimitString);
-			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException("Could not parse start limit value for stepId: " + step.getId() + ", with start-limit="
-						+ step.getStartLimit(), e);
-			}
-		}
-
-		if (startLimit < 0) {
-			throw new IllegalArgumentException("Found negative start-limit of " + startLimit + "for stepId: " + step.getId());
-		}
-
-		if (startLimit > 0) {
-			int newStepStartCount = stepStatus.getStartCount() + 1;
-			if (newStepStartCount > startLimit) {
-				// TODO - should I fail the job or do something more specific
-				// here than blowing up?
-				throw new IllegalStateException("For stepId: " + step.getId() + ", tried to start step for the " + newStepStartCount
-						+ " time, but startLimit = " + startLimit);
-			} else {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine("Starting (possibly restarting) step: " + step.getId() + ", since newStepStartCount = " + newStepStartCount
-							+ " and startLimit=" + startLimit);
-				}
-			}
-		}
-
-		return true;
 	}
 
 	protected BlockingQueue<PartitionDataWrapper> getAnalyzerQueue() {
@@ -439,6 +410,15 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 	public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
 		this.analyzerStatusQueue = analyzerQueue;
+	}
+
+	private void rethrowWithMsg(String msgBeginning, Throwable t) {
+		String errorMsg = msgBeginning + " ; Caught exception/error: " + t.getLocalizedMessage();
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		t.printStackTrace(pw);
+		logger.warning(errorMsg + " : Stack trace: " + sw.toString());
+		throw new BatchContainerRuntimeException(errorMsg, t);
 	}
 
 	public String toString() {

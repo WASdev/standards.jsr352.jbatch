@@ -39,6 +39,7 @@ import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
+import com.ibm.jbatch.container.util.BatchParallelWorkUnit;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.Flow;
@@ -52,7 +53,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 
 	private final RuntimeJobContextJobExecutionBridge jobExecutionImpl;
 
-	private volatile List<BatchWorkUnit> parallelBatchWorkUnits;
+	private volatile List<BatchParallelWorkUnit> parallelBatchWorkUnits;
 
 	private final ServicesManager servicesManager;
 	private final IBatchKernelService batchKernel;
@@ -78,7 +79,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 		synchronized (subJobs) {
 
 			if (parallelBatchWorkUnits != null) {
-				for (BatchWorkUnit subJob : parallelBatchWorkUnits) {
+				for (BatchParallelWorkUnit subJob : parallelBatchWorkUnits) {
 					try {
 						batchKernel.stopJob(subJob.getJobExecutionImpl().getExecutionId());
 					} catch (Exception e) {
@@ -99,10 +100,10 @@ public class SplitControllerImpl implements IExecutionElementController {
 			logger.entering(sourceClass, sourceMethod);
 		}
 
-		BlockingQueue<BatchWorkUnit> completedWorkQueue = new LinkedBlockingQueue<BatchWorkUnit>();
+		BlockingQueue<BatchParallelWorkUnit> completedWorkQueue = new LinkedBlockingQueue<BatchParallelWorkUnit>();
 		List<Flow> flows = this.split.getFlows();
 
-		parallelBatchWorkUnits = new ArrayList<BatchWorkUnit>();
+		parallelBatchWorkUnits = new ArrayList<BatchParallelWorkUnit>();
 
 		// Build all sub jobs from flows in split
 		synchronized (subJobs) {
@@ -112,9 +113,9 @@ public class SplitControllerImpl implements IExecutionElementController {
 			for (JSLJob job : subJobs) {
 				int count = batchKernel.getJobInstanceCount(job.getId());
 				if (count == 0) {
-					parallelBatchWorkUnits.add(batchKernel.buildNewBatchWorkUnit(job, null, null, completedWorkQueue, rootJobExecution));
+					parallelBatchWorkUnits.add(batchKernel.buildNewBatchParallelWorkUnit(job, null, null, completedWorkQueue, rootJobExecution));
 				} else if (count == 1) {
-					parallelBatchWorkUnits.add(batchKernel.buildRestartableBatchWorkUnit(job, null, null, completedWorkQueue, rootJobExecution));
+					parallelBatchWorkUnits.add(batchKernel.buildRestartableBatchParallelWorkUnit(job, null, null, completedWorkQueue, rootJobExecution));
 				} else {
 					throw new IllegalStateException("There is an inconsistency somewhere in the internal subjob creation");
 				}
@@ -122,7 +123,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 		}
 
 		// Then start or restart all subjobs in parallel
-		for (BatchWorkUnit work : parallelBatchWorkUnits) {
+		for (BatchParallelWorkUnit work : parallelBatchWorkUnits) {
 			int count = batchKernel.getJobInstanceCount(work.getJobExecutionImpl().getJobInstance().getJobName());
 
 			assert (count <= 1);
@@ -191,7 +192,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 		// no-op
 	}
 
-	public List<BatchWorkUnit> getParallelJobExecs() {
+	public List<BatchParallelWorkUnit> getParallelJobExecs() {
 		return parallelBatchWorkUnits;
 	}
 

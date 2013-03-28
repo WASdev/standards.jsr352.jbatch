@@ -26,7 +26,7 @@ import javax.batch.runtime.BatchStatus;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
-import com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl;
+import com.ibm.jbatch.container.services.IPersistenceManagerService.TimestampType;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 import com.ibm.jbatch.spi.TaggedJobExecution;
@@ -77,7 +77,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 		}
 		else {
 			// old job, retrieve from the backend
-			batchStatus = BatchStatus.valueOf(_persistenceManagementService.jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.BATCH_STATUS));
+			batchStatus = BatchStatus.valueOf(_persistenceManagementService.jobOperatorQueryJobExecutionBatchStatus(executionID));
 			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
 		}
 		return batchStatus;
@@ -87,7 +87,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 	public Date getCreateTime() {
 
 		if (this.jobContext == null) {
-			createTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID,JDBCPersistenceManagerImpl.CREATE_TIME);
+			createTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.CREATE);
 		}
 
 		if (createTime != null){
@@ -101,7 +101,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 
 
 		if (this.jobContext == null) {
-			endTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.END_TIME);
+			endTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.END);
 		}
 
 		if (endTime != null){
@@ -122,7 +122,7 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 			return this.jobContext.getExitStatus();
 		}
 		else {
-			exitStatus = _persistenceManagementService.jobOperatorQueryJobExecutionStatus(executionID, JDBCPersistenceManagerImpl.EXIT_STATUS);
+			exitStatus = _persistenceManagementService.jobOperatorQueryJobExecutionExitStatus(executionID);
 			return exitStatus;
 		}
 
@@ -130,16 +130,9 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 
 	@Override
 	public Date getLastUpdatedTime() {
-		// if and only if we are accessing the JDBC impl, get the requested timestamp
-		/*
-		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-			updateTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.UPDATE_TIME);
-		}
-		 */
 
 		if (this.jobContext == null) {
-
-				this.updateTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.UPDATE_TIME);
+			this.updateTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.LAST_UPDATED);
 		}
 
 		if (updateTime != null) {
@@ -151,16 +144,8 @@ public class JobOperatorJobExecutionImpl implements IJobExecution, TaggedJobExec
 	@Override
 	public Date getStartTime() {
 
-		// if and only if we are accessing the JDBC impl, get the requested timestamp
-		/*
-		if (_persistenceManagementService instanceof JDBCPersistenceManagerImpl){
-			startTime = ((JDBCPersistenceManagerImpl)_persistenceManagementService).jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.START_TIME);
-		}
-		 */
-
-
 		if (this.jobContext == null) {
-			startTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, JDBCPersistenceManagerImpl.START_TIME);
+			startTime = _persistenceManagementService.jobOperatorQueryJobExecutionTimestamp(executionID, TimestampType.STARTED);
 		}
 
 		if (startTime != null){

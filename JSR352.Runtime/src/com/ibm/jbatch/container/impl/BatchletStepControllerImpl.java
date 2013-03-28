@@ -71,7 +71,7 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 
 
 		if (jobExecutionImpl.getJobContext().getBatchStatus().equals(BatchStatus.STOPPING)){
-			this.statusStopped();
+			updateBatchStatus(BatchStatus.STOPPED);
 		} else {
 
 			String processRetVal = batchletProxy.process();

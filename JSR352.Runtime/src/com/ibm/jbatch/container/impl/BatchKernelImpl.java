@@ -44,6 +44,7 @@ import com.ibm.jbatch.container.services.impl.JSEBatchSecurityHelper;
 import com.ibm.jbatch.container.services.impl.RuntimeBatchJobUtil;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.util.BatchParallelWorkUnit;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
@@ -142,8 +143,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 
 		JobControllerImpl controller = this.instanceId2jobControllerMap.get(jobInstanceId);
 		if (controller == null) {
-			//TODO - should  be more discriminating w/ exception  to see if it's just not running or if it doesn't exist at all in the DB !
-			String msg = "JobExecution with execution id of " + jobInstanceId + "is not running.";
+			String msg = "JobExecution with execution id of " + executionId + "is not running.";
 			logger.warning("stopJob(): " + msg);
 			throw new JobExecutionNotRunningException(msg);
 		}
@@ -251,8 +251,8 @@ public class BatchKernelImpl implements IBatchKernelService {
 	 * @return
 	 */
 	@Override
-	public BatchWorkUnit buildNewBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
-			BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobStartException {
+	public BatchParallelWorkUnit buildNewBatchParallelWorkUnit(JSLJob jobModel, Properties partitionProps,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchParallelWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobStartException {
 		String method = "buildBatchWorkUnit";
 
 		if (logger.isLoggable(Level.FINER)) {
@@ -267,7 +267,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 			logger.fine("JobExecution constructed: " + jobExecution);
 		}
 
-		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution, analyzerQueue, completedQueue, rootJobExecution, false);
+		BatchParallelWorkUnit batchWork = new BatchParallelWorkUnit(this, jobExecution, analyzerQueue, completedQueue, rootJobExecution, false);
 		this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
 		// re-enabling while i work out the persistence
 		jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);
@@ -276,12 +276,12 @@ public class BatchKernelImpl implements IBatchKernelService {
 	}
 
 	@Override
-	public List<BatchWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels,
+	public List<BatchParallelWorkUnit> buildNewParallelJobs(List<JSLJob> jobModels,
 			Properties[] partitionProperties,
 			BlockingQueue<PartitionDataWrapper> analyzerQueue, 
-			BlockingQueue<BatchWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) 
+			BlockingQueue<BatchParallelWorkUnit> completedQueue, RuntimeJobContextJobExecutionBridge rootJobExecution) 
 					throws JobRestartException, JobStartException {
-		List<BatchWorkUnit> batchWorkUnits = new ArrayList<BatchWorkUnit>(jobModels.size());
+		List<BatchParallelWorkUnit> batchWorkUnits = new ArrayList<BatchParallelWorkUnit>(jobModels.size());
 
 		//for now let always use a Properties array. We can add some more convenience methods later for null properties and what not
 
@@ -290,7 +290,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 
 			Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];    
 
-			BatchWorkUnit batchWork = this.buildNewBatchWorkUnit(parallelJob, partitionProps, analyzerQueue, 
+			BatchParallelWorkUnit batchWork = this.buildNewBatchParallelWorkUnit(parallelJob, partitionProps, analyzerQueue, 
 					completedQueue, rootJobExecution);
 			batchWorkUnits.add(batchWork);
 
@@ -316,12 +316,12 @@ public class BatchKernelImpl implements IBatchKernelService {
 	}
 
 	@Override
-	public List<BatchWorkUnit> buildRestartableParallelJobs(List<JSLJob> jobModels,
+	public List<BatchParallelWorkUnit> buildRestartableParallelJobs(List<JSLJob> jobModels,
 			Properties[] partitionProperties,
 			BlockingQueue<PartitionDataWrapper> analyzerQueue, 
-			BlockingQueue<BatchWorkUnit> completedQueue, 
+			BlockingQueue<BatchParallelWorkUnit> completedQueue, 
 			RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
-		List<BatchWorkUnit> batchWorkUnits = new ArrayList<BatchWorkUnit>(jobModels.size());
+		List<BatchParallelWorkUnit> batchWorkUnits = new ArrayList<BatchParallelWorkUnit>(jobModels.size());
 
 		//for now let always use a Properties array. We can add some more convenience methods later for null properties and what not
 
@@ -331,7 +331,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 			Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];    
 
 			try {
-				BatchWorkUnit batchWork = this.buildRestartableBatchWorkUnit(parallelJob, partitionProps, analyzerQueue, 
+				BatchParallelWorkUnit batchWork = this.buildRestartableBatchParallelWorkUnit(parallelJob, partitionProps, analyzerQueue, 
 						completedQueue, rootJobExecution);
 				batchWorkUnits.add(batchWork);
 			} catch (JobExecutionAlreadyCompleteException e) {
@@ -362,8 +362,8 @@ public class BatchKernelImpl implements IBatchKernelService {
 	}
 
 	@Override
-	public BatchWorkUnit buildRestartableBatchWorkUnit(JSLJob jobModel, Properties partitionProps,
-			BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchWorkUnit> completedQueue, 
+	public BatchParallelWorkUnit buildRestartableBatchParallelWorkUnit(JSLJob jobModel, Properties partitionProps,
+			BlockingQueue<PartitionDataWrapper> analyzerQueue, BlockingQueue<BatchParallelWorkUnit> completedQueue, 
 			RuntimeJobContextJobExecutionBridge rootJobExecution) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 		String method = "restartGeneratedJob";
 
@@ -407,7 +407,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 			logger.fine("JobExecution constructed: " + jobExecution);
 		}
 
-		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution, analyzerQueue, completedQueue, rootJobExecution, false);
+		BatchParallelWorkUnit batchWork = new BatchParallelWorkUnit(this, jobExecution, analyzerQueue, completedQueue, rootJobExecution, false);
 		this.instanceId2jobControllerMap.put(jobExecution.getInstanceId(), batchWork.getController());
 		// re-enabling while i work out the persistence
 		jobExecutionInstancesMap.put(jobExecution.getExecutionId(), jobExecution);

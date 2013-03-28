@@ -16,9 +16,12 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.Map;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.listener.ChunkListener;
 import javax.batch.runtime.context.JobContext;
+import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -28,6 +31,9 @@ public class ArtifactInstanceTestChunkListener implements ChunkListener {
     @Inject 
     JobContext jobCtx;
     
+    @Inject
+    StepContext stepCtx;
+    
     @Inject    
     @BatchProperty(name="chunk.property")
     String chunkPropertyString;
@@ -35,58 +41,63 @@ public class ArtifactInstanceTestChunkListener implements ChunkListener {
     static String prop1 = "chunkListenerA";
     static String prop2 = "chunkListenerB";
     
-    static boolean sawProp1 = false;
-    static boolean sawProp2 = false;
+    int instance1Count = 0;
+    int instance2Count = 0;
+
+    boolean uniqueInstance1 = false;
+    boolean uniqueInstance2 = false;
     
-    static int instance1Count = 0;
-    static int instance2Count = 0;
+    private boolean saw2Listeners = false;
     
-    static boolean saw2Listeners = false;
-    static boolean uniqueInstance1 = false;
-    static boolean uniqueInstance2 = false;
-	
 	@Override
 	public void beforeChunk() throws Exception {
-		if (chunkPropertyString.equals(prop1)){
-			sawProp1 = true;
-			instance1Count++;
-		}
-		else if (chunkPropertyString.equals(prop2)){
-			sawProp2 = true;
-			instance2Count++;
-		}
+		
+        Map<String, Boolean> instanceData = (Map<String, Boolean>) stepCtx.getTransientUserData();
+
+        if (chunkPropertyString.equals(prop1)) {
+            instanceData.put("sawChunkProp1", true);
+
+            instance1Count++;
+
+        } else if (chunkPropertyString.equals(prop2)) {
+            instanceData.put("sawChunkProp2", true);
+            instance2Count++;
+        }
+		
 		
 	}
 
 	@Override
 	public void afterChunk() throws Exception {
 		
-		if (sawProp1 && sawProp2){
-			saw2Listeners = true;
-		}
 		
-		if ((chunkPropertyString.equals(prop1)) && instance1Count == 1){
-			uniqueInstance1 = true;
-		}
+        Map<String, Boolean> instanceData = (Map<String, Boolean>) stepCtx.getTransientUserData();
+
+        if (instanceData.get("sawChunkProp1") && instanceData.get("sawChunkProp2")) {
+            saw2Listeners = true;
+        }
+
+
+        if ((chunkPropertyString.equals(prop1)) && instance1Count == 1) {
+            uniqueInstance1 = true;
+        }
+
+        if ((chunkPropertyString.equals(prop2)) && instance2Count == 1) {
+            uniqueInstance2 = true;
+        }
+
+        String currentStatus = jobCtx.getExitStatus();
+
+        if (currentStatus != null && currentStatus.equals("BAD")) {
+            return;
+        }
+        
+        if (saw2Listeners && (uniqueInstance1 ^ uniqueInstance2)) {
+            jobCtx.setExitStatus(jobCtx.getExitStatus() + "ChunkListener");
+        } else {
+            jobCtx.setExitStatus("CHUNK_BAD");
+        }
 		
-		if ((chunkPropertyString.equals(prop2)) && instance2Count == 1){
-			uniqueInstance2 = true;
-		}
-		
-		String currentStatus = jobCtx.getExitStatus();
-		
-		if (currentStatus != null && currentStatus.equals("BAD")){
-			return;
-		}
-		
-		if ((saw2Listeners && uniqueInstance2 && !uniqueInstance1) || (saw2Listeners && !uniqueInstance2 && uniqueInstance1)){
-			jobCtx.setExitStatus(jobCtx.getExitStatus()+"ChunkListener");
-			uniqueInstance1 = false;
-			uniqueInstance2 = false;
-		}
-		else {
-			jobCtx.setExitStatus("CHUNK_BAD");
-		}
 	}
 
 	@Override

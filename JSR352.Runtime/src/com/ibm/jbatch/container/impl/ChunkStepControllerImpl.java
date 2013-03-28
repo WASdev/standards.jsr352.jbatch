@@ -599,7 +599,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                         chunkProxy.afterChunk();
                     }
                     
-                    this.persistStepExitStatusAndUserData();
+                    this.persistUserData();
                     
                     this.chkptAlg.beginCheckpoint();
                     

@@ -16,6 +16,9 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.listener.JobListener;
 import javax.batch.runtime.context.JobContext;
@@ -32,60 +35,74 @@ public class ArtifactInstanceTestJobListener implements JobListener {
     @BatchProperty(name="job.property")
     String jobPropertyString;
     
-    static String prop1 = "jobListenerA";
-    static String prop2 = "jobListenerB";
+    public final static String prop1 = "jobListenerA";
+    public final static String prop2 = "jobListenerB";
     
-    static boolean sawProp1 = false;
-    static boolean sawProp2 = false;
+    int instance1Count = 0;
+    int instance2Count = 0;
     
-    static int instance1Count = 0;
-    static int instance2Count = 0;
+    boolean saw2Listeners = false;
     
-    static boolean saw2Listeners = false;
-    static boolean uniqueInstance1 = false;
-    static boolean uniqueInstance2 = false;
+    boolean uniqueInstance1 = false;
+    boolean uniqueInstance2 = false;
     
 	@Override
 	public void beforeJob() throws Exception {
+	    
+        synchronized(jobCtx) {
+            //initialize map
+            if (jobCtx.getTransientUserData() == null) {
+                
+                Map<String, Boolean> dataMap = new ConcurrentHashMap<String, Boolean>();
+                dataMap.put("sawProp1", false);
+                dataMap.put("sawProp2", false);
+                
+                jobCtx.setTransientUserData(dataMap);
+            }
+        }
 		
-		if (jobPropertyString.equals(prop1)){
-			sawProp1 = true;
-			instance1Count++;
-		}
-		else if (jobPropertyString.equals(prop2)){
-			sawProp2 = true;
-			instance2Count++;
-		}
+        Map<String, Boolean> instanceData = (Map<String, Boolean>) jobCtx.getTransientUserData();
+
+        if (jobPropertyString.equals(prop1)) {
+            instanceData.put("sawProp1", true);
+            instance1Count++;
+
+        } else if (jobPropertyString.equals(prop2)) {
+            instanceData.put("sawProp2", true);
+            instance2Count++;
+        }
+		
 	}
 
 	@Override
 	public void afterJob() throws Exception {
+	    Map<String, Boolean> instanceData = (Map<String, Boolean>) jobCtx.getTransientUserData();
+	    
+	
+        if (instanceData.get("sawProp1") && instanceData.get("sawProp2")) {
+            saw2Listeners = true;
+        }
+
+        if ((jobPropertyString.equals(prop1)) && instance1Count == 1) {
+            uniqueInstance1 = true;
+        }
+
+        if ((jobPropertyString.equals(prop2)) && instance2Count == 1) {
+            uniqueInstance2 = true;
+        }
+
+        String currentStatus = jobCtx.getExitStatus();
+
+        if (currentStatus != null && currentStatus.equals("BAD")) {
+            return;
+        }
+        
+        if (saw2Listeners && (uniqueInstance1 ^ uniqueInstance2)) {
+            jobCtx.setExitStatus(jobCtx.getExitStatus() + "JobListener");
+        } else {
+            jobCtx.setExitStatus("JOB_BAD");
+        }
 		
-		if (sawProp1 && sawProp2){
-			saw2Listeners = true;
-		}
-		
-		if ((jobPropertyString.equals(prop1)) && instance1Count == 1){
-			uniqueInstance1 = true;
-		}
-		
-		if ((jobPropertyString.equals(prop2)) && instance2Count == 1){
-			uniqueInstance2 = true;
-		}
-		
-		String currentStatus = jobCtx.getExitStatus();
-		
-		if (currentStatus != null && currentStatus.equals("BAD")){			return;
-		}
-		
-		if ((saw2Listeners && uniqueInstance2 && !uniqueInstance1) || (saw2Listeners && !uniqueInstance2 && uniqueInstance1)){
-			jobCtx.setExitStatus(jobCtx.getExitStatus()+"JobListener");
-			uniqueInstance1 = false;
-			uniqueInstance2 = false;
-		}
-		else {
-			jobCtx.setExitStatus("JOB_BAD");
-		}
 	}
 
 }

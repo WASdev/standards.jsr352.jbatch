@@ -27,23 +27,29 @@ public class CollectorPropertyResolverImpl extends AbstractPropertyResolver<Coll
 		super(isPartitionStep);
 	}
 
-	@Override
-	public Collector substituteProperties(Collector b) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
-	public Collector substituteProperties(Collector b, Properties submittedProps) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Collector substituteProperties(Collector b,
+	public Collector substituteProperties(Collector collector,
 			Properties submittedProps, Properties parentProps) {
-		// TODO Auto-generated method stub
-		return null;
+        /*
+        <xs:complexType name="Collector">
+            <xs:sequence>
+                <xs:element name="properties" type="jsl:Properties"
+                    minOccurs="0" maxOccurs="1" />
+            </xs:sequence>
+            <xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+        </xs:complexType>
+        */
+        
+        //resolve all the properties used in attributes and update the JAXB model
+        collector.setRef(this.replaceAllProperties(collector.getRef(), submittedProps, parentProps));
+
+        // Resolve all the properties defined for this artifact
+        if (collector.getProperties() != null) {
+            this.resolveElementProperties(collector.getProperties().getPropertyList(), submittedProps, parentProps);
+        }
+
+        return collector;
 	}
 
 }

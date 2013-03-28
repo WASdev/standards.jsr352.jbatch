@@ -3,13 +3,13 @@
   <parent>
     <artifactId>jbatch</artifactId>
     <groupId>javax.batch</groupId>
-    <version>1.0-b21</version>
+    <version>1.0-b22</version>
     <relativePath>../pom.xml/pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ibm.jbatch</groupId>
   <artifactId>com.ibm.jbatch-runtime-all</artifactId>
-  <version>1.0-b21</version>
+  <version>1.0-b22</version>
   <build>
     <resources>
       <resource>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>com.ibm.jbatch</groupId>
       <artifactId>com.ibm.jbatch-ri-spi</artifactId>
-      <version>1.0-b21</version>
+      <version>1.0-b22</version>
       <scope>compile</scope>
     </dependency>
     <dependency>

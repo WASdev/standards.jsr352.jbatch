@@ -29,14 +29,14 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.tck.utils.JobOperatorBridge;
-import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
-
 import org.junit.BeforeClass;
 import org.testng.Reporter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.ibm.jbatch.tck.utils.JobOperatorBridge;
+import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
 
 
 public class ParallelExecutionTests {
@@ -114,7 +114,7 @@ public class ParallelExecutionTests {
 
 			String sleepTime = System.getProperty("ParallelExecutionTests.testInvokeJobWithOnePartitionedStepExitStatus.sleep",DEFAULT_SLEEP_TIME);
 			jobParameters.put("sleep.time", sleepTime);
-
+			
 			Reporter.log("Invoke startJobAndWaitForResult<p>");
 			JobExecution jobExecution = jobOp.startJobAndWaitForResult("job_partitioned_1step_exitStatusTest",jobParameters);
 
@@ -125,11 +125,11 @@ public class ParallelExecutionTests {
 			assertObjEquals(1, stepExecutions.size());
 
 			for (StepExecution stepEx : stepExecutions) {
-				assertObjEquals("STEP EXIT STATUS: 11", stepEx.getExitStatus());
+				assertObjEquals("STEP EXIT STATUS: 10", stepEx.getExitStatus());
 				assertObjEquals(BatchStatus.COMPLETED, stepEx.getBatchStatus());
 			}
 
-			assertObjEquals("JOB EXIT STATUS: 11", jobExecution.getExitStatus());
+			assertObjEquals("JOB EXIT STATUS: 10", jobExecution.getExitStatus());
 			assertObjEquals(BatchStatus.COMPLETED, jobExecution.getBatchStatus());
 
 		} catch (Exception e) {
@@ -252,6 +252,7 @@ public class ParallelExecutionTests {
 
 			Reporter.log("JobExecution getBatchStatus()="+execution.getBatchStatus()+"<p>");
 			assertObjEquals(BatchStatus.COMPLETED, execution.getBatchStatus());
+			assertObjEquals("COMPLETED", execution.getExitStatus());
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}

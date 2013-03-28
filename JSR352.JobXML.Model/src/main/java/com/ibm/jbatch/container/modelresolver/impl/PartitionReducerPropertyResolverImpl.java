@@ -27,12 +27,29 @@ public class PartitionReducerPropertyResolverImpl extends
 	public PartitionReducerPropertyResolverImpl(boolean isPartitionStep) {
 		super(isPartitionStep);
 	}
+	
 
 	@Override
-	public PartitionReducer substituteProperties(PartitionReducer b,
+	public PartitionReducer substituteProperties(PartitionReducer reducer,
 			Properties submittedProps, Properties parentProps) {
-		// TODO Auto-generated method stub
-		return null;
+        /*
+	    <xs:complexType name="Collector">
+            <xs:sequence>
+                <xs:element name="properties" type="jsl:Properties" minOccurs="0" maxOccurs="1" />
+            </xs:sequence>
+            <xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+        </xs:complexType>
+        */
+	    
+        //resolve all the properties used in attributes and update the JAXB model
+	    reducer.setRef(this.replaceAllProperties(reducer.getRef(), submittedProps, parentProps));
+
+        // Resolve all the properties defined for this artifact
+        if (reducer.getProperties() != null) {
+            this.resolveElementProperties(reducer.getProperties().getPropertyList(), submittedProps, parentProps);
+        }
+
+        return reducer;
 	}
 
 }

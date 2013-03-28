@@ -39,7 +39,7 @@ public class StartLimitTests {
 
 
 	/*
-	 * @testName: testStartLimit
+	 * @testName: testStartLimitVariation3
 	 * @assertion:    1. tests the "start-limit" attribute on steps, when explicitly set or defaulting, or set to '0' (= no limit)
 	 *                2. Also tests the interaction between start-limit and allow-start-if-complete.  By this we mean that we don't
 	 *                   count against the start-limit simply because we transition to a step during restart, if allow-start-if-complete=false,
@@ -148,7 +148,11 @@ public class StartLimitTests {
 
 	}
 
-
+	/*
+	 * @testName: testStartLimitVariation2
+	 * @assertion:
+	 * @test_Strategy:
+	 */
 	@Test
 	@org.junit.Test
 	public void testStartLimitVariation2() throws Exception {
@@ -256,7 +260,11 @@ public class StartLimitTests {
 
 
 
-
+	/*
+	 * @testName: testStartLimitVariation1
+	 * @assertion:
+	 * @test_Strategy:
+	 */
 	@Test
 	@org.junit.Test
 	public void testStartLimitVariation1() throws Exception {

@@ -27,23 +27,29 @@ public class AnalyzerPropertyResolverImpl extends AbstractPropertyResolver<Analy
 		super(isPartitionStep);
 	}
 
-	@Override
-	public Analyzer substituteProperties(Analyzer b) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
-	public Analyzer substituteProperties(Analyzer b, Properties submittedProps) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Analyzer substituteProperties(Analyzer b, Properties submittedProps,
+	public Analyzer substituteProperties(Analyzer analyzer, Properties submittedProps,
 			Properties parentProps) {
-		// TODO Auto-generated method stub
-		return null;
+        /*
+        <xs:complexType name="Analyzer">
+            <xs:sequence>
+                <xs:element name="properties" type="jsl:Properties"
+                    minOccurs="0" maxOccurs="1" />
+            </xs:sequence>
+            <xs:attribute name="ref" use="required" type="jsl:artifactRef" />
+        </xs:complexType>
+        */
+        
+        //resolve all the properties used in attributes and update the JAXB model
+        analyzer.setRef(this.replaceAllProperties(analyzer.getRef(), submittedProps, parentProps));
+
+        // Resolve all the properties defined for this artifact
+        if (analyzer.getProperties() != null) {
+            this.resolveElementProperties(analyzer.getProperties().getPropertyList(), submittedProps, parentProps);
+        }
+
+        return analyzer;
 	}
 
 }

@@ -25,6 +25,7 @@ import com.ibm.jbatch.container.modelresolver.impl.ChunkPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.CollectorPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.ControlElementPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.DecisionPropertyResolverImpl;
+import com.ibm.jbatch.container.modelresolver.impl.ExceptionClassesPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.FlowPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.ItemProcessorPropertyResolverImpl;
 import com.ibm.jbatch.container.modelresolver.impl.ItemReaderPropertyResolverImpl;
@@ -42,6 +43,7 @@ import com.ibm.jbatch.jsl.model.Batchlet;
 import com.ibm.jbatch.jsl.model.Chunk;
 import com.ibm.jbatch.jsl.model.Collector;
 import com.ibm.jbatch.jsl.model.Decision;
+import com.ibm.jbatch.jsl.model.ExceptionClassFilter;
 import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.ItemProcessor;
 import com.ibm.jbatch.jsl.model.ItemReader;
@@ -135,10 +137,16 @@ public class PropertyResolverFactory {
 		return new ItemWriterPropertyResolverImpl(isPartitionedStep);
 	}
 
-	
-    /** The resolvers haven't been implemented yet!!!! **/
-    
-    
-    
+    public static PropertyResolver<ExceptionClassFilter> createSkippableExceptionClassesPropertyResolver(boolean isPartitionedStep) {
+        return new ExceptionClassesPropertyResolverImpl(isPartitionedStep);
+    }
+
+    public static PropertyResolver<ExceptionClassFilter> createRetryableExceptionClassesPropertyResolver(boolean isPartitionedStep) {
+        return new ExceptionClassesPropertyResolverImpl(isPartitionedStep);
+    }
+
+    public static PropertyResolver<ExceptionClassFilter> createNoRollbackExceptionClassesPropertyResolver(boolean isPartitionedStep) {
+        return new ExceptionClassesPropertyResolverImpl(isPartitionedStep);
+    }
 
 }

@@ -14,43 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.ibm.jbatch.tck.artifacts.reusable;
+package test.artifacts;
 
 import java.util.logging.Logger;
 
 import javax.batch.api.AbstractBatchlet;
-import javax.batch.api.BatchProperty;
-import javax.inject.Inject;
 
-
-@javax.inject.Named("myParallelSubJobsExitStatusBatchlet")
-public class MyParallelSubJobsExitStatusBatchlet extends AbstractBatchlet {
-    
-	private final static Logger logger = Logger.getLogger(MyParallelSubJobsExitStatusBatchlet.class.getName());
+public class MyBatchletImpl extends AbstractBatchlet {
+	private final static Logger logger = Logger.getLogger(MyBatchletImpl.class.getName());
 	
+    private volatile static int count = 1;
     
-    public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";    
-    
-    @Inject    
-    @BatchProperty(name="sleep.time")
-    String sleepTimeString;
-    
+    public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
+	
 	@Override
 	public String process() throws Exception {	
-		logger.fine("Running batchlet process() ");
-		
-		int sleepTime = Integer.parseInt(sleepTimeString);
-		
-		
-		String returnString = "VERY GOOD INVOCATION";
-		return returnString;
+		logger.fine("Running batchlet process(): " + count);
+		count++;
+		return GOOD_EXIT_STATUS;
 	}
 	
 	@Override
-	public void stop() throws Exception {
-				
-	}
-	
-
-	
+	public void stop() throws Exception { }
 }
