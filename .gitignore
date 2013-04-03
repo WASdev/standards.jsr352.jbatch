@@ -12,6 +12,7 @@ target/
 **/.project
 **/dependency-reduced-pom.xml
 **/*.swp
+**/*.jazzignore
 *.swp
 header.txt
 ~/
@@ -23,5 +24,10 @@ RUNTIMEDB
 JSR352.Tests.TCK/readme.txt
 JSR352.Tests.TCK/jsr352-tck.properties
 JSR352.Runtime/resources/jsr352-derby.ddl_DO_NOT_EDIT
+JSR352.Runtime/doc/**
 JSR352.JobXML.Model/prereqs
 JSR352.Tests.TCK/resources/jsr352-tck-database.ddl
+JSR352.Tests.TCK/javadoc/**
+JSR352.Tests.TCK/jsr352-tck-1.0/**
+JSR352.Tests.TCK/dist/**
+JSR352.Tests.TCK/tckZip/**
