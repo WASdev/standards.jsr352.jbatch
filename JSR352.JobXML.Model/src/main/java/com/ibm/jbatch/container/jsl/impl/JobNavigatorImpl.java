@@ -22,11 +22,11 @@ import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
-import com.ibm.jbatch.container.jsl.JobNavigator;
+import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.jsl.model.JSLJob;
 
-public class JobNavigatorImpl extends AbstractNavigatorImpl implements JobNavigator {
+public class JobNavigatorImpl extends AbstractNavigatorImpl<JSLJob> implements ModelNavigator<JSLJob> {
 
 	private final static Logger logger = Logger.getLogger(JobNavigatorImpl.class.getName());
 	private JSLJob job = null;
@@ -40,21 +40,22 @@ public class JobNavigatorImpl extends AbstractNavigatorImpl implements JobNaviga
 	}
 
 	@Override
-	public JSLJob getJSLJob() {
-		return this.job;
-	}
-
-	@Override
-	public ExecutionElement getFirstExecutionElementInJob(String restartOn)
+	public ExecutionElement getFirstExecutionElement(String restartOn)
 			throws IllegalTransitionException {
 		logger.fine("Getting first execution element in job, restartOn = " + restartOn);
 		ExecutionElement firstElem = getFirstExecutionElement(job.getExecutionElements(), restartOn);
 		logger.fine("Got first execution element in job = " + firstElem.getId());
 		return firstElem;
 	}
+	
+	@Override
+	public ExecutionElement getFirstExecutionElement()
+			throws IllegalTransitionException {
+		return getFirstExecutionElement(null);
+	}
 
 	@Override
-	public Transition getNextTransitionInJob(ExecutionElement currentExecutionElem, String currentStepExitStatus)
+	public Transition getNextTransition(ExecutionElement currentExecutionElem, String currentStepExitStatus)
 			throws IllegalTransitionException {
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("Getting next transition in job, currentExecutionElem = " + currentExecutionElem);
@@ -62,6 +63,11 @@ public class JobNavigatorImpl extends AbstractNavigatorImpl implements JobNaviga
 		Transition nextTransition = getNextTransition(currentExecutionElem, job.getExecutionElements(), currentStepExitStatus);
 		logger.fine("Got next transition in job = " + nextTransition);
 		return nextTransition;
+	}
+
+	@Override
+	public JSLJob getRootModelElement() {
+		return job;
 	}
 }
 	

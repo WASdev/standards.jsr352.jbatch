@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Externalizable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,9 +44,10 @@ import com.ibm.jbatch.container.artifact.proxy.SkipProcessListenerProxy;
 import com.ibm.jbatch.container.artifact.proxy.SkipReadListenerProxy;
 import com.ibm.jbatch.container.artifact.proxy.SkipWriteListenerProxy;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
+import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.persistence.CheckpointAlgorithmFactory;
 import com.ibm.jbatch.container.persistence.CheckpointData;
 import com.ibm.jbatch.container.persistence.CheckpointDataKey;
@@ -54,6 +56,7 @@ import com.ibm.jbatch.container.persistence.ItemCheckpointAlgorithm;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.jsl.model.Chunk;
@@ -101,9 +104,8 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
     long writeSkipCount = 0;
     boolean rollbackRetry = false;
 
-    public ChunkStepControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Step step) {
-        super(jobExecutionImpl, step);
-        // TODO Auto-generated constructor stub
+    public ChunkStepControllerImpl(RuntimeJobExecution jobExecutionImpl, Step step, StepContextImpl stepContext, long rootJobExecutionId, BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
+        super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue);
     }
 
     /**

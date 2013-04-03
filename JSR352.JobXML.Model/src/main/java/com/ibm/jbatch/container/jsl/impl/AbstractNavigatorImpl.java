@@ -24,11 +24,12 @@ import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
+import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.container.jsl.TransitionElement;
 import com.ibm.jbatch.jsl.model.*;
 
-public abstract class AbstractNavigatorImpl {
+public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 
 	private final static Logger logger = Logger.getLogger(AbstractNavigatorImpl.class.getName());
 
@@ -127,7 +128,7 @@ public abstract class AbstractNavigatorImpl {
 			logger.fine(method + " Transitioning to next element id = " + nextExecutionElement.getId());
 			return returnTransition;
 		} else {
-			logger.fine(method + " return null, there is no next execution elemetn");
+			logger.fine(method + " return null, there is no next execution element");
 			return null;
 		}
 	}
@@ -210,5 +211,10 @@ public abstract class AbstractNavigatorImpl {
 		return nextExecutionElement;
 	}
 
+	@Override
+	public ExecutionElement getFirstExecutionElement()
+			throws IllegalTransitionException {
+		return getFirstExecutionElement(null);
+	}
 
 }

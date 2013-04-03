@@ -23,9 +23,10 @@ import java.util.logging.Logger;
 
 import javax.batch.runtime.BatchStatus;
 
+import com.ibm.jbatch.container.IThreadRootController;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.impl.JobControllerImpl;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 
 /*
@@ -39,17 +40,17 @@ public class BatchWorkUnit implements Runnable {
 	private String CLASSNAME = BatchWorkUnit.class.getName();
 	private Logger logger = Logger.getLogger(BatchWorkUnit.class.getPackage().getName());
 
-	protected RuntimeJobContextJobExecutionBridge jobExecutionImpl = null;
+	protected RuntimeJobExecution jobExecutionImpl = null;
 	protected IBatchKernelService batchKernel = null;
-	protected final JobControllerImpl controller;
+	protected final IThreadRootController controller;
 
 	protected boolean notifyCallbackWhenDone;
 
-	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl) {
+	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecution jobExecutionImpl) {
 		this(batchKernel, jobExecutionImpl, true);
 	}
 
-	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobContextJobExecutionBridge jobExecutionImpl,
+	public BatchWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecution jobExecutionImpl,
 			boolean notifyCallbackWhenDone) {
 		this.setBatchKernel(batchKernel);
 		this.setJobExecutionImpl(jobExecutionImpl);
@@ -57,7 +58,7 @@ public class BatchWorkUnit implements Runnable {
 		this.controller = new JobControllerImpl(jobExecutionImpl);
 	}
 
-	public JobControllerImpl getController() {
+	public IThreadRootController getController() {
 		return this.controller;
 	}
 
@@ -76,7 +77,7 @@ public class BatchWorkUnit implements Runnable {
 		}
 
 		try {
-			controller.executeJob();
+			controller.originateExecutionOnThread();
 			
 			if (isNotifyCallbackWhenDone()) {
 				getBatchKernel().jobExecutionDone(getJobExecutionImpl());
@@ -132,11 +133,11 @@ public class BatchWorkUnit implements Runnable {
 		return batchKernel;
 	}
 
-	public void setJobExecutionImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl) {
+	public void setJobExecutionImpl(RuntimeJobExecution jobExecutionImpl) {
 		this.jobExecutionImpl = jobExecutionImpl;
 	}
 
-	public RuntimeJobContextJobExecutionBridge getJobExecutionImpl() {
+	public RuntimeJobExecution getJobExecutionImpl() {
 		return jobExecutionImpl;
 	}
 

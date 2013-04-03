@@ -38,10 +38,13 @@ public class StepStatus implements Serializable {
     private int startCount;
     private PersistentDataWrapper persistentUserData;
     private Integer numPartitions;
+    
+    private long lastRunStepExecutionId;
 
     public StepStatus(long stepExecutionId) {
         this.startCount = 1;
         this.stepExecutionId = stepExecutionId;
+        this.lastRunStepExecutionId = stepExecutionId;
         this.batchStatus = BatchStatus.STARTING;
     }
 
@@ -116,6 +119,19 @@ public class StepStatus implements Serializable {
 
     public void setNumPartitions(Integer numPartitions) {
         this.numPartitions = numPartitions;
+    }
+
+    public void setStepExecutionId(long stepExecutionId) {
+        this.stepExecutionId = stepExecutionId;
+        this.lastRunStepExecutionId = this.stepExecutionId;
+    }
+
+    public long getLastRunStepExecutionId() {
+        return lastRunStepExecutionId;
+    }
+
+    public void setLastRunStepExecutionId(long lastRunStepExecutionId) {
+        this.lastRunStepExecutionId = lastRunStepExecutionId;
     }
 
 }

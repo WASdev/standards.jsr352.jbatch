@@ -20,12 +20,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.jsl.ExecutionElement;
-import com.ibm.jbatch.container.jsl.FlowNavigator;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
+import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.jsl.model.Flow;
 
-public class FlowNavigatorImpl extends AbstractNavigatorImpl implements FlowNavigator {
+public class FlowNavigatorImpl extends AbstractNavigatorImpl<Flow> implements ModelNavigator<Flow> {
 
 	private final static Logger logger = Logger.getLogger(FlowNavigatorImpl.class.getName());
 	private Flow flow = null;
@@ -39,21 +39,18 @@ public class FlowNavigatorImpl extends AbstractNavigatorImpl implements FlowNavi
 	}
 
 	@Override
-	public Flow getFlow() {
-		return this.flow;
-	}
-
-	@Override
-	public ExecutionElement getFirstExecutionElementInFlow(String restartOn)
+	public ExecutionElement getFirstExecutionElement(String restartOn)
 			throws IllegalTransitionException {
 		logger.fine("Getting first execution element in flow, restartOn = " + restartOn);
 		ExecutionElement firstElem = getFirstExecutionElement(flow.getExecutionElements(), restartOn);
 		logger.fine("Got first execution element in flow = " + firstElem.getId());
 		return firstElem;
 	}
+	
+
 
 	@Override
-	public Transition getNextTransitionInFlow(ExecutionElement currentExecutionElem, String currentStepExitStatus)
+	public Transition getNextTransition(ExecutionElement currentExecutionElem, String currentStepExitStatus)
 			throws IllegalTransitionException {
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("Getting next transition in flow, currentExecutionElem = " + currentExecutionElem);
@@ -61,5 +58,10 @@ public class FlowNavigatorImpl extends AbstractNavigatorImpl implements FlowNavi
 		Transition nextTransition = getNextTransition(currentExecutionElem, flow.getExecutionElements(), currentStepExitStatus);
 		logger.fine("Got next transition in flow = " + nextTransition);
 		return nextTransition;
+	}
+
+	@Override
+	public Flow getRootModelElement() {
+		return flow;
 	}
 }

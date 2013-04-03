@@ -18,6 +18,7 @@ package com.ibm.jbatch.tck.artifacts.specialized;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.Decider;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.StepExecution;
 import javax.batch.runtime.context.JobContext;
 import javax.inject.Inject;
@@ -41,11 +42,22 @@ public class DeciderTestsDecider implements Decider, StatusConstants {
     String specialExitStatus;    
     
 	@Override
-	public String decide(StepExecution[] stepExecutions) {	
+	public String decide(StepExecution[] stepExecutions) throws Exception {	
 		if (stepExecutions.length != 1) {
 			throw new IllegalStateException("Expecting stepExecutions array of size 1, found one of size = " + stepExecutions.length);
 		}
-		StepExecution stepExec = stepExecutions[0];
+		
+        for (StepExecution stepExec : stepExecutions) {
+            if (stepExec == null) {
+                throw new Exception("Null StepExecution from split.");
+            }
+
+            if (!stepExec.getBatchStatus().equals(BatchStatus.COMPLETED)) {
+                throw new Exception("All step executions must be compelete before transitioning to a decider.");
+            }
+        }
+
+        StepExecution stepExec = stepExecutions[0];
 		String coreExitStatus = coreExitStatus(stepExec);
 		Integer count = (Integer)jobCtx.getTransientUserData();
 		String retVal = count.toString() + ":" + coreExitStatus;

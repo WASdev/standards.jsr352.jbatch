@@ -17,6 +17,7 @@
 package com.ibm.jbatch.container.impl;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,8 +27,10 @@ import javax.batch.runtime.BatchStatus;
 import com.ibm.jbatch.container.artifact.proxy.BatchletProxy;
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
+import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
+import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.jsl.model.Batchlet;
 import com.ibm.jbatch.jsl.model.Partition;
@@ -41,8 +44,8 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 
 	private BatchletProxy batchletProxy;
 
-	public BatchletStepControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Step step) {
-		super(jobExecutionImpl, step);
+	public BatchletStepControllerImpl(RuntimeJobExecution jobExecutionImpl, Step step, StepContextImpl stepContext, long rootJobExecutionId, BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
+		super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue);
 	}
 
 	private void invokeBatchlet(Batchlet batchlet) throws BatchContainerServiceException {

@@ -536,7 +536,7 @@ public class ParallelExecutionTests {
     }
     
     /*
-     * @testName: testPartitionedMapperOverrideTrueDiffPartitionNumOnRestart
+     * @testName: testPartitionedMapperOverrideTrueSamePartitionNumOnRestart
      * 
      * @assertion: 
      * 

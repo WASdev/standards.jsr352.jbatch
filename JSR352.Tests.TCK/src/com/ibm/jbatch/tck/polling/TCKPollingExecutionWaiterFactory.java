@@ -35,32 +35,32 @@ public class TCKPollingExecutionWaiterFactory implements JobExecutionWaiterFacto
     private final static String sourceClass = TCKPollingExecutionWaiterFactory.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
     
-	private final int POLL_INTERVAL = 100; // 1 second
+	private final int POLL_INTERVAL = 100; // .1 second
 
 	/**
 	 * This implementation does no pooling of any kind, it just creates a new instance with new thread each time.
 	 * 
 	 * @param executionId
 	 * @param JobOperator 
-	 * @param sleepTime In milliseconds
+	 * @param timeout In milliseconds
 	 * @return JobExecutionWaiter
 	 */
 	@Override
-	public JobExecutionWaiter createWaiter(long executionId, JobOperator jobOp, long sleepTime) {
-		return new TCKPollingExecutionWaiter(executionId, jobOp, sleepTime);
+	public JobExecutionWaiter createWaiter(long executionId, JobOperator jobOp, long timeout) {
+		return new TCKPollingExecutionWaiter(executionId, jobOp, timeout);
 	}
 
 	private class TCKPollingExecutionWaiter implements JobExecutionWaiter {
 
 		private long executionId;
 		private JobOperator jobOp;
-		private long sleepTime;
+		private long timeout;
 
-		private TCKPollingExecutionWaiter(long executionId, JobOperator jobOp, long sleepTime) {
-			logger.fine("Creating waiter for executionId = " + executionId + ", jobOp = " + jobOp + ", sleepTime = " + sleepTime);
+		private TCKPollingExecutionWaiter(long executionId, JobOperator jobOp, long timeout) {
+			logger.fine("Creating waiter for executionId = " + executionId + ", jobOp = " + jobOp + ", timeout = " + timeout);
 			this.executionId = executionId;
 			this.jobOp = jobOp;
-			this.sleepTime = sleepTime;			
+			this.timeout = timeout;			
 		}
 
 		@Override
@@ -75,9 +75,14 @@ public class TCKPollingExecutionWaiterFactory implements JobExecutionWaiterFacto
 		public JobExecution awaitTermination() throws JobExecutionTimeoutException {
 			logger.fine("Entering awaitTermination for executionId = " + executionId);
 			JobExecution jobExecution = null;
-			while (true) {
+			
+			long startTime = System.currentTimeMillis();
+			
+			while (true) {				
 				try {
 					logger.finer("Sleeping for " + POLL_INTERVAL);
+					long curTime = System.currentTimeMillis();
+					timeOutIfExpired(startTime, curTime);
 					Thread.sleep(POLL_INTERVAL);
 					logger.finer("Wake up, check for termination.");
 					 jobExecution = jobOp.getJobExecution(executionId);
@@ -112,6 +117,15 @@ public class TCKPollingExecutionWaiterFactory implements JobExecutionWaiterFacto
 				retVal = false;
 			}
 			return retVal;
+		}
+		private void timeOutIfExpired(long startTime, long curTime) {
+			long diff = curTime - startTime;
+			if (diff > timeout) {
+				logger.warning("Timed out waiting for TCK Job Execution to reach terminated status.  Time elapsed (long msec) = " + diff + ", and timeout = " + timeout);
+				throw new IllegalStateException("Timed out waiting for TCK Job Execution to reach terminated status.  Time elapsed (long msec) = " + diff + ", and timeout = " + timeout);
+			} else {
+				logger.finer("Still waiting for TCK Job Execution to reach terminated status.  Time elapsed (long msec) = " + diff + ", and timeout = " + timeout);
+			}
 		}
 
 

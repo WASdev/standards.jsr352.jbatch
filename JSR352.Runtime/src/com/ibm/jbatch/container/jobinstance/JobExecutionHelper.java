@@ -29,7 +29,7 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
-import com.ibm.jbatch.container.jsl.JobNavigator;
+import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.ModelResolverFactory;
 import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.modelresolver.PropertyResolver;
@@ -59,7 +59,7 @@ public class JobExecutionHelper {
 	private static IBatchKernelService _batchKernelService = servicesManager.getBatchKernelService();
 
 
-	private static JobNavigator getResolvedJobNavigator(String jobXml, Properties jobParameters, boolean parallelExecution) {
+	private static ModelNavigator<JSLJob> getResolvedJobNavigator(String jobXml, Properties jobParameters, boolean parallelExecution) {
 
 		JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobXml); 
 		PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(parallelExecution);
@@ -68,7 +68,7 @@ public class JobExecutionHelper {
 		return NavigatorFactory.createJobNavigator(jobModel);
 	}
 
-	private static JobNavigator getResolvedJobNavigator(JSLJob jobModel, Properties jobParameters, boolean parallelExecution) {
+	private static ModelNavigator<JSLJob> getResolvedJobNavigator(JSLJob jobModel, Properties jobParameters, boolean parallelExecution) {
 
 		PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(parallelExecution);
 		propResolver.substituteProperties(jobModel, jobParameters);
@@ -76,10 +76,10 @@ public class JobExecutionHelper {
 		return NavigatorFactory.createJobNavigator(jobModel);
 	}
 
-	private static JobContextImpl getJobContext(JobNavigator jobNavigator) {
+	private static JobContextImpl getJobContext(ModelNavigator<JSLJob> jobNavigator) {
 		JSLProperties jslProperties = new JSLProperties();
-		if(jobNavigator.getJSLJob() != null) {
-			jslProperties = jobNavigator.getJSLJob().getProperties();
+		if(jobNavigator.getRootModelElement() != null) {
+			jslProperties = jobNavigator.getRootModelElement().getProperties();
 		}
 		return new JobContextImpl(jobNavigator, jslProperties); 
 	}
@@ -108,18 +108,18 @@ public class JobExecutionHelper {
 		}
 	}
 
-	public static RuntimeJobContextJobExecutionBridge startJob(String jobXML, Properties jobParameters) throws JobStartException {
+	public static RuntimeJobExecution startJob(String jobXML, Properties jobParameters) throws JobStartException {
 		logger.entering(CLASSNAME, "startJob", new Object[]{jobXML, jobParameters==null ? "<null>" : jobParameters});
 
 		JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobXML); 
 
-		JobNavigator jobNavigator = getResolvedJobNavigator(jobModel, jobParameters, false);
+		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobModel, jobParameters, false);
 
 		JobContextImpl jobContext = getJobContext(jobNavigator);
 
-		JobInstance jobInstance = getNewJobInstance(jobNavigator.getJSLJob().getId(), jobXML);
+		JobInstance jobInstance = getNewJobInstance(jobNavigator.getRootModelElement().getId(), jobXML);
 
-		RuntimeJobContextJobExecutionBridge executionHelper = 
+		RuntimeJobExecution executionHelper = 
 				_persistenceManagementService.createJobExecution(jobInstance, jobParameters, jobContext.getBatchStatus());
 
 		executionHelper.prepareForExecution(jobContext);
@@ -132,16 +132,35 @@ public class JobExecutionHelper {
 		return executionHelper;
 	}
 
-	public static RuntimeJobContextJobExecutionBridge startParallelExecution(JSLJob jobModel, Properties jobParameters) throws JobStartException{
+	public static RuntimeFlowInSplitExecution startFlowInSplit(JSLJob jobModel) throws JobStartException{
+		logger.entering(CLASSNAME, "startFlowInSplit", jobModel);
 
-		logger.entering(CLASSNAME, "startParallelExecution", new Object[]{jobModel, jobParameters ==null ? "<null>" :jobParameters});
-
-		JobNavigator jobNavigator = getResolvedJobNavigator(jobModel, jobParameters, true);
+		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobModel, null, true);
 		JobContextImpl jobContext = getJobContext(jobNavigator);
 		
-		JobInstance jobInstance = getNewSubJobInstance(jobNavigator.getJSLJob().getId());
+		JobInstance jobInstance = getNewSubJobInstance(jobNavigator.getRootModelElement().getId());
 
-		RuntimeJobContextJobExecutionBridge executionHelper = 
+		RuntimeFlowInSplitExecution executionHelper = 
+				_persistenceManagementService.createFlowInSplitExecution(jobInstance, jobContext.getBatchStatus());
+
+		executionHelper.prepareForExecution(jobContext);
+
+		JobStatus jobStatus = createNewJobStatus(jobInstance);
+		_jobStatusManagerService.updateJobStatus(jobStatus);
+
+		logger.exiting(CLASSNAME, "startFlowInSplit", executionHelper);
+		return executionHelper;
+	}
+	
+	public static RuntimeJobExecution startPartition(JSLJob jobModel, Properties jobParameters) throws JobStartException{
+		logger.entering(CLASSNAME, "startPartition", new Object[]{jobModel, jobParameters ==null ? "<null>" :jobParameters});
+
+		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobModel, jobParameters, true);
+		JobContextImpl jobContext = getJobContext(jobNavigator);
+		
+		JobInstance jobInstance = getNewSubJobInstance(jobNavigator.getRootModelElement().getId());
+
+		RuntimeJobExecution executionHelper = 
 				_persistenceManagementService.createJobExecution(jobInstance, jobParameters, jobContext.getBatchStatus());
 
 		executionHelper.prepareForExecution(jobContext);
@@ -149,13 +168,12 @@ public class JobExecutionHelper {
 		JobStatus jobStatus = createNewJobStatus(jobInstance);
 		_jobStatusManagerService.updateJobStatus(jobStatus);
 
-		logger.exiting(CLASSNAME, "startJob", executionHelper);
+		logger.exiting(CLASSNAME, "startPartition", executionHelper);
 		return executionHelper;
 	}
-
-
-	public static RuntimeJobContextJobExecutionBridge restartJob(long executionId, JSLJob gennedJobModel) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
-		return restartJob(executionId, null, null, false);
+	
+	public static RuntimeJobExecution restartJob(long executionId, JSLJob gennedJobModel) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+		return restartExecution(executionId, null, null, false, false);
 	}
 
 	private static void validateJobInstanceNotCompleteOrAbandonded(JobStatus jobStatus) throws JobRestartException, JobExecutionAlreadyCompleteException {
@@ -186,8 +204,23 @@ public class JobExecutionHelper {
 			throw new JobExecutionNotMostRecentException(message);
 		}
 	}
+	
+	public static RuntimeJobExecution restartPartition(long execId, JSLJob gennedJobModel, Properties partitionProps) throws JobRestartException, 
+	JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+		return restartExecution(execId, gennedJobModel, partitionProps, true, false);	
+	}
 
-	public static RuntimeJobContextJobExecutionBridge restartJob(long executionId, JSLJob gennedJobModel, Properties restartJobParameters, boolean parallelExecution) throws JobRestartException, 
+	public static RuntimeFlowInSplitExecution restartFlowInSplit(long execId, JSLJob gennedJobModel) throws JobRestartException, 
+	JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+		return (RuntimeFlowInSplitExecution)restartExecution(execId, gennedJobModel, null, true, true);	
+	}
+	
+	public static RuntimeJobExecution restartJob(long executionId, Properties restartJobParameters) throws JobRestartException, 
+	JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+		return restartExecution(executionId, null, restartJobParameters, false, false);	
+	}
+	
+	private static RuntimeJobExecution restartExecution(long executionId, JSLJob gennedJobModel, Properties restartJobParameters, boolean parallelExecution, boolean flowInSplit) throws JobRestartException, 
 	JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
 
 		long jobInstanceId = _persistenceManagementService.getJobInstanceIdByExecutionId(executionId);
@@ -205,7 +238,7 @@ public class JobExecutionHelper {
 
 		JobInstanceImpl jobInstance = jobStatus.getJobInstance();
 
-		JobNavigator jobNavigator = null;
+		ModelNavigator<JSLJob> jobNavigator = null;
 
 		// If we are in a parallel job that is genned use the regenned JSL.
 		if (gennedJobModel == null) {
@@ -214,11 +247,16 @@ public class JobExecutionHelper {
 			jobNavigator = getResolvedJobNavigator(gennedJobModel, restartJobParameters, parallelExecution);
 		}
 		// JSLJob jobModel = ModelResolverFactory.createJobResolver().resolveModel(jobInstance.getJobXML());
-		validateRestartableFalseJobsDoNotRestart(jobNavigator.getJSLJob());
+		validateRestartableFalseJobsDoNotRestart(jobNavigator.getRootModelElement());
 
 		JobContextImpl jobContext = getJobContext(jobNavigator);
-		RuntimeJobContextJobExecutionBridge executionHelper = 
-				_persistenceManagementService.createJobExecution(jobInstance, restartJobParameters, jobContext.getBatchStatus());
+		
+		RuntimeJobExecution executionHelper;
+		if (flowInSplit) {
+			executionHelper = _persistenceManagementService.createFlowInSplitExecution(jobInstance, jobContext.getBatchStatus());
+		} else {
+			executionHelper = _persistenceManagementService.createJobExecution(jobInstance, restartJobParameters, jobContext.getBatchStatus());
+		}
 		executionHelper.prepareForExecution(jobContext, jobStatus.getRestartOn());
 		_jobStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), executionHelper.getExecutionId());        
 
@@ -229,22 +267,6 @@ public class JobExecutionHelper {
 		return _persistenceManagementService.jobOperatorGetJobExecution(jobExecutionId);
 	}
 
-	/*
-	public static void updateBatchStatusUPDATEonly(long executionId, String batchStatusString, Timestamp ts){
-		// update the batch status col and the updateTS col
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithUPDATETSonly(executionId, JDBCPersistenceManagerImpl.BATCH_STATUS, batchStatusString, ts);
-	}
-
-	public static void updateBatchStatusSTARTED(long executionId, Timestamp startTs){
-		// update the batch status col and the updateTS col
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, BatchStatus.STARTED, startTs);
-	}
-
-	public static void updateBatchStatusEND(long executionId, BatchStatus batchStatus, Timestamp endTs){
-		// update the batch status col and the updateTS col
-		_persistenceManagementService.jobOperatorUpdateBatchStatusWithSTATUSandUPDATETSonly(executionId, batchStatus, endTs);
-	}
-*/
 	
 	public static JobInstance getJobInstance(long executionId){
 		JobStatus jobStatus = _jobStatusManagerService.getJobStatusFromExecutionId(executionId);

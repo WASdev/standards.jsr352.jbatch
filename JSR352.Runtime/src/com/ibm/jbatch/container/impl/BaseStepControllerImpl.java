@@ -21,6 +21,8 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
@@ -34,19 +36,18 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.AbortedBeforeStartException;
-import com.ibm.jbatch.container.IExecutionElementController;
+import com.ibm.jbatch.container.IController;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
 import com.ibm.jbatch.container.persistence.PersistentDataWrapper;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
-import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLProperties;
@@ -56,12 +57,12 @@ import com.ibm.jbatch.spi.services.ITransactionManagementService;
 import com.ibm.jbatch.spi.services.TransactionManagerAdapter;
 
 /** Change the name of this class to something else!! Or change BaseStepControllerImpl. */
-public abstract class BaseStepControllerImpl implements IExecutionElementController {
+public abstract class BaseStepControllerImpl implements IController {
 
 	private final static String sourceClass = BatchletStepControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 
-	protected RuntimeJobContextJobExecutionBridge jobExecutionImpl;
+	protected RuntimeJobExecution jobExecutionImpl;
 	protected JobInstance jobInstance;
 
 	protected StepContextImpl stepContext;
@@ -70,7 +71,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 	protected BlockingQueue<PartitionDataWrapper> analyzerStatusQueue = null;
 
-	protected RuntimeJobContextJobExecutionBridge rootJobExecution = null;
+	protected long rootJobExecutionId;
 
 	protected static IBatchKernelService batchKernel = ServicesManagerImpl.getInstance().getBatchKernelService();
 
@@ -80,13 +81,20 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 	private static IJobStatusManagerService _jobStatusService = (IJobStatusManagerService) ServicesManagerImpl.getInstance().getJobStatusManagerService();
 
-	protected BaseStepControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Step step) {
-		this.jobExecutionImpl = jobExecutionImpl;
-		this.jobInstance = jobExecutionImpl.getJobInstance();
+	protected BaseStepControllerImpl(RuntimeJobExecution jobExecution, Step step, StepContextImpl stepContext, long rootJobExecutionId) {
+		this.jobExecutionImpl = jobExecution;
+		this.jobInstance = jobExecution.getJobInstance();
+		this.stepContext = stepContext;
+		this.rootJobExecutionId = rootJobExecutionId;
 		if (step == null) {
 			throw new IllegalArgumentException("Step parameter to ctor cannot be null.");
 		}
 		this.step = step;
+	}
+	
+	protected BaseStepControllerImpl(RuntimeJobExecution jobExecution, Step step, StepContextImpl stepContext,  long rootJobExecutionId, BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
+		this(jobExecution, step, stepContext, rootJobExecutionId);
+		this.analyzerStatusQueue = analyzerStatusQueue;
 	}
 
 	///////////////////////////
@@ -103,10 +111,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 	// This is only useful from the partition threads
 	protected abstract void sendStatusFromPartitionToAnalyzerIfPresent();
 
-	@Override
-	public InternalExecutionElementStatus execute(RuntimeJobContextJobExecutionBridge rootJobExecution) throws AbortedBeforeStartException  {
-
-		this.rootJobExecution = rootJobExecution;
+	public String execute() {
 
 		// Here we're just setting up to decide if we're going to run the step or not (if it's already complete and 
 		// allow-start-if-complete=false.
@@ -114,9 +119,10 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			boolean executeStep = shouldStepBeExecuted();
 			if (!executeStep) {
 				logger.fine("Not going to run this step.  Returning previous exit status of: " + stepStatus.getExitStatus());
-				return new InternalExecutionElementStatus(stepStatus.getExitStatus());
+				return stepStatus.getExitStatus();
 			} 
 		} catch (Throwable t) {
+			markJobAndStepFailed();
 			rethrowWithMsg("Caught throwable while determining if step should be executed.  Failing job.", t);
 		}
 
@@ -124,7 +130,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		try {
 			startStep();
 		} catch (Throwable t) {
-			updateBatchStatus(BatchStatus.FAILED);
+			markJobAndStepFailed();
 			rethrowWithMsg("Caught throwable while starting step.  Failing job.", t);
 		}
 
@@ -139,7 +145,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 				PrintWriter pw = new PrintWriter(sw);
 				t1.printStackTrace(pw);
 				logger.warning("Caught exception executing step: " + sw.toString());
-				updateBatchStatus(BatchStatus.FAILED);
+				markJobAndStepFailed();
 			} catch(Throwable t2) {
 				// Since the first one is the original first failure, let's rethrow t1 and not the second error,
 				// but we'll log a severe error pointing out that the failure didn't get persisted..
@@ -165,7 +171,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			PrintWriter pw = new PrintWriter(sw);
 			t.printStackTrace(pw);
 			logger.warning("Error invoking end of step artifacts. Stack trace: " + sw.toString());
-			updateBatchStatus(BatchStatus.FAILED);
+			markJobAndStepFailed();
 		}
 
 		//
@@ -187,7 +193,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			persistExitStatusAndEndTimestamp();
 		} catch (Throwable t) {
 			// Don't let an exception caught here prevent us from persisting the failed batch status.
-			updateBatchStatus(BatchStatus.FAILED);
+			markJobAndStepFailed();
 			rethrowWithMsg("Failure ending step execution", t);
 		} 
 
@@ -199,9 +205,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		logger.finer("Returning step batchStatus: " + stepStatus.getBatchStatus() + 
 				", exitStatus: " + stepStatus.getExitStatus()); 
 
-		// This internal status happens to be identical to an externally-meaningful status 
-		// (corresponding to a JobOperator-visible batch+exit status) but this will not generally be the case.
-		return new InternalExecutionElementStatus(stepStatus.getBatchStatus(), stepStatus.getExitStatus());
+		return stepStatus.getExitStatus();
 	}
 
 	private void defaultExitStatusIfNecessary() {
@@ -218,6 +222,11 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		}
 	}
 
+	protected void markJobAndStepFailed() {
+		jobExecutionImpl.getJobContext().setBatchStatus(BatchStatus.FAILED);
+		updateBatchStatus(BatchStatus.FAILED);
+	}
+	
 	private void startStep() {
 		// Update status
 		statusStarting();
@@ -232,7 +241,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		Timestamp startTS = new Timestamp(time);
 		stepContext.setStartTime(startTS);
 		
-		_persistenceManagementService.updateStepExecution(rootJobExecution.getExecutionId(), stepContext);
+		_persistenceManagementService.updateStepExecution(rootJobExecutionId, stepContext);
 	}
 	
 
@@ -270,7 +279,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		if (stepStatus == null) {
 			logger.finer("No existing step status found.  Create new step execution and proceed to execution.");
 			// create new step execution
-			StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
+			StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecutionId, stepContext);
 			// create new step status for this run
 			stepStatus = _jobStatusService.createStepStatus(stepExecution.getStepExecutionId());
 			((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
@@ -285,7 +294,8 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 				// vice versa (in an unexpected error case).
 				stepStatus.incrementStartCount();
 				// create new step execution
-				StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecution.getExecutionId(), stepContext);
+				StepExecutionImpl stepExecution = getNewStepExecution(rootJobExecutionId, stepContext);
+				this.stepStatus.setLastRunStepExecutionId(stepExecution.getStepExecutionId());
 				((StepContextImpl) stepContext).setStepExecutionId(stepExecution.getStepExecutionId());
 				return true;
 			} else {
@@ -369,7 +379,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		Timestamp endTS = new Timestamp(time);
 		stepContext.setEndTime(endTS);
 
-		_persistenceManagementService.updateStepExecution(rootJobExecution.getExecutionId(), stepContext);
+		_persistenceManagementService.updateStepExecution(rootJobExecutionId, stepContext);
 	}
 
 	private StepExecutionImpl getNewStepExecution(long rootJobExecutionId, StepContextImpl stepContext) {
@@ -411,6 +421,16 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 	public void setAnalyzerQueue(BlockingQueue<PartitionDataWrapper> analyzerQueue) {
 		this.analyzerStatusQueue = analyzerQueue;
 	}
+	
+    @Override
+    public List<Long> getLastRunStepExecutions() {
+        
+        List<Long> stepExecIdList = new ArrayList<Long>(1);
+        stepExecIdList.add(this.stepStatus.getLastRunStepExecutionId());
+        
+        return stepExecIdList;
+
+    }
 
 	private void rethrowWithMsg(String msgBeginning, Throwable t) {
 		String errorMsg = msgBeginning + " ; Caught exception/error: " + t.getLocalizedMessage();

@@ -22,7 +22,8 @@ import java.util.logging.Logger;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.context.JobContext;
 
-import com.ibm.jbatch.container.jsl.JobNavigator;
+import com.ibm.jbatch.container.jsl.ModelNavigator;
+import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.JSLProperties;
 import com.ibm.jbatch.jsl.model.Property;
 
@@ -36,8 +37,8 @@ public class JobContextImpl implements JobContext {
 	private String exitStatus = null;
 
 	private Object transientUserData = null;
-	private JobNavigator navigator = null;
-	public JobNavigator getNavigator() {
+	private ModelNavigator<JSLJob> navigator = null;
+	public ModelNavigator<JSLJob> getNavigator() {
 		return navigator;
 	}
 
@@ -46,10 +47,14 @@ public class JobContextImpl implements JobContext {
 
 	private long executionId;
 	private long instanceId;
+	protected String restartOn;
 
-	public JobContextImpl(JobNavigator navigator, JSLProperties jslProperties) {
+
+
+
+	public JobContextImpl(ModelNavigator<JSLJob> navigator, JSLProperties jslProperties) {
 		this.navigator = navigator;
-		this.id = navigator.getJSLJob().getId();
+		this.id = navigator.getRootModelElement().getId();
 		this.batchStatus = BatchStatus.STARTING;
 		this.properties = convertJSProperties(jslProperties);
 	}
@@ -72,6 +77,7 @@ public class JobContextImpl implements JobContext {
 
 
 	public void setExitStatus(String exitStatus) {
+		logger.fine("Setting exitStatus = " + exitStatus);
 		this.exitStatus = exitStatus;
 	}
 
@@ -123,6 +129,14 @@ public class JobContextImpl implements JobContext {
 		this.instanceId = instanceId;
 	}
 
+	public String getRestartOn() {
+		return restartOn;
+	}
+
+	public void setRestartOn(String restartOn) {
+		logger.fine("Setting restartOn = " + restartOn);
+		this.restartOn = restartOn;
+	}
 
 	public String toString() {
 
@@ -132,6 +146,7 @@ public class JobContextImpl implements JobContext {
 		buf.append(" , id = " + id); 
 		buf.append(" , executionId = " + executionId); 
 		buf.append(" , instanceId = " + instanceId);
+		buf.append(" , restartOn = " + restartOn);
 		return buf.toString();
 	}
 }

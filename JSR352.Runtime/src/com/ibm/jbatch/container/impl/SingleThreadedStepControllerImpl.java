@@ -18,16 +18,18 @@ package com.ibm.jbatch.container.impl;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 
 
-import com.ibm.jbatch.container.IExecutionElementController;
+import com.ibm.jbatch.container.IController;
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.PartitionCollectorProxy;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.artifact.proxy.StepListenerProxy;
+import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.util.PartitionDataWrapper.PartitionEventType;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
@@ -44,7 +46,7 @@ import com.ibm.jbatch.jsl.model.Step;
  * separate main thread with controller).
  *
  */
-public abstract class SingleThreadedStepControllerImpl extends BaseStepControllerImpl implements IExecutionElementController {
+public abstract class SingleThreadedStepControllerImpl extends BaseStepControllerImpl implements IController {
 
 	private final static String sourceClass = SingleThreadedStepControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
@@ -52,8 +54,8 @@ public abstract class SingleThreadedStepControllerImpl extends BaseStepControlle
 	// Collector only used from partition threads, not main thread
 	protected PartitionCollectorProxy collectorProxy = null;
 
-	protected SingleThreadedStepControllerImpl(RuntimeJobContextJobExecutionBridge jobExecutionImpl, Step step) {
-		super(jobExecutionImpl, step);
+	protected SingleThreadedStepControllerImpl(RuntimeJobExecution jobExecutionImpl, Step step, StepContextImpl stepContext, long rootJobExecutionId, BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
+		super(jobExecutionImpl, step, stepContext, rootJobExecutionId, analyzerStatusQueue);
 	}
 
 	List<StepListenerProxy> stepListeners = null;

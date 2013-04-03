@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import javax.batch.api.Decider;
+import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.tck.artifacts.common.StatusConstants;
@@ -33,6 +34,17 @@ public class FlowTransitionToDecisionTestDecider implements Decider, StatusConst
 		}
 		
 		StepExecution stepExecution = stepExecutions[0];
+		
+        for (StepExecution stepExec : stepExecutions) {
+            if (stepExec == null) {
+                throw new Exception("Null StepExecution after flow.");
+            }
+            
+            if (!stepExec.getBatchStatus().equals(BatchStatus.COMPLETED)) {
+                throw new Exception("All step executions must be compelete before transitioning to a decider.");             
+            }
+            
+        }
 		
 		// for our test 
 		// <end exit-status="ThatsAllFolks" on="DECIDER_EXIT_STATUS*VERY GOOD INVOCATION" />

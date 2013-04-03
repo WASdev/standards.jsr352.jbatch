@@ -608,7 +608,7 @@ public class DeciderTests implements StatusConstants {
 	        jobParameters.setProperty("allow.start.if.complete", "true");
 	        
 	        jobParameters.setProperty("stop.job.after.this.step", "split1flow1step2");
-	        jobParameters.setProperty("fail.job.after.this.step", "split1flow2step2");
+	        jobParameters.setProperty("stop.job.after.this.step2", "split1flow2step2");
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_from_split_on_restart", jobParameters); 
@@ -618,11 +618,12 @@ public class DeciderTests implements StatusConstants {
 	        
 	        Properties restartJobParameters = new Properties(jobParameters);
 	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
+	        jobParameters.setProperty("stop.job.after.this.step2", "None");
 	        
 	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
 	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
 	        
-	        assertObjEquals("4:split1_CONTINUE", jobExec2.getExitStatus());
+	        assertObjEquals("4:split1flow2step2_CONTINUE", jobExec2.getExitStatus());
 	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
     	} catch(Exception e) {
 			handleException(METHOD, e);
@@ -781,7 +782,7 @@ public class DeciderTests implements StatusConstants {
 	        jobParameters.setProperty("allow.start.if.complete", "false");
 	        
 	        jobParameters.setProperty("stop.job.after.this.step", "split1flow1step2");
-	        jobParameters.setProperty("fail.job.after.this.step", "split1flow2step2");
+	        jobParameters.setProperty("stop.job.after.this.step2", "split1flow2step2");
 	        
 	        Reporter.log("Invoke startJobAndWaitForResult<p>");
 	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_from_split_on_restart", jobParameters); 
@@ -796,7 +797,7 @@ public class DeciderTests implements StatusConstants {
 	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
 	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
 	        
-	        assertObjEquals("4:split1_CONTINUE", jobExec2.getExitStatus());
+	        assertObjEquals("4:split1flow2step2_CONTINUE", jobExec2.getExitStatus());
 	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
     	} catch(Exception e) {
 			handleException(METHOD, e);

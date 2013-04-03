@@ -38,15 +38,17 @@ import com.ibm.jbatch.container.artifact.proxy.PartitionMapperProxy;
 import com.ibm.jbatch.container.artifact.proxy.PartitionReducerProxy;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.artifact.proxy.StepListenerProxy;
+import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.jsl.CloneUtility;
-import com.ibm.jbatch.container.util.BatchParallelWorkUnit;
 import com.ibm.jbatch.container.util.BatchPartitionPlan;
+import com.ibm.jbatch.container.util.BatchPartitionWorkUnit;
 import com.ibm.jbatch.container.util.BatchWorkUnit;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.container.util.PartitionDataWrapper.PartitionEventType;
+import com.ibm.jbatch.container.util.PartitionsBuilderConfig;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.jsl.model.Analyzer;
 import com.ibm.jbatch.jsl.model.JSLJob;
@@ -71,7 +73,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 	private Properties[] partitionProperties = null;
 
-	private volatile List<BatchParallelWorkUnit> parallelBatchWorkUnits;
+	private volatile List<BatchPartitionWorkUnit> parallelBatchWorkUnits;
 
 	private PartitionReducerProxy partitionReducerProxy = null;
 
@@ -80,18 +82,15 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 	private PartitionAnalyzerProxy analyzerProxy = null;
 
-
 	final List<JSLJob> subJobs = new ArrayList<JSLJob>();
 	protected List<StepListenerProxy> stepListeners = null;
 
-	List<BatchParallelWorkUnit> completedWork = new ArrayList<BatchParallelWorkUnit>();
+	List<BatchPartitionWorkUnit> completedWork = new ArrayList<BatchPartitionWorkUnit>();
 	
-	BlockingQueue<BatchParallelWorkUnit> completedWorkQueue = null;
+	BlockingQueue<BatchPartitionWorkUnit> completedWorkQueue = null;
 
-	BlockingQueue<PartitionDataWrapper> analyzerQueue = null;
-
-	protected PartitionedStepControllerImpl(final RuntimeJobContextJobExecutionBridge jobExecutionImpl, final Step step) {
-		super(jobExecutionImpl, step);
+	protected PartitionedStepControllerImpl(final RuntimeJobExecution jobExecutionImpl, final Step step, StepContextImpl stepContext, long rootJobExecutionId) {
+		super(jobExecutionImpl, step, stepContext, rootJobExecutionId);
 	}
 
 	@Override
@@ -229,15 +228,14 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 				for (JSLProperties props : jslProperties) {
 					int targetPartition = Integer.parseInt(props.getPartition());
 
-					// Arrays have have start index of 0, partitions are 1 based
-					// so we subtract 1
-					try {
-						partitionProps[targetPartition - 1] = CloneUtility.jslPropertiesToJavaProperties(props);
-					} catch (ArrayIndexOutOfBoundsException e) {
-						throw new BatchContainerRuntimeException("There are only " + numPartitions + " partition instances, but there are "
-								+ jslProperties.size() + " partition properties lists defined.", e);
-					}
-				}
+                    try {
+                        partitionProps[targetPartition] = CloneUtility.jslPropertiesToJavaProperties(props);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        throw new BatchContainerRuntimeException("There are only " + numPartitions + " partition instances, but there are "
+                                + jslProperties.size()
+                                + " partition properties lists defined. Remember that partition indexing is 0 based like Java arrays.", e);
+                    }
+                }
 			}
 			plan = new BatchPartitionPlan();
 			plan.setPartitions(numPartitions);
@@ -281,9 +279,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 		//Set up a blocking queue to pick up collector data from a partitioned thread
 		if (this.analyzerProxy != null) {
-			this.analyzerQueue =  new LinkedBlockingQueue<PartitionDataWrapper>();
+			this.analyzerStatusQueue =  new LinkedBlockingQueue<PartitionDataWrapper>();
 		}
-		this.completedWorkQueue = new LinkedBlockingQueue<BatchParallelWorkUnit>();
+		this.completedWorkQueue = new LinkedBlockingQueue<BatchPartitionWorkUnit>();
 
 		// Build all sub jobs from partitioned step
 		buildSubJobBatchWorkUnits();
@@ -303,14 +301,15 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			}
 
 			for (int instance = 0; instance < partitions; instance++) {
-				subJobs.add(PartitionedStepBuilder.buildSubJob(jobExecutionImpl.getInstanceId(),this.jobExecutionImpl.getJobContext(), step, instance));
+				subJobs.add(PartitionedStepBuilder.buildPartitionSubJob(jobExecutionImpl.getInstanceId(),jobExecutionImpl.getJobContext(), step, instance));
 			}
 
+			PartitionsBuilderConfig config = new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, completedWorkQueue, jobExecutionImpl.getExecutionId());
 			// Then build all the subjobs but do not start them yet
 			if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
-				parallelBatchWorkUnits = batchKernel.buildRestartableParallelJobs(subJobs, partitionProperties, analyzerQueue, completedWorkQueue, null);
+				parallelBatchWorkUnits = batchKernel.buildOnRestartParallelPartitions(config);
 			} else {
-				parallelBatchWorkUnits = batchKernel.buildNewParallelJobs(subJobs, partitionProperties, analyzerQueue, completedWorkQueue, null);
+				parallelBatchWorkUnits = batchKernel.buildNewParallelPartitions(config);
 			}
 
 			// NOTE:  At this point I might not have as many work units as I had partitions, since some may have already completed.
@@ -347,7 +346,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			try {
 				if (analyzerProxy != null) {
 					logger.fine("Found analyzer, proceeding on analyzerQueue path");
-					PartitionDataWrapper dataWrapper = analyzerQueue.take();
+					PartitionDataWrapper dataWrapper = analyzerStatusQueue.take();
 					if (PartitionEventType.ANALYZE_COLLECTOR_DATA.equals(dataWrapper.getEventType())) {
 						logger.finer("Analyze collector data: " + dataWrapper.getCollectorData());
 						analyzerProxy.analyzeCollectorData(dataWrapper.getCollectorData());
@@ -411,7 +410,6 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		boolean partitionFailed = false;
 		
 		for (final BatchWorkUnit subJob : completedWork) {
-
 			BatchStatus batchStatus = subJob.getJobExecutionImpl().getJobContext().getBatchStatus();
 			if (batchStatus.equals(BatchStatus.FAILED)) {
 				logger.fine("Subjob " + subJob.getJobExecutionImpl().getExecutionId() + " ended with status '" + batchStatus + "'; Starting logical transaction rollback.");
@@ -421,17 +419,6 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 				//Keep track of the failing status and throw an exception to propagate after the rest of the partitions are complete
 				stepContext.setBatchStatus(BatchStatus.FAILED);
-
-			} else if (batchStatus.equals(BatchStatus.STOPPED)) {
-				
-				logger.fine("Subjob " + subJob.getJobExecutionImpl().getExecutionId() + "ended with status '" + batchStatus + "'; Starting logical transaction rollback.");
-
-				rollback = true;
-
-				//If another partition has already failed leave the status alone
-				if (!BatchStatus.FAILED.equals(stepContext.getBatchStatus())) {
-					updateBatchStatus(BatchStatus.STOPPING);    
-				}
 			} 
 		}
 

@@ -16,8 +16,6 @@
 */
 package com.ibm.jbatch.container.impl;
 
-import java.util.Properties;
-
 import javax.batch.runtime.context.JobContext;
 
 import com.ibm.jbatch.container.jsl.CloneUtility;
@@ -37,7 +35,7 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used to build subjobs from splits.
      * 
      */
-    public static JSLJob buildSubJob(Long parentJobExecutionId, JobContext jobContext, Split split, Flow flow, Properties[] subJobParameters) {
+    public static JSLJob buildFlowInSplitSubJob(Long parentJobExecutionId, JobContext jobContext, Split split, Flow flow) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
@@ -64,7 +62,7 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used for partitioned steps.
      * 
      */
-    public static JSLJob buildSubJob(Long parentJobInstanceId, JobContext jobContext, Step step, int partitionInstance) {
+    public static JSLJob buildPartitionSubJob(Long parentJobInstanceId, JobContext jobContext, Step step, int partitionInstance) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();

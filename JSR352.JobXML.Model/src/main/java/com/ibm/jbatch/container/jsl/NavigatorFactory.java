@@ -23,10 +23,10 @@ import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.JSLJob;
 
 public class NavigatorFactory {
-    public static JobNavigator createJobNavigator(JSLJob job) {
+    public static JobNavigatorImpl createJobNavigator(JSLJob job) {
         return new JobNavigatorImpl(job);
     }
-    public static FlowNavigator createFlowNavigator(Flow flow) {
+    public static FlowNavigatorImpl createFlowNavigator(Flow flow) {
         return new FlowNavigatorImpl(flow);
     }
 }

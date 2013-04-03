@@ -52,7 +52,7 @@ public class JobOperatorBridge {
 	private JobOperator jobOp = BatchRuntime.getJobOperator();
 	private JobExecutionWaiterFactory waiterFactory = ServiceGateway.getJobExecutionWaiterFactoryService();
 
-	private int sleepTime = Integer.parseInt(System.getProperty("jobOperator.sleep.time", DEFAULT_JOB_OPERATOR_SLEEP_TIME));
+	private int sleepTime = Integer.parseInt(System.getProperty("tck.execution.waiter.timeout", DEFAULT_JOB_OPERATOR_SLEEP_TIME));
 	private final String TIMEOUT_MSG = "Test failure due to timeout exception.  Either the timeout should be increased and there is nothing else wrong, " 
 	                 + "or perhaps the runtime implementation is handing and/or unresponsive<p>";
 	public JobOperatorBridge() {

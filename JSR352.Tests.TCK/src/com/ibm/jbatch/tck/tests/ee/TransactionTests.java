@@ -17,12 +17,15 @@
 package com.ibm.jbatch.tck.tests.ee;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
+import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
+import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
@@ -230,7 +233,7 @@ public class TransactionTests {
 			Integer forcedFailCount = 0;
 			Integer itemCount = 5;
 			Integer dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranNoExceptions().sleep",DEFAULT_SLEEP_TIME));
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranNoExceptions.sleep",DEFAULT_SLEEP_TIME));
 
 
 			Integer expectedInventory = this.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
@@ -387,14 +390,16 @@ public class TransactionTests {
 	}
 
 	/*
-	 * @TestName: testGlobalTranForcedTimeoutCheckpointRestartDefault
-	 * @assertion: FIXME
-	 * @Test_Strategy: FIXME
+	 * @testName: testGlobalTranNoDelayLongTimeout
+	 * @assertion: Step-level property of 'javax.transaction.global.timeout' 
+	 * @Test_Strategy: This test sets a long (180 sec.) checkpoint timeout explicitly in the JSL, and it does not
+	 *                 use any delay or sleep, so it just confirms that the timeout doesn't hit and the chunk completes
+	 *                 normally.
 	 */    
 	@Test
 	@org.junit.Test
-	public void testGlobalTranForcedTimeoutCheckpointRestartDefault() throws Exception {
-		String METHOD = "testGlobalTranForcedTimeoutCheckpointRestartDefault";
+	public void testGlobalTranNoDelayLongTimeout() throws Exception {
+		String METHOD = "testGlobalTranNoDelayLongTimeout";
 		begin(METHOD);
 		
 		String DEFAULT_SLEEP_TIME = "0";
@@ -407,17 +412,14 @@ public class TransactionTests {
 			Integer itemCount = 9;
 			// set to zero
 			Integer dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedTimeoutCheckpointRestartDefault.sleep",DEFAULT_SLEEP_TIME));
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranNoDelayLongTimeout.sleep",DEFAULT_SLEEP_TIME));
 			
-			Integer globalTimeout = 1; //seconds
-
 			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
 			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
 
 			Properties jobParams = new Properties();
 
 			Reporter.log("Create job parameters for execution #1:<p>");
-			Reporter.log("javax.transaction.global.timeout="+globalTimeout.toString()+"<p>");
 			Reporter.log("commit.interval="+itemCount.toString()+"<p>");
 			Reporter.log("init.inventory.quantity="+initInventory.toString()+"<p>");
 			Reporter.log("forced.fail.count="+forcedFailCount.toString()+"<p>");
@@ -431,8 +433,7 @@ public class TransactionTests {
 
 			Reporter.log("Invoke startJobAndWaitForResult<p>");
 			TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_default",jobParams);
-			long jobInstanceId = jobExec.getInstanceId();
-
+			
 			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
 			Reporter.log("execution #1 JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
 			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null +" OrderCount="+ expectedCompletedOrders , jobExec.getExitStatus());
@@ -445,85 +446,30 @@ public class TransactionTests {
 	} 
 
 	/*
-	 * @TestName: testGlobalTranForcedExceptionCheckpointRestartShortDelay
-	 * @assertion: FIXME
-	 * @TestStrategy: FIXME
+	 *  (this test name is now a misnomer since we changed the test logic to exclude the "short timeout")
+	 * 
+	 * @testName: testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutSteps
+	 * @assertion: Step-level property of 'javax.transaction.global.timeout', including defaults.  Also shows that 
+	 *             job-level property is ignored.
+	 * @Test_Strategy: This test uses three steps that are basically the same, reading and writing from the same tables
+	 *                 (along with some helper steps in between to init the tables).
+	 *                 Two of the steps are configured with long timeouts, and one with a short timeout. 
+	 *                 The long timeouts involve variations:
+	 *                  - step 2 : <property name="javax.transaction.global.timeout" value="0" />
+	 *                        (shows that '0' means indefinite timeout)
+	 *                  - step 3 : No property specified
+	 *                        (shows that the default is 180 seconds).
+	 *                 
+	 *                 The long timeouts are longer than the "long" delay, so these steps complete successfully.  
+	 *                 
+	 *                 Obviously this doesn't prove that the exact default timeout value is 180 seconds (for step 3),
+	 *                 or that the value of '0' means unlimited.  We don't try to prove that conclusively but just
+	 *                 to hint at it and possibly catch an implementation doing something completely off-base.
 	 */
 	@Test
 	@org.junit.Test
-	public void testGlobalTranForcedExceptionCheckpointRestartShortDelay() throws Exception {
-		String METHOD = "testGlobalTranForcedExceptionCheckpointRestartShortDelay";
-		begin(METHOD);
-		
-		String DEFAULT_SLEEP_TIME_1 = "10000";
-		String DEFAULT_SLEEP_TIME_2 = "0";
-
-		try {
-			Integer initInventory = 99;
-			Integer forcedFailCount = 15;
-			Integer itemCount = 9;
-			Integer dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.1",DEFAULT_SLEEP_TIME_1));
-
-			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
-
-			Properties jobParams = new Properties();
-
-			Reporter.log("Create job parameters for execution #1:<p>");
-			Reporter.log("javax.transaction.global.timeout=1<p>");
-			Reporter.log("commit.interval="+itemCount.toString()+"<p>");
-			Reporter.log("init.inventory.quantity="+initInventory.toString()+"<p>");
-			Reporter.log("forced.fail.count="+forcedFailCount.toString()+"<p>");
-			Reporter.log("dummy.delay.seconds="+dummyDelay.toString()+"<p>");
-			Reporter.log("expected.inventory="+expectedInventory.toString()+"<p>");
-			jobParams.put("javax.transaction.global.timeout", "1");
-			jobParams.put("commit.interval", itemCount.toString());
-			jobParams.put("init.inventory.quantity", initInventory.toString());
-			jobParams.put("forced.fail.count", forcedFailCount.toString());
-			jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-			jobParams.put("expected.inventory", expectedInventory.toString());
-
-
-			Reporter.log("Invoke startJobAndWaitForResult<p>");
-			TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran",jobParams);
-			long jobInstanceId = jobExec.getInstanceId();
-
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
-			Reporter.log("execution #1 JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
-			assertObjEquals(BatchStatus.FAILED, jobExec.getBatchStatus());
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null +" OrderCount="+ expectedCompletedOrders , jobExec.getExitStatus());
-
-			forcedFailCount = 0;
-			dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.2",DEFAULT_SLEEP_TIME_2));
-			jobParams.put("forced.fail.count", forcedFailCount.toString());
-
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders2 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
-
-			Reporter.log("Invoke restartJobAndWaitForResult with id: " + jobInstanceId + "<p>");
-			JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), jobParams);
-
-			Reporter.log("restarted job JobExecution getBatchStatus()="+restartedJobExec.getBatchStatus()+"<p>");
-			Reporter.log("restarted job JobExecution getExitStatus()="+restartedJobExec.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders+" OrderCount="+ expectedCompletedOrders2, restartedJobExec.getExitStatus());
-			assertObjEquals(BatchStatus.COMPLETED, restartedJobExec.getBatchStatus());
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-
-	}
-
-	/*
-	 * @TestName: testGlobalTranForcedExceptionCheckpointRestartMultiple
-	 * @assertion: FIXME
-	 * @Test_Strategy: FIXME
-	 */
-	@Test
-	@org.junit.Test
-	public void testGlobalTranForcedExceptionCheckpointRestartMultiple() throws Exception {
-		String METHOD = "testGlobalTranForcedExceptionCheckpointRestartMultiple";
+	public void testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutSteps() throws Exception {
+		String METHOD = "testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutSteps";
 		begin(METHOD);
 		
 		String DEFAULT_SLEEP_TIME = "10000";
@@ -533,13 +479,7 @@ public class TransactionTests {
 			Integer forcedFailCount = 15;
 			Integer itemCount = 9;
 			Integer dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultiple.sleep",DEFAULT_SLEEP_TIME));
-
-			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
-
-			Reporter.log("expectedInventory="+expectedInventory.toString()+"<p>");
-			Reporter.log("expectedCompletedOrders="+expectedCompletedOrders.toString()+"<p>");
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutSteps.sleep",DEFAULT_SLEEP_TIME));
 
 			Properties jobParams = new Properties();
 
@@ -548,55 +488,34 @@ public class TransactionTests {
 			Reporter.log("init.inventory.quantity="+initInventory.toString()+"<p>");
 			Reporter.log("forced.fail.count="+forcedFailCount.toString()+"<p>");
 			Reporter.log("dummy.delay.seconds="+dummyDelay.toString()+"<p>");
-			Reporter.log("expected.inventory="+expectedInventory.toString()+"<p>");
 			jobParams.put("commit.interval", itemCount.toString());
 			jobParams.put("init.inventory.quantity", initInventory.toString());
 			jobParams.put("forced.fail.count", forcedFailCount.toString());
 			jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-			jobParams.put("expected.inventory", expectedInventory.toString());
-
 
 			Reporter.log("Invoke startJobAndWaitForResult<p>");
 			TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_multiple_steps",jobParams);
 
 			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
 			Reporter.log("execution #1 JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
-			assertObjEquals(BatchStatus.FAILED, jobExec.getBatchStatus());
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null +" OrderCount="+ expectedCompletedOrders , jobExec.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			// With test refactoring all orders will be processed, and all inventory depleted.
+			assertObjEquals("Inventory=0 InitialCheckpoint=null OrderCount="+ initInventory, jobExec.getExitStatus());
 			
+			List<StepExecution> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
 			
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders2 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount) + expectedCompletedOrders;
-
-			JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), jobParams);
-
-			Reporter.log("restart #1 JobExecution getBatchStatus()="+restartedJobExec.getBatchStatus()+"<p>");
-			Reporter.log("restart #1 JobExecution getExitStatus()="+restartedJobExec.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders+" OrderCount="+ expectedCompletedOrders2, restartedJobExec.getExitStatus());
-			assertObjEquals(BatchStatus.FAILED, restartedJobExec.getBatchStatus());
-			
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders3 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount) + expectedCompletedOrders2;
-
-			JobExecution restartedJobExec2 = jobOp.restartJobAndWaitForResult(restartedJobExec.getExecutionId(), jobParams);
-
-			Reporter.log("restart #2 JobExecution getBatchStatus()="+restartedJobExec2.getBatchStatus()+"<p>");
-			Reporter.log("restart #2 JobExecution getExitStatus()="+restartedJobExec2.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders2+" OrderCount="+ expectedCompletedOrders3, restartedJobExec2.getExitStatus());
-			assertObjEquals(BatchStatus.FAILED, restartedJobExec2.getBatchStatus());
-			
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders4 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount) + expectedCompletedOrders3;
-
-			JobExecution restartedJobExec3 = jobOp.restartJobAndWaitForResult(restartedJobExec2.getExecutionId(), jobParams);
-
-			Reporter.log("restart #3 JobExecution getBatchStatus()="+restartedJobExec3.getBatchStatus()+"<p>");
-			Reporter.log("restart #3 JobExecution getExitStatus()="+restartedJobExec3.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders3+" OrderCount="+ expectedCompletedOrders4, restartedJobExec3.getExitStatus());
-			assertObjEquals(BatchStatus.FAILED, restartedJobExec3.getBatchStatus());
-			
-			
-			
+			boolean seen2 = false; boolean seen3 = false;
+			for (StepExecution s : stepExecutions) {
+				if (s.getStepName().equals("step2")) {
+					assertObjEquals(BatchStatus.COMPLETED, s.getBatchStatus());
+					seen2 = true;
+				} else if (s.getStepName().equals("step3")) {
+					assertObjEquals(BatchStatus.COMPLETED, s.getBatchStatus());
+					seen3 = true;
+				}
+			}
+			assertWithMessage("Step2 execution seen", true, seen2);
+			assertWithMessage("Step3 execution seen", true, seen3);
 
 		} catch (Exception e) {
 			handleException(METHOD, e);
@@ -605,14 +524,25 @@ public class TransactionTests {
 	}
 
 	/*
-	 * @TestName: testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg
-	 * @assertion: FIXME
-	 * @Test_Strategy: FIXME
+	 * @testName: testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutStepsCustomCheckpointAlgorithm
+	 * @assertion: Tests the CheckpointAlgorithm interface, with three 
+	 *             job-level property is ignored.
+	 * @Test_Strategy: This test uses three steps that are basically the same, reading and writing from the same tables
+	 *                 (along with some helper steps in between to init the tables).
+	 *                 
+	 *                 All three use a custom checkpoint algorithm, which are identical except for their
+	 *                 behavior with respect to timeout.
+	 *                 
+	 *                 step2 : checkpointTimeout - Don't override, pickup AbstractCheckpointAlgorithm's returning '0' =
+	 *                    unlimited.
+	 *                 step3 : checkpointTimeout - Return a long value
+	 *                 
+	 *                 The long timeouts are longer than the "long" delay, so steps 2, 3 complete successfully.  
 	 */
 	@Test
 	@org.junit.Test
-	public void testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg() throws Exception {
-		String METHOD = "testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg";
+	public void testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutStepsCustomCheckpointAlgorithm() throws Exception {
+		String METHOD = "testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutStepsCustomCheckpointAlgorithm";
 		begin(METHOD);
 		
 		String DEFAULT_SLEEP_TIME = "10000";
@@ -622,13 +552,7 @@ public class TransactionTests {
 			Integer forcedFailCount = 15;
 			Integer itemCount = 9;
 			Integer dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg.sleep",DEFAULT_SLEEP_TIME));
-
-			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
-
-			Reporter.log("expectedInventory="+expectedInventory.toString()+"<p>");
-			Reporter.log("expectedCompletedOrders="+expectedCompletedOrders.toString()+"<p>");
+					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutStepsCustomCheckpointAlgorithm.sleep",DEFAULT_SLEEP_TIME));
 
 			Properties jobParams = new Properties();
 
@@ -637,131 +561,39 @@ public class TransactionTests {
 			Reporter.log("init.inventory.quantity="+initInventory.toString()+"<p>");
 			Reporter.log("forced.fail.count="+forcedFailCount.toString()+"<p>");
 			Reporter.log("dummy.delay.seconds="+dummyDelay.toString()+"<p>");
-			Reporter.log("expected.inventory="+expectedInventory.toString()+"<p>");
 			jobParams.put("commit.interval", itemCount.toString());
 			jobParams.put("init.inventory.quantity", initInventory.toString());
 			jobParams.put("forced.fail.count", forcedFailCount.toString());
 			jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-			jobParams.put("expected.inventory", expectedInventory.toString());
-
 
 			Reporter.log("Invoke startJobAndWaitForResult<p>");
 			TCKJobExecutionWrapper jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran_multiple_steps-customCA",jobParams);
 
 			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
 			Reporter.log("execution #1 JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
-			assertObjEquals(BatchStatus.FAILED, jobExec.getBatchStatus());
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null +" OrderCount="+ expectedCompletedOrders , jobExec.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			assertObjEquals("Inventory=0 InitialCheckpoint=null OrderCount="+ initInventory, jobExec.getExitStatus());
 			
+			List<StepExecution> stepExecutions = jobOp.getStepExecutions(jobExec.getExecutionId());
 			
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders2 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount) + expectedCompletedOrders;
-			
-			JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), jobParams);
-
-			Reporter.log("restart #1 JobExecution getBatchStatus()="+restartedJobExec.getBatchStatus()+"<p>");
-			Reporter.log("restart #1 JobExecution getExitStatus()="+restartedJobExec.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders+" OrderCount="+ expectedCompletedOrders2, restartedJobExec.getExitStatus());
-			assertObjEquals(BatchStatus.FAILED, restartedJobExec.getBatchStatus());
-			
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders3 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount) + expectedCompletedOrders2;
-			
-			JobExecution restartedJobExec2 = jobOp.restartJobAndWaitForResult(restartedJobExec.getExecutionId(), jobParams);
-
-			Reporter.log("restart #2 JobExecution getBatchStatus()="+restartedJobExec2.getBatchStatus()+"<p>");
-			Reporter.log("restart #2 JobExecution getExitStatus()="+restartedJobExec2.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders2+" OrderCount="+ expectedCompletedOrders3, restartedJobExec2.getExitStatus());
-			assertObjEquals(BatchStatus.FAILED, restartedJobExec2.getBatchStatus());
-			
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders4 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount) + expectedCompletedOrders3;
-			
-			JobExecution restartedJobExec3 = jobOp.restartJobAndWaitForResult(restartedJobExec2.getExecutionId(), jobParams);
-			Reporter.log("restart #3 JobExecution getBatchStatus()="+restartedJobExec3.getBatchStatus()+"<p>");
-			Reporter.log("restart #3 JobExecution getExitStatus()="+restartedJobExec3.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders3+" OrderCount="+ expectedCompletedOrders4, restartedJobExec3.getExitStatus());
-			assertObjEquals(BatchStatus.FAILED, restartedJobExec3.getBatchStatus());
+			boolean seen2 = false; boolean seen3 = false; 
+			for (StepExecution s : stepExecutions) {
+				if (s.getStepName().equals("step2")) {
+					assertObjEquals(BatchStatus.COMPLETED, s.getBatchStatus());
+					seen2 = true;
+				} else if (s.getStepName().equals("step3")) {
+					assertObjEquals(BatchStatus.COMPLETED, s.getBatchStatus());
+					seen3 = true;
+				} 
+			}
+			assertWithMessage("Step2 execution seen", true, seen2);
+			assertWithMessage("Step3 execution seen", true, seen3);
 
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
-
 	}
 
-	/*
-	 * @testName: testGlobalTranForcedTimeoutCheckpointRestart
-	 * @assertion: FIXME
-	 * @test_Strategy: FIXME
-	 */    
-	@Test
-	@org.junit.Test  
-	public void testGlobalTranForcedTimeoutCheckpointRestart() throws Exception {
-		String METHOD = "testGlobalTranForcedTimeoutCheckpointRestart";
-		begin(METHOD);
-		
-		String DEFAULT_SLEEP_TIME_1 = "10000";
-		String DEFAULT_SLEEP_TIME_2 = "0";
-
-		try {
-
-			Integer initInventory = 99;
-			Integer forcedFailCount = 15;
-			Integer itemCount = 9;
-			Integer dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.1",DEFAULT_SLEEP_TIME_1));
-			Integer globalTimeout = 1; //seconds
-
-			Integer expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(initInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
-
-			Properties jobParams = new Properties();
-
-			Reporter.log("Create job parameters for execution #1:<p>");
-			Reporter.log("javax.transaction.global.timeout="+globalTimeout.toString()+"<p>");
-			Reporter.log("commit.interval="+itemCount.toString()+"<p>");
-			Reporter.log("init.inventory.quantity="+initInventory.toString()+"<p>");
-			Reporter.log("forced.fail.count="+forcedFailCount.toString()+"<p>");
-			Reporter.log("dummy.delay.seconds="+dummyDelay.toString()+"<p>");
-			Reporter.log("expected.inventory="+expectedInventory.toString()+"<p>");
-			jobParams.put("javax.transaction.global.timeout", globalTimeout.toString()); //seconds
-			jobParams.put("commit.interval", itemCount.toString());
-			jobParams.put("init.inventory.quantity", initInventory.toString());
-			jobParams.put("forced.fail.count", forcedFailCount.toString());
-			jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-			jobParams.put("expected.inventory", expectedInventory.toString());
-
-			Reporter.log("Invoke startJobAndWaitForResult<p>");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_chunk_globaltran",jobParams);
-			long jobExecutionId = jobExec.getExecutionId();
-
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
-			Reporter.log("execution #1 JobExecution getExitStatus()="+jobExec.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + null +" OrderCount="+ expectedCompletedOrders , jobExec.getExitStatus());
-			assertObjEquals(BatchStatus.FAILED, jobExec.getBatchStatus());
-
-
-			forcedFailCount = 0;
-			dummyDelay = 
-					Integer.parseInt(System.getProperty("TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.2",DEFAULT_SLEEP_TIME_2));
-			jobParams.put("forced.fail.count", forcedFailCount.toString());
-			jobParams.put("dummy.delay.seconds", dummyDelay.toString());
-
-			expectedInventory = TransactionTests.calculateGlobalTranExpectedInventory(expectedInventory, forcedFailCount, itemCount);
-			Integer expectedCompletedOrders2 = TransactionTests.calculateExpectedCompleteOrders(initInventory, forcedFailCount, itemCount);
-
-			Reporter.log("Invoke restartJobAndWaitForResult with id: " + jobExecutionId + "<p>");
-			JobExecution restartedJobExec = jobOp.restartJobAndWaitForResult(jobExecutionId, jobParams);
-
-			Reporter.log("restarted job JobExecution getBatchStatus()="+restartedJobExec.getBatchStatus()+"<p>");
-			Reporter.log("restarted job JobExecution getExitStatus()="+restartedJobExec.getExitStatus()+"<p>");
-			assertObjEquals("Inventory=" +expectedInventory + " InitialCheckpoint=" + expectedCompletedOrders+" OrderCount="+ expectedCompletedOrders2, restartedJobExec.getExitStatus());
-			assertObjEquals(BatchStatus.COMPLETED, restartedJobExec.getBatchStatus());
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-
-	} 
 
 
 	/**
@@ -775,7 +607,6 @@ public class TransactionTests {
 		} else {
 			expectedResult = (initInventory - forcedFailCount ) + (forcedFailCount % commitInterval);
 		}
-
 		
 		return expectedResult;
 	}

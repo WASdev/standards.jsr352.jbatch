@@ -16,6 +16,11 @@
 */
 package com.ibm.jbatch.container;
 
+import java.util.List;
+
 public interface IController {
-    public void stop(); 
+    
+    public void stop();
+    
+    public List<Long> getLastRunStepExecutions();
 }

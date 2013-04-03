@@ -28,7 +28,8 @@ import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
-import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jobinstance.RuntimeFlowInSplitExecution;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
 import com.ibm.jbatch.container.persistence.CheckpointData;
 import com.ibm.jbatch.container.persistence.CheckpointDataKey;
@@ -46,9 +47,13 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
     
 	public int jobOperatorGetJobInstanceCount(String jobName);
 	
+	public int jobOperatorGetJobInstanceCount(String jobName, String appTag);
+	
 	public Map<Long, String> jobOperatorGetExternalJobInstanceData();
 	
 	public List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count);
+	
+	public List<Long> jobOperatorGetJobInstanceIds(String jobName, String appTag, int start, int count);
 
 	public Timestamp jobOperatorQueryJobExecutionTimestamp(long key, TimestampType timetype);
 	
@@ -58,7 +63,9 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public long jobOperatorQueryJobExecutionJobInstanceId(long executionID) throws NoSuchJobExecutionException;
 
-	public List<StepExecution> getStepExecutionIDListQueryByJobID(long execid);
+	public List<StepExecution> getStepExecutionsForJobExecution(long execid);
+	
+	public Map<String, StepExecution> getMostRecentStepExecutionsForJobInstance(long instanceId);
 	
 	public void updateBatchStatusOnly(long executionId, BatchStatus batchStatus, Timestamp timestamp);
 	
@@ -101,9 +108,9 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	 * @param jobInstance the parent job instance
 	 * @param jobParameters the parent job instance parameters
 	 * @param batchStatus the current BatchStatus
-	 * @return the RuntimeJobContextJobExecutionBridge class for this JobExecution
+	 * @return the RuntimeJobExecution class for this JobExecution
 	 */
-	RuntimeJobContextJobExecutionBridge createJobExecution(JobInstance jobInstance, Properties jobParameters, BatchStatus batchStatus);
+	RuntimeJobExecution createJobExecution(JobInstance jobInstance, Properties jobParameters, BatchStatus batchStatus);
 	
 	// STEPEXECUTIONINSTANCEDATA
 	/**
@@ -199,5 +206,8 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 
 	JobInstance createSubJobInstance(String name, String apptag);
 
+	public RuntimeFlowInSplitExecution createFlowInSplitExecution(JobInstance jobInstance, BatchStatus batchStatus);
+	
+	public StepExecution getStepExecutionByStepExecutionId(long stepExecId);
 
 }

@@ -24,6 +24,7 @@ RUNTIMEDB
 JSR352.Tests.TCK/readme.txt
 JSR352.Tests.TCK/jsr352-tck.properties
 JSR352.Runtime/resources/jsr352-derby.ddl_DO_NOT_EDIT
+JSR352.RI.SPI/doc/**
 JSR352.Runtime/doc/**
 JSR352.JobXML.Model/prereqs
 JSR352.Tests.TCK/resources/jsr352-tck-database.ddl

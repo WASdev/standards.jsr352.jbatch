@@ -188,7 +188,14 @@ public class JobOperatorImpl implements JobOperator {
 
 		int jobInstanceCount = 0;
 
-		jobInstanceCount = persistenceService.jobOperatorGetJobInstanceCount(jobName);
+		BatchSecurityHelper helper = getBatchSecurityHelper();
+		
+		if (isCurrentTagAdmin(helper)) {
+			// Do an unfiltered query
+			jobInstanceCount = persistenceService.jobOperatorGetJobInstanceCount(jobName);
+		} else {
+			jobInstanceCount = persistenceService.jobOperatorGetJobInstanceCount(jobName, helper.getCurrentTag());
+		}
 
 		if (jobInstanceCount > 0) {
 			return jobInstanceCount;
@@ -206,8 +213,16 @@ public class JobOperatorImpl implements JobOperator {
 		logger.entering(sourceClass, "getJobInstances", new Object[]{jobName, start, count});
 		List<JobInstance> jobInstances = new ArrayList<JobInstance>();
 
+		BatchSecurityHelper helper = getBatchSecurityHelper();
+		List<Long> instanceIds; 
+		if (isCurrentTagAdmin(helper)) {
+			// Do an unfiltered query
+			instanceIds	= persistenceService.jobOperatorGetJobInstanceIds(jobName, start, count);
+		} else {
+			instanceIds	= persistenceService.jobOperatorGetJobInstanceIds(jobName, helper.getCurrentTag(), start, count);
+		}
+
 		// get the jobinstance ids associated with this job name
-		List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobName, start, count);
 
 		if (instanceIds.size() > 0){
 			// for every job instance id
@@ -215,7 +230,9 @@ public class JobOperatorImpl implements JobOperator {
 				// get the job instance obj, add it to the list
 				JobStatus jobStatus = this._jobStatusManagerService.getJobStatus(id);
 				JobInstance jobInstance = jobStatus.getJobInstance();
+				logger.finest("Matched jobInstance = " + jobInstance.getInstanceId());
 				if(isAuthorized(jobInstance.getInstanceId())) {
+					logger.finest("Authorized so adding to list jobInstance =  " + jobInstance.getInstanceId());
 					jobInstances.add(jobInstance);	
 				}
 			}
@@ -288,10 +305,16 @@ public class JobOperatorImpl implements JobOperator {
 			// for every job instance id
 			for (long id : executionIds){
 				try {
+					logger.finer("Examining executionId: " + id);
 					if(isAuthorized(persistenceService.getJobInstanceIdByExecutionId(id))) {
-						IJobExecution jobEx = batchKernel.getJobExecution(id);
-						// get the job instance obj, add it to the list
-						jobExecutions.add(jobEx.getExecutionId());	
+						if (batchKernel.isExecutionRunning(id)) {
+							IJobExecution jobEx = batchKernel.getJobExecution(id);
+							jobExecutions.add(jobEx.getExecutionId());
+						} else {
+							logger.finer("Found executionId: " + id + " with a BatchStatus indicating running, but kernel doesn't currently have an entry for this execution in the kernel's in-memory map.");
+						}
+					} else {
+						logger.finer("Don't have authorization for executionId: " + id);
 					}
 				} catch (NoSuchJobExecutionException e) {
 					String errorMsg = "Just found execution with id = " + id + " in table, but now seeing it as gone";
@@ -323,7 +346,7 @@ public class JobOperatorImpl implements JobOperator {
 			throw new NoSuchJobExecutionException("Job Execution: " + executionId + " not found");
 		}
 		if (isAuthorized(persistenceService.getJobInstanceIdByExecutionId(executionId))) {
-			stepExecutions = persistenceService.getStepExecutionIDListQueryByJobID(executionId);
+			stepExecutions = persistenceService.getStepExecutionsForJobExecution(executionId);
 		} else {
 			logger.warning("getStepExecutions: The current user is not authorized to perform this operation");
 			throw new JobSecurityException("The current user is not authorized to perform this operation");
@@ -386,22 +409,49 @@ public class JobOperatorImpl implements JobOperator {
 	}
 
 	public void purge(String apptag) {
-		logger.entering(sourceClass, "purge", apptag);
-		if (batchKernel.getBatchSecurityHelper().isAdmin(apptag)) {
+		BatchSecurityHelper bsh = getBatchSecurityHelper();
+		if (isCurrentTagAdmin(bsh)) {
+			logger.finer("Current tag is admin, so authorized to purge.");
 			persistenceService.purge(apptag);
+		} else if (bsh.getCurrentTag().equals(apptag)) {
+			logger.finer("Current tag is the tag of record so authorized to purge.");
+			persistenceService.purge(apptag);
+		} else {
+			logger.finer("Current tag does not match the tag of record so will not purge.");
 		}
-		logger.exiting(sourceClass, "purge");
 	}
 
 	private boolean isAuthorized(long instanceId) {
 		logger.entering(sourceClass, "isAuthorized", instanceId);
 		boolean retVal = false;
+		
 		String apptag = persistenceService.getJobCurrentTag(instanceId);
-		BatchSecurityHelper bsh = batchKernel.getBatchSecurityHelper();
-		if (bsh.isAdmin(apptag) || bsh.getCurrentTag().equals(apptag)) {
+		
+		BatchSecurityHelper bsh = getBatchSecurityHelper();
+		if (isCurrentTagAdmin(bsh)) {
+			logger.finer("Current tag is admin, so always authorized");
 			retVal = true;
+		} else if (bsh.getCurrentTag().equals(apptag)) { 
+			logger.finer("Current tag is the tag of record");
+			retVal = true;
+		} else {
+			logger.finer("Current tag does not match the tag of record");
+			retVal = false;
 		}
+		
 		logger.exiting(sourceClass, "isAuthorized", retVal);
 		return retVal;
+	}
+
+	private boolean isCurrentTagAdmin(BatchSecurityHelper helper) {
+		return helper.isAdmin(helper.getCurrentTag());
+	}
+	
+	private BatchSecurityHelper getBatchSecurityHelper() {
+		BatchSecurityHelper bsh = batchKernel.getBatchSecurityHelper();
+		if (bsh == null) {
+			throw new IllegalStateException("Expect to have a security helper, at least the NoOp security helper.");
+		}
+		return bsh;
 	}
 }

@@ -358,6 +358,10 @@ public class StepExecutionTests {
 			Reporter.log("Locate job XML file: split_batchlet_4steps.xml<p>");
 			Reporter.log("Invoke startJobAndWaitForResult for execution #1<p>");
 			JobExecution jobExec = jobOp.startJobAndWaitForResult("split_batchlet_4steps");
+			
+			// Saves debugging time to check these two first in case they fail
+			assertWithMessage("Check job batch status", BatchStatus.COMPLETED, jobExec.getBatchStatus());
+			assertWithMessage("Check job exit status", "COMPLETED", jobExec.getExitStatus());
 
 			Reporter.log("Obtaining StepExecutions for execution id: " + jobExec.getExecutionId() + "<p>");
 			List<StepExecution> steps = jobOp.getStepExecutions(jobExec.getExecutionId());
@@ -370,8 +374,6 @@ public class StepExecutionTests {
 			}
 			Reporter.log("Job batch status =" + jobExec.getBatchStatus() + "<p>");
 			Reporter.log("Job exit status =" + jobExec.getExitStatus() + "<p>");
-			assertWithMessage("Check job batch status", BatchStatus.COMPLETED, jobExec.getBatchStatus());
-			assertWithMessage("Check job exit status", "COMPLETED", jobExec.getExitStatus());
 
 		} catch (Exception e) {
 			handleException(METHOD, e);

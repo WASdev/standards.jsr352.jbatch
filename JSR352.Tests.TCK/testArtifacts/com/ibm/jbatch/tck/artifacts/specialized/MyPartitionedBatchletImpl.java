@@ -48,32 +48,18 @@ public class MyPartitionedBatchletImpl extends AbstractBatchlet {
     @Override
     public String process() throws Exception {
         
-        //add a job property to the job to be seen later in a split step's jobcontext 
-        if (stepCtx.getStepName().equals("initStep")) {
-            jobCtx.getProperties().setProperty("progammatically.set.job.prop", "progammatically.set.job.prop.value");
-            
-            return "GOOD_INIT_STEP";
-        }
-        
-
         if ("true".equals(fail_this_partition)){
             throw new Exception("Fail this partition on purpose in MyPartitionedBatchlet.process()");
         }
         
         //Check that job level properties were propagated to the partitioned or split step's context
-        if (!!!jobCtx.getProperties().getProperty("job.level.prop").equals("job.prop.value")) {
+        if (!jobCtx.getProperties().getProperty("job.level.prop").equals("job.prop.value")) {
             jobCtx.setExitStatus("Job level properties not set from parent context");
             throw new Exception("This test will not pass because the job level properties are not set in the partition or split level jobcontext");
         }
         
-        //Check that a programmatically set job level property is propagated to the partitioned or split step's context
-        if (!!!jobCtx.getProperties().getProperty("progammatically.set.job.prop").equals("progammatically.set.job.prop.value")) {
-            jobCtx.setExitStatus("Programmatically set job level context properties not set from parent context");
-            throw new Exception("This test will not pass because programmatically set job level properties are not set in the partition or split level jobcontext");
-        }
-        
         //Check that step level properties were propagated to the partitioned or split step's context
-        if (!!!stepCtx.getProperties().getProperty("step.level.prop").equals("step.prop.value")) {
+        if (!stepCtx.getProperties().getProperty("step.level.prop").equals("step.prop.value")) {
             stepCtx.setExitStatus("Step level properties not set from parent context");
             throw new Exception("This test will not pass because the step level properties are not set in the partition or split level stepcontext");
         }

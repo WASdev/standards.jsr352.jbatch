@@ -1,0 +1,187 @@
+/*
+ * Copyright 2012 International Business Machines Corp.
+ * 
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership. Licensed under the Apache License, 
+ * Version 2.0 (the "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.ibm.jbatch.container.impl;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.batch.runtime.BatchStatus;
+import javax.batch.runtime.StepExecution;
+
+import com.ibm.jbatch.container.AbortedBeforeStartException;
+import com.ibm.jbatch.container.IController;
+import com.ibm.jbatch.container.IExecutionElementController;
+import com.ibm.jbatch.container.IJobSingleThreadController;
+import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
+import com.ibm.jbatch.container.artifact.proxy.JobListenerProxy;
+import com.ibm.jbatch.container.artifact.proxy.ListenerFactory;
+import com.ibm.jbatch.container.context.impl.JobContextImpl;
+import com.ibm.jbatch.container.context.impl.StepContextImpl;
+import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
+import com.ibm.jbatch.container.jobinstance.RuntimeJobContextJobExecutionBridge;
+import com.ibm.jbatch.container.jsl.ExecutionElement;
+import com.ibm.jbatch.container.jsl.IllegalTransitionException;
+import com.ibm.jbatch.container.jsl.ModelNavigator;
+import com.ibm.jbatch.container.jsl.Transition;
+import com.ibm.jbatch.container.jsl.TransitionElement;
+import com.ibm.jbatch.container.services.IJobStatusManagerService;
+import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.status.InternalExecutionElementStatus;
+import com.ibm.jbatch.container.util.BatchWorkUnit;
+import com.ibm.jbatch.container.util.ParallelWorkUnitConfig;
+import com.ibm.jbatch.container.util.PartitionDataWrapper;
+import com.ibm.jbatch.jsl.model.Decision;
+import com.ibm.jbatch.jsl.model.End;
+import com.ibm.jbatch.jsl.model.Fail;
+import com.ibm.jbatch.jsl.model.Flow;
+import com.ibm.jbatch.jsl.model.JSLJob;
+import com.ibm.jbatch.jsl.model.JSLProperties;
+import com.ibm.jbatch.jsl.model.Property;
+import com.ibm.jbatch.jsl.model.Split;
+import com.ibm.jbatch.jsl.model.Step;
+import com.ibm.jbatch.jsl.model.Stop;
+
+public class FlowInSplitControllerImpl implements IJobSingleThreadController {
+
+	private final static String CLASSNAME = FlowInSplitControllerImpl.class.getName();
+	private final static Logger logger = Logger.getLogger(CLASSNAME);
+
+	private IJobStatusManagerService jobStatusService = null;
+	private IPersistenceManagerService persistenceService = null;
+
+	private RuntimeJobContextJobExecutionBridge jobExecution = null;
+
+	private final JobContextImpl jobContext;
+	private final ModelNavigator<JSLJob> jobNavigator;
+
+	private ListenerFactory listenerFactory = null;
+	private final long jobInstanceId;
+	private long rootJobExecutionId;
+
+	//
+	// The currently executing controller, this will only be set to the 
+	// local variable reference when we are ready to accept stop events for
+	// this execution.
+	private ControllerTransititionHelper<JSLJob> transitionHelper;
+	
+	public FlowInSplitControllerImpl(RuntimeJobContextJobExecutionBridge jobExecution, ParallelWorkUnitConfig config) {
+		this.jobExecution = jobExecution;
+		this.jobContext = jobExecution.getJobContext();
+		this.rootJobExecutionId = config.getRootJobExecutionId();
+		jobNavigator = jobExecution.getJobNavigator();
+		jobInstanceId = jobExecution.getJobInstance().getInstanceId();
+		jobStatusService = ServicesManagerImpl.getInstance().getJobStatusManagerService();
+		persistenceService = ServicesManagerImpl.getInstance().getPersistenceManagerService();
+		
+		this.transitionHelper = new ControllerTransititionHelper<JSLJob>(jobExecution, jobNavigator, config.getAnalyzerQueue()); 
+
+		setContextProperties();
+	}
+
+	/**
+	 * For a subjob there is no persisted status.   
+	 */
+	@Override
+	public void executeSingleThread() {
+		
+		if (logger.isLoggable(Level.FINE)) {
+			logger.finer("Entering subjob, execution = " + jobExecution );
+		}
+
+		if (!jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) { 
+			try {
+				transitionHelper.doExecutionLoop();
+			} catch (Exception e) {
+				logWarning("Caught exception executing partitioned step.", e);
+				jobContext.setBatchStatus(BatchStatus.FAILED);
+			}
+		}
+		
+		persistFlowInSplitInternalStatus();
+
+		return;
+	}
+
+	private void persistFlowInSplitInternalStatus() {
+		BatchStatus batchStatus = jobContext.getBatchStatus();
+		String exitStatus = jobContext.getExitStatus();
+
+		// Continue the convention of defaulting exit status to batch status
+		// even though this is an implementation detail.
+		if (jobContext.getExitStatus() == null) {
+			exitStatus = batchStatus.name();
+		}
+
+		// Take a current timestamp for last updated no matter what the status.
+		long time = System.currentTimeMillis();
+		Timestamp timestamp = new Timestamp(time);
+		jobExecution.setLastUpdateTime(timestamp);
+
+		// Perhaps these should be coordinated in a tran but probably better still would be
+		// rethinking the table design to let the database provide us consistently with a single update.
+		jobStatusService.updateJobBatchStatus(jobInstanceId, batchStatus);
+		jobStatusService.updateJobExecutionStatus(jobExecution.getInstanceId(), batchStatus, exitStatus);
+		jobStatusService.updateJobStatusFromJSLStop(jobInstanceId, jobContext.getRestartOn());
+		
+		jobExecution.setEndTime(timestamp);
+		persistenceService.updateWithFinalExecutionStatusesAndTimestamps(jobExecution.getExecutionId(), 
+				batchStatus, exitStatus, timestamp);
+	}
+	private void logWarning(String msg, Throwable t) {
+		StringWriter sw = new StringWriter();
+		t.printStackTrace(new PrintWriter(sw));
+		logger.warning(msg + " with Throwable message: " + t.getMessage() + ", and stack trace: " + sw.toString());
+	}
+
+	@Override
+	public void stop() {
+		IController ctrl = transitionHelper.getCurrentStoppableElementController();
+		if (ctrl != null) {
+			ctrl.stop();
+		}
+	}
+
+	private void setContextProperties() {
+		JSLJob jobModel = jobExecution.getJobNavigator().getRootModelElement();
+		JSLProperties jslProps = jobModel.getProperties();
+
+		if (jslProps != null) {
+			Properties contextProps = jobContext.getProperties();
+			for (Property property : jslProps.getPropertyList()) {
+				contextProps.setProperty(property.getName(), property.getValue());
+			}	
+		}
+	}
+
+	private void jslStop(String restartOn) {
+		logger.fine("Logging JSL stop(): exitStatus = " + jobContext.getExitStatus() + ", restartOn = " +restartOn );
+		//batchStatusStopping();
+		jobStatusService.updateJobStatusFromJSLStop(jobInstanceId, restartOn);
+		return;
+	}
+	
+
+
+}

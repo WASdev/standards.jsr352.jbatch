@@ -24,12 +24,7 @@
 				<fileset dir="lib">
 					<include name="**/*.jar"/>
 				</fileset>
-				<fileset dir="${jsr352.impl.runtime}">
-					<include name="**/javax.batch.api.jar"/>
-				</fileset>
-				<fileset dir="${jsr352.impl.runtime}">
-					<include name="**/javax.inject.jar"/>
-				</fileset>
+				<pathelement path="${batch.impl.classes}"/>
 				<fileset dir="artifacts">
 					<include name="**/jsr352-tck-SPI.jar"/>
 				</fileset>
@@ -48,25 +43,26 @@
 	
 	<target name="run" depends="init" description="Runs the JSR352 TCK suite" >
 		
-		<loadproperties srcFile="jsr352-tck.properties"/>
+        	<path id="jsr352.tck.classpath">
+        				<fileset dir="lib">
+        						<include name="**/*.jar"/>
+        					</fileset>
+        					<fileset dir="artifacts">
+        						<include name="**/jsr352-tck-SPI.jar"/>
+        						<include name="**/jsr352-tck-impl.jar"/>
+        					</fileset>
+        					<pathelement path="${batch.impl.classes}"/> 
+        			</path>
 	
-		<testng mode="testng" dumpCommand="true" workingDir="." failureProperty="tests.failed" outputdir="${results}">
-			<classpath>
-				<fileset dir="lib">
-					<include name="**/*.jar"/>
-				</fileset>
-				<fileset dir="artifacts">
-					<include name="**/jsr352-tck-SPI.jar"/>
-					<include name="**/jsr352-tck-impl.jar"/>
-				</fileset>
-				<fileset dir="${jsr352.impl.runtime}">
-					<include name="**/*.jar"/>
-				</fileset>
-			</classpath>
+		<testng mode="testng" classpathref="jsr352.tck.classpath" dumpCommand="true" workingDir="." failureProperty="tests.failed" outputdir="${results}">
+			
 			<xmlfileset dir="." includes="artifacts/jsr352-tck-impl-suite.xml"/>
 			
+			<!-- user specified JVM arguments -->
+			<jvmarg line="${jvm.options}"/>
+			
 			<!-- TCK test sleep property definitions -->
-			<jvmarg value="-DjobOperator.sleep.time=900000"/>
+			<jvmarg value="-Dtck.execution.waiter.timeout=900000"/>
 			<jvmarg value="-DExecutionTests.testInvokeJobWithUserStop.sleep=${ExecutionTests.testInvokeJobWithUserStop.sleep}"/>
 			<jvmarg value="-DJobOperatorTests.testInvokeJobWithUserStop.sleep=${JobOperatorTests.testInvokeJobWithUserStop.sleep}"/>
 			<jvmarg value="-DJobOperatorTests.testJobOperatorGetRunningJobExecutions.sleep=${JobOperatorTests.testJobOperatorGetRunningJobExecutions.sleep}"/>
@@ -79,11 +75,11 @@
 			<jvmarg value="-DTransactionTests.testGlobalTranNoExceptions.sleep=${TransactionTests.testGlobalTranNoExceptions.sleep}"/>
 			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionWithRollback.sleep=${TransactionTests.testGlobalTranForcedExceptionWithRollback.sleep}"/>
 			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestart.sleep=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestart.sleep}"/>
-			<jvmarg value="-DTransactionTests.testGlobalTranForcedTimeoutCheckpointRestartDefault.sleep=${TransactionTests.testGlobalTranForcedTimeoutCheckpointRestartDefault.sleep}"/>
-			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.1=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.1}"/>
-			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.2=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartShortDelay.sleep.2}"/>
-			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultiple.sleep=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultiple.sleep}"/>
-			<jvmarg value="-DTransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg.sleep=${TransactionTests.testGlobalTranForcedExceptionCheckpointRestartMultipleCustomChkPtAlg.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranNoDelayLongTimeout.sleep=${TransactionTests.testGlobalTranNoDelayLongTimeout.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranLongDelayShortTimeoutThenNoDelayShortTimeout.sleep.1=${TransactionTests.testGlobalTranLongDelayShortTimeoutThenNoDelayShortTimeout.sleep.1}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranLongDelayShortTimeoutThenNoDelayShortTimeout.sleep.2=${TransactionTests.testGlobalTranLongDelayShortTimeoutThenNoDelayShortTimeout.sleep.2}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutSteps.sleep=${TransactionTests.testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutSteps.sleep}"/>
+			<jvmarg value="-DTransactionTests.testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutStepsCustomCheckpointAlgorithm.sleep=${TransactionTests.testGlobalTranLongDelayMixOfLongTimeoutStepsAndShortTimeoutStepsCustomCheckpointAlgorithm.sleep}"/>
 			<jvmarg value="-DTransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.1=${TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.1}"/>
 			<jvmarg value="-DTransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.2=${TransactionTests.testGlobalTranForcedTimeoutCheckpointRestart.sleep.2}"/>
 			<jvmarg value="-DChunkTests.testChunkTimeBased10Seconds.sleep=${ChunkTests.testChunkTimeBased10Seconds.sleep}"/>
