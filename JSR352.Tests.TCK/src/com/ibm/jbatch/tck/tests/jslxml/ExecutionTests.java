@@ -357,46 +357,6 @@ public class ExecutionTests {
 
 	}
 
-	/*
-	 * @testName: testInvokeJobWithUserStop
-	 * @assertion: The batch status of a job is set to stopped after it is stopped through the job operator
-	 * 
-	 * @test_Strategy: Issue a job that runs in an infinite loop. Issue a job operator stop and verify the 
-	 * batch status.
-	 */
-	@Test
-	@org.junit.Test
-	public void testInvokeJobWithUserStop() throws Exception {
-		String METHOD = "testInvokeJobWithUserStop";
-		final String DEFAULT_SLEEP_TIME = "1000";
-		
-		begin(METHOD);
-
-		try {
-			Reporter.log("Locate job XML file: job_batchlet_longrunning.xml<p>");
-
-			Reporter.log("Create job parameters for execution #1:<p>");
-			Properties jobParameters = new Properties();
-			Reporter.log("run.indefinitely=true<p>");
-			jobParameters.setProperty("run.indefinitely" , "true");
-
-			Reporter.log("Invoking startJobWithoutWaitingForResult for Execution #1<p>");
-			JobExecution jobExec = jobOp.startJobWithoutWaitingForResult("job_batchlet_longrunning", jobParameters);
-
-			int sleepTime = Integer.parseInt(System.getProperty("ExecutionTests.testInvokeJobWithUserStop.sleep",DEFAULT_SLEEP_TIME));
-			Reporter.log("Thread.sleep(" + sleepTime + ")<p>");
-			Thread.sleep(sleepTime);
-
-			Reporter.log("Invoking stopJobAndWaitForResult for Execution #1<p>");
-			jobOp.stopJobAndWaitForResult(jobExec);
-
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
-			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-
-	}
 
 	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");

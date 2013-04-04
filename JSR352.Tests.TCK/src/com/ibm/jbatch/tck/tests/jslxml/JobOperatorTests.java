@@ -429,11 +429,12 @@ public class JobOperatorTests {
 		}
 
 	}
-
+	
 	/*
 	 * @testName: testInvokeJobWithUserStop
-	 * @assertion: FIXME
-	 * @test_Strategy: FIXME
+	 * @assertion: The batch status of a job is set to stopped after it is stopped through the job operator
+	 * @test_Strategy: Issue a job that runs in an infinite loop. Issue a job operator stop and verify the 
+	 * batch status.
 	 */
 	@Test
 	@org.junit.Test

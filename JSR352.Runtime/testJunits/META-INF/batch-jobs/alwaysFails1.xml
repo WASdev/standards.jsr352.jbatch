@@ -16,8 +16,12 @@
   limitations under the License.
 -->
 <job id="runtimejunit.alwaysFails1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
-	<step id="step1">
-		<batchlet ref="test.artifacts.MyBatchletImpl" />
+	<step id="step1" allow-start-if-complete="true">
+		<batchlet ref="test.artifacts.MyBatchletImpl">
+		<properties>
+			<property name="sleepTime" value="#{jobParameters['sleepTime']}" />
+		</properties>
+		</batchlet>
 		<fail on="VERY GOOD INVOCATION" exit-status="TEST_FAIL"/>
 	</step>
 </job>

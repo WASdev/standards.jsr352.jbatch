@@ -72,12 +72,15 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     
     @Override
     public Date getEndTime() {
-        
     	if (stepContext != null){
     		return this.stepContext.getEndTimeTS();
     	}
     	else {
-    		return new Date(endTime.getTime());
+    		if (endTime != null) {
+    			return new Date(endTime.getTime());
+    		} else {
+    			return null;
+    		}
     	}
     }
 
@@ -102,7 +105,11 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     		return this.stepContext.getStartTimeTS();
     	}
     	else {
-    		return new Date(startTime.getTime());
+    		if (startTime != null) {
+    			return new Date(startTime.getTime());
+    		} else {
+    			return null;
+    		}
     	}
     }
 

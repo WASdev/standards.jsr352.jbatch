@@ -932,14 +932,14 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
     boolean skipWriteException(Exception e, List<Object> chunkToWrite) {
 
-        Object writeObjs[] = chunkToWrite.toArray();
-        for (int i = 0; i < writeObjs.length; i++) {
+        
+        
             try {
                 skipHandler.handleExceptionWithRecordListWrite(e, chunkToWrite);
             } catch (BatchContainerRuntimeException bcre) {
                 return false;
             }
-        }
+        
 
         return true;
 

@@ -19,6 +19,8 @@ package test.artifacts;
 import java.util.logging.Logger;
 
 import javax.batch.api.AbstractBatchlet;
+import javax.batch.api.BatchProperty;
+import javax.inject.Inject;
 
 public class MyBatchletImpl extends AbstractBatchlet {
 	private final static Logger logger = Logger.getLogger(MyBatchletImpl.class.getName());
@@ -26,9 +28,17 @@ public class MyBatchletImpl extends AbstractBatchlet {
     private volatile static int count = 1;
     
     public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
+    
+    @Inject @BatchProperty
+    public String sleepTime;
 	
 	@Override
 	public String process() throws Exception {	
+		int sleepVal = 0;
+		if (sleepTime != null) {
+			sleepVal = Integer.parseInt(sleepTime);
+			Thread.sleep(sleepVal);
+		}
 		logger.fine("Running batchlet process(): " + count);
 		count++;
 		return GOOD_EXIT_STATUS;

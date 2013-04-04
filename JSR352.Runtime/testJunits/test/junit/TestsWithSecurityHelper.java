@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.operations.NoSuchJobException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobInstance;
 
@@ -47,7 +48,11 @@ public class TestsWithSecurityHelper {
 		int adminInstanceCount = 0;
 		for (int i = 0; i < NUM_HELPERS; i++) {
 			registerHelper(i);
-			instanceCounts[i] = jobOp.getJobInstanceCount("runtimejunit.alwaysFails1");
+			try {
+				instanceCounts[i] = jobOp.getJobInstanceCount("runtimejunit.alwaysFails1");
+			} catch (NoSuchJobException e) {
+				instanceCounts[i] = 0;
+			}
 		}
 		spiMgr.registerBatchSecurityHelper(adminHelper);
 		adminInstanceCount = jobOp.getJobInstanceCount("runtimejunit.alwaysFails1");

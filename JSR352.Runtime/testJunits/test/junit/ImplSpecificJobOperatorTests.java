@@ -1,11 +1,14 @@
 package test.junit;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.batch.operations.JobOperator;
+import javax.batch.operations.JobRestartException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
@@ -75,20 +78,28 @@ public class ImplSpecificJobOperatorTests {
 	}
 	
 	@Test
-	@Ignore("Didn't bother putting the expected catches in here so will just produce a failure")
-	public void twoRestartsConsecutively() throws Exception {
-		long exec1Id = jobOp.start("alwaysFails1", null);
+	//@Ignore("If the timing of the sleeps becomes a problem feel free to ignore this test.")
+	public void testRestartWhileStillRunning() throws Exception {
+		Properties props = new Properties();
+		props.put("sleepTime", "100");  // short sleep, could have omitted
+		long exec1Id = jobOp.start("alwaysFails1", props);
 		JobExecution exec1 = jobOp.getJobExecution(exec1Id);
-		Thread.sleep(5000);
+		Thread.sleep(1500); // Sleep to give exec 1 a chance to finish
 		assertEquals(BatchStatus.FAILED, exec1.getBatchStatus());
 		
-		long exec2Id = jobOp.restart(exec1Id, null);
+		props.put("sleepTime", "100000");  // sleep long enough to kick off 2 then 3
+		long exec2Id = jobOp.restart(exec1Id, props);
 		JobExecution exec2 = jobOp.getJobExecution(exec2Id);
-		Thread.sleep(5000);
-		assertEquals(BatchStatus.FAILED, exec2.getBatchStatus());
+		Thread.sleep(1500);
 		
-		long exec3Id = jobOp.restart(exec2Id, null);
-		long exec4Id = jobOp.restart(exec2Id, null);
+		boolean seenExc = false;
+		try {
+			long exec3Id = jobOp.restart(exec2Id, props);
+			JobExecution exec3 = jobOp.getJobExecution(exec3Id);
+		} catch(JobRestartException e) {
+			seenExc = true;
+		}
+		assertTrue("Didn't catch JobRestartException on execution #3", seenExc);
 	}
 	
 	@Test
@@ -102,6 +113,13 @@ public class ImplSpecificJobOperatorTests {
 			seen1 = true;
 		}
 		if (!seen1) throw new IllegalStateException("FAIL");
+	}
+	
+	@Test
+	public void testGetterOnJustCreatedStepExecution() throws Exception {
+		StepExecutionImpl e = new StepExecutionImpl(0, 0);
+		Date start = e.getStartTime();
+		Date end = e.getEndTime();
 	}
 	
 	@Test

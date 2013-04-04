@@ -97,7 +97,7 @@ public class ParallelExecutionTests {
 	}
 
 	/*
-	 * @testName: testInvokeJobWithOnePartitionedStep
+	 * @testName: testInvokeJobWithOnePartitionedStepExitStatus
 	 * @assertion: FIXME
 	 * @test_Strategy: FIXME
 	 */

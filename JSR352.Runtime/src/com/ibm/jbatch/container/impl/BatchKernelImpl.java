@@ -17,9 +17,11 @@
 package com.ibm.jbatch.container.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +34,7 @@ import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.JobInstance;
 
-import com.ibm.jbatch.container.IController;
+import com.ibm.jbatch.container.IThreadRootController;
 import com.ibm.jbatch.container.callback.IJobEndCallbackService;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.jobinstance.JobExecutionHelper;
@@ -63,7 +65,8 @@ public class BatchKernelImpl implements IBatchKernelService {
 	private final static String sourceClass = BatchKernelImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 
-	private Map<Long, IController> executionId2jobControllerMap = new ConcurrentHashMap<Long, IController>();
+	private Map<Long, IThreadRootController> executionId2jobControllerMap = new ConcurrentHashMap<Long, IThreadRootController>();
+	private Set<Long> instanceIdExecutingSet = new HashSet<Long>();
 
 	ServicesManager servicesManager = ServicesManagerImpl.getInstance();
 
@@ -126,11 +129,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 		}
 
 		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
-		if (executionId2jobControllerMap.get(jobExecution.getExecutionId()) != null) {
-			throw new IllegalStateException("Job executionId = " + jobExecution.getExecutionId() + " is already in the map.");
-		} else {
-			executionId2jobControllerMap.put(jobExecution.getExecutionId(), batchWork.getController());
-		}
+		registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
 		executorService.executeTask(batchWork, null);
 
@@ -144,7 +143,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 	@Override
 	public void stopJob(long executionId) throws NoSuchJobExecutionException, JobExecutionNotRunningException {
 
-		IController controller = this.executionId2jobControllerMap.get(executionId);
+		IThreadRootController controller = this.executionId2jobControllerMap.get(executionId);
 		if (controller == null) {
 			String msg = "JobExecution with execution id of " + executionId + "is not running.";
 			logger.warning("stopJob(): " + msg);
@@ -165,6 +164,9 @@ public class BatchKernelImpl implements IBatchKernelService {
 		return this.restartJob(executionId, dummyPropObj);
 	}
 
+
+
+
 	@Override
 	public IJobExecution restartJob(long executionId, Properties jobOverrideProps) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
 		String method = "restartJob";
@@ -181,11 +183,8 @@ public class BatchKernelImpl implements IBatchKernelService {
 		}
 
 		BatchWorkUnit batchWork = new BatchWorkUnit(this, jobExecution);
-		if (executionId2jobControllerMap.get(jobExecution.getExecutionId()) != null) {
-			throw new IllegalStateException("Job executionId = " + jobExecution.getExecutionId() + " is already in the map.");
-		} else {
-			executionId2jobControllerMap.put(jobExecution.getExecutionId(), batchWork.getController());
-		}
+
+		registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
 		executorService.executeTask(batchWork, null);
 
@@ -209,8 +208,9 @@ public class BatchKernelImpl implements IBatchKernelService {
 			logger.fine("Done invoking callbacks for JobExecution: " + jobExecution.getExecutionId());
 		}
 
-		// Remove from map after job is done        
+		// Remove from executionId, instanceId map,set after job is done        
 		this.executionId2jobControllerMap.remove(jobExecution.getExecutionId());
+		this.instanceIdExecutingSet.remove(jobExecution.getInstanceId());
 
 		// AJM: ah - purge jobExecution from map here and flush to DB?
 		// edit: no long want a 2 tier for the jobexecution...do want it for step execution
@@ -287,11 +287,8 @@ public class BatchKernelImpl implements IBatchKernelService {
 			}
 			BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(this, jobExecution, config);
 
-			if (executionId2jobControllerMap.get(jobExecution.getExecutionId()) != null) {
-				throw new IllegalStateException("Job executionId = " + jobExecution.getExecutionId() + " is already in the map.");
-			} else {
-				executionId2jobControllerMap.put(jobExecution.getExecutionId(), batchWork.getController());
-			} 
+			registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
+			
 			batchWorkUnits.add(batchWork);
 			instance++;
 		}
@@ -331,11 +328,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 				}
 
 				BatchPartitionWorkUnit batchWork = new BatchPartitionWorkUnit(this, jobExecution, config);
-				if (executionId2jobControllerMap.get(jobExecution.getExecutionId()) != null) {
-					throw new IllegalStateException("Job executionId = " + jobExecution.getExecutionId() + " is already in the map.");
-				} else {
-					executionId2jobControllerMap.put(jobExecution.getExecutionId(), batchWork.getController());
-				}
+				registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 
 				batchWorkUnits.add(batchWork);
 			} catch (JobExecutionAlreadyCompleteException e) {
@@ -376,11 +369,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 		}
 		BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(this, execution, config);
 
-		if (executionId2jobControllerMap.get(execution.getExecutionId()) != null) {
-			throw new IllegalStateException("Job executionId = " + execution.getExecutionId() + " is already in the map.");
-		} else {
-			executionId2jobControllerMap.put(execution.getExecutionId(), batchWork.getController());
-		} 
+		registerCurrentInstanceAndExecution(execution, batchWork.getController());
 		return batchWork;
 	}
 
@@ -431,22 +420,35 @@ public class BatchKernelImpl implements IBatchKernelService {
 			logger.severe(errorMsg);
 			throw new IllegalStateException(errorMsg, e);
 		}
-		
+
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("JobExecution constructed: " + jobExecution);
 		}
 
 		BatchFlowInSplitWorkUnit batchWork = new BatchFlowInSplitWorkUnit(this, jobExecution, config);
-		if (executionId2jobControllerMap.get(jobExecution.getExecutionId()) != null) {
-			throw new IllegalStateException("Job executionId = " + jobExecution.getExecutionId() + " is already in the map.");
-		} else {
-			executionId2jobControllerMap.put(jobExecution.getExecutionId(), batchWork.getController());
-		}
-
+		
+		registerCurrentInstanceAndExecution(jobExecution, batchWork.getController());
 		return batchWork;
 	}
 
-
+	private void registerCurrentInstanceAndExecution(RuntimeJobExecution jobExecution, IThreadRootController controller) {
+		long execId = jobExecution.getExecutionId();
+		long instanceId = jobExecution.getInstanceId();
+		String errorPrefix = "Tried to execute with Job executionId = " + execId + " and instanceId = " + instanceId + " ";
+		if (executionId2jobControllerMap.get(execId) != null) {
+			String errorMsg = errorPrefix + "but executionId is already currently executing.";
+			logger.warning(errorMsg);
+			throw new IllegalStateException(errorMsg);
+		} else if (instanceIdExecutingSet.contains(instanceId)) {
+			String errorMsg = errorPrefix + "but another execution with this instanceId is already currently executing.";
+			logger.warning(errorMsg);
+			throw new IllegalStateException(errorMsg);
+		} else {
+			instanceIdExecutingSet.add(instanceId);
+			executionId2jobControllerMap.put(jobExecution.getExecutionId(), controller);
+		}
+	}
+	
 	@Override
 	public boolean isExecutionRunning(long executionId) {
 		return executionId2jobControllerMap.containsKey(executionId);

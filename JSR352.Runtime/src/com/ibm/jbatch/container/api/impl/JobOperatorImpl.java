@@ -77,6 +77,22 @@ public class JobOperatorImpl implements JobOperator {
 
 	@Override
 	public long start(String jobXMLName, Properties jobParameters)	throws JobStartException, JobSecurityException {
+		long retVal = 0L;
+		/*
+		 * The whole point of this method is to have JobStartException serve as a blanket exception for anything other 
+		 * than the rest of the more specific exceptions declared on the throws clause.  So we won't log but just rethrow.
+		 */
+		try {
+			retVal = startInternal(jobXMLName, jobParameters);
+		} catch (JobSecurityException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new JobStartException(e);
+		}
+		return retVal;
+	}
+	
+	private long startInternal(String jobXMLName, Properties jobParameters)	throws JobStartException, JobSecurityException {
 
 		StringWriter jobParameterWriter = new StringWriter();
 		if (jobParameters != null) {
@@ -360,7 +376,30 @@ public class JobOperatorImpl implements JobOperator {
 	@Override
 	public long restart(long oldExecutionId, Properties restartParameters) throws JobExecutionAlreadyCompleteException,
 	NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
-
+		/*
+		 * The whole point of this method is to have JobRestartException serve as a blanket exception for anything other 
+		 * than the rest of the more specific exceptions declared on the throws clause.  So we won't log but just rethrow.
+		 */
+		long retVal = 0L;
+		try {
+			retVal = restartInternal(oldExecutionId, restartParameters);
+		} catch (JobExecutionAlreadyCompleteException e) {
+			throw e;
+		} catch (NoSuchJobExecutionException e) {
+			throw e;
+		} catch (JobExecutionNotMostRecentException e) {
+			throw e; 
+		} catch (JobSecurityException e) {
+			throw e; 
+		} catch (Exception e) {
+			throw new JobRestartException(e);
+		}
+		
+		return retVal;
+	}
+	
+	private long restartInternal(long oldExecutionId, Properties restartParameters) throws JobExecutionAlreadyCompleteException,
+	NoSuchJobExecutionException, JobExecutionNotMostRecentException, JobRestartException, JobSecurityException {
 		long newExecutionId = -1;
 
 		if (isAuthorized(persistenceService.getJobInstanceIdByExecutionId(oldExecutionId))) {

@@ -55,7 +55,7 @@ public class SkipHandler {
 	  private String _stepId = null;
 	  private Set<String> _skipIncludeExceptions = null;
 	  private Set<String> _skipExcludeExceptions = null;
-	  private int _skipLimit = 0;
+	  private int _skipLimit = Integer.MIN_VALUE;
 	  private long _skipCount = 0;
 
 	  public SkipHandler(Chunk chunk, long l, String stepId)
@@ -108,6 +108,9 @@ public class SkipHandler {
 	    {
 	    	if (chunk.getSkipLimit() != null){
 	    		_skipLimit = Integer.parseInt(chunk.getSkipLimit());
+	    		if (_skipLimit < 0) {
+	    		    throw new IllegalArgumentException("The skip-limit attribute on a chunk cannot be a negative value");
+	    		}
 	    	}
 	    }
 	    catch (NumberFormatException nfe)
@@ -115,56 +118,51 @@ public class SkipHandler {
 	      throw new RuntimeException("NumberFormatException reading " + SKIP_COUNT, nfe);
 	    }
 
-	    if (_skipLimit > 0)
-	    {
-	      // Read the include/exclude exceptions.
-	  
-	      _skipIncludeExceptions = new HashSet<String>();
-	      _skipExcludeExceptions = new HashSet<String>();
 
-	      //boolean done = false;
-	      List<String> includeEx = new ArrayList<String>();
-	      List<String> excludeEx = new ArrayList<String>();
-	      
-			if (chunk.getSkippableExceptionClasses() != null) {
-				if (chunk.getSkippableExceptionClasses().getIncludeList() != null) {
-					List<ExceptionClassFilter.Include> includes = chunk.getSkippableExceptionClasses().getIncludeList();
-					
-					for (ExceptionClassFilter.Include include : includes){
-						_skipIncludeExceptions.add(include.getClazz().trim());
-						logger.finer("SKIPHANDLE: include: " + include.getClazz().trim());
-					}
-					
-					if (_skipIncludeExceptions.size() == 0){
-						logger.finer("SKIPHANDLE: include element not present");
+        // Read the include/exclude exceptions.
 
-					}
-				}
-			}
-			
-			if (chunk.getSkippableExceptionClasses() != null) {
-				if (chunk.getSkippableExceptionClasses().getExcludeList() != null) {
-					List<ExceptionClassFilter.Exclude> excludes = chunk.getSkippableExceptionClasses().getExcludeList();
-					
-					for (ExceptionClassFilter.Exclude exclude : excludes){
-						_skipExcludeExceptions.add(exclude.getClazz().trim());
-						logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
-					}
-					
-					if (_skipExcludeExceptions.size() == 0){
-						logger.finer("SKIPHANDLE: exclude element not present");
+        _skipIncludeExceptions = new HashSet<String>();
+        _skipExcludeExceptions = new HashSet<String>();
 
-					}
+        // boolean done = false;
+        List<String> includeEx = new ArrayList<String>();
+        List<String> excludeEx = new ArrayList<String>();
 
-				}
-			}
+        if (chunk.getSkippableExceptionClasses() != null) {
+            if (chunk.getSkippableExceptionClasses().getIncludeList() != null) {
+                List<ExceptionClassFilter.Include> includes = chunk.getSkippableExceptionClasses().getIncludeList();
 
+                for (ExceptionClassFilter.Include include : includes) {
+                    _skipIncludeExceptions.add(include.getClazz().trim());
+                    logger.finer("SKIPHANDLE: include: " + include.getClazz().trim());
+                }
 
-			if (logger.isLoggable(Level.FINE))
-				logger.logp(Level.FINE, className, mName,
-						"added include exception " + includeEx
-								+ "; added exclude exception " + excludeEx);
-		}
+                if (_skipIncludeExceptions.size() == 0) {
+                    logger.finer("SKIPHANDLE: include element not present");
+
+                }
+            }
+        }
+
+        if (chunk.getSkippableExceptionClasses() != null) {
+            if (chunk.getSkippableExceptionClasses().getExcludeList() != null) {
+                List<ExceptionClassFilter.Exclude> excludes = chunk.getSkippableExceptionClasses().getExcludeList();
+
+                for (ExceptionClassFilter.Exclude exclude : excludes) {
+                    _skipExcludeExceptions.add(exclude.getClazz().trim());
+                    logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
+                }
+
+                if (_skipExcludeExceptions.size() == 0) {
+                    logger.finer("SKIPHANDLE: exclude element not present");
+
+                }
+
+            }
+        }
+
+        if (logger.isLoggable(Level.FINE))
+            logger.logp(Level.FINE, className, mName, "added include exception " + includeEx + "; added exclude exception " + excludeEx);
 	        
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.exiting(className, mName, this.toString());
@@ -313,17 +311,20 @@ public class SkipHandler {
 	  }
 	  
 
-	  /**
-	   * Check if the skip limit has been reached.
-	   *
-	   * Note: if skip handling isn't enabled (i.e. not configured in xJCL), then this method 
-	   *       will always return TRUE.
-	   */
-	  private boolean isSkipLimitReached()
-	  {
-	    return (_skipCount >= _skipLimit);
-	  }
+    /**
+     * Check if the skip limit has been reached.
+     * 
+     * Note: if skip handling isn't enabled (i.e. not configured in xJCL), then
+     * this method will always return TRUE.
+     */
+    private boolean isSkipLimitReached() {
+        // Unlimited skips if it is never defined
+        if (_skipLimit == Integer.MIN_VALUE) {
+            return false;
+        }
 
+        return (_skipCount >= _skipLimit);
+    }
 	  
 	  private void logSkip(Exception e)
 	  {

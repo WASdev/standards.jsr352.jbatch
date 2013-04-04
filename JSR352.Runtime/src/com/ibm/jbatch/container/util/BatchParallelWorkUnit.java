@@ -16,13 +16,6 @@
  */
 package com.ibm.jbatch.container.util;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import com.ibm.jbatch.container.IThreadRootController;
-import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 
@@ -34,78 +27,8 @@ import com.ibm.jbatch.container.services.IBatchKernelService;
  */
 public abstract class BatchParallelWorkUnit extends BatchWorkUnit {
 
-	private String CLASSNAME = BatchParallelWorkUnit.class.getName();
-	private Logger logger = Logger.getLogger(BatchParallelWorkUnit.class.getPackage().getName());
-
-	protected IThreadRootController controller = null;
-
 	public BatchParallelWorkUnit(IBatchKernelService batchKernel, RuntimeJobExecution jobExecutionImpl,	boolean notifyCallbackWhenDone) {
 		super(batchKernel, jobExecutionImpl, notifyCallbackWhenDone);
 	}
-
-	public IThreadRootController getController() {
-		return this.controller;
-	}
-
-	@Override
-	public void run() {
-		String method = "run";
-		if (logger.isLoggable(Level.FINER)) {
-			logger.entering(CLASSNAME, method);
-		}
-
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("==========================================================");
-			logger.fine("Invoking executeJob on JobController; " + "JobInstance id=" + getJobExecutionImpl().getInstanceId()
-					+ ", executionId=" + getJobExecutionImpl().getExecutionId());
-			logger.fine("==========================================================");
-		}
-
-		try {
-			controller.originateExecutionOnThread();
-			
-			if (isNotifyCallbackWhenDone()) {
-				getBatchKernel().jobExecutionDone(getJobExecutionImpl());
-			}
-			
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("==========================================================");
-				logger.fine("Done invoking executeJob on JobController; " + "JobInstance id=" + getJobExecutionImpl().getInstanceId()
-						+ ", executionId=" + getJobExecutionImpl().getExecutionId());
-				logger.fine("Job Batch Status = " + getBatchStatus() + ";  Job Exit Status = "
-						+ getExitStatus());
-				logger.fine("==========================================================");
-			}
-
-		} catch (Throwable t) {
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			t.printStackTrace(pw);
-			logger.warning("Caught throwable from run().  Stack trace: " + sw.toString());
-			
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Exception when invoking executeJob on JobController; " + "JobInstance id="
-						+ getJobExecutionImpl().getInstanceId() + ", executionId=" + getJobExecutionImpl().getExecutionId());
-				logger.fine("Job Batch Status = " + getBatchStatus() + ";  Job Exit Status = "
-						+ getExitStatus());
-			}
-			
-
-			if (isNotifyCallbackWhenDone()) {
-				getBatchKernel().jobExecutionDone(getJobExecutionImpl());
-			}
-
-			throw new BatchContainerRuntimeException("This job failed unexpectedly.", t);
-		}  finally {
-			// Put this in finally to minimize chance of tying up threads.
-			markThreadCompleted();
-		}
-
-		if (logger.isLoggable(Level.FINER)) {
-			logger.exiting(CLASSNAME, method);
-		}
-	}
-
-	protected abstract void markThreadCompleted(); 
 
 }

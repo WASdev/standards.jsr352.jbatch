@@ -42,7 +42,7 @@ public class BatchWorkUnit implements Runnable {
 
 	protected RuntimeJobExecution jobExecutionImpl = null;
 	protected IBatchKernelService batchKernel = null;
-	protected final IThreadRootController controller;
+	protected IThreadRootController controller;
 
 	protected boolean notifyCallbackWhenDone;
 
@@ -78,11 +78,11 @@ public class BatchWorkUnit implements Runnable {
 
 		try {
 			controller.originateExecutionOnThread();
-			
+
 			if (isNotifyCallbackWhenDone()) {
 				getBatchKernel().jobExecutionDone(getJobExecutionImpl());
 			}
-			
+
 			if (logger.isLoggable(Level.FINE)) {
 				logger.fine("==========================================================");
 				logger.fine("Done invoking executeJob on JobController; " + "JobInstance id=" + getJobExecutionImpl().getInstanceId()
@@ -97,7 +97,7 @@ public class BatchWorkUnit implements Runnable {
 			PrintWriter pw = new PrintWriter(sw);
 			t.printStackTrace(pw);
 			logger.warning("Caught throwable from run().  Stack trace: " + sw.toString());
-			
+
 			if (logger.isLoggable(Level.FINE)) {
 				logger.fine("Exception when invoking executeJob on JobController; " + "JobInstance id="
 						+ getJobExecutionImpl().getInstanceId() + ", executionId=" + getJobExecutionImpl().getExecutionId());
@@ -110,7 +110,10 @@ public class BatchWorkUnit implements Runnable {
 			}
 
 			throw new BatchContainerRuntimeException("This job failed unexpectedly.", t);
-		}  
+		}  finally {
+			// Put this in finally to minimize chance of tying up threads.
+			markThreadCompleted();
+		}
 
 		if (logger.isLoggable(Level.FINER)) {
 			logger.exiting(CLASSNAME, method);
@@ -149,4 +152,7 @@ public class BatchWorkUnit implements Runnable {
 		return notifyCallbackWhenDone;
 	}
 
+	protected void markThreadCompleted() {
+		// No-op
+	}
 }

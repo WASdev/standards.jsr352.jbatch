@@ -67,7 +67,7 @@ public class ContextAndListenerTests {
 	@org.junit.Test 
 	public void testExamineJobContextInArtifact() throws Exception {
 
-		String METHOD = "testOneArtifactIsJobAndStepListener";
+		String METHOD = "testExamineJobContextInArtifact()";
 
 		try {
 
@@ -95,7 +95,7 @@ public class ContextAndListenerTests {
 	}
 	
 	/*
-	 * @testName: testExamineJobContextInArtifact
+	 * @testName: testExamineStepContextInArtifact
 	 * @assertion: FIXME
 	 * @test_Strategy: FIXME
 	 */
@@ -103,7 +103,7 @@ public class ContextAndListenerTests {
 	@org.junit.Test 
 	public void testExamineStepContextInArtifact() throws Exception {
 
-		String METHOD = "testOneArtifactIsJobAndStepListener";
+		String METHOD = "testExamineStepContextInArtifact()";
 
 		try {
 
