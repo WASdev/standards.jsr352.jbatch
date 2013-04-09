@@ -13,33 +13,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
-package com.ibm.jbatch.container;
+ */
+package com.ibm.jbatch.container.status;
 
-public class AbortedBeforeStartException extends Exception {
+public enum ExtendedBatchStatus {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-
-    public AbortedBeforeStartException() {
-        // TODO Auto-generated constructor stub
-    }
-
-    public AbortedBeforeStartException(String message) {
-        super(message);
-        // TODO Auto-generated constructor stub
-    }
-
-    public AbortedBeforeStartException(Throwable cause) {
-        super(cause);
-        // TODO Auto-generated constructor stub
-    }
-
-    public AbortedBeforeStartException(String message, Throwable cause) {
-        super(message, cause);
-        // TODO Auto-generated constructor stub
-    }
-
+	JSL_END, JSL_FAIL, JSL_STOP, NORMAL_COMPLETION, EXCEPTION_THROWN, JOB_OPERATOR_STOPPING, DO_NOT_RUN
 }

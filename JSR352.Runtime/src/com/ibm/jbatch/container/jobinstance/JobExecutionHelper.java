@@ -29,11 +29,11 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
-import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.ModelResolverFactory;
-import com.ibm.jbatch.container.jsl.NavigatorFactory;
 import com.ibm.jbatch.container.modelresolver.PropertyResolver;
 import com.ibm.jbatch.container.modelresolver.PropertyResolverFactory;
+import com.ibm.jbatch.container.navigator.ModelNavigator;
+import com.ibm.jbatch.container.navigator.NavigatorFactory;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;

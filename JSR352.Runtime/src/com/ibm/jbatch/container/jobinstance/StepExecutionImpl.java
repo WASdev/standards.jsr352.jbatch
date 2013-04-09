@@ -153,7 +153,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 			metrics[4] = new MetricImpl(MetricImpl.MetricType.READ_SKIP_COUNT, readSkipCount);
 			metrics[5] = new MetricImpl(MetricImpl.MetricType.PROCESS_SKIP_COUNT, processSkipCount);
 			metrics[6] = new MetricImpl(MetricImpl.MetricType.FILTER_COUNT, filterCount);
-			metrics[7] = new MetricImpl(MetricImpl.MetricType.WRITE_SKIPCOUNT, writeSkipCount);
+			metrics[7] = new MetricImpl(MetricImpl.MetricType.WRITE_SKIP_COUNT, writeSkipCount);
 			
 			return metrics;
 		}

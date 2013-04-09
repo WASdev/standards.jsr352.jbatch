@@ -897,7 +897,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	}
 
 	@Override
-	public Properties getParameters(long executionId){
+	public Properties getParameters(long executionId) throws NoSuchJobExecutionException {
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
@@ -909,15 +909,17 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			statement = conn.prepareStatement("select parameters from executioninstancedata where jobexecid = ?"); 
 			statement.setLong(1, executionId);
 			rs = statement.executeQuery();
-			while (rs.next()) {
-
+			
+			if (rs.next()) {
 				// get the object based data
 				byte[] buf = rs.getBytes("parameters");
-				if (buf != null) {
-					objectIn = new ObjectInputStream(new ByteArrayInputStream(buf));
-					props = (Properties) objectIn.readObject();
-				}
+				props = (Properties)deserializeObject(buf);
+			} else {
+				String msg = "Did not find table entry for executionID =" + executionId;
+				logger.fine(msg);
+				throw new NoSuchJobExecutionException(msg);
 			}
+
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
 		} catch (IOException e) {
@@ -1804,7 +1806,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				readSkipCount = metrics[i].getValue();
 			} else if (metrics[i].getType().equals(MetricImpl.MetricType.FILTER_COUNT)) {
 				filterCount = metrics[i].getValue();	
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.WRITE_SKIPCOUNT)) {
+			} else if (metrics[i].getType().equals(MetricImpl.MetricType.WRITE_SKIP_COUNT)) {
 				writeSkipCount = metrics[i].getValue();	
 			}		
 		}
@@ -1909,7 +1911,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				readSkipCount = metrics[i].getValue();
 			} else if (metrics[i].getType().equals(MetricImpl.MetricType.FILTER_COUNT)) {
 				filterCount = metrics[i].getValue();	
-			} else if (metrics[i].getType().equals(MetricImpl.MetricType.WRITE_SKIPCOUNT)) {
+			} else if (metrics[i].getType().equals(MetricImpl.MetricType.WRITE_SKIP_COUNT)) {
 				writeSkipCount = metrics[i].getValue();	
 			}
 		}

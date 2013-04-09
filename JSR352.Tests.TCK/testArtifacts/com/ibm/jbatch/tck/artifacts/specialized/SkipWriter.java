@@ -58,7 +58,7 @@ public class SkipWriter implements ItemWriter {
 		
 		arraysize = Integer.parseInt(appArraySizeString);
 		
-		if (!writeRecordFailNumberString.equals("null")) {
+		if (! (writeRecordFailNumberString == null)) {
 			String[] writeFailPointsStrArr = writeRecordFailNumberString.split(",");
 			failnum = new int[writeFailPointsStrArr.length];
 			for (int i = 0; i < writeFailPointsStrArr.length; i++) {
@@ -116,7 +116,7 @@ public class SkipWriter implements ItemWriter {
 		logger.fine("WRITE: before writing, idx = " + idx);
 		logger.fine("WRITE: before writing, chunkWriteIteration = " + chunkWriteIteration);
 		
-		if (!writeRecordFailNumberString.equals("null")) {
+		if (!(writeRecordFailNumberString == null)) {
 			if (chunkWriteIteration == 2) {
 				chunkWriteIteration++;
 				throw new MyParentException(

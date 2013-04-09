@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 import javax.batch.runtime.StepExecution;
 
-import com.ibm.jbatch.container.IController;
+import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.DeciderProxy;
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
@@ -31,11 +31,13 @@ import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.status.ExecutionStatus;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
 import com.ibm.jbatch.container.validation.ArtifactValidationException;
 import com.ibm.jbatch.jsl.model.Decision;
 import com.ibm.jbatch.jsl.model.Property;
 
-public class DecisionControllerImpl implements IController {
+public class DecisionControllerImpl implements IExecutionElementController {
 
 	private final static String sourceClass = SplitControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
@@ -54,7 +56,8 @@ public class DecisionControllerImpl implements IController {
 		persistenceService = ServicesManagerImpl.getInstance().getPersistenceManagerService();
 	}
 
-	public String execute() {
+	@Override
+	public ExecutionStatus execute() {
 
 		String deciderId = decision.getRef();
 		List<Property> propList = (decision.getProperties() == null) ? null : decision.getProperties().getPropertyList();
@@ -82,10 +85,10 @@ public class DecisionControllerImpl implements IController {
 		//Set the value returned from the decider as the job context exit status.
 		this.jobExecution.getJobContext().setExitStatus(exitStatus);
 
-		return exitStatus;
+		return new ExecutionStatus(ExtendedBatchStatus.NORMAL_COMPLETION, exitStatus);
 	}
 
-	protected void setPreviousStepExecutions(ExecutionElement previousExecutionElement, IController previousElementController) { 
+	protected void setPreviousStepExecutions(ExecutionElement previousExecutionElement, IExecutionElementController previousElementController) { 
 		if (previousExecutionElement == null) {
 			// only job context is available to the decider 
 		} else if (previousExecutionElement instanceof Decision) {

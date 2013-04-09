@@ -66,7 +66,7 @@ public class SkipReaderMultipleExceptions extends AbstractItemReader {
     @Override
     public void open(Serializable cpd) {
 
-        if (!readrecordfailNumberString.equals("null")) {
+        if (!(readrecordfailNumberString == null)) {
             String[] readFailPointsStrArr = readrecordfailNumberString.split(",");
             failnum = new int[readFailPointsStrArr.length];
             for (int i = 0; i < readFailPointsStrArr.length; i++) {

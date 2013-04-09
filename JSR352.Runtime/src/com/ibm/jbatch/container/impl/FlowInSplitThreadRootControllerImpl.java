@@ -17,8 +17,8 @@
 package com.ibm.jbatch.container.impl;
 
 import com.ibm.jbatch.container.jobinstance.RuntimeFlowInSplitExecution;
-import com.ibm.jbatch.container.status.JobOrFlowBatchStatus;
-import com.ibm.jbatch.container.status.JobOrFlowStatus;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 import com.ibm.jbatch.container.util.FlowInSplitBuilderConfig;
 
 public class FlowInSplitThreadRootControllerImpl extends JobThreadRootControllerImpl {
@@ -38,8 +38,8 @@ public class FlowInSplitThreadRootControllerImpl extends JobThreadRootController
 	 * Not only are we setting the status correctly at the subjob level, we are also setting it on the execution
 	 * so that it is visible by the parent split.
 	 */
-	public JobOrFlowStatus originateExecutionOnThread() {
-		JobOrFlowStatus status = super.originateExecutionOnThread();
+	public ExecutionStatus originateExecutionOnThread() {
+		ExecutionStatus status = super.originateExecutionOnThread();
 		flowInSplitExecution.setFlowStatus(status);
 		return status;
 	}
@@ -47,7 +47,7 @@ public class FlowInSplitThreadRootControllerImpl extends JobThreadRootController
 	@Override 
 	protected void batchStatusFailedFromException() {
 		super.batchStatusFailedFromException();
-		flowInSplitExecution.getFlowStatus().setBatchStatus(JobOrFlowBatchStatus.EXCEPTION_THROWN);
+		flowInSplitExecution.getFlowStatus().setExtendedBatchStatus(ExtendedBatchStatus.EXCEPTION_THROWN);
 	}
 	
 }

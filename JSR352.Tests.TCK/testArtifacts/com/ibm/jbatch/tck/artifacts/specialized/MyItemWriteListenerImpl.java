@@ -44,7 +44,7 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener {
 	
 	@Override
 	public void beforeWrite(List<Object> items) throws Exception {
-		if (items != null && applistenerTest.equals("WRITE")){
+		if (items != null && ("WRITE").equals(applistenerTest)){
 			logger.finer("In beforeWrite()");
 			beforecounter++;
 			logger.fine("AJM: beforecounter = " + beforecounter);
@@ -57,7 +57,7 @@ public class MyItemWriteListenerImpl extends AbstractItemWriteListener {
 		
 		logger.fine("AJM: applistenerTest = " + applistenerTest);
 		
-		if (items != null && applistenerTest.equals("WRITE")){
+		if (items != null && ("WRITE").equals(applistenerTest)){
 			logger.finer("In afterWrite()");
 			
 			aftercounter++;

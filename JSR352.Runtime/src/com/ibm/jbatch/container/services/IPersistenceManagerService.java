@@ -75,7 +75,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	
 	public IJobExecution jobOperatorGetJobExecution(long jobExecutionId);
 
-	public Properties getParameters(long executionId);
+	public Properties getParameters(long executionId) throws NoSuchJobExecutionException; 
 
 	public List<IJobExecution> jobOperatorGetJobExecutions(long jobInstanceId);
 

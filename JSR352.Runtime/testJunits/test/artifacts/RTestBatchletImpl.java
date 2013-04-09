@@ -13,7 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 package test.artifacts;
 
 import java.util.logging.Logger;
@@ -22,28 +22,47 @@ import javax.batch.api.AbstractBatchlet;
 import javax.batch.api.BatchProperty;
 import javax.inject.Inject;
 
-public class MyBatchletImpl extends AbstractBatchlet {
-	private final static Logger logger = Logger.getLogger(MyBatchletImpl.class.getName());
-	
-    private volatile static int count = 1;
-    
-    public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
-    
-    @Inject @BatchProperty
-    public String sleepTime;
-	
+public class RTestBatchletImpl extends AbstractBatchlet {
+	private final static Logger logger = Logger.getLogger(RTestBatchletImpl.class.getName());
+
+	private volatile static int count = 1;
+
+	public static String GOOD_EXIT_STATUS = "VERY GOOD INVOCATION";       
+
+	@Inject @BatchProperty
+	public String sleepTime;
+	int sleepVal = 0;
+
+	@Inject @BatchProperty
+	public String forceFailure = "false";
+	Boolean fail;
+
+	private void init() {
+		try {
+			fail = Boolean.parseBoolean(forceFailure);
+		} catch (Exception e) { 
+			fail = false;
+		}
+		try {
+			sleepVal = Integer.parseInt(sleepTime);
+		} catch (Exception e) { 
+			sleepVal = 0;
+		}
+	}
 	@Override
 	public String process() throws Exception {	
-		int sleepVal = 0;
+		init();
+		if (fail) {
+			throw new IllegalArgumentException("Forcing failure");
+		}
 		if (sleepTime != null) {
-			sleepVal = Integer.parseInt(sleepTime);
 			Thread.sleep(sleepVal);
 		}
 		logger.fine("Running batchlet process(): " + count);
 		count++;
 		return GOOD_EXIT_STATUS;
 	}
-	
+
 	@Override
 	public void stop() throws Exception { }
 }

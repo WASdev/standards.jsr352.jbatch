@@ -229,8 +229,14 @@ public class JobOperatorImpl implements JobOperator {
 		logger.entering(sourceClass, "getJobInstances", new Object[]{jobName, start, count});
 		List<JobInstance> jobInstances = new ArrayList<JobInstance>();
 
-		BatchSecurityHelper helper = getBatchSecurityHelper();
+		if (count == 0) {
+			return new ArrayList<JobInstance>();
+		} else if (count < 0) {
+			throw new IllegalArgumentException("Count should be a positive integer (or 0, which will return an empty list)");
+		}
+		
 		List<Long> instanceIds; 
+		BatchSecurityHelper helper = getBatchSecurityHelper();
 		if (isCurrentTagAdmin(helper)) {
 			// Do an unfiltered query
 			instanceIds	= persistenceService.jobOperatorGetJobInstanceIds(jobName, start, count);
@@ -255,8 +261,7 @@ public class JobOperatorImpl implements JobOperator {
 			// send the list of objs back to caller
 			logger.exiting(sourceClass, "getJobInstances", jobInstances);
 			return jobInstances;
-		}
-		else {
+		} else {
 			logger.fine("getJobInstances: Job Name " + jobName + " not found");
 			throw new NoSuchJobException( "Job Name " + jobName + " not found");
 		}
@@ -288,16 +293,10 @@ public class JobOperatorImpl implements JobOperator {
 			throws NoSuchJobExecutionException, JobSecurityException{
 
 		Properties props = null;
-		IJobExecution exec = batchKernel.getJobExecution(executionId);
 		JobInstance requestedJobInstance = batchKernel.getJobInstance(executionId);
 
 		if (isAuthorized(requestedJobInstance.getInstanceId())) {
-
 			props = persistenceService.getParameters(executionId);
-			if (props == null) {
-				logger.fine("getParameters: executionId: " + executionId + " was not found");
-				throw new NoSuchJobExecutionException("executionId: " + executionId + " was not found");
-			}
 		} else {
 			logger.warning("getParameters: The current user is not authorized to perform this operation");
 			throw new JobSecurityException("The current user is not authorized to perform this operation");

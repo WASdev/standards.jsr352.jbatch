@@ -22,7 +22,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GlobPatternMatcherImpl {
-
+	
+	public GlobPatternMatcherImpl() {}
+	
 	private final static Logger logger = Logger.getLogger(GlobPatternMatcherImpl.class.getName());
 
 	public boolean matchWithoutBackslashEscape(String toMatch, String pattern) {

@@ -73,10 +73,9 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 			logger.fine("Batchlet is loaded and validated: " + batchletProxy);
 
 
-		if (jobExecutionImpl.getJobContext().getBatchStatus().equals(BatchStatus.STOPPING)){
-			updateBatchStatus(BatchStatus.STOPPED);
+		if (wasStopIssued()) {
+			logger.fine("Exit without executing batchlet since stop() request has been received.");
 		} else {
-
 			String processRetVal = batchletProxy.process();
 
 			logger.fine("Set process() return value = " + processRetVal + " for possible use as exitStatus");
@@ -86,6 +85,16 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 		}
 	}
 
+	protected synchronized boolean wasStopIssued() { 
+		// Might only be set to stopping at the job level.  Use the lock for this object on this
+		// method along with the stop() method 
+		if (jobExecutionImpl.getJobContext().getBatchStatus().equals(BatchStatus.STOPPING)){
+			stepContext.setBatchStatus(BatchStatus.STOPPING);
+			return true;
+		} else {
+			return false;
+		}
+	}
 	@Override
 	protected void invokeCoreStep() throws BatchContainerServiceException {
 
@@ -105,6 +114,7 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 	@Override
 	public synchronized void stop() { 
 
+		// It is possible for stop() to be issued before process() 
 		if (BatchStatus.STARTING.equals(stepContext.getBatchStatus()) ||
 				BatchStatus.STARTED.equals(stepContext.getBatchStatus())) {
 

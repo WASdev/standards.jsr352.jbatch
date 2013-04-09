@@ -16,33 +16,42 @@
  */
 package com.ibm.jbatch.container.status;
 
-public class JobOrFlowStatus {
-	boolean batchStatusOnly = true;
-	private JobOrFlowBatchStatus batchStatus;
+public class ExecutionStatus {
+	boolean batchStatusOnly;
+	private ExtendedBatchStatus extendedBatchStatus;
 	private String exitStatus;
 	private String restartOn;
 	
+	// Makes it more explicit that this is not holding an exit status rather than the idea
+	// that there should logically be an exit status whose value happens to be 'null'.
 	public boolean isBatchStatusOnly() {
 		return batchStatusOnly;
 	}
 
-	public JobOrFlowStatus(JobOrFlowBatchStatus batchStatus) {
-		this.batchStatus = batchStatus;
+	public ExecutionStatus() {
+		this.batchStatusOnly = true;
 	}
 	
-	public JobOrFlowStatus(JobOrFlowBatchStatus batchStatus, String exitStatus) {
+	public ExecutionStatus(ExtendedBatchStatus extendedBatchStatus) {
+		this();
+		this.extendedBatchStatus = extendedBatchStatus;
+	}
+	
+	public ExecutionStatus(ExtendedBatchStatus extendedBatchStatus, String exitStatus) {
 		super();
-		this.batchStatus = batchStatus;
+		this.extendedBatchStatus = extendedBatchStatus;
 		this.exitStatus = exitStatus;
 		this.batchStatusOnly = false;
 	}
 	
-	public JobOrFlowBatchStatus getBatchStatus() {
-		return batchStatus;
+	public ExtendedBatchStatus getExtendedBatchStatus() {
+		return extendedBatchStatus;
 	}
-	public void setBatchStatus(JobOrFlowBatchStatus batchStatus) {
-		this.batchStatus = batchStatus;
+	
+	public void setExtendedBatchStatus(ExtendedBatchStatus extendedBatchStatus) {
+		this.extendedBatchStatus = extendedBatchStatus;
 	}
+	
 	public String getExitStatus() {
 		return exitStatus;
 	}
@@ -62,11 +71,8 @@ public class JobOrFlowStatus {
 	
 	@Override
 	public String toString() {
-		return "BatchStatusOnly?: " + batchStatusOnly + ", batchStatus = " + batchStatus.name() +
+		return "BatchStatusOnly?: " + batchStatusOnly + ", extendedBatchStatus = " + extendedBatchStatus.name() +
 				", exitStatus = " + exitStatus + 
 			    ", restartOn = " + restartOn;	
-			
-		
 	}
-
 }

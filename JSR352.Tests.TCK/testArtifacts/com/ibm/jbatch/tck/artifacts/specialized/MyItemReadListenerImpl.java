@@ -53,7 +53,7 @@ public class MyItemReadListenerImpl extends AbstractItemReadListener {
     @Override
 	public void afterRead(Object item) throws Exception {
 		
-		if (item != null && applistenerTest.equals("READ")){
+		if (item != null && ("READ").equals(applistenerTest)){
 			logger.finer("In afterRead(), item = " + ((ReadRecord)item).getCount());
 			aftercounter++;
 

@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.jobinstance;
 
 import javax.batch.runtime.JobInstance;
 
-import com.ibm.jbatch.container.status.JobOrFlowStatus;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 
 public class RuntimeFlowInSplitExecution extends RuntimeJobExecution {
 
@@ -26,13 +26,13 @@ public class RuntimeFlowInSplitExecution extends RuntimeJobExecution {
 		super(jobInstance, executionId);
 	}
 
-	private JobOrFlowStatus flowStatus;
+	private ExecutionStatus flowStatus;
 
-	public JobOrFlowStatus getFlowStatus() {
+	public ExecutionStatus getFlowStatus() {
 		return flowStatus;
 	}
 
-	public void setFlowStatus(JobOrFlowStatus flowStatus) {
+	public void setFlowStatus(ExecutionStatus flowStatus) {
 		this.flowStatus = flowStatus;
 	}
 	

@@ -104,7 +104,7 @@ public class MetricsStepListener extends AbstractStepListener {
 				}
 			
 		} else if (RPWString.equals("WRITE_SKIP")) {
-			if (metrics[i].getType().equals(Metric.MetricType.WRITE_SKIPCOUNT)) {
+			if (metrics[i].getType().equals(Metric.MetricType.WRITE_SKIP_COUNT)) {
 				if (metrics[i].getValue() == skipNum) {
 
 					JobCtx.setExitStatus(GOOD_EXIT_STATUS);

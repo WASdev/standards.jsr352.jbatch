@@ -29,7 +29,7 @@ import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
 import javax.batch.operations.NoSuchJobExecutionException;
 
-import com.ibm.jbatch.container.IController;
+import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.RuntimeFlowInSplitExecution;
@@ -37,9 +37,9 @@ import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
-import com.ibm.jbatch.container.status.JobOrFlowBatchStatus;
-import com.ibm.jbatch.container.status.JobOrFlowStatus;
-import com.ibm.jbatch.container.status.SplitStatus;
+import com.ibm.jbatch.container.status.ExecutionStatus;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
+import com.ibm.jbatch.container.status.SplitExecutionStatus;
 import com.ibm.jbatch.container.util.BatchFlowInSplitWorkUnit;
 import com.ibm.jbatch.container.util.BatchParallelWorkUnit;
 import com.ibm.jbatch.container.util.FlowInSplitBuilderConfig;
@@ -47,7 +47,7 @@ import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.Split;
 
-public class SplitControllerImpl implements IController {
+public class SplitControllerImpl implements IExecutionElementController {
 
 	private final static String sourceClass = SplitControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
@@ -97,7 +97,8 @@ public class SplitControllerImpl implements IController {
 		}
 	}
 
-	public SplitStatus execute() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
+	@Override
+	public SplitExecutionStatus execute() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
 		String sourceMethod = "execute";
 		if (logger.isLoggable(Level.FINER)) {
 			logger.entering(sourceClass, sourceMethod, "Root JobExecution Id = " + rootJobExecutionId);
@@ -110,7 +111,7 @@ public class SplitControllerImpl implements IController {
 		executeWorkUnits();
 
 		// Deal with the results.
-		SplitStatus status = waitForCompletionAndAggregateStatus();
+		SplitExecutionStatus status = waitForCompletionAndAggregateStatus();
 
 		if (logger.isLoggable(Level.FINER)) {
 			logger.exiting(sourceClass, sourceMethod, status);
@@ -166,10 +167,10 @@ public class SplitControllerImpl implements IController {
 		}
 	}
 
-	private SplitStatus waitForCompletionAndAggregateStatus() {
+	private SplitExecutionStatus waitForCompletionAndAggregateStatus() {
 
-		SplitStatus splitStatus = new SplitStatus();
-		JobOrFlowBatchStatus aggregateTerminatingStatus = null;
+		SplitExecutionStatus splitStatus = new SplitExecutionStatus();
+		ExtendedBatchStatus aggregateTerminatingStatus = null;
 
 		for (int i=0; i < subJobs.size(); i++) {
 			BatchFlowInSplitWorkUnit batchWork;
@@ -180,7 +181,7 @@ public class SplitControllerImpl implements IController {
 			}
 
 			RuntimeFlowInSplitExecution flowExecution = batchWork.getJobExecutionImpl();
-			JobOrFlowStatus flowStatus = flowExecution.getFlowStatus();
+			ExecutionStatus flowStatus = flowExecution.getFlowStatus();
 			if (logger.isLoggable(Level.FINE)) {
 				logger.fine("Subjob " + flowExecution.getExecutionId() + "ended with flow-in-split status: " + flowStatus);
 			}
@@ -190,101 +191,82 @@ public class SplitControllerImpl implements IController {
 		// If this is still set to 'null' that means all flows completed normally without terminating the job.
 		if (aggregateTerminatingStatus == null) {
 			logger.fine("Setting normal split status as no contained flows ended the job.");
-			aggregateTerminatingStatus = JobOrFlowBatchStatus.NORMAL_COMPLETION;
+			aggregateTerminatingStatus = ExtendedBatchStatus.NORMAL_COMPLETION;
 		}
 
-		splitStatus.setDeterminingFlowBatchStatus(aggregateTerminatingStatus);
+		splitStatus.setExtendedBatchStatus(aggregateTerminatingStatus);
 		logger.fine("Returning from waitForCompletionAndAggregateStatus with return value: " + splitStatus);
 		return splitStatus;
 	}
 
 
 	//
-	// Fail(s) will take precedence over Stop(s) which in turn take precedence over End(s).  Within fails, stops and ends, the 
-	// first exit status takes precedence. 
+	// A <fail> and an uncaught exception are peers.  They each take precedence over a <stop>, which take precedence over an <end>.
+	// Among peers the last one seen gets to set the exit stauts.
 	//
-	private void aggregateTerminatingStatusFromSingleFlow(JobOrFlowBatchStatus aggregateStatus, JobOrFlowStatus flowStatus, SplitStatus splitStatus) {
+	private void aggregateTerminatingStatusFromSingleFlow(ExtendedBatchStatus aggregateStatus, ExecutionStatus flowStatus, 
+			SplitExecutionStatus splitStatus) {
 
 		String exitStatus = flowStatus.getExitStatus();
 		String restartOn = flowStatus.getRestartOn();
+		ExtendedBatchStatus flowBatchStatus = flowStatus.getExtendedBatchStatus();
 		
-		logger.fine("Aggregating possible terminating status for flow ending with status: " + flowStatus + ", and exitStatus = " + exitStatus + ", restartOn = " + restartOn);
-		
-		if (flowStatus.equals(JobOrFlowBatchStatus.EXCEPTION_THROWN)) {
-			//
-			// Exception thrown and JSL fail are peers in the precedence rules here.   The exception case doesn't result in an exit status being set
-			// while the JSL_FAIL might, though since they are peers, a JSL_FAIL happening after an exception throw will NOT result in the JSL_FAIL
-			// @exit-status being set. 
-			//
+		logger.fine("Aggregating possible terminating status for flow ending with status: " + flowStatus 
+				+ ", restartOn = " + restartOn);
+
+		if ( flowBatchStatus.equals(ExtendedBatchStatus.JSL_END) || flowBatchStatus.equals(ExtendedBatchStatus.JSL_STOP) || 
+				flowBatchStatus.equals(ExtendedBatchStatus.JSL_FAIL) || flowBatchStatus.equals(ExtendedBatchStatus.EXCEPTION_THROWN) ) {
 			if (aggregateStatus == null) {
-				logger.fine("A flow detected as FAILED with exception thrown. First flow detected in terminating state.");
-				aggregateStatus = JobOrFlowBatchStatus.EXCEPTION_THROWN;
-			} else {
-				if (!aggregateStatus.equals(JobOrFlowBatchStatus.EXCEPTION_THROWN)) {
-					logger.warning("Another flow already reached a terminating state for the job. The exception thrown will take precedence.");
-					splitStatus.setCouldMoreThanOneFlowHaveTerminatedJob(true);
-				}
-				aggregateStatus = JobOrFlowBatchStatus.EXCEPTION_THROWN;
-			}
-		} else if (flowStatus.equals(JobOrFlowBatchStatus.JSL_FAIL)) {
-			if (aggregateStatus == null) {
-				logger.fine("A flow detected as FAILED because of a <fail> transition element. First flow detected in terminating state.  Setting exitStatus if non-null.");
-				if (exitStatus != null) {
-					jobContext.setExitStatus(exitStatus);
-				}
-				aggregateStatus = JobOrFlowBatchStatus.JSL_FAIL;
+				logger.fine("A flow detected as ended because of a terminating condition: " + flowBatchStatus.name() 
+						+ ". First flow detected in terminating state.  Setting exitStatus if non-null.");
+				setInJobContext(flowBatchStatus, exitStatus, restartOn);
+				aggregateStatus = flowBatchStatus;
 			} else {
 				splitStatus.setCouldMoreThanOneFlowHaveTerminatedJob(true);
-				if (aggregateStatus.equals(JobOrFlowBatchStatus.EXCEPTION_THROWN) || aggregateStatus.equals(JobOrFlowBatchStatus.JSL_FAIL)) {
-					logger.warning("A flow detected as FAILED because of a <fail> transition element, after having already seen a previous failure.  Will NOT overwrite earlier exit status.");
-				} else {
-					logger.warning("Another flow already reached a terminating state for the job. But the fail element will take precedence.  Overwriting exitStatus if non-null");
-					if (exitStatus != null) {
-						jobContext.setExitStatus(exitStatus);
+				if (aggregateStatus.equals(ExtendedBatchStatus.JSL_END)) {
+					logger.warning("Current flow's batch and exit status will take precedence over and override earlier one from <end> transition element. " + 
+									"Overriding, setting exit status if non-null and preparing to end job.");
+					setInJobContext(flowBatchStatus, exitStatus, restartOn);
+					aggregateStatus = flowBatchStatus;
+				} else if (aggregateStatus.equals(ExtendedBatchStatus.JSL_STOP)) {
+					// Everything but an <end> overrides a <stop>
+					if (!(flowBatchStatus.equals(ExtendedBatchStatus.JSL_END))) {
+						logger.warning("Current flow's batch and exit status will take precedence over and override earlier one from <stop> transition element. " + 
+										"Overriding, setting exit status if non-null and preparing to end job.");
+						setInJobContext(flowBatchStatus, exitStatus, restartOn);
+						aggregateStatus = flowBatchStatus;
+					} else {
+						logger.fine("End does not override stop.  The flow with <end> will effectively be ignored with respect to terminating the job.");
 					}
-					aggregateStatus = JobOrFlowBatchStatus.JSL_FAIL;
+				} else if (aggregateStatus.equals(ExtendedBatchStatus.JSL_FAIL) || aggregateStatus.equals(ExtendedBatchStatus.EXCEPTION_THROWN)) {
+					if (flowBatchStatus.equals(ExtendedBatchStatus.JSL_FAIL) || flowBatchStatus.equals(ExtendedBatchStatus.EXCEPTION_THROWN)) {
+						logger.warning("Current flow's batch and exit status will take precedence over and override earlier one from <fail> transition element or exception thrown. " + 
+										"Overriding, setting exit status if non-null and preparing to end job.");
+						setInJobContext(flowBatchStatus, exitStatus, restartOn);
+						aggregateStatus = flowBatchStatus;
+					} else {
+						logger.fine("End and stop do not override exception thrown or <fail>.   The flow with <end> or <stop> will effectively be ignored with respect to terminating the job.");
+					}
 				}
 			}
-		} else if (flowStatus.equals(JobOrFlowBatchStatus.JSL_STOP)){
-			if (aggregateStatus == null) {
-				logger.fine("A flow detected as stopped because of a <stop> transition element. First flow detected in terminating state.  Setting exitStatus, restartOn if non-null.");
-				if (exitStatus != null) {
-					jobContext.setExitStatus(exitStatus);
-				}
-				if (restartOn != null) {
-					jobContext.setRestartOn(restartOn);
-				}
-				aggregateStatus = JobOrFlowBatchStatus.JSL_STOP;
-			} else {
-				splitStatus.setCouldMoreThanOneFlowHaveTerminatedJob(true);
-				if (aggregateStatus.equals(JobOrFlowBatchStatus.EXCEPTION_THROWN) || aggregateStatus.equals(JobOrFlowBatchStatus.JSL_FAIL) || aggregateStatus.equals(JobOrFlowBatchStatus.JSL_STOP)) {
-					logger.warning("A flow detected as stopped because of a <stop> transition element, after having already seen a previous failure.  Will NOT overwrite earlier exit status.");
-				} else {
-					logger.warning("Another flow already reached a terminating state for the job. But the stop element will take precedence.  Overwriting exitStatus if non-null");
-					if (exitStatus != null) {
-						jobContext.setExitStatus(exitStatus);
-					}
-					if (restartOn != null) {
-						jobContext.setRestartOn(restartOn);
-					}
-					aggregateStatus = JobOrFlowBatchStatus.JSL_STOP;
-				}
-			}
-		} else if (flowStatus.equals(JobOrFlowBatchStatus.JSL_END)){
-			if (aggregateStatus == null) {
-				logger.fine("A flow detected as ended because of a <end> transition element. First flow detected in terminating state.  Setting exitStatus if non-null.");
-				if (exitStatus != null) {
-					jobContext.setExitStatus(exitStatus);
-				}			
-				aggregateStatus = JobOrFlowBatchStatus.JSL_END;
-			} else {
-				splitStatus.setCouldMoreThanOneFlowHaveTerminatedJob(true);
-				logger.warning("A flow detected as stopped because of a <stop> transition element, after having already seen a previous failure.  Will NOT overwrite earlier exit status.");
-			}
+		} else {
+			logger.fine("Flow completing normally without any terminating transition or exception thrown.");
+		}
+	}
+	
+	private void setInJobContext(ExtendedBatchStatus flowBatchStatus, String exitStatus, String restartOn) {
+		if (exitStatus != null) {
+			jobContext.setExitStatus(exitStatus);
+		}			
+		if (ExtendedBatchStatus.JSL_STOP.equals(flowBatchStatus)) {
+			if (restartOn != null) {
+				jobContext.setRestartOn(restartOn);
+			}			
 		}
 	}
 	
 	public List<BatchFlowInSplitWorkUnit> getParallelJobExecs() {
+		
 		return parallelBatchWorkUnits;
 	}
 

@@ -14,11 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.ibm.jbatch.container.jsl;
+package com.ibm.jbatch.container.navigator;
 
-
-import com.ibm.jbatch.container.jsl.impl.FlowNavigatorImpl;
-import com.ibm.jbatch.container.jsl.impl.JobNavigatorImpl;
 import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.JSLJob;
 

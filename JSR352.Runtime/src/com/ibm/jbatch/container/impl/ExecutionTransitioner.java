@@ -23,18 +23,18 @@ import java.util.logging.Logger;
 import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.IController;
+import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
-import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.container.jsl.TransitionElement;
-import com.ibm.jbatch.container.status.JobOrFlowBatchStatus;
-import com.ibm.jbatch.container.status.JobOrFlowStatus;
-import com.ibm.jbatch.container.status.SplitStatus;
+import com.ibm.jbatch.container.navigator.ModelNavigator;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.Decision;
 import com.ibm.jbatch.jsl.model.End;
@@ -53,7 +53,14 @@ public class ExecutionTransitioner {
 	private RuntimeJobExecution jobExecution;
 	private long rootJobExecutionId;
 	private ModelNavigator<?> modelNavigator;
-	private IController currentStoppableElementController;
+	
+	// 'volatile' since it receives stop on separate thread.
+	private volatile IExecutionElementController currentStoppableElementController;
+	private IExecutionElementController previousElementController;
+	private ExecutionElement currentExecutionElement = null;
+	private ExecutionElement previousExecutionElement = null;
+
+	
 	private JobContextImpl jobContext;
 	private BlockingQueue<PartitionDataWrapper> analyzerQueue = null;
 	
@@ -78,13 +85,10 @@ public class ExecutionTransitioner {
 	 * Used for job and flow.
 	 * @return
 	 */
-	public JobOrFlowStatus doExecutionLoop() {
+	public ExecutionStatus doExecutionLoop() {
 
 		final String methodName = "doExecutionLoop";
-		ExecutionElement previousExecutionElement = null;
-		IController previousElementController = null;
-		ExecutionElement currentExecutionElement = null;
-
+		
 		try {
 			currentExecutionElement = modelNavigator.getFirstExecutionElement(jobExecution.getRestartOn());
 		} catch (IllegalTransitionException e) {
@@ -99,112 +103,81 @@ public class ExecutionTransitioner {
 
 			if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
 				logger.fine(methodName + " Exiting execution loop as job is now in stopping state.");
-				return new JobOrFlowStatus(JobOrFlowBatchStatus.JOB_OPERATOR_STOPPING);
+				return new ExecutionStatus(ExtendedBatchStatus.JOB_OPERATOR_STOPPING);
 			}
+			
+			IExecutionElementController currentElementController = getNextElementController();
+			currentStoppableElementController = currentElementController;
+			
+			ExecutionStatus status = currentElementController.execute();
 
-			if (!(currentExecutionElement instanceof Step) && !(currentExecutionElement instanceof Decision) && !(currentExecutionElement instanceof Flow) && !(currentExecutionElement instanceof Split)) {
-				throw new IllegalStateException("Found unknown currentExecutionElement type = " + currentExecutionElement.getClass().getName());
-			}
-
-			logger.fine("Next execution element = " + currentExecutionElement.getId());
-
-			IController elementController =null;
-
-			String executionElementExitStatus = null;
-			if (currentExecutionElement instanceof Decision) {
-				Decision decision = (Decision)currentExecutionElement;
-				elementController = ExecutionElementControllerFactory.getDecisionController(jobExecution, decision);			
-				DecisionControllerImpl decisionController = (DecisionControllerImpl)elementController;
-				decisionController.setPreviousStepExecutions(previousExecutionElement, previousElementController);
-			} else if (currentExecutionElement instanceof Flow) {
-				Flow flow = (Flow)currentExecutionElement;
-				elementController = ExecutionElementControllerFactory.getFlowController(jobExecution, flow, rootJobExecutionId);
-			} else if (currentExecutionElement instanceof Split) {
-				Split split = (Split)currentExecutionElement;
-				elementController = ExecutionElementControllerFactory.getSplitController(jobExecution, split, rootJobExecutionId);
-			} else if (currentExecutionElement instanceof Step) {
-				Step step = (Step)currentExecutionElement;
-				StepContextImpl stepContext = new StepContextImpl(step.getId());
-				elementController = ExecutionElementControllerFactory.getStepController(jobExecution, step, stepContext, rootJobExecutionId, analyzerQueue);
-			}
-
-			// Supports stop processing
-			currentStoppableElementController = elementController;
-
-			if (currentExecutionElement instanceof Decision) {
-				executionElementExitStatus = ((DecisionControllerImpl)elementController).execute();
-				
-			} else if (currentExecutionElement instanceof Flow) {
-				JobOrFlowStatus flowStatus = ((FlowControllerImpl)elementController).execute(); // recursive
-				JobOrFlowBatchStatus flowBatchStatus = flowStatus.getBatchStatus();
+			// Nothing special for decision or step except to get exit status.  For flow and split we want to bubble up though.
+			if ((currentExecutionElement instanceof Split) || (currentExecutionElement instanceof Flow)) {
 				// Exit status and restartOn should both be in the job context.
-				if (!flowBatchStatus.equals(JobOrFlowBatchStatus.NORMAL_COMPLETION)) {
-					logger.fine("Breaking out of loop with return status = " + flowBatchStatus.name());
-					return flowStatus;
+				if (!status.getExtendedBatchStatus().equals(ExtendedBatchStatus.NORMAL_COMPLETION)) {
+					logger.fine("Breaking out of loop with return status = " + status.getExtendedBatchStatus().name());
+					return status;
 				}
-				executionElementExitStatus = flowStatus.getExitStatus();
-				logger.fine("Normal retrun from flow with exit status = " + executionElementExitStatus);
-			} else if (currentExecutionElement instanceof Split) {
-				SplitStatus splitStatus = ((SplitControllerImpl)elementController).execute();
-				JobOrFlowBatchStatus determiningBatchStatus = splitStatus.getDeterminingFlowBatchStatus();
-				if (!determiningBatchStatus.equals(JobOrFlowBatchStatus.NORMAL_COMPLETION)) {
-					logger.fine("Breaking out of loop with return status = " + determiningBatchStatus.name());
-					return new JobOrFlowStatus(determiningBatchStatus);
-				}
-				// We could use a special "unset" value here but we just use 'null'.  Splits don't have
-				// transition elements and will only transition via @next attribute.
-				executionElementExitStatus = null;
-			} else if (currentExecutionElement instanceof Step) {
-				executionElementExitStatus = ((BaseStepControllerImpl)elementController).execute();
-			}
+			} 
 
-			// Throw an exception on fail 
+			// Seems like this should only happen if an Error is thrown at the step level, since normally a step-level
+			// exception is caught and the fact that it was thrown capture in the ExecutionStatus
 			if (jobContext.getBatchStatus().equals(BatchStatus.FAILED)) {
-				logger.warning("Sub-execution returned its own BatchStatus of FAILED.  Deal with this by throwing exception to the next layer.");
-				throw new BatchContainerRuntimeException("Sub-execution returned its own BatchStatus of FAILED.  Deal with this by throwing exception to the next layer.");
+				String errorMsg = "Sub-execution returned its own BatchStatus of FAILED.  Deal with this by throwing exception to the next layer.";
+				logger.warning(errorMsg);
+				throw new BatchContainerRuntimeException(errorMsg);
 			}
 
-			// set the execution element controller to null so we don't try to
-			// call stop on it after the element has finished executing
-			this.currentStoppableElementController = null; 
-			previousElementController = elementController;
-
-			logger.fine("Done executing element=" + currentExecutionElement.getId() + ", exitStatus=" + executionElementExitStatus);
+			// set the execution element controller to null so we don't try to call stop on it after the element has finished executing
+			currentStoppableElementController = null;
+			
+			logger.fine("Done executing element=" + currentExecutionElement.getId() + ", exitStatus=" + status.getExitStatus());
 
 			if (jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
 				logger.fine(methodName + " Exiting as job has been stopped");
-				return new JobOrFlowStatus(JobOrFlowBatchStatus.JOB_OPERATOR_STOPPING);
+				return new ExecutionStatus(ExtendedBatchStatus.JOB_OPERATOR_STOPPING);
 			}
 
 			Transition nextTransition = null;
 			try {
-				nextTransition = modelNavigator.getNextTransition(currentExecutionElement, executionElementExitStatus);
+				nextTransition = modelNavigator.getNextTransition(currentExecutionElement, status);
 			} catch (IllegalTransitionException e) {
 				String errorMsg = "Problem transitioning to next execution element.";
 				logger.warning(errorMsg);
-				throw new IllegalArgumentException(errorMsg, e);
-			}
+				throw new BatchContainerRuntimeException(errorMsg, e);
+			} 
 
-			// Break out of loop since there's nothing left to execute.  
-			// In this case we actually flow the exit status back as well, unlike in the termination because of
-			// transition element case.
-			if (nextTransition == null) {
+			//
+			// We will find ourselves in one of four states now.  
+			// 
+			// 1. Finished transitioning after a normal execution, but nothing to do 'next'.
+			// 2. We just executed a step which through an exception, but didn't match a transition element.
+			// 3. We are going to 'next' to another execution element (and jump back to the top of this '
+			//    'while'-loop.
+			// 4. We matched a terminating transition element (<end>, <stop> or <fail).
+			//
+			
+			// 1.
+			if (nextTransition.isFinishedTransitioning()) {
 				logger.fine(methodName + "No next execution element, and no transition element found either.  Looks like we're done and ready for COMPLETED state.");
-				
-				this.stepExecIds =  elementController.getLastRunStepExecutions();
-				
-				return new JobOrFlowStatus(JobOrFlowBatchStatus.NORMAL_COMPLETION, executionElementExitStatus);
-			}
-
-			// Loop back to the top.
-			if (nextTransition.getNextExecutionElement() != null) {
+				this.stepExecIds =  currentElementController.getLastRunStepExecutions();
+				// Consider just passing the last 'status' back, but let's unwrap the exit status and pass a new NORMAL_COMPLETION
+				// status back instead.
+				return new ExecutionStatus(ExtendedBatchStatus.NORMAL_COMPLETION, status.getExitStatus());
+			// 2.
+			} else if (nextTransition.noTransitionElementMatchedAfterException()) {
+				return new ExecutionStatus(ExtendedBatchStatus.EXCEPTION_THROWN, status.getExitStatus());
+			// 3.
+			} else if (nextTransition.getNextExecutionElement() != null) {
 				// hold on to the previous execution element for the decider
 				// we need it because we need to inject the context of the
 				// previous execution element into the decider
 				previousExecutionElement = currentExecutionElement;
+				previousElementController = currentElementController;
 				currentExecutionElement = nextTransition.getNextExecutionElement();
+			// 4.
 			} else if (nextTransition.getTransitionElement() != null) {
-				JobOrFlowStatus terminatingStatus = handleTerminatingTransitionElement(nextTransition.getTransitionElement());
+				ExecutionStatus terminatingStatus = handleTerminatingTransitionElement(nextTransition.getTransitionElement());
 				logger.finer(methodName + " , Breaking out of execution loop after processing terminating transition element.");
 				return terminatingStatus;
 			} else {
@@ -213,9 +186,34 @@ public class ExecutionTransitioner {
 		}
 	}
 
-	private JobOrFlowStatus handleTerminatingTransitionElement(TransitionElement transitionElement) {
+	
+	private IExecutionElementController getNextElementController() {
+		IExecutionElementController elementController =null;
 
-		JobOrFlowStatus retVal;
+		if (currentExecutionElement instanceof Decision) {
+			Decision decision = (Decision)currentExecutionElement;
+			elementController = ExecutionElementControllerFactory.getDecisionController(jobExecution, decision);			
+			DecisionControllerImpl decisionController = (DecisionControllerImpl)elementController;
+			decisionController.setPreviousStepExecutions(previousExecutionElement, previousElementController);
+		} else if (currentExecutionElement instanceof Flow) {
+			Flow flow = (Flow)currentExecutionElement;
+			elementController = ExecutionElementControllerFactory.getFlowController(jobExecution, flow, rootJobExecutionId);
+		} else if (currentExecutionElement instanceof Split) {
+			Split split = (Split)currentExecutionElement;
+			elementController = ExecutionElementControllerFactory.getSplitController(jobExecution, split, rootJobExecutionId);
+		} else if (currentExecutionElement instanceof Step) {
+			Step step = (Step)currentExecutionElement;
+			StepContextImpl stepContext = new StepContextImpl(step.getId());
+			elementController = ExecutionElementControllerFactory.getStepController(jobExecution, step, stepContext, rootJobExecutionId, analyzerQueue);
+		}
+		logger.fine("Next execution element controller = " + elementController);
+		return elementController;
+	}
+			
+			
+	private ExecutionStatus handleTerminatingTransitionElement(TransitionElement transitionElement) {
+
+		ExecutionStatus retVal;
 		
 		logger.fine("Found terminating transition element (stop, end, or fail).");
 
@@ -227,7 +225,7 @@ public class ExecutionTransitioner {
 			logger.fine("Next transition element is a <stop> : " + transitionElement + " with restartOn=" + restartOn + 
 					" , and JSL exit status = " + exitStatusFromJSL);
 
-			retVal = new JobOrFlowStatus(JobOrFlowBatchStatus.JSL_STOP);
+			retVal = new ExecutionStatus(ExtendedBatchStatus.JSL_STOP);
 			
 			if (exitStatusFromJSL != null) {
 				jobContext.setExitStatus(exitStatusFromJSL);  
@@ -243,7 +241,7 @@ public class ExecutionTransitioner {
 			String exitStatusFromJSL = endElement.getExitStatus();
 			logger.fine("Next transition element is an <end> : " + transitionElement + 
 					" with JSL exit status = " + exitStatusFromJSL);
-			retVal = new JobOrFlowStatus(JobOrFlowBatchStatus.JSL_END);
+			retVal = new ExecutionStatus(ExtendedBatchStatus.JSL_END);
 			if (exitStatusFromJSL != null) {
 				jobContext.setExitStatus(exitStatusFromJSL);  
 				retVal.setExitStatus(exitStatusFromJSL);  
@@ -254,7 +252,7 @@ public class ExecutionTransitioner {
 			String exitStatusFromJSL = failElement.getExitStatus();
 			logger.fine("Next transition element is a <fail> : " + transitionElement + 
 					" with JSL exit status = " + exitStatusFromJSL);
-			retVal = new JobOrFlowStatus(JobOrFlowBatchStatus.JSL_FAIL);
+			retVal = new ExecutionStatus(ExtendedBatchStatus.JSL_FAIL);
 			if (exitStatusFromJSL != null) {
 				jobContext.setExitStatus(exitStatusFromJSL);  
 				retVal.setExitStatus(exitStatusFromJSL);  

@@ -14,7 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
 */
-package com.ibm.jbatch.container.jsl;
+package com.ibm.jbatch.container.navigator;
+
+import com.ibm.jbatch.container.jsl.ExecutionElement;
+import com.ibm.jbatch.container.jsl.IllegalTransitionException;
+import com.ibm.jbatch.container.jsl.Transition;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 
 public interface ModelNavigator<T> {
 
@@ -36,7 +41,8 @@ public interface ModelNavigator<T> {
 	/**
 	 * Enforces "can't revisit already visited steps rule". 
 	 */
-    public Transition getNextTransition(ExecutionElement currentExecutionElem, String currentStepExitStatus) throws IllegalTransitionException;
+    public Transition getNextTransition(ExecutionElement currentExecutionElem, ExecutionStatus currentExecutionStatus) 
+    		throws IllegalTransitionException;
     
     /**
      * E.g. the JSLJob for a job, the Flow for a flow, etc.

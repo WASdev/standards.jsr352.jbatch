@@ -34,12 +34,12 @@ import com.ibm.jbatch.container.artifact.proxy.JobListenerProxy;
 import com.ibm.jbatch.container.artifact.proxy.ListenerFactory;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
-import com.ibm.jbatch.container.jsl.ModelNavigator;
+import com.ibm.jbatch.container.navigator.ModelNavigator;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
-import com.ibm.jbatch.container.status.JobOrFlowBatchStatus;
-import com.ibm.jbatch.container.status.JobOrFlowStatus;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.JSLProperties;
@@ -88,11 +88,11 @@ public abstract class JobThreadRootControllerImpl implements IThreadRootControll
 	}
 
 	@Override
-	public JobOrFlowStatus originateExecutionOnThread() {
+	public ExecutionStatus originateExecutionOnThread() {
 		String methodName = "executeJob";
 		logger.entering(CLASSNAME, methodName);
 
-		JobOrFlowStatus retVal = null;
+		ExecutionStatus retVal = null;
 		try {
 			// Check if we've already gotten the stop() command.
 			if (!jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) { 
@@ -108,8 +108,8 @@ public abstract class JobThreadRootControllerImpl implements IThreadRootControll
 				// --------------------
 				transitioner = new ExecutionTransitioner(jobExecution, rootJobExecutionId, jobNavigator, analyzerQueue);
 				retVal = transitioner.doExecutionLoop();
-				JobOrFlowBatchStatus flowBatchStatus = retVal.getBatchStatus();
-				switch (flowBatchStatus)  {
+				ExtendedBatchStatus extBatchStatus = retVal.getExtendedBatchStatus();
+				switch (extBatchStatus)  {
 					case JSL_STOP : 		jslStop();
 											break;
 					case JSL_FAIL : 		updateJobBatchStatus(BatchStatus.FAILED);

@@ -52,7 +52,7 @@ public class SkipProcessor implements ItemProcessor {
 	public ReadRecord processItem(Object record) throws Exception {
 			
 		if (!inited){
-			if (!processrecordfailNumberString.equals("null")) {
+			if (!(processrecordfailNumberString == null)) {
 				String[] processFailPointsStrArr = processrecordfailNumberString.split(",");
 				failnum = new int[processFailPointsStrArr.length];
 				for (int i = 0; i < processFailPointsStrArr.length; i++) {

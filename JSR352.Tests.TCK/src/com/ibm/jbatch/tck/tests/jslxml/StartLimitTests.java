@@ -39,8 +39,10 @@ public class StartLimitTests {
 
 
 	/*
-	 * @testName: testStartLimitVariation3
-	 * @assertion:    1. tests the "start-limit" attribute on steps, when explicitly set or defaulting, or set to '0' (= no limit)
+	 * @testName: testStartLimitVariation1
+	 * @assertion:    This description applies to all methods in the class:
+	 * 
+	 *                1. tests the "start-limit" attribute on steps, when explicitly set or defaulting, or set to '0' (= no limit)
 	 *                2. Also tests the interaction between start-limit and allow-start-if-complete.  By this we mean that we don't
 	 *                   count against the start-limit simply because we transition to a step during restart, if allow-start-if-complete=false,
 	 *                   but only if we execute it.
@@ -54,11 +56,13 @@ public class StartLimitTests {
 	 *                 step4 - allow-start-if-complete=true, start-limit=3
 	 *                 step5 - allow-start-if-complete=true, start-limit=3
 	 *                 
+	 *                 // Variation1
 	 *                 Run 1 - c1, c2, x3
 	 *                 Run 2 - c1, c2, x3
 	 *                 Run 3 - c1, c2, x3
 	 *                 Run 4 - c1, c2, FAIL on t3
 	 *                 
+	 *                 // Variation2
 	 *                 Run 1 - c1, c2, x3
 	 *                 Run 2 - c1, c2, x3
 	 *                 Run 3 - c1, c2, s3,
@@ -67,10 +71,7 @@ public class StartLimitTests {
 	 *                 Run 6 - c1, c2,     c4, f5
 	 *                 Run 7 - c1, c2,     FAIL on t4
 	 *                 
-	 *                 Would be nice to show that @restart can end up with first execution
-	 *                 not executing
-	 *                 
-	 *                 
+	 *                 // Variation3
 	 *                 Run 1 - c1, c2, c3, c4, s5,restart=5
 	 *                 Run 2 -                 f5
 	 *                 Run 3 - c1, c2,     c4  c5 
@@ -82,29 +83,29 @@ public class StartLimitTests {
 	 *                 f - failed (via JSL transition element)
 	 *                 
 	 */
-
 	@Test
 	@org.junit.Test
-	public void testStartLimitVariation3() throws Exception {
+	public void testStartLimitVariation1() throws Exception {
 
-		String METHOD = "testStartLimitVariation3";
+		String METHOD = "testStartLimitVariation1";
 
 		try {
 			long lastExecutionId = 0L;
 			TCKJobExecutionWrapper exec = null;
 
 			/*
-			 * Run 1 - c1, c2, c3, c4, s5,restart=5
-			 * Run 2 -                 f5
-			 * Run 3 - c1, c2,     c4  c5 
+			 * Run 1 - c1, c2, x3
+			 * Run 2 - c1, c2, x3
+			 * Run 3 - c1, c2, x3
+			 * Run 4 - c1, c2, FAIL on t3
 			 */
-			String[] expectedExitStatuses = { "c1,c2,c3,c4,s5", "f5", "c1,c2,c4,c5" };
+			String[] expectedExitStatuses = { "c1,c2,x3", "c1,c2,x3", "c1,c2,x3", "c1,c2" };
 			// Note we start at '1'
-			for (int i = 1; i <= 3; i++) {
+			for (int i = 1; i <= 4; i++) {
 				String execString = new Integer(i).toString();
 				Properties jobParameters = new Properties();
 				jobParameters.put("execution.number", execString);
-				jobParameters.put("batchlet.ref", "startLimitStateMachineVariation3Batchlet");
+				jobParameters.put("batchlet.ref", "startLimitStateMachineVariation1Batchlet");
 				if (i == 1) {
 					Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 					exec = jobOp.startJobAndWaitForResult("startLimitTests", jobParameters);
@@ -120,26 +121,29 @@ public class StartLimitTests {
 				// Typical TCK test execution # is 1-indexed but array is 0-indexed so use 'i-1' below.
 				assertWithMessage("Testing execution #" + i, expectedExitStatuses[i-1], exec.getExitStatus());
 
-				if (i == 1) {
-					assertWithMessage("Testing execution #" + i, BatchStatus.STOPPED, exec.getBatchStatus());
-				} else if (i == 2) {
-					assertWithMessage("Testing execution #" + i, BatchStatus.FAILED, exec.getBatchStatus());
-				} else {
-					assertWithMessage("Testing execution #" + i, BatchStatus.COMPLETED, exec.getBatchStatus());
-				}
+				/////
+				// All four are designed to FAIL, but with exit status checking and StepExecution checking we're sure
+				// we're executing as planned.
+				/////
+				assertWithMessage("Testing execution #" + i, BatchStatus.FAILED, exec.getBatchStatus());
 
 				List<StepExecution> steps = jobOp.getStepExecutions(lastExecutionId);
-				if (i == 1) {
-					assertWithMessage("Found 5 step executions", 5, steps.size());
-				} else if (i == 2) {
-					assertWithMessage("Found 1 step execution", 1, steps.size());
+				if (i >= 1 && i <= 3) {
+					assertWithMessage("Found 3 step executions", 3, steps.size());
 				} else {
-					assertWithMessage("Found 4 step execution", 4, steps.size());
+					assertWithMessage("Found 2 step executions", 2, steps.size());
 				}
-				
-				// All steps will be COMPLETED
 				for (StepExecution step : steps) {
-					assertWithMessage("Testing step execution #" + i + ", stepName = " + step.getStepName(), BatchStatus.COMPLETED, step.getBatchStatus());
+					if (step.getStepName().equals("step1")) {
+						assertWithMessage("Testing step execution #" + i + ", step1: ", BatchStatus.COMPLETED, step.getBatchStatus());
+					} else if (step.getStepName().equals("step2")) {
+						assertWithMessage("Testing step execution #" + i + ", step2: ", BatchStatus.COMPLETED, step.getBatchStatus());
+					} else if (step.getStepName().equals("step3")) {
+						assertWithMessage("Shouldn't have a StepExecution for step 3 on execution #4", i != 4);
+						assertWithMessage("Testing step execution #" + i + ", step3: ", BatchStatus.FAILED, step.getBatchStatus());
+					} else {
+						throw new IllegalStateException("Shouldn't get here, unknown step");
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -147,7 +151,7 @@ public class StartLimitTests {
 		}
 
 	}
-
+	
 	/*
 	 * @testName: testStartLimitVariation2
 	 * @assertion:
@@ -258,36 +262,33 @@ public class StartLimitTests {
 
 	}
 
-
-
 	/*
-	 * @testName: testStartLimitVariation1
+	 * @testName: testStartLimitVariation2
 	 * @assertion:
 	 * @test_Strategy:
 	 */
 	@Test
 	@org.junit.Test
-	public void testStartLimitVariation1() throws Exception {
+	public void testStartLimitVariation3() throws Exception {
 
-		String METHOD = "testStartLimitVariation1";
+		String METHOD = "testStartLimitVariation3";
 
 		try {
 			long lastExecutionId = 0L;
 			TCKJobExecutionWrapper exec = null;
 
 			/*
-			 * Run 1 - c1, c2, x3
-			 * Run 2 - c1, c2, x3
-			 * Run 3 - c1, c2, x3
-			 * Run 4 - c1, c2, FAIL on t3
+			 * Run 1 - c1, c2, c3, c4, s5,restart=5
+			 * Run 2 -                 f5
+			 * Run 3 - c1, c2,     c4  c5 
 			 */
-			String[] expectedExitStatuses = { "c1,c2,x3", "c1,c2,x3", "c1,c2,x3", "c1,c2" };
+			String[] expectedExitStatuses = { "c1,c2,c3,c4,s5", "f5", "c1,c2,c4,c5" };
 			// Note we start at '1'
-			for (int i = 1; i <= 4; i++) {
+			for (int i = 1; i <= 3; i++) {
 				String execString = new Integer(i).toString();
 				Properties jobParameters = new Properties();
 				jobParameters.put("execution.number", execString);
-				jobParameters.put("batchlet.ref", "startLimitStateMachineVariation1Batchlet");
+				jobParameters.put("batchlet.ref", "startLimitStateMachineVariation3Batchlet");
 				if (i == 1) {
 					Reporter.log("Invoking startJobAndWaitForResult for Execution #1<p>");
 					exec = jobOp.startJobAndWaitForResult("startLimitTests", jobParameters);
@@ -303,29 +304,26 @@ public class StartLimitTests {
 				// Typical TCK test execution # is 1-indexed but array is 0-indexed so use 'i-1' below.
 				assertWithMessage("Testing execution #" + i, expectedExitStatuses[i-1], exec.getExitStatus());
 
-				/////
-				// All four are designed to FAIL, but with exit status checking and StepExecution checking we're sure
-				// we're executing as planned.
-				/////
-				assertWithMessage("Testing execution #" + i, BatchStatus.FAILED, exec.getBatchStatus());
+				if (i == 1) {
+					assertWithMessage("Testing execution #" + i, BatchStatus.STOPPED, exec.getBatchStatus());
+				} else if (i == 2) {
+					assertWithMessage("Testing execution #" + i, BatchStatus.FAILED, exec.getBatchStatus());
+				} else {
+					assertWithMessage("Testing execution #" + i, BatchStatus.COMPLETED, exec.getBatchStatus());
+				}
 
 				List<StepExecution> steps = jobOp.getStepExecutions(lastExecutionId);
-				if (i >= 1 && i <= 3) {
-					assertWithMessage("Found 3 step executions", 3, steps.size());
+				if (i == 1) {
+					assertWithMessage("Found 5 step executions", 5, steps.size());
+				} else if (i == 2) {
+					assertWithMessage("Found 1 step execution", 1, steps.size());
 				} else {
-					assertWithMessage("Found 2 step executions", 2, steps.size());
+					assertWithMessage("Found 4 step execution", 4, steps.size());
 				}
+				
+				// All steps will be COMPLETED
 				for (StepExecution step : steps) {
-					if (step.getStepName().equals("step1")) {
-						assertWithMessage("Testing step execution #" + i + ", step1: ", BatchStatus.COMPLETED, step.getBatchStatus());
-					} else if (step.getStepName().equals("step2")) {
-						assertWithMessage("Testing step execution #" + i + ", step2: ", BatchStatus.COMPLETED, step.getBatchStatus());
-					} else if (step.getStepName().equals("step3")) {
-						assertWithMessage("Shouldn't have a StepExecution for step 3 on execution #4", i != 4);
-						assertWithMessage("Testing step execution #" + i + ", step3: ", BatchStatus.FAILED, step.getBatchStatus());
-					} else {
-						throw new IllegalStateException("Shouldn't get here, unknown step");
-					}
+					assertWithMessage("Testing step execution #" + i + ", stepName = " + step.getStepName(), BatchStatus.COMPLETED, step.getBatchStatus());
 				}
 			}
 		} catch (Exception e) {
@@ -333,6 +331,10 @@ public class StartLimitTests {
 		}
 
 	}
+
+
+
+
 
 
 	private static void handleException(String methodName, Exception e) throws Exception {

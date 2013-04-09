@@ -17,7 +17,7 @@
 package com.ibm.jbatch.container.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -488,7 +488,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                             stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
                         }
                     } else if (skipWriteException(e, theChunk)) {
-                        stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIPCOUNT).incValueBy(1);
+                        stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIP_COUNT).incValueBy(1);
                     } else {
                     	throw new BatchContainerRuntimeException(e);
                     }
@@ -496,7 +496,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
             	}
             	else {
             		if (skipWriteException(e, theChunk)) {
-                        stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIPCOUNT).incValueBy(1);
+                        stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIP_COUNT).incValueBy(1);
                     } else if (retryWriteException(e, theChunk)) {
                         if (!retryHandler.isRollbackException(e)) {
                         	status.setRetry(true);
@@ -815,7 +815,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 TCCLObjectInputStream readerOIS = null;
                 try {
                     readerOIS = new TCCLObjectInputStream(readerChkptBA);
-                    readerProxy.open((Externalizable) readerOIS.readObject());
+                    readerProxy.open((Serializable) readerOIS.readObject());
                     readerOIS.close();
                 } catch (Exception ex) {
                     // is this what I should be throwing here?
@@ -842,7 +842,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 TCCLObjectInputStream writerOIS = null;
                 try {
                     writerOIS = new TCCLObjectInputStream(writerChkptBA);
-                    writerProxy.open((Externalizable) writerOIS.readObject());
+                    writerProxy.open((Serializable) writerOIS.readObject());
                     writerOIS.close();
                 } catch (Exception ex) {
                     // is this what I should be throwing here?
@@ -970,7 +970,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 TCCLObjectInputStream readerOIS = null;
                 try {
                     readerOIS = new TCCLObjectInputStream(readerChkptBA);
-                    readerProxy.open((Externalizable) readerOIS.readObject());
+                    readerProxy.open((Serializable) readerOIS.readObject());
                     readerOIS.close();
                 } catch (Exception ex) {
                     // is this what I should be throwing here?
@@ -1000,7 +1000,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
                 TCCLObjectInputStream writerOIS = null;
                 try {
                     writerOIS = new TCCLObjectInputStream(writerChkptBA);
-                    writerProxy.open((Externalizable) writerOIS.readObject());
+                    writerProxy.open((Serializable) writerOIS.readObject());
                     writerOIS.close();
                 } catch (Exception ex) {
                     // is this what I should be throwing here?

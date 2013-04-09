@@ -28,7 +28,7 @@ public abstract class AbstractPropertyResolver<B> implements
 
 	protected boolean isPartitionedStep = false;
 	
-	public static final String UNRESOLVED_PROP_VALUE = "null";	
+	public static final String UNRESOLVED_PROP_VALUE = ""; //Substitute empty String for unresolvable props	
 	public AbstractPropertyResolver(boolean isPartitionStep){
 		this.isPartitionedStep = isPartitionStep;
 	}

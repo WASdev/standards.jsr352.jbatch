@@ -23,5 +23,9 @@ public interface Transition {
     public void setNextExecutionElement(ExecutionElement executionElement);
     public TransitionElement getTransitionElement();
     public void setTransitionElement(TransitionElement transitionElement);
+	void setFinishedTransitioning();
+	boolean isFinishedTransitioning();
+	void setNoTransitionElementMatchAfterException();
+	boolean noTransitionElementMatchedAfterException();
     
 }

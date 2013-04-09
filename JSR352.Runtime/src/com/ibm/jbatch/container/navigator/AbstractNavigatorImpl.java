@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.jbatch.container.jsl.impl;
+package com.ibm.jbatch.container.navigator;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +24,12 @@ import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
-import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.Transition;
 import com.ibm.jbatch.container.jsl.TransitionElement;
+import com.ibm.jbatch.container.jsl.impl.GlobPatternMatcherImpl;
+import com.ibm.jbatch.container.jsl.impl.TransitionImpl;
+import com.ibm.jbatch.container.status.ExecutionStatus;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
 import com.ibm.jbatch.jsl.model.*;
 
 public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
@@ -64,8 +67,13 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 		if (!(startElement instanceof Decision)) {
 			alreadyExecutedElements.put(startElement.getId(), startElement);
 		}
+
+		validateElementType(startElement);
+
 		return startElement;
 	}
+
+
 
 	/**
 	 * Precedence is: look at elements, then look at attribute, then return quietly
@@ -76,10 +84,12 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 	 * @return
 	 * @throws IllegalTransitionException
 	 */
-	public Transition getNextTransition(ExecutionElement currentElem, List<ExecutionElement> peerExecutionElements, String currentExitStatus) throws IllegalTransitionException {
+	public Transition getNextTransition(ExecutionElement currentElem, List<ExecutionElement> peerExecutionElements, ExecutionStatus currentStatus) 
+			throws IllegalTransitionException {
 		final String method = "getNextTransition";
+
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine(method + " ,currentExitStatus=" + currentExitStatus);
+			logger.fine(method + " ,currentStatus=" + currentStatus);
 		}
 
 		Transition returnTransition = new TransitionImpl();
@@ -93,7 +103,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 			for (TransitionElement t : transitionElements) {
 				logger.fine(method + " Trying to match next transition element: " + t);
 
-				boolean isMatched = matchExitStatusAgainstOnAttribute(currentExitStatus, t);
+				boolean isMatched = matchExitStatusAgainstOnAttribute(currentStatus.getExitStatus(), t);
 				if (isMatched) {
 					if (t instanceof Next) {
 						Next next = (Next)t;
@@ -110,27 +120,34 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 
 		// We've returned already if we matched a Stop, End or Fail
 		if (nextExecutionElement == null) {
-			nextExecutionElement = getNextExecutionElemFromAttribute(peerExecutionElements, currentElem);
-			returnTransition.setNextExecutionElement(nextExecutionElement);
+			if (currentStatus.getExtendedBatchStatus().equals(ExtendedBatchStatus.EXCEPTION_THROWN)) {
+				logger.fine("Didn't match transition element, after exception thrown.  Need to fail job");
+				returnTransition.setNoTransitionElementMatchAfterException();
+				return returnTransition;
+			} else {
+				logger.fine("Didn't match transition element, check @next attribute now.");
+				nextExecutionElement = getNextExecutionElemFromAttribute(peerExecutionElements, currentElem);
+				returnTransition.setNextExecutionElement(nextExecutionElement);
+			}
 		}
-		
+
 		if (nextExecutionElement != null) {
 			if (alreadyExecutedElements.containsKey(nextExecutionElement.getId())) {
 				String errorMsg = "Execution loop detected !!!  Trying to re-execute execution element: " + nextExecutionElement.getId();
 				logger.severe(errorMsg);
 				throw new IllegalTransitionException(errorMsg);
 			}
-			
+
 			// We allow repeating a decision
 			if (!(nextExecutionElement instanceof Decision)) {
 				alreadyExecutedElements.put(nextExecutionElement.getId(), nextExecutionElement);
 			}
 			logger.fine(method + " Transitioning to next element id = " + nextExecutionElement.getId());
-			return returnTransition;
 		} else {
-			logger.fine(method + " return null, there is no next execution element");
-			return null;
+			logger.fine(method + " There is no next execution element. Mark transition to show we're finished.");
+			returnTransition.setFinishedTransitioning();
 		}
+		return returnTransition;
 	}
 
 
@@ -140,6 +157,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 			logger.finer("attribute value is " + id);
 			for (ExecutionElement elem : executionElements) {
 				if (elem.getId().equals(id)) {
+					validateElementType(elem);
 					return elem;
 				}
 			}
@@ -150,7 +168,6 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 			return null;
 		}
 	}
-
 
 	private static boolean matchSpecifiedExitStatus(String currentStepExitStatus, String exitStatusPattern) {
 
@@ -207,6 +224,9 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 		} else if (currentElem instanceof Decision) {
 			// Nothing special to do in this case.
 		}
+
+		validateElementType(nextExecutionElement);
+
 		logger.fine("From currentElem = " + currentElem + " , return @next attribute execution element: " + nextExecutionElement);
 		return nextExecutionElement;
 	}
@@ -215,6 +235,15 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 	public ExecutionElement getFirstExecutionElement()
 			throws IllegalTransitionException {
 		return getFirstExecutionElement(null);
+	}
+
+	private void validateElementType(ExecutionElement elem) {
+		if (elem != null) {
+			if (!((elem instanceof Decision) || (elem instanceof Flow) || (elem instanceof Split) || (elem instanceof Step))) { 
+				throw new IllegalArgumentException("Unknown execution element found, elem = " + elem + ", found with type: " + elem.getClass().getCanonicalName() +
+						" , which is not an instance of Decision, Flow, Split, or Step.");
+			} 
+		}
 	}
 
 }

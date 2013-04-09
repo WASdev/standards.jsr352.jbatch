@@ -44,7 +44,11 @@
 			Doctitle="JSR352 TCK"
 			excludepackagenames="com.ibm.jbatch.tck.tests.ee"
 			destdir="${jsr352.tck.basedir}/../javadoc/tck-impl">
-		
+            <bottom>
+				<![CDATA[
+				<p align="left">&#169; Copyright IBM Corp. 2013<br>Licensed under the Apache License, Version 2.0
+				]]>
+            </bottom>
 			<classpath>
 				<fileset dir="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/junit">
 					<include name="**/junit-4.10.jar"/>
@@ -65,7 +69,11 @@
 				windowtitle="JSR352 TCK SPI" sourcepath="${workspace.home.dir}/JSR352.TCK.SPI/src"
 				Doctitle="JSR352 TCK SPI"
 				destdir="${jsr352.tck.basedir}/../javadoc/tck-spi">
-			
+            <bottom>
+				<![CDATA[
+				<p align="left">&#169; Copyright IBM Corp. 2013<br>Licensed under the Apache License, Version 2.0
+				]]>
+            </bottom>
 			<classpath>
 				<pathelement location="${workspace.home.dir}/JSR352.API/bin"/>
 			</classpath>

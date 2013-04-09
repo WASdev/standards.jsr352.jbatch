@@ -168,40 +168,6 @@ public class PropertySubstitutionTests {
 
 
 	/*
-	 * @testName: testPropertyInjectionNoPropertyOnElement
-	 * 
-	 * @assertion: Section 6.3.1, When no xml property is defined on a batch
-	 * artifact child property element that maps to java field annotated with
-	 * @BatchProperty, a value of null is injected into the java field.
-	 * 
-	 * @test_Strategy: Add a java field annotated with @BatchProperty that has no matching xml
-	 * property element. The injected value is then returned through the property.junit.result
-	 * system property.
-	 */
-	@Test
-	@org.junit.Test
-	public void testPropertyInjectionNoPropertyOnElement() throws Exception {
-
-		String METHOD = "testPropertyInjectionNoPropertyOnElement";
-
-		try {
-			Reporter.log("Locate job XML file: job_properties2.xml<p>");
-
-			Reporter.log("Set system property:property.junit.propName=javaDefaultValueProp<p>");
-			System.setProperty("property.junit.propName", "javaDefaultValueProp");
-
-			Reporter.log("Invoke startJobAndWaitForResult<p>");
-			JobExecution jobExec = jobOp.startJobAndWaitForResult("job_properties2");
-
-			String result = System.getProperty("property.junit.result");
-			Reporter.log("Test result: " + result + "<p>");
-			assertObjEquals(null, result);
-		} catch (Exception e) {
-			handleException(METHOD, e);
-		}
-	}
-
-	/*
 	 * @testName: testDefaultPropertyName
 	 * 
 	 * @assertion: If a name value is not supplied on the @BatchProperty

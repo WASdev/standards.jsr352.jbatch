@@ -54,7 +54,7 @@ public class MyBatchletWithPropertiesImpl extends AbstractBatchlet {
     
     @Inject    
     @BatchProperty
-    private String javaDefaultValueProp = "JAVA DEFAULT INITIALIZER"; //should go to null
+    private String javaDefaultValueProp = "JAVA DEFAULT INITIALIZER";
     
     @Inject    
     @BatchProperty(name="myProperty4")

@@ -16,9 +16,9 @@
  */
 package com.ibm.jbatch.container;
 
-import com.ibm.jbatch.container.status.JobOrFlowStatus;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 
 public interface IThreadRootController extends IController {
 
-	public JobOrFlowStatus originateExecutionOnThread();
+	public ExecutionStatus originateExecutionOnThread();
 }

@@ -22,17 +22,18 @@ import java.util.logging.Logger;
 import javax.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.IController;
+import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
-import com.ibm.jbatch.container.jsl.ModelNavigator;
-import com.ibm.jbatch.container.jsl.NavigatorFactory;
+import com.ibm.jbatch.container.navigator.ModelNavigator;
+import com.ibm.jbatch.container.navigator.NavigatorFactory;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
-import com.ibm.jbatch.container.status.JobOrFlowBatchStatus;
-import com.ibm.jbatch.container.status.JobOrFlowStatus;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 import com.ibm.jbatch.jsl.model.Flow;
 
-public class FlowControllerImpl implements IController {
+public class FlowControllerImpl implements IExecutionElementController {
 
 	private final static String CLASSNAME = FlowControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
@@ -64,12 +65,13 @@ public class FlowControllerImpl implements IController {
 		this.rootJobExecutionId = rootJobExecutionId;
 	}
 
-	public JobOrFlowStatus execute() {
+	@Override
+	public ExecutionStatus execute() {
 		if (!jobContext.getBatchStatus().equals(BatchStatus.STOPPING)) { 
 			transitioner = new ExecutionTransitioner(jobExecution, rootJobExecutionId, flowNavigator);
 			return transitioner.doExecutionLoop();
 		} else {
-			return new JobOrFlowStatus(JobOrFlowBatchStatus.JOB_OPERATOR_STOPPING);
+			return new ExecutionStatus(ExtendedBatchStatus.JOB_OPERATOR_STOPPING);
 		}
 	}
 

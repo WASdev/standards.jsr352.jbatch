@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.jbatch.container.jsl.impl;
+package com.ibm.jbatch.container.navigator;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
-import com.ibm.jbatch.container.jsl.ModelNavigator;
 import com.ibm.jbatch.container.jsl.Transition;
+import com.ibm.jbatch.container.status.ExecutionStatus;
 import com.ibm.jbatch.jsl.model.Flow;
 
 public class FlowNavigatorImpl extends AbstractNavigatorImpl<Flow> implements ModelNavigator<Flow> {
@@ -50,12 +50,12 @@ public class FlowNavigatorImpl extends AbstractNavigatorImpl<Flow> implements Mo
 
 
 	@Override
-	public Transition getNextTransition(ExecutionElement currentExecutionElem, String currentStepExitStatus)
+	public Transition getNextTransition(ExecutionElement currentExecutionElem, ExecutionStatus currentStatus)
 			throws IllegalTransitionException {
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("Getting next transition in flow, currentExecutionElem = " + currentExecutionElem);
 		}
-		Transition nextTransition = getNextTransition(currentExecutionElem, flow.getExecutionElements(), currentStepExitStatus);
+		Transition nextTransition = getNextTransition(currentExecutionElem, flow.getExecutionElements(), currentStatus);
 		logger.fine("Got next transition in flow = " + nextTransition);
 		return nextTransition;
 	}

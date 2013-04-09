@@ -36,6 +36,7 @@
 		 </writer>
 		</chunk>	
 	</step>
+	<!--  Was the idea here to prove that step 2 doesn't execute merely by virtue of being in the JSL? -->
 	<step id="step2">
 		<chunk item-count="5">
 		 <reader ref="doSomethingArrayItemReaderImpl">

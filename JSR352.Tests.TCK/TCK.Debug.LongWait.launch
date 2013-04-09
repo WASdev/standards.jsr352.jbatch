@@ -31,5 +31,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value=""/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="JSR352.Tests.TCK"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc}/JSR352.Tests.TCK/logging.properties -DjobOperator.sleep.time=200000 -Dderby.system.home=C:/AAA/work/tmp/db111nqv"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc}/JSR352.Tests.TCK/logging.properties -DjobOperator.sleep.time=20000 -Dderby.system.home=C:/AAA/work/tmp/db111nqza"/>
 </launchConfiguration>

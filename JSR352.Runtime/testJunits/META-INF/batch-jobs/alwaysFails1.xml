@@ -17,7 +17,7 @@
 -->
 <job id="runtimejunit.alwaysFails1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
 	<step id="step1" allow-start-if-complete="true">
-		<batchlet ref="test.artifacts.MyBatchletImpl">
+		<batchlet ref="test.artifacts.RTestBatchletImpl">
 		<properties>
 			<property name="sleepTime" value="#{jobParameters['sleepTime']}" />
 		</properties>

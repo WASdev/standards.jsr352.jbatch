@@ -25,7 +25,10 @@ public class TransitionImpl implements Transition {
     private TransitionElement transitionElement;
     private ExecutionElement executionElement;
     
-    public TransitionImpl() {
+    boolean finishedTransitioning = false; 
+    boolean noTransitionElementMatchedAfterException = false; 
+    
+	public TransitionImpl() {
         super();
     }
 
@@ -47,6 +50,26 @@ public class TransitionImpl implements Transition {
     @Override
     public void setNextExecutionElement(ExecutionElement executionElement) {
         this.executionElement = executionElement;
+    }    
+    
+    @Override
+    public boolean isFinishedTransitioning() {
+		return finishedTransitioning;
+	}
+
+    @Override
+	public void setFinishedTransitioning() {
+		this.finishedTransitioning = true;
+	}
+    
+    @Override
+	public void setNoTransitionElementMatchAfterException() {
+		this.noTransitionElementMatchedAfterException = true;
+    }
+    
+    @Override
+	public boolean noTransitionElementMatchedAfterException() {
+		return noTransitionElementMatchedAfterException;
     }
 
 }

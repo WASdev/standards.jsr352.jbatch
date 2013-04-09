@@ -258,7 +258,7 @@ public class MetricsTests {
 
 			Reporter.log("Testing the write skip count for execution #1<p>");
 			for (int i = 0; i < metrics.length; i++) {
-				if (metrics[i].getType().equals(Metric.MetricType.WRITE_SKIPCOUNT)) {
+				if (metrics[i].getType().equals(Metric.MetricType.WRITE_SKIP_COUNT)) {
 					Reporter.log("AJM: in test, found metric: " + metrics[i].getType() + "<p>");
 					assertWithMessage(
 							"Testing the write skip count for execution #1", 3L,
@@ -651,9 +651,9 @@ public class MetricsTests {
 			Reporter.log("AJM: step start time: " + step.getStartTime() + "<p>");
 			Reporter.log("AJM: step end time: " + step.getEndTime() + "<p>");
 
-			assertWithMessage("Start time of step occurs after start time of test", ts.compareTo(step.getStartTime()) < 0);
-			assertWithMessage("End time of step occurs after start time of step", step.getEndTime().compareTo(step.getStartTime()) > 0);
-			assertWithMessage("End time of step occurs after start time of test", step.getEndTime().compareTo(ts) > 0);
+			assertWithMessage("Start time of step occurs no sooner than start time of test", ts.compareTo(step.getStartTime()) <= 0);
+			assertWithMessage("End time of step occurs no sooner than start time of step", step.getEndTime().compareTo(step.getStartTime()) >= 0);
+			assertWithMessage("End time of step occurs no sooner than start time of test", step.getEndTime().compareTo(ts) >= 0);
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
@@ -703,11 +703,11 @@ public class MetricsTests {
 			Reporter.log("AJM: job last updated time: " + execution1.getLastUpdatedTime() + "<p>");
 			Reporter.log("AJM: job end time: " + execution1.getEndTime() + "<p>");
 
-			assertWithMessage("Start time of job occurs after start time of test", ts.compareTo(execution1.getStartTime()) < 0);
-			assertWithMessage("Create time of job occurs before start time of job", execution1.getCreateTime().compareTo(execution1.getStartTime()) < 0);
-			assertWithMessage("End time of job occurs after start time of job", execution1.getEndTime().compareTo(execution1.getStartTime()) > 0);
-			assertWithMessage("Last Updated time of job occurs after start time of job", execution1.getLastUpdatedTime().compareTo(execution1.getStartTime()) > 0);
-			assertWithMessage("End time of job occurs after start time of test", execution1.getEndTime().compareTo(ts) > 0);
+			assertWithMessage("Start time of job occurs no sooner than start time of test", ts.compareTo(execution1.getStartTime()) <= 0);
+			assertWithMessage("Create time of job occurs no later than start time of job", execution1.getCreateTime().compareTo(execution1.getStartTime()) <= 0);
+			assertWithMessage("End time of job occurs no sooner than start time of job", execution1.getEndTime().compareTo(execution1.getStartTime()) >= 0);
+			assertWithMessage("Last Updated time of job occurs no sooner than start time of job", execution1.getLastUpdatedTime().compareTo(execution1.getStartTime()) >= 0);
+			assertWithMessage("End time of job occurs no sooner than start time of test", execution1.getEndTime().compareTo(ts) >= 0);
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}

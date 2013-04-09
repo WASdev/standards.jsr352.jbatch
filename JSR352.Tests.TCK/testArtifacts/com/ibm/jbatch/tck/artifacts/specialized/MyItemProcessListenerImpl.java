@@ -46,16 +46,15 @@ public class MyItemProcessListenerImpl extends AbstractItemProcessListener {
 
 	@Override
 	public void beforeProcess(Object item) {
-		if (item != null && applistenerTest.equals("PROCESS")){
+		if (item != null &&  ("PROCESS").equals(applistenerTest)){
 			logger.finer("In afterRead(), item = " + ((ReadRecord)item).getCount());
 			beforecounter++;
-
 		}
 	}
 	
 	@Override
 	public void afterProcess(Object input, Object result) throws Exception {
-		if (input != null && applistenerTest.equals("PROCESS")){
+		if (input != null && ("PROCESS").equals(applistenerTest)){
 			logger.finer("In afterProcess(), input = " + ((ReadRecord) input).getCount() + ", output = " + ((ReadRecord) result).getCount());	
 			
 			aftercounter++;

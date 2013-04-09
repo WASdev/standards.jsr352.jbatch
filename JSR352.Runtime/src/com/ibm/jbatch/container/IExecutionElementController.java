@@ -13,10 +13,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-package com.ibm.jbatch.container.status;
+*/
+package com.ibm.jbatch.container;
 
-public enum JobOrFlowBatchStatus {
+import com.ibm.jbatch.container.status.ExecutionStatus;
 
-	JSL_END, JSL_FAIL, JSL_STOP, NORMAL_COMPLETION, EXCEPTION_THROWN, JOB_OPERATOR_STOPPING
+public interface IExecutionElementController extends IController {
+    
+    public ExecutionStatus execute();
 }

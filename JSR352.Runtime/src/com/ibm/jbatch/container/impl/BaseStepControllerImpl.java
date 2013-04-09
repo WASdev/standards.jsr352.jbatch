@@ -35,8 +35,7 @@ import javax.batch.operations.JobStartException;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 
-import com.ibm.jbatch.container.AbortedBeforeStartException;
-import com.ibm.jbatch.container.IController;
+import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.context.impl.MetricImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
@@ -48,6 +47,8 @@ import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.container.status.ExecutionStatus;
+import com.ibm.jbatch.container.status.ExtendedBatchStatus;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.PartitionDataWrapper;
 import com.ibm.jbatch.jsl.model.JSLProperties;
@@ -57,7 +58,7 @@ import com.ibm.jbatch.spi.services.ITransactionManagementService;
 import com.ibm.jbatch.spi.services.TransactionManagerAdapter;
 
 /** Change the name of this class to something else!! Or change BaseStepControllerImpl. */
-public abstract class BaseStepControllerImpl implements IController {
+public abstract class BaseStepControllerImpl implements IExecutionElementController {
 
 	private final static String sourceClass = BatchletStepControllerImpl.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
@@ -111,7 +112,8 @@ public abstract class BaseStepControllerImpl implements IController {
 	// This is only useful from the partition threads
 	protected abstract void sendStatusFromPartitionToAnalyzerIfPresent();
 
-	public String execute() {
+	@Override
+	public ExecutionStatus execute() {
 
 		// Here we're just setting up to decide if we're going to run the step or not (if it's already complete and 
 		// allow-start-if-complete=false.
@@ -119,45 +121,51 @@ public abstract class BaseStepControllerImpl implements IController {
 			boolean executeStep = shouldStepBeExecuted();
 			if (!executeStep) {
 				logger.fine("Not going to run this step.  Returning previous exit status of: " + stepStatus.getExitStatus());
-				return stepStatus.getExitStatus();
+				return new ExecutionStatus(ExtendedBatchStatus.DO_NOT_RUN, stepStatus.getExitStatus());
 			} 
 		} catch (Throwable t) {
+			// Treat an error at this point as unrecoverable, so fail job too.
 			markJobAndStepFailed();
-			rethrowWithMsg("Caught throwable while determining if step should be executed.  Failing job.", t);
+			rethrowWithWarning("Caught throwable while determining if step should be executed.  Failing job.", t);
 		}
 
 		// At this point we have a StepExecution.  Setup so that we're ready to invoke artifacts.
 		try {
 			startStep();
 		} catch (Throwable t) {
+			// Treat an error at this point as unrecoverable, so fail job too.
 			markJobAndStepFailed();
-			rethrowWithMsg("Caught throwable while starting step.  Failing job.", t);
+			rethrowWithWarning("Caught throwable while starting step.  Failing job.", t);
 		}
 
 		// At this point artifacts are in the picture so we want to try to invoke afterStep() on a failure.
 		try {
 			invokePreStepArtifacts();    //Call PartitionReducer and StepListener(s)
 			invokeCoreStep();
-		} catch (Throwable t1) {
+		} catch (Exception e) {
 			// We're going to continue on so that we can execute the afterStep() and analyzer
 			try {
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
-				t1.printStackTrace(pw);
+				e.printStackTrace(pw);
 				logger.warning("Caught exception executing step: " + sw.toString());
-				markJobAndStepFailed();
-			} catch(Throwable t2) {
+				markStepFailed();
+			} catch(Throwable t) {
 				// Since the first one is the original first failure, let's rethrow t1 and not the second error,
 				// but we'll log a severe error pointing out that the failure didn't get persisted..
 				// We won't try to call the afterStep() in this case either.
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
-				t2.printStackTrace(pw);
-				logger.severe("ERROR PERSISTING BATCH STATUS FAILED.  STEP EXECUTION STATUS TABLES MIGHT HAVE CONSISTENCY ISSUES" +
-						"AND/OR UNEXPECTED ENTRIES. " +  ": Stack trace: " + sw.toString());
-				rethrowWithMsg("Not only did step execution fail but we couldn't persist the resulting FAILED status. Status records may " +
-						" now be inconsistent or misleading in some way.  Throwing first failure exception.", t1);
+				t.printStackTrace(pw);
+				rethrowWithSevere("ERROR. PERSISTING BATCH STATUS FAILED.  STEP EXECUTION STATUS TABLES MIGHT HAVE CONSISTENCY ISSUES" +
+						"AND/OR UNEXPECTED ENTRIES.", t);
 			}
+		} catch (Throwable t) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			t.printStackTrace(pw);
+			logger.warning("Failing both step AND job after catching error executing step: " + sw.toString());
+			markJobAndStepFailed();
 		}
 
 		//
@@ -171,7 +179,7 @@ public abstract class BaseStepControllerImpl implements IController {
 			PrintWriter pw = new PrintWriter(sw);
 			t.printStackTrace(pw);
 			logger.warning("Error invoking end of step artifacts. Stack trace: " + sw.toString());
-			markJobAndStepFailed();
+			markStepFailed();
 		}
 
 		//
@@ -194,7 +202,7 @@ public abstract class BaseStepControllerImpl implements IController {
 		} catch (Throwable t) {
 			// Don't let an exception caught here prevent us from persisting the failed batch status.
 			markJobAndStepFailed();
-			rethrowWithMsg("Failure ending step execution", t);
+			rethrowWithWarning("Failure ending step execution", t);
 		} 
 
 		//
@@ -205,7 +213,11 @@ public abstract class BaseStepControllerImpl implements IController {
 		logger.finer("Returning step batchStatus: " + stepStatus.getBatchStatus() + 
 				", exitStatus: " + stepStatus.getExitStatus()); 
 
-		return stepStatus.getExitStatus();
+		if (stepStatus.getBatchStatus().equals(BatchStatus.FAILED)) {
+			return new ExecutionStatus(ExtendedBatchStatus.EXCEPTION_THROWN, stepStatus.getExitStatus());
+		} else {
+			return new ExecutionStatus(ExtendedBatchStatus.NORMAL_COMPLETION, stepStatus.getExitStatus());
+		}
 	}
 
 	private void defaultExitStatusIfNecessary() {
@@ -220,11 +232,15 @@ public abstract class BaseStepControllerImpl implements IController {
 			logger.fine("Returning with default exit status");
 			stepContext.setExitStatus(stepContext.getBatchStatus().name());
 		}
+	}	
+	
+	private void markStepFailed() {
+		updateBatchStatus(BatchStatus.FAILED);
 	}
-
+	
 	protected void markJobAndStepFailed() {
 		jobExecutionImpl.getJobContext().setBatchStatus(BatchStatus.FAILED);
-		updateBatchStatus(BatchStatus.FAILED);
+		markStepFailed();
 	}
 	
 	private void startStep() {
@@ -269,7 +285,7 @@ public abstract class BaseStepControllerImpl implements IController {
 		stepContext.setBatchStatus(updatedBatchStatus);
 	}
 
-	protected boolean shouldStepBeExecuted() throws AbortedBeforeStartException {
+	protected boolean shouldStepBeExecuted() {
 
 		if (logger.isLoggable(Level.FINER)) {
 			logger.finer("In shouldStepBeExecuted() with stepContext =  " + this.stepContext);
@@ -304,7 +320,7 @@ public abstract class BaseStepControllerImpl implements IController {
 		}
 	}
 
-	private boolean shouldStepBeExecutedOnRestart() throws AbortedBeforeStartException {
+	private boolean shouldStepBeExecutedOnRestart() {
 		BatchStatus stepBatchStatus = stepStatus.getBatchStatus();
 		if (stepBatchStatus.equals(BatchStatus.COMPLETED)) {
 			// A bit of parsing involved since the model gives us a String not a
@@ -336,7 +352,7 @@ public abstract class BaseStepControllerImpl implements IController {
 		if (startLimit > 0) {
 			int newStepStartCount = stepStatus.getStartCount() + 1;
 			if (newStepStartCount > startLimit) {
-				throw new AbortedBeforeStartException("For stepId: " + step.getId() + ", tried to start step for the " + newStepStartCount
+				throw new IllegalStateException("For stepId: " + step.getId() + ", tried to start step for the " + newStepStartCount
 						+ " time, but startLimit = " + startLimit);
 			} else {
 				logger.fine("Starting (possibly restarting) step: " + step.getId() + ", since newStepStartCount = " + newStepStartCount
@@ -401,7 +417,7 @@ public abstract class BaseStepControllerImpl implements IController {
 		stepContext.addMetric(MetricImpl.MetricType.WRITE_COUNT, 0);
 		stepContext.addMetric(MetricImpl.MetricType.READ_SKIP_COUNT, 0);
 		stepContext.addMetric(MetricImpl.MetricType.PROCESS_SKIP_COUNT, 0);
-		stepContext.addMetric(MetricImpl.MetricType.WRITE_SKIPCOUNT, 0);
+		stepContext.addMetric(MetricImpl.MetricType.WRITE_SKIP_COUNT, 0);
 		stepContext.addMetric(MetricImpl.MetricType.FILTER_COUNT, 0);
 		stepContext.addMetric(MetricImpl.MetricType.COMMIT_COUNT, 0);
 		stepContext.addMetric(MetricImpl.MetricType.ROLLBACK_COUNT, 0);
@@ -429,16 +445,23 @@ public abstract class BaseStepControllerImpl implements IController {
         stepExecIdList.add(this.stepStatus.getLastRunStepExecutionId());
         
         return stepExecIdList;
-
     }
 
-	private void rethrowWithMsg(String msgBeginning, Throwable t) {
+	private void rethrowWithMsg(String msgBeginning, Throwable t, Level level) {
 		String errorMsg = msgBeginning + " ; Caught exception/error: " + t.getLocalizedMessage();
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
-		logger.warning(errorMsg + " : Stack trace: " + sw.toString());
+		logger.log(level, errorMsg + " : Stack trace: " + sw.toString());
 		throw new BatchContainerRuntimeException(errorMsg, t);
+	}
+	
+	private void rethrowWithWarning(String msgBeginning, Throwable t) {
+		rethrowWithMsg(msgBeginning, t, Level.WARNING);
+	}
+	
+	private void rethrowWithSevere(String msgBeginning, Throwable t) {
+		rethrowWithMsg(msgBeginning, t, Level.SEVERE);
 	}
 
 	public String toString() {

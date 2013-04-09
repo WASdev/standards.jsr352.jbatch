@@ -25,7 +25,7 @@ import javax.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.artifact.proxy.ListenerFactory;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
-import com.ibm.jbatch.container.jsl.ModelNavigator;
+import com.ibm.jbatch.container.navigator.ModelNavigator;
 import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.jsl.model.JSLJob;
 
