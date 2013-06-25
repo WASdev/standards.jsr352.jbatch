@@ -4,3 +4,5 @@ You can obtain the release of the Reference Implementation and the TCK as java.n
 http://java.net/projects/jbatch/downloads 
 
 The RI source can be built with Maven.
+
+_
