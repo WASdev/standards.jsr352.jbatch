@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package javax.batch.api.partition;
 
 import javax.batch.api.partition.PartitionPlan;
 
 /**
- * PartitionMapper receives control at the start of a partitioned execution. A
- * PartitionMapper is responsible to provide unique batch properties for each
- * partition.
- * 
+ * PartitionMapper receives control at the start of a partitioned 
+ * execution.  A PartitionMapper is responsible to provide unique 
+ * batch properties for each partition. 
+ *
  */
 public interface PartitionMapper {
 	/**
-	 * The mapPartitions method that receives control at the start of
-	 * partitioned step processing. The method returns a PartitionPlan, which
-	 * specifies the batch properties for each partition.
-	 * 
+	 * The mapPartitions method that receives control at the 
+	 * start of partitioned step processing. The method 
+	 * returns a PartitionPlan, which specifies the batch properties 
+	 * for each partition.
 	 * @return partition plan for a partitioned step.
-	 * @throws Exception
-	 *             is thrown if an error occurs.
+	 * @throws Exception is thrown if an error occurs. 
 	 */
-	public PartitionPlan mapPartitions() throws Exception;
+	public PartitionPlan mapPartitions( ) throws Exception;
 }

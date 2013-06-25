@@ -14,35 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package javax.batch.api;
 
 /**
  * 
- * A batchlet is type of batch step that can be used for any type of background
- * processing that does not explicitly call for a chunk oriented approach.
+ * A batchlet is type of batch step
+ * that can be used for any type of 
+ * background processing that does not 
+ * explicitly call for a chunk oriented 
+ * approach. 
  * <p>
- * A well-behaved batchlet responds to stop requests by implementing the
- * stop method.
- * 
+ * A well-behaved batchlet responds
+ * to stop requests by implementing
+ * the stop method. 
+ *
  */
 public interface Batchlet {
+	
 	/**
-	 * The process method does the work of the batchlet. If this method throws
-	 * an exception, the batchlet step ends with a batch status of FAILED.
-	 * 
-	 * @return exit status string
-	 * @throws Exception
-	 *             if an error occurs.
+	 * The process method does the work
+	 * of the batchlet. If this method
+	 * throws an exception, the batchlet
+	 * step ends with a batch status of 
+	 * FAILED.
+	 * @return exit status string  
+	 * @throws Exception if an error occurs.  
 	 */
 	public String process() throws Exception;
-
 	/**
-	 * The stop method is invoked by the batch runtime as part of
-	 * JobOperator.stop() method processing. This method is invoked on a thread
-	 * other than the thread on which the batchlet process method is running.
+	 * The stop method is invoked by the batch
+	 * runtime as part of JobOperator.stop()
+	 * method processing.  This method is invoked
+	 * on a thread other than the thread on which
+	 * the batchlet process method is running. 
 	 * 
-	 * @throws Exception
-	 *             if an error occurs.
+	 * @throws Exception if an error occurs.
 	 */
-	public void stop() throws Exception;
+	public void stop() throws Exception;  
 }

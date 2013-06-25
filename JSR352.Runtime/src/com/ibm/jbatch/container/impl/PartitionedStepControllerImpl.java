@@ -204,17 +204,17 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			threadsAttr = step.getPartition().getPlan().getThreads();
 			if (threadsAttr != null) {
 				try {
-					numThreads = Integer.parseInt(partitionsAttr);
+					numThreads = Integer.parseInt(threadsAttr);
 					if (numThreads == 0) {
 						numThreads = numPartitions;
 					}
 				} catch (final NumberFormatException e) {
 					throw new IllegalArgumentException("Could not parse partition threads value in stepId: " + step.getId()
-							+ ", with instances=" + partitionsAttr, e);
+							+ ", with threads=" + threadsAttr, e);
 				}   
 				if (numThreads < 0) {
 					throw new IllegalArgumentException("Threads value must be 0 or greater in stepId: " + step.getId()
-							+ ", with instances=" + partitionsAttr);
+							+ ", with threads=" + threadsAttr);
 
 				}
 			} else { //default to number of partitions if threads isn't set
@@ -323,16 +323,16 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			return;
 		}
 		
-		int numTotalForThisExcecution = parallelBatchWorkUnits.size();
-		this.numPreviouslyCompleted = partitions - numTotalForThisExcecution; 
+		int numTotalForThisExecution = parallelBatchWorkUnits.size();
+		this.numPreviouslyCompleted = partitions - numTotalForThisExecution; 
 		int numCurrentCompleted = 0;
 		int numCurrentSubmitted = 0;
 
 		logger.fine("Calculated that " + numPreviouslyCompleted + " partitions are already complete out of total # = " 
-				+ partitions + ", with # remaining =" + numTotalForThisExcecution);
+				+ partitions + ", with # remaining =" + numTotalForThisExecution);
 
 		//Start up to to the max num we are allowed from the num threads attribute
-		for (int i=0; i < this.threads && i < numTotalForThisExcecution; i++, numCurrentSubmitted++) {
+		for (int i=0; i < this.threads && i < numTotalForThisExecution; i++, numCurrentSubmitted++) {
 			if (stepStatus.getStartCount() > 1 && !!!plan.getPartitionsOverride()) {
 				batchKernel.restartGeneratedJob(parallelBatchWorkUnits.get(i));
 			} else {
@@ -361,7 +361,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 						throw new IllegalStateException("Invalid partition state");
 					}
 				} else {
-					logger.fine("No analyzer, proceeding on analyzerQueue path");
+					logger.fine("No analyzer, proceeding on completedWorkQueue path");
 					// block until at least one thread has finished to
 					// submit more batch work. hold on to the finished work to look at later
 					completedWork.add(completedWorkQueue.take());
@@ -375,14 +375,13 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			if (readyToSubmitAnother) {
 				numCurrentCompleted++;
 				logger.fine("Ready to submit another (if there is another left to submit); numCurrentCompleted = " + numCurrentCompleted);
-				if (numCurrentCompleted < numTotalForThisExcecution) {
-					if (numCurrentSubmitted < numTotalForThisExcecution) {
-						numCurrentSubmitted++;
-						logger.fine("Submitting # " + numCurrentSubmitted + " out of " + numTotalForThisExcecution + " total for this execution");
+				if (numCurrentCompleted < numTotalForThisExecution) {
+					if (numCurrentSubmitted < numTotalForThisExecution) {
+						logger.fine("Submitting # " + numCurrentSubmitted + " out of " + numTotalForThisExecution + " total for this execution");
 						if (stepStatus.getStartCount() > 1) {
-							batchKernel.startGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted));
+							batchKernel.startGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
 						} else {
-							batchKernel.restartGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted));
+							batchKernel.restartGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
 						}
 						readyToSubmitAnother = false;
 					}
@@ -483,11 +482,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 	@Override
 	protected void invokePreStepArtifacts() {
 
-		if (stepListeners == null) {
-			return;
-		} else { 
+		if (stepListeners != null) {
 			for (StepListenerProxy listenerProxy : stepListeners) {
-				// Call @BeforeStep on all the step listeners
+				// Call beforeStep on all the step listeners
 				listenerProxy.beforeStep();
 			}
 		}
@@ -514,11 +511,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		}
 
 		// Called in spec'd order, e.g. Sec. 11.7
-		if (stepListeners == null) {
-			return;
-		} else { 
+		if (stepListeners != null) {
 			for (StepListenerProxy listenerProxy : stepListeners) {
-				// Call @AfterStep on all the step listeners
+				// Call afterStep on all the step listeners
 				listenerProxy.afterStep();
 			}
 		}

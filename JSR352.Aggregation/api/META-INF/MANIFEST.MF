@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: API
-Bundle-SymbolicName: JSR352.API
-Bundle-Version: 1.0.0.qualifier
+Bundle-Name: javax.batch-api
+Bundle-SymbolicName: javax.batch-api
+Bundle-Version: 1.0
 Export-Package: javax.batch.api,
  javax.batch.api.chunk,
  javax.batch.api.chunk.listener,

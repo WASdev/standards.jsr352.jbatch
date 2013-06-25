@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 International Business Machines Corp.
+ * Copyright 2012 International Business Machines Corp.
  * 
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership. Licensed under the Apache License, 
@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package javax.batch.api.partition;
 
 import java.util.Properties;

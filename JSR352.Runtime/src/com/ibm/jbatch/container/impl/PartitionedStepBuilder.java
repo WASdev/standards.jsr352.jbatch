@@ -121,7 +121,10 @@ public class PartitionedStepBuilder {
         newStep.setStartLimit(step.getStartLimit());
         newStep.setProperties(CloneUtility.cloneJSLProperties(step.getProperties()));
         
-        //Do not add step listeners, only call them on parent thread.
+        // Don't try to only clone based on type (e.g. ChunkListener vs. StepListener).
+        // We don't know the type at the model level, and a given artifact could implement more
+        // than one listener interface (e.g. ChunkListener AND StepListener).
+        newStep.setListeners(CloneUtility.cloneListeners(step.getListeners()));       
         
         //Add Step properties, need to be careful here to remember the right precedence
         

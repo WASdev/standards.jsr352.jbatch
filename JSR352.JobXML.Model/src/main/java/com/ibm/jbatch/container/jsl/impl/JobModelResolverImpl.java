@@ -70,7 +70,7 @@ public class JobModelResolverImpl implements ModelResolver<JSLJob> {
         }
 
         if (handler.eventOccurred()) {
-            throw new IllegalArgumentException("xJCL invalid per schema, see SysOut for now for details");
+            throw new IllegalArgumentException("xJCL invalid per schema");
         }
 
         job = ((JAXBElement<JSLJob>)result).getValue();

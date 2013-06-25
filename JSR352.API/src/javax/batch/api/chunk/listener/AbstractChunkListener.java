@@ -14,46 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package javax.batch.api.chunk.listener;
 
+package javax.batch.api.chunk.listener;
 /**
- * The AbstractChunkListener provides default implementations of less commonly
- * implemented methods.
+ * The AbstractChunkListener provides default 
+ * implementations of less commonly implemented methods.
  */
 public abstract class AbstractChunkListener implements ChunkListener {
-    /**
-     * Override this method if the ChunkListener will do something before the
-     * chunk begins. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void beforeChunk() throws Exception {
-    }
-
-    /**
-     * Override this method if the ChunkListener will do something after the
-     * chunk ends. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void afterChunk() throws Exception {
-    }
-    
-    /**
-	 * Override this method if the ChunkListener will do something before the
-	 * chunk transaction is rolled back. Note afterChunk is not invoked in this case.
+	/**
+	 * Override this method if the ChunkListener
+	 * will do something before the chunk begins.  
+	 * The default implementation does nothing. 
 	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void beforeChunk() throws Exception {}
+	/**
+	 * Override this method if the ChunkListener will do
+	 * something before the chunk transaction is rolled back. 
+	 * Note afterChunk is not invoked in this case.
 	 * @param ex specifies the exception that
-	 * caused the roll back.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void onError(Exception e) throws Exception {
-    }
+	 * caused the roll back.  
+	 * @throws Exception (or subclass) throw if an error occurs.
+	 */
+	@Override
+	public void onError(Exception ex) throws Exception {}
+	/**
+	 * Override this method if the ChunkListener
+	 * will do something after the chunk ends.  
+	 * The default implementation does nothing. 
+	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void afterChunk() throws Exception {}
 }

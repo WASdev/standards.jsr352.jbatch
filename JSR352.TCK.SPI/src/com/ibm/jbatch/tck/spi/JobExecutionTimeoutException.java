@@ -16,11 +16,13 @@
 */
 package com.ibm.jbatch.tck.spi;
 
+/**
+ * Exception thrown by JobExecutionWaiter
+ * @see JobExecutionWaiter#awaitTermination()
+ *
+ */
 public class JobExecutionTimeoutException extends Exception {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	public JobExecutionTimeoutException() {

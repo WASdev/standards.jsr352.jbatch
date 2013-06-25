@@ -14,26 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package javax.batch.api.listener;
 
 /**
  * JobListener intercepts job execution.
- * 
+ *
  */
 public interface JobListener {
-    /**
-     * The beforeJob method receives control before the job execution begins.
-     * 
-     * @throws Exception
-     *             throw if an error occurs.
-     */
-    public void beforeJob() throws Exception;
-
-    /**
-     * The afterJob method receives control after the job execution ends.
-     * 
-     * @throws Exception
-     *             throw if an error occurs.
-     */
-    public void afterJob() throws Exception;
+	/**
+	 * The beforeJob method receives control
+	 * before the job execution begins. 
+	 * @throws Exception throw if an error occurs.
+	 */
+	public void beforeJob() throws Exception;
+	/**
+	 * The afterJob method receives control
+	 * after the job execution ends.  
+	 * @throws Exception throw if an error occurs.
+	 */
+	public void afterJob() throws Exception;
 }

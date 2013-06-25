@@ -16,30 +16,29 @@
  */
 
 package javax.batch.api;
-
 /**
- * The AbstractBatchlet provides default implementations of less commonly
- * implemented methods.
+ * The AbstractBatchlet provides default 
+ * implementations of less commonly implemented methods.
  */
 public abstract class AbstractBatchlet implements Batchlet {
-    /**
-     * Implement process logic for the Batchlet in this method.
-     * 
-     * @return exit status string
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public abstract String process() throws Exception;
+	/**
+	 * Implement process logic for the Batchlet in this 
+	 * method.
+	 * 
+	 * @return exit status string
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public abstract String process() throws Exception; 
 
-    /**
-     * Override this method if the Batchlet will end in response to the
-     * JobOperator.stop() operation. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void stop() throws Exception {
-    }
+	/**
+	 * Override this method if the Batchlet will
+	 * end in response to the JobOperator.stop() 
+	 * operation. 
+	 * The default implementation does nothing. 
+	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void stop() throws Exception {}
 }

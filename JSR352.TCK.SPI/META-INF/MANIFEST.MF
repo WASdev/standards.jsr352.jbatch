@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: SPI
-Bundle-SymbolicName: JSR352.TCK.SPI
-Bundle-Version: 1.0.0.qualifier
+Bundle-Name: com.ibm.jbatch-tck-spi
+Bundle-SymbolicName: com.ibm.jbatch-tck-spi
+Bundle-Version: 1.0
 Import-Package: javax.batch.operations,
  javax.batch.runtime
 Export-Package: com.ibm.jbatch.tck.spi

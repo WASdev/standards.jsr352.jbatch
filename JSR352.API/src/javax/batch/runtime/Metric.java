@@ -13,7 +13,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
+
 package javax.batch.runtime;
 /**
   * 
@@ -23,11 +24,10 @@ package javax.batch.runtime;
   */
 public interface Metric {
 	public enum MetricType {READ_COUNT, WRITE_COUNT, COMMIT_COUNT, 
-        ROLLBACK_COUNT, READ_SKIP_COUNT, PROCESS_SKIP_COUNT, FILTER_COUNT, 
-        WRITE_SKIP_COUNT}
+	       ROLLBACK_COUNT, READ_SKIP_COUNT, PROCESS_SKIP_COUNT, FILTER_COUNT, 
+	       WRITE_SKIP_COUNT}
 	/**
-	 * The getType method returns the metric type. 
-	 * 
+	 * The getName method returns the metric type. 
 	 * @return metric type.
 	 */
 	public MetricType getType(); 

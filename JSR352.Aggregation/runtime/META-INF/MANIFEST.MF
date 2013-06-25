@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Runtime
-Bundle-SymbolicName: JSR352.Runtime
-Bundle-Version: 1.0.0.qualifier
+Bundle-Name: com.ibm.jbatch-ri-runtime
+Bundle-SymbolicName: com.ibm.jbatch-ri-runtime 
+Bundle-Version: 1.0
 Export-Package: com.ibm.jbatch.jsl.model,
  com.ibm.jbatch.spi.services
 Import-Package: com.ibm.jbatch.spi,

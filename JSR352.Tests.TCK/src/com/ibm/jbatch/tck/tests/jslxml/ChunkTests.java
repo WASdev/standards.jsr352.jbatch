@@ -600,7 +600,8 @@ public class ChunkTests {
             Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
             Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
             assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
-            assertWithMessage("Testing execution #1", "TRUE: 0", execution1.getExitStatus());
+            String exitStatus = execution1.getExitStatus();
+	        assertWithMessage("Testing execution #1", (exitStatus.equals("TRUE: 0") || exitStatus.equals("TRUE: 1")));
         } catch (Exception e) {
             handleException(METHOD, e);
         }
@@ -645,7 +646,9 @@ public class ChunkTests {
             Reporter.log("execution #1 JobExecution getBatchStatus()=" + execution1.getBatchStatus() + "<p>");
             Reporter.log("execution #1 JobExecution getExitStatus()=" + execution1.getExitStatus() + "<p>");
             assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
-            assertWithMessage("Testing execution #1", "TRUE: 0", execution1.getExitStatus());
+            String exitStatus = execution1.getExitStatus();
+	        assertWithMessage("Testing execution #1", (exitStatus.equals("TRUE: 0") || exitStatus.equals("TRUE: 1")));
+	
         } catch (Exception e) {
             handleException(METHOD, e);
         }
@@ -684,7 +687,8 @@ public class ChunkTests {
 	
 	        JobExecution execution1 = jobOp.startJobAndWaitForResult("chunkTimeBasedCheckpoint", jobParams);
 	        assertWithMessage("Testing execution #1", BatchStatus.COMPLETED, execution1.getBatchStatus());
-	        assertWithMessage("Testing execution #1", "TRUE: 10", execution1.getExitStatus());
+	        String exitStatus = execution1.getExitStatus();
+	        assertWithMessage("Testing execution #1", (exitStatus.equals("TRUE: 9") || exitStatus.equals("TRUE: 10") || exitStatus.equals("TRUE: 11")));
 	
 	        Reporter.log("exit status = " + execution1.getExitStatus() + "<p>");
     	 } catch (Exception e) {
@@ -748,7 +752,9 @@ public class ChunkTests {
                 Reporter.log("execution #2 JobExecution getExitStatus()=" + exec.getExitStatus() + "<p>");
                 Reporter.log("execution #2 Job instance id=" + exec.getInstanceId() + "<p>");
                 assertWithMessage("Testing execution #2", BatchStatus.COMPLETED, exec.getBatchStatus());
-                assertWithMessage("Testing execution #2", "TRUE: 10", exec.getExitStatus());
+                String exitStatus = exec.getExitStatus();
+    	        assertWithMessage("Testing execution #2", (exitStatus.equals("TRUE: 9") || exitStatus.equals("TRUE: 10") || exitStatus.equals("TRUE: 11")));
+    	
                 assertWithMessage("Testing execution #2", jobInstanceId, exec.getInstanceId());
             }
         } catch (Exception e) {

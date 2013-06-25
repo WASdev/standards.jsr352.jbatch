@@ -16,22 +16,22 @@
  */
 
 package javax.batch.api.chunk.listener;
-
 /**
- * RetryReadListener intercepts retry processing for an ItemReader.
+ * RetryReadListener intercepts retry processing for
+ * an ItemReader. 
  */
 public interface RetryReadListener {
-    /**
-     * The onRetryReadException method receives control when a retryable
-     * exception is thrown from an ItemReader readItem method. This method
-     * receives the exception as input. This method receives control in the same
-     * checkpoint scope as the ItemReader. If this method throws a an exception,
-     * the job ends in the FAILED state.
-     * 
-     * @param ex
-     *            specifies the exception thrown by the item reader.
-     * @throws Exception
-     *             is thrown if an error occurs.
-     */
-    public void onRetryReadException(Exception ex) throws Exception;
+	/**
+	 * The onRetryReadException method receives control 
+	 * when a retryable exception is thrown from an ItemReader
+	 * readItem method.  
+	 * This method receives the exception as input. This method
+	 * receives control in the same checkpoint scope as the
+	 * ItemReader. If this method throws a an exception, the job 
+	 * ends in the FAILED state.
+	 * @param ex specifies the exception thrown by the item
+	 * reader.
+	 * @throws Exception is thrown if an error occurs.
+	 */
+	public void onRetryReadException(Exception ex) throws Exception;
 }

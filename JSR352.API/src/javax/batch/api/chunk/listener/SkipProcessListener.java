@@ -16,22 +16,21 @@
  */
 
 package javax.batch.api.chunk.listener;
-
 /**
- * SkipProcessListener intercepts skippable itemProcess exception handling.
+ * SkipProcessListener intercepts skippable 
+ * itemProcess exception handling.  
  */
 public interface SkipProcessListener {
-    /**
-     * The onSkipProcessItem method receives control when a skippable exception
-     * is thrown from an ItemProcess processItem method. This method receives
-     * the exception and the item to process as an input.
-     * 
-     * @param item
-     *            specifies the item passed to the ItemProcessor.
-     * @param ex
-     *            specifies the exception thrown by the ItemProcessor.
-     * @throws Exception
-     *             is thrown if an error occurs.
-     */
-    public void onSkipProcessItem(Object item, Exception ex) throws Exception;
+	/**
+	 * The onSkipProcessItem method receives control when 
+	 * a skippable exception is thrown from an ItemProcess
+	 * processItem method.  
+	 * This method receives the exception and the item to process 
+	 * as an input. 
+	 * @param item specifies the item passed to the ItemProcessor.
+	 * @param ex specifies the exception thrown by the 
+	 * ItemProcessor.
+	 * @throws Exception is thrown if an error occurs.
+	 */
+	public void onSkipProcessItem(Object item, Exception ex) throws Exception;	
 }

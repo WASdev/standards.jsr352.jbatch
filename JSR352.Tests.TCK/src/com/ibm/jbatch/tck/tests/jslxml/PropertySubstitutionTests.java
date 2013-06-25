@@ -74,7 +74,7 @@ public class PropertySubstitutionTests {
 	@Test
 	@org.junit.Test
 	public void testBatchArtifactPropertyInjection() throws Exception {
-		String METHOD = "testBatchletPropertyInjection";
+		String METHOD = "testBatchArtifactPropertyInjection";
 
 		try {
 			Reporter.log("Locate job XML file: job_properties2.xml<p>");

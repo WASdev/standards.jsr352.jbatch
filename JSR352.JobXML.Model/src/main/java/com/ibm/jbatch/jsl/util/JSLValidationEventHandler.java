@@ -16,26 +16,35 @@
 */
 package com.ibm.jbatch.jsl.util;
 
+import java.util.logging.Logger;
+
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 
 public class JSLValidationEventHandler implements ValidationEventHandler {
     
+	private static final String CLASSNAME = JSLValidationEventHandler.class.getName();
+
+	private final static Logger logger = Logger.getLogger(CLASSNAME);
+    
     private boolean eventOccurred = false;
     
     public boolean handleEvent(ValidationEvent event) {
-        System.out.println("\nMESSAGE: " + event.getMessage());
-        System.out.println("\nSEVERITY: " + event.getSeverity());
-        System.out.println("\nLINKED EXC: " + event.getLinkedException());
-        System.out.println("\nLOCATOR INFO:\n------------");
+    	StringBuffer buf = new StringBuffer(150);
+        buf.append("\nMESSAGE: " + event.getMessage());
+        buf.append("\nSEVERITY: " + event.getSeverity());
+        buf.append("\nLINKED EXC: " + event.getLinkedException());
+        buf.append("\nLOCATOR INFO:\n------------");
         
-        System.out.println("\n  COLUMN NUMBER:  " + event.getLocator().getColumnNumber());
-        System.out.println("\n  LINE NUMBER:  " + event.getLocator().getLineNumber());
-        System.out.println("\n  OFFSET:  " + event.getLocator().getOffset());
-        System.out.println("\n  CLASS:  " + event.getLocator().getClass());
-        System.out.println("\n  NODE:  " + event.getLocator().getNode());
-        System.out.println("\n  OBJECT:  " + event.getLocator().getObject());
-        System.out.println("\n  URL:  " + event.getLocator().getURL());
+        buf.append("\n  COLUMN NUMBER:  " + event.getLocator().getColumnNumber());
+        buf.append("\n  LINE NUMBER:  " + event.getLocator().getLineNumber());
+        buf.append("\n  OFFSET:  " + event.getLocator().getOffset());
+        buf.append("\n  CLASS:  " + event.getLocator().getClass());
+        buf.append("\n  NODE:  " + event.getLocator().getNode());
+        buf.append("\n  OBJECT:  " + event.getLocator().getObject());
+        buf.append("\n  URL:  " + event.getLocator().getURL());
+        
+        logger.warning("JSL invalid per XSD, details: " + buf.toString());
         
         eventOccurred = true;
         

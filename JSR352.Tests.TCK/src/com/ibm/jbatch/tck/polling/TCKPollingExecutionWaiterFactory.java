@@ -30,6 +30,14 @@ import com.ibm.jbatch.tck.spi.JobExecutionWaiter;
 import com.ibm.jbatch.tck.spi.JobExecutionWaiterFactory;
 import com.ibm.jbatch.tck.spi.JobExecutionTimeoutException;
 
+/**
+ * Default implementation of the TCK "porting package" 
+ * JobExecutionWaiterFactory SPI.
+ *    
+ * Uses polling to repeatedly check execution results, thereby
+ * waiting for completion.  Uses private inner class TCKPollingExecutionWaiter
+ * to perform this.
+ */
 public class TCKPollingExecutionWaiterFactory implements JobExecutionWaiterFactory {
 
     private final static String sourceClass = TCKPollingExecutionWaiterFactory.class.getName();

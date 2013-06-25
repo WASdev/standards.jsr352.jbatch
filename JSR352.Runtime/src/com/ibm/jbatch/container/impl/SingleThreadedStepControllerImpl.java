@@ -89,20 +89,20 @@ public abstract class SingleThreadedStepControllerImpl extends BaseStepControlle
 
 	@Override
 	protected void invokePreStepArtifacts() {
-		if (stepListeners == null) {
-			return;
-		}
-
-		// Call @BeforeStep on all the step listeners
-		for (StepListenerProxy listenerProxy : stepListeners) {
-			listenerProxy.beforeStep();
+		// Don't call beforeStep() in the partitioned case, since we are now on a partition thread, and
+		// have already called beforeStep() on the main thread as the spec says.
+		if ((stepListeners != null) && (this.jobExecutionImpl.getPartitionInstance() == null)) {
+			for (StepListenerProxy listenerProxy : stepListeners) {
+				listenerProxy.beforeStep();
+			}
 		}
 	}
 
 	@Override
 	protected void invokePostStepArtifacts() {
-		// Call @AfterStep on all the step listeners
-		if (stepListeners != null) {
+		// Don't call beforeStep() in the partitioned case, since we are now on a partition thread, and
+		// have already called beforeStep() on the main thread as the spec says.
+		if ((stepListeners != null) && (this.jobExecutionImpl.getPartitionInstance() == null)) {
 			for (StepListenerProxy listenerProxy : stepListeners) {
 				listenerProxy.afterStep();
 			}

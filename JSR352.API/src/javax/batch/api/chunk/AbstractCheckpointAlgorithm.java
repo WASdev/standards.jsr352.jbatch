@@ -14,66 +14,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package javax.batch.api.chunk;
 
 /**
- * The AbstractCheckpointAlgorithm provides default implementations of optional
+ * The AbstractCheckpointAlgorithm provides default 
+ * implementations of less commonly implemented
  * methods.
  */
-public abstract class AbstractCheckpointAlgorithm implements CheckpointAlgorithm {
-    /**
-     * Optional method.
-     * 
-     * Implement this method if the CheckpointAlgorithm establishes a checkpoint
-     * timeout. The default implementation returns 0, which means maximum
-     * permissible timeout allowed by runtime environment.
-     * 
-     * @return the timeout interval to use for the next checkpoint interval
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public int checkpointTimeout() throws Exception {
-        return 0;
-    }
-
-    /**
-     * Optional method.
-     * 
-     * Implement this method for the CheckpointAlgorithm to do something before
-     * a checkpoint begins. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void beginCheckpoint() throws Exception {
-    }
-
-    /**
-     * Required method.
-     * 
-     * This method implements the logic to decide if a checkpoint should be
-     * taken now.
-     * 
-     * @return boolean indicating whether or not to checkpoint now.
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public abstract boolean isReadyToCheckpoint() throws Exception;
-
-    /**
-     * Optional method.
-     * 
-     * Implement this method for the CheckpointAlgorithm to do something after a
-     * checkpoint ends. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void endCheckpoint() throws Exception {
-    }
-
+public abstract class AbstractCheckpointAlgorithm implements
+		CheckpointAlgorithm {
+	/**
+	 * Override this method if the CheckpointAlgorithm
+	 * establishes a checkpoint timeout.   
+	 * The default implementation returns 0, which means
+	 * maximum permissible timeout allowed by 
+	 * runtime environment.  
+	 * 
+	 * @return the timeout interval to use for the next 
+	 * checkpoint interval
+	 * @throws Exception (or subclass) if an error occurs. 
+	 */
+	@Override
+	public int checkpointTimeout() throws Exception {
+		return 0;
+	}
+	/**
+	 * Override this method for the CheckpointAlgorithm 
+	 * to do something before a checkpoint begins. 
+	 * The default implementation does nothing.   
+	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */	
+	@Override
+	public void beginCheckpoint() throws Exception {}
+	/**
+	 * Implement logic in this method
+       * to decide if a checkpoint should be taken now. 
+	 *    
+	 * @return boolean indicating whether or not 
+	 * to checkpoint now. 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public abstract boolean isReadyToCheckpoint() throws Exception;
+	/**
+	 * Override this method for the CheckpointAlgorithm 
+	 * to do something after a checkpoint ends. 
+	 * The default implementation does nothing.   
+	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void endCheckpoint() throws Exception {}
 }

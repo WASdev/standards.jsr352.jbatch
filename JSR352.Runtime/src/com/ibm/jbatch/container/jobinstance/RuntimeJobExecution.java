@@ -38,12 +38,14 @@ public class RuntimeJobExecution {
 	private JobContextImpl jobContext = null;
 	private ListenerFactory listenerFactory;
 	private IJobExecution operatorJobExecution = null;
+	private Integer partitionInstance = null;
 
 	public RuntimeJobExecution(JobInstance jobInstance, long executionId) {
 		this.jobInstance = jobInstance;
 		this.executionId = executionId;
-		this.operatorJobExecution = new JobOperatorJobExecution(executionId, jobInstance.getInstanceId());
-	}
+        this.operatorJobExecution = new JobOperatorJobExecution(executionId, jobInstance.getInstanceId());
+    }
+
 
 	/*
 	 * Non-spec'd methods (not on the interface, but maybe we should
@@ -169,4 +171,12 @@ public class RuntimeJobExecution {
 		buf.append("jobInstance: \n   " + jobInstance);
 		return buf.toString();
 	}
+
+    public Integer getPartitionInstance() {
+        return partitionInstance;
+    }
+
+    public void setPartitionInstance(Integer partitionInstance) {
+        this.partitionInstance = partitionInstance;
+    }
 }

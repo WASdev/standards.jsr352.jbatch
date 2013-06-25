@@ -16,25 +16,22 @@
  */
 
 package javax.batch.api.chunk.listener;
-
 /**
- * RetryProcessListener intercepts retry processing for an ItemProcessor.
- * 
+ * RetryProcessListener intercepts retry processing for
+ * an ItemProcessor. 
+ *
  */
 public interface RetryProcessListener {
-    /**
-     * The onRetryProcessException method receives control when a retryable
-     * exception is thrown from an ItemProcessor processItem method. This method
-     * receives the exception and the item being processed as inputs. This
-     * method receives control in same checkpoint scope as the ItemProcessor. If
-     * this method throws a an exception, the job ends in the FAILED state.
-     * 
-     * @param item
-     *            specifies the item passed to the ItemProcessor.
-     * @param ex
-     *            specifies the exception thrown by the ItemProcessor.
-     * @throws Exception
-     *             is thrown if an error occurs.
-     */
-    public void onRetryProcessException(Object item, Exception ex) throws Exception;
+	/**
+	 * The onRetryProcessException method receives control 
+	 * when a retryable exception is thrown from an ItemProcessor
+	 * processItem method. This method receives the exception and the item 
+	 * being processed as inputs. This method receives control in same 
+	 * checkpoint scope as the ItemProcessor. If this method 
+	 * throws a an exception, the job ends in the FAILED state.
+	 * @param item specifies the item passed to the ItemProcessor.
+	 * @param ex specifies the exception thrown by the ItemProcessor.
+	 * @throws Exception is thrown if an error occurs.
+	 */
+	public void onRetryProcessException(Object item, Exception ex) throws Exception;
 }

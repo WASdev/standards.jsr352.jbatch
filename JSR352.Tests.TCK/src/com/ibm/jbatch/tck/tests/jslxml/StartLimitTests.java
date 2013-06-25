@@ -263,7 +263,7 @@ public class StartLimitTests {
 	}
 
 	/*
-	 * @testName: testStartLimitVariation2
+	 * @testName: testStartLimitVariation3
 	 * @assertion:
 	 * @test_Strategy:
 	 */

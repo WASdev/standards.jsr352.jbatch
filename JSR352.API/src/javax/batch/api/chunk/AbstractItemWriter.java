@@ -14,63 +14,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package javax.batch.api.chunk;
 
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * The AbstractItemWriter provides default implementations of not commonly
- * implemented methods.
+ * The AbstractItemWriter provides default implementations 
+ * of not commonly implemented methods.
  */
 public abstract class AbstractItemWriter implements ItemWriter {
 
-    /**
-     * Override this method if the ItemWriter requires any open time processing.
-     * The default implementation does nothing.
-     * 
-     * @param last
-     *            checkpoint for this ItemReader
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void open(Serializable checkpoint) throws Exception {
-    }
-
-    /**
-     * Override this method if the ItemWriter requires any close time
-     * processing. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void close() throws Exception {
-    }
-
-    /**
-     * Implement write logic for the ItemWriter in this method.
-     * 
-     * @param items
-     *            specifies the list of items to write.
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public abstract void writeItems(List<Object> items) throws Exception;
-
-    /**
-     * Override this method if the ItemWriter supports checkpoints. The default
-     * implementation returns null.
-     * 
-     * @return checkpoint data
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public Serializable checkpointInfo() throws Exception {
-        return null;
-    }
-
+	/**
+	 * Override this method if the ItemWriter requires
+	 * any open time processing.   
+	 * The default implementation does nothing. 
+	 * 
+	 * @param last checkpoint for this ItemReader
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void open(Serializable checkpoint) throws Exception { }
+	/**
+	 * Override this method if the ItemWriter requires
+	 * any close time processing.   
+	 * The default implementation does nothing. 
+	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void close() throws Exception { }
+	/**
+	 * Implement write logic for the ItemWriter in this 
+	 * method.
+	 * 
+	 * @param items specifies the list of items to write.
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public abstract void writeItems(List<Object> items) throws Exception;
+	/**
+	 * Override this method if the ItemWriter supports 
+	 * checkpoints. 
+	 * The default implementation returns null. 
+	 *   
+	 * @return checkpoint data 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public Serializable checkpointInfo() throws Exception { 
+		return null; 
+	}	
+	
 }

@@ -112,7 +112,6 @@ CLSS public abstract interface !annotation javax.batch.api.BatchProperty
  anno 0 javax.inject.Qualifier()
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String name()
- anno 0 javax.enterprise.util.Nonbinding()
 
 CLSS public abstract interface javax.batch.api.Batchlet
 meth public abstract java.lang.String process() throws java.lang.Exception
@@ -239,6 +238,10 @@ meth public abstract void onSkipReadItem(java.lang.Exception) throws java.lang.E
 CLSS public abstract interface javax.batch.api.chunk.listener.SkipWriteListener
 meth public abstract void onSkipWriteItem(java.util.List<java.lang.Object>,java.lang.Exception) throws java.lang.Exception
 
+CLSS abstract interface javax.batch.api.chunk.listener.package-info
+
+CLSS abstract interface javax.batch.api.chunk.package-info
+
 CLSS public abstract javax.batch.api.listener.AbstractJobListener
 cons public <init>()
 intf javax.batch.api.listener.JobListener
@@ -260,6 +263,10 @@ meth public abstract void beforeJob() throws java.lang.Exception
 CLSS public abstract interface javax.batch.api.listener.StepListener
 meth public abstract void afterStep() throws java.lang.Exception
 meth public abstract void beforeStep() throws java.lang.Exception
+
+CLSS abstract interface javax.batch.api.listener.package-info
+
+CLSS abstract interface javax.batch.api.package-info
 
 CLSS public abstract javax.batch.api.partition.AbstractPartitionAnalyzer
 cons public <init>()
@@ -325,6 +332,8 @@ fld public final static javax.batch.api.partition.PartitionReducer$PartitionStat
 meth public static javax.batch.api.partition.PartitionReducer$PartitionStatus valueOf(java.lang.String)
 meth public static javax.batch.api.partition.PartitionReducer$PartitionStatus[] values()
 supr java.lang.Enum<javax.batch.api.partition.PartitionReducer$PartitionStatus>
+
+CLSS abstract interface javax.batch.api.partition.package-info
 
 CLSS public javax.batch.operations.BatchRuntimeException
 cons public <init>()
@@ -429,6 +438,8 @@ cons public <init>(java.lang.Throwable)
 supr javax.batch.operations.BatchRuntimeException
 hfds serialVersionUID
 
+CLSS abstract interface javax.batch.operations.package-info
+
 CLSS public javax.batch.runtime.BatchRuntime
 cons public <init>()
 meth public static javax.batch.operations.JobOperator getJobOperator()
@@ -476,7 +487,7 @@ fld public final static javax.batch.runtime.Metric$MetricType READ_COUNT
 fld public final static javax.batch.runtime.Metric$MetricType READ_SKIP_COUNT
 fld public final static javax.batch.runtime.Metric$MetricType ROLLBACK_COUNT
 fld public final static javax.batch.runtime.Metric$MetricType WRITE_COUNT
-fld public final static javax.batch.runtime.Metric$MetricType WRITE_SKIPCOUNT
+fld public final static javax.batch.runtime.Metric$MetricType WRITE_SKIP_COUNT
 meth public static javax.batch.runtime.Metric$MetricType valueOf(java.lang.String)
 meth public static javax.batch.runtime.Metric$MetricType[] values()
 supr java.lang.Enum<javax.batch.runtime.Metric$MetricType>
@@ -515,6 +526,10 @@ meth public abstract long getStepExecutionId()
 meth public abstract void setExitStatus(java.lang.String)
 meth public abstract void setPersistentUserData(java.io.Serializable)
 meth public abstract void setTransientUserData(java.lang.Object)
+
+CLSS abstract interface javax.batch.runtime.context.package-info
+
+CLSS abstract interface javax.batch.runtime.package-info
 
 CLSS public abstract interface !annotation javax.inject.Qualifier
  anno 0 java.lang.annotation.Documented()

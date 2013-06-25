@@ -611,7 +611,7 @@ public class MetricsTests {
 	@org.junit.Test
 	public void testMetricsStepTimestamps() throws Exception {
 
-		String METHOD = "testMetricsCommitCount";
+		String METHOD = "testMetricsStepTimestamps";
 
 		try {
 			Reporter.log("Create job parameters for execution #1:<p>");
@@ -673,7 +673,7 @@ public class MetricsTests {
 	@org.junit.Test
 	public void testMetricsJobExecutionTimestamps() throws Exception {
 
-		String METHOD = "testMetricsCommitCount";
+		String METHOD = "testMetricsJobExecutionTimestamps";
 
 		try {
 			Reporter.log("Create job parameters for execution #1:<p>");

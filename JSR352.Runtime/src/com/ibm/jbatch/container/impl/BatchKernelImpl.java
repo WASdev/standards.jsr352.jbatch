@@ -281,6 +281,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 				logger.finer("Starting execution for jobModel = " + parallelJob.toString());
 			}
 			RuntimeJobExecution jobExecution = JobExecutionHelper.startPartition(parallelJob, partitionProps);
+			jobExecution.setPartitionInstance(instance);
 
 			if (logger.isLoggable(Level.FINE)) {
 				logger.fine("JobExecution constructed: " + jobExecution);
@@ -317,6 +318,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 				RuntimeJobExecution jobExecution = null;
 				try {		
 					jobExecution = JobExecutionHelper.restartPartition(execId, parallelJob, partitionProps);
+					jobExecution.setPartitionInstance(instance);
 				} catch (NoSuchJobExecutionException e) {
 					String errorMsg = "Caught NoSuchJobExecutionException but this is an internal JobExecution so this shouldn't have happened: execId =" + execId;
 					logger.severe(errorMsg);

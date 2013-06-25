@@ -14,32 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package javax.batch.api.listener;
 
+package javax.batch.api.listener;
 /**
- * The AbstractStepListener provides default implementations of less commonly
- * implemented methods.
+ * The AbstractStepListener provides default 
+ * implementations of less commonly implemented methods.
  */
 public abstract class AbstractStepListener implements StepListener {
-    /**
-     * Override this method if the StepListener will do something before the
-     * step begins. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void beforeStep() throws Exception {
-    }
+	/**
+	 * Override this method if the StepListener
+	 * will do something before the step begins.  
+	 * The default implementation does nothing. 
+	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void beforeStep() throws Exception {}
+	/**
+	 * Override this method if the StepListener
+	 * will do something after the step ends.  
+	 * The default implementation does nothing. 
+	 * 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */
+	@Override
+	public void afterStep() throws Exception {}	
 
-    /**
-     * Override this method if the StepListener will do something after the step
-     * ends. The default implementation does nothing.
-     * 
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void afterStep() throws Exception {
-    }
 }

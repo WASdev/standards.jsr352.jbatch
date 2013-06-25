@@ -3,13 +3,13 @@
     <parent>
         <groupId>javax.batch</groupId>
         <artifactId>jbatch</artifactId>
-        <version>1.0-b25</version>
+        <version>1.0</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch-runtime-all</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-b25</version>
+    <version>1.0</version>
 	<repositories>
 	    <repository>
 	        <id>java.net-Public</id>
@@ -21,19 +21,19 @@
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
 			<artifactId>com.ibm.jbatch-model</artifactId>
-			<version>1.0-b25</version>
+			<version>1.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
 			<artifactId>com.ibm.jbatch-ri-spi</artifactId>
-			<version>1.0-b25</version>
+			<version>1.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
 			<artifactId>com.ibm.jbatch-runtime</artifactId>
-			<version>1.0-b25</version>
+			<version>1.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

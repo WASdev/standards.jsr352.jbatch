@@ -16,31 +16,21 @@
  */
 package com.ibm.jbatch.container.cdi;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.enterprise.context.Dependent;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.util.AnnotationLiteral;
 
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
 import com.ibm.jbatch.container.util.DependencyInjectionUtility;
 import com.ibm.jbatch.jsl.model.Property;
 
-public class BatchProducerBean implements Bean<BatchProducerBean> {
+public class BatchProducerBean {
     
     private final static String sourceClass = BatchProducerBean.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
@@ -54,6 +44,11 @@ public class BatchProducerBean implements Bean<BatchProducerBean> {
         //We should be able to ignore these as a workaround.
         if (injectionPoint != null) {
 
+            if (ProxyFactory.getInjectionReferences() == null) {
+                return null;
+            }
+            
+            
             BatchProperty batchPropAnnotation = injectionPoint.getAnnotated().getAnnotation(BatchProperty.class);
 
             // If a name is not supplied the batch property name defaults to
@@ -80,111 +75,28 @@ public class BatchProducerBean implements Bean<BatchProducerBean> {
     @Produces
     @Dependent
     public JobContext getJobContext() {
-        return ProxyFactory.getInjectionReferences().getJobContext();
+        
+        if (ProxyFactory.getInjectionReferences() != null) {
+                return ProxyFactory.getInjectionReferences().getJobContext();
+        } else {
+            return null;
+        }
     }
 
     @Produces
     @Dependent
     public StepContext getStepContext() {
-        return ProxyFactory.getInjectionReferences().getStepContext();
+        
+        if (ProxyFactory.getInjectionReferences() != null) {
+            return ProxyFactory.getInjectionReferences().getStepContext();
+        } else {
+            return null;
+        }
+        
     }
 
-    @Override
-    public Class<?> getBeanClass() {
 
-        return BatchProducerBean.class;
 
-    }
 
-    @Override
-    public Set<InjectionPoint> getInjectionPoints() {
-
-        return Collections.emptySet();
-
-    }
-
-    @Override
-    public String getName() {
-
-        return "batchProducerBean";
-
-    }
-
-    @Override
-    public Set<Annotation> getQualifiers() {
-
-        Set<Annotation> qualifiers = new HashSet<Annotation>();
-
-        qualifiers.add(new AnnotationLiteral<Default>() {
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return Default.class;
-            }
-        });
-
-        qualifiers.add(new AnnotationLiteral<Any>() {
-            @Override
-            public Class<? extends Annotation> annotationType() {
-                return Any.class;
-            }
-        });
-
-        return qualifiers;
-    }
-
-    @Override
-    public Class<? extends Annotation> getScope() {
-
-        return Dependent.class;
-
-    }
-
-    @Override
-    public Set<Class<? extends Annotation>> getStereotypes() {
-
-        return Collections.emptySet();
-
-    }
-
-    @Override
-    public Set<Type> getTypes() {
-
-        Set<Type> types = new HashSet<Type>();
-
-        types.add(BatchProducerBean.class);
-
-        types.add(Object.class);
-
-        return types;
-
-    }
-
-    @Override
-    public boolean isAlternative() {
-
-        return false;
-
-    }
-
-    @Override
-    public boolean isNullable() {
-
-        return false;
-
-    }
-
-    @Override
-    public BatchProducerBean create(CreationalContext<BatchProducerBean> ctx) {
-
-        return new BatchProducerBean();
-
-    }
-
-    @Override
-    public void destroy(BatchProducerBean instance, CreationalContext<BatchProducerBean> ctx) {
-
-        ctx.release();
-
-    }
 
 }

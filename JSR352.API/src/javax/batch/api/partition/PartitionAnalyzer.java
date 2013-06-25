@@ -14,34 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package javax.batch.api.partition;
 
 import java.io.Serializable;
 
 import javax.batch.runtime.BatchStatus;
-
 /**
- * PartitionAnalyzer receives control to process data and final results from
- * each partitions. If a PartitionCollector is configured on the step, the
- * PartitionAnalyzer receives control to process the data and results from the
- * partition collector. While a separate PartitionCollector instance is invoked
- * on each thread processing a step partition, the PartitionAnalyzer runs on a
- * single, consistent thread each time it is invoked.
- * 
+ * PartitionAnalyzer receives control to process  
+ * data and final results from each partition. If
+ * a PartitionCollector is configured on the step,  
+ * the PartitionAnalyzer receives control to process 
+ * the data and results from the partition collector.  
+ * While a separate PartitionCollector instance is 
+ * invoked on each thread processing a step partition,  
+ * a single PartitionAnalyzer instance runs on a single, 
+ * consistent thread each time it is invoked.  
+ *
  */
 public interface PartitionAnalyzer {
 	/**
-	 * The analyzeCollectorData method receives control each time a Partition
-	 * collector sends its payload. It receives as an input the Serializable
-	 * object from the collector.
-	 * 
-	 * @param data
-	 *            specifies the payload sent by a PartitionCollector.
-	 * @throws Exception
-	 *             is thrown if an error occurs.
+	 * The analyzeCollectorData method receives 
+	 * control each time a Partition collector sends 
+	 * its payload.  It receives the 
+	 * Serializable object from the collector as an
+	 * input.
+	 * @param data specifies the payload sent by a 
+	 * PartitionCollector. 
+	 * @throws Exception is thrown if an error occurs.
 	 */
 	public void analyzeCollectorData(Serializable data) throws Exception;
-
 	/**
 	 * The analyzeStatus method receives control each time a 
 	 * partition ends.  It receives the batch and exit 

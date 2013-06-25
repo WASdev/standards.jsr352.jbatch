@@ -69,7 +69,7 @@ public class RetryHandler {
 	private Set<String> _retryNoRBExcludeExceptions = null;
 	private Set<String> _retryIncludeExceptions = null;
 	private Set<String> _retryExcludeExceptions = null;
-	private int _retryLimit = 0;
+	private int _retryLimit = Integer.MIN_VALUE;
 	private long _retryCount = 0;
 	private Exception _retryException = null;
 
@@ -124,6 +124,10 @@ public class RetryHandler {
 		{
 			if (chunk.getRetryLimit() != null){
 				_retryLimit = Integer.parseInt(chunk.getRetryLimit());
+                if (_retryLimit < 0) {
+                    throw new IllegalArgumentException("The retry-limit attribute on a chunk cannot be a negative value");
+                }
+
 			}
 		}
 		catch (NumberFormatException nfe)
@@ -131,83 +135,76 @@ public class RetryHandler {
 			throw new RuntimeException("NumberFormatException reading " + RETRY_COUNT, nfe);
 		}
 
-		if (_retryLimit > 0)
-		{
-			// Read the include/exclude exceptions.
-			_retryIncludeExceptions = new HashSet<String>();
-			_retryExcludeExceptions = new HashSet<String>();
-			_retryNoRBIncludeExceptions = new HashSet<String>();
-			_retryNoRBExcludeExceptions = new HashSet<String>();
+        // Read the include/exclude exceptions.
+        _retryIncludeExceptions = new HashSet<String>();
+        _retryExcludeExceptions = new HashSet<String>();
+        _retryNoRBIncludeExceptions = new HashSet<String>();
+        _retryNoRBExcludeExceptions = new HashSet<String>();
 
-			String includeEx = null;
-			String excludeEx = null;
-			String includeExNoRB = null;
-			String excludeExNoRB = null;
+        String includeEx = null;
+        String excludeEx = null;
+        String includeExNoRB = null;
+        String excludeExNoRB = null;
 
-			if (chunk.getRetryableExceptionClasses() != null) {
-				if (chunk.getRetryableExceptionClasses().getIncludeList() != null) {
-					List<ExceptionClassFilter.Include> includes = chunk.getRetryableExceptionClasses().getIncludeList();
-					for (ExceptionClassFilter.Include include : includes){
-						_retryIncludeExceptions.add(include.getClazz().trim());
-						logger.finer("RETRYHANDLE: include: " + include.getClazz().trim());
-					}
-					
-					if (_retryIncludeExceptions.size() == 0){
-						logger.finer("RETRYHANDLE: include element not present");
+        if (chunk.getRetryableExceptionClasses() != null) {
+            if (chunk.getRetryableExceptionClasses().getIncludeList() != null) {
+                List<ExceptionClassFilter.Include> includes = chunk.getRetryableExceptionClasses().getIncludeList();
+                for (ExceptionClassFilter.Include include : includes) {
+                    _retryIncludeExceptions.add(include.getClazz().trim());
+                    logger.finer("RETRYHANDLE: include: " + include.getClazz().trim());
+                }
 
-					}
-				}
-				if (chunk.getRetryableExceptionClasses().getExcludeList() != null) {
-					List<ExceptionClassFilter.Exclude> excludes = chunk.getRetryableExceptionClasses().getExcludeList();
-					for (ExceptionClassFilter.Exclude exclude : excludes){
-						_retryExcludeExceptions.add(exclude.getClazz().trim());
-						logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
-					}
-					
-					if (_retryExcludeExceptions.size() == 0){
-						logger.finer("SKIPHANDLE: exclude element not present");
+                if (_retryIncludeExceptions.size() == 0) {
+                    logger.finer("RETRYHANDLE: include element not present");
 
-					}
-				}
-			}
+                }
+            }
+            if (chunk.getRetryableExceptionClasses().getExcludeList() != null) {
+                List<ExceptionClassFilter.Exclude> excludes = chunk.getRetryableExceptionClasses().getExcludeList();
+                for (ExceptionClassFilter.Exclude exclude : excludes) {
+                    _retryExcludeExceptions.add(exclude.getClazz().trim());
+                    logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
+                }
 
-			if (chunk.getNoRollbackExceptionClasses() != null) {
-				if (chunk.getNoRollbackExceptionClasses().getIncludeList() != null) {
-					List<ExceptionClassFilter.Include> includes = chunk.getNoRollbackExceptionClasses().getIncludeList();
-					for (ExceptionClassFilter.Include include : includes){
-						_retryNoRBIncludeExceptions.add(include.getClazz().trim());
-						logger.finer("RETRYHANDLE: include: " + include.getClazz().trim());
-					}
-					
-					if (_retryNoRBIncludeExceptions.size() == 0){
-						logger.finer("RETRYHANDLE: include element not present");
+                if (_retryExcludeExceptions.size() == 0) {
+                    logger.finer("SKIPHANDLE: exclude element not present");
 
-					}
-				}
-				if (chunk.getNoRollbackExceptionClasses().getExcludeList() != null) {
-					List<ExceptionClassFilter.Exclude> excludes = chunk.getNoRollbackExceptionClasses().getExcludeList();
-					for (ExceptionClassFilter.Exclude exclude : excludes){
-						_retryNoRBExcludeExceptions.add(exclude.getClazz().trim());
-						logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
-					}
-					
-					if (_retryNoRBExcludeExceptions.size() == 0){
-						logger.finer("SKIPHANDLE: exclude element not present");
+                }
+            }
+        }
 
-					}
-				}
-			}
+        if (chunk.getNoRollbackExceptionClasses() != null) {
+            if (chunk.getNoRollbackExceptionClasses().getIncludeList() != null) {
+                List<ExceptionClassFilter.Include> includes = chunk.getNoRollbackExceptionClasses().getIncludeList();
+                for (ExceptionClassFilter.Include include : includes) {
+                    _retryNoRBIncludeExceptions.add(include.getClazz().trim());
+                    logger.finer("RETRYHANDLE: include: " + include.getClazz().trim());
+                }
 
+                if (_retryNoRBIncludeExceptions.size() == 0) {
+                    logger.finer("RETRYHANDLE: include element not present");
 
-			if (logger.isLoggable(Level.FINE)) {
-				logger.logp(Level.FINE, className, mName,
-						"added include exception " + includeEx
-								+ "; added exclude exception " + excludeEx);
-				logger.logp(Level.FINE, className, mName,
-						"added include no rollback exception " + includeExNoRB
-								+ "; added exclude no rollback exception " + excludeExNoRB);
-			}
-		}
+                }
+            }
+            if (chunk.getNoRollbackExceptionClasses().getExcludeList() != null) {
+                List<ExceptionClassFilter.Exclude> excludes = chunk.getNoRollbackExceptionClasses().getExcludeList();
+                for (ExceptionClassFilter.Exclude exclude : excludes) {
+                    _retryNoRBExcludeExceptions.add(exclude.getClazz().trim());
+                    logger.finer("SKIPHANDLE: exclude: " + exclude.getClazz().trim());
+                }
+
+                if (_retryNoRBExcludeExceptions.size() == 0) {
+                    logger.finer("SKIPHANDLE: exclude element not present");
+
+                }
+            }
+        }
+
+        if (logger.isLoggable(Level.FINE)) {
+            logger.logp(Level.FINE, className, mName, "added include exception " + includeEx + "; added exclude exception " + excludeEx);
+            logger.logp(Level.FINE, className, mName, "added include no rollback exception " + includeExNoRB
+                    + "; added exclude no rollback exception " + excludeExNoRB);
+        }
 	        
 	    if(logger.isLoggable(Level.FINER)) {
 	      logger.exiting(className, mName, this.toString());
@@ -388,6 +385,11 @@ public class RetryHandler {
 	   */
 	  private boolean isRetryLimitReached()
 	  {
+        // Unlimited retries if it is never defined
+        if (_retryLimit == Integer.MIN_VALUE) {
+            return false;
+        }
+	      
 	    return (_retryCount >= _retryLimit);
 	  }
 

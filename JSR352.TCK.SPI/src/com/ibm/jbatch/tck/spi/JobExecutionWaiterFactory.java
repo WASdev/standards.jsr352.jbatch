@@ -18,6 +18,24 @@ package com.ibm.jbatch.tck.spi;
 
 import javax.batch.operations.JobOperator;
 
+/**
+ * Factory class for JobExecutionWaiter
+ */
 public interface JobExecutionWaiterFactory {
+	/**
+	 * Create a waiter to wait for JobExecution to reach a "final" state.
+	 * 
+	 * <p>
+	 * For discussion of "final" states, 
+	 * @see JobExecutionWaiter#awaitTermination
+	 * 
+	 * @param executionId JobExecution id of the execution to wait for.
+	 * @param jobOp Reference to JobOperator instance used to get execution id. Note the exact instance
+	 * shouldn't matter, i.e. getting a new JobOperator reference should probably result in the same
+	 * results as passing in this instance.   The API contract doesn't attempt to say anything more
+	 * on this subject.
+	 * @param sleepTime Time to wait, in milliseconds for job execution to reach a "final" state.
+	 * @return waiter instance
+	 */
 	public JobExecutionWaiter createWaiter(long executionId, JobOperator jobOp, long sleepTime);
 }

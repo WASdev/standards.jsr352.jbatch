@@ -24,41 +24,31 @@ public interface TransactionManagerAdapter {
 	/**
 	* Create a new transaction and associate it with
 	* the current thread.
-	* @throws Exception Thrown if the transaction
-	* manager encounters an unexpected error condition.
 	*/
-	public void begin() throws Exception;
+	public void begin();
 	/**
 	* Complete the transaction associated with the
 	* current thread.
-	* @throws Exception Thrown if the transaction
-	* manager encounters an unexpected error condition.
 	*/
-	public void commit() throws Exception;
+	public void commit();
 	/**
 	* Obtain the status of the transaction associated
 	* with the current thread.
 	* @return The transaction status.
-	* @throws Exception Thrown if the transaction
-	* manager encounters an unexpected error condition.
 	*/
-	public int getStatus() throws Exception;
+	public int getStatus();
 	/**
 	* Roll back the transaction associated with the
 	* current thread. When this method completes,
 	* the thread becomes associated with no transaction.
-	* @throws Exception Thrown if the transaction manager
-	* encounters an unexpected error condition.
 	*/
-	public void rollback() throws Exception;
+	public void rollback();
 	/**
 	* Modify the transaction associated with the current
 	* thread such that the only possible outcome of the
 	* transaction is to roll back the transaction.
-	* @throws Exception Thrown if the transaction manager
-	* encounters an unexpected error condition.
 	*/
-	public void setRollbackOnly() throws Exception;
+	public void setRollbackOnly();
 	/**
 	* Modify the value of the timeout value that is
 	* associated with the transactions started by the
@@ -66,9 +56,7 @@ public interface TransactionManagerAdapter {
 	* @param arg0 seconds - The value of the timeout
 	* in seconds. If the value is zero, the transaction
 	* service restores the default value.
-	* @throws Exception Thrown if the transaction manager
-	* encounters an unexpected error condition.
 	*/
-	public void setTransactionTimeout(int arg0) throws Exception;
+	public void setTransactionTimeout(int arg0);
 
 }

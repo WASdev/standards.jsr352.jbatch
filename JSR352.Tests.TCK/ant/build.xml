@@ -166,6 +166,7 @@
 			<classpath>
 				<pathelement location="${sigtest.java7.home}/lib/rt.jar"/>
 				<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar"/>
+				<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar"/>
 				<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.Combined.jar"/>
 			</classpath>
 		</setup>
@@ -178,6 +179,7 @@
 				<classpath>
 					<pathelement location="${sigtest.java6.home}/lib/rt.jar"/>
 					<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/atinject/javax.inject.jar"/>
+					<pathelement location="${workspace.home.dir}/JSR352.BinaryDependencies.WeDoNotShip/lib/j2ee.jar"/>
 					<pathelement location="${workspace.home.dir}/JSR352.JEE.CDI.Integration/outputBin/plugins/JSR352.API.Combined.jar"/>
 				</classpath>
 			</setup>

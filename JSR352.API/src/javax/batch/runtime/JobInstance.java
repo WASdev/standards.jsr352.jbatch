@@ -13,22 +13,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
+
 package javax.batch.runtime;
 
-
 public interface JobInstance {
-
 	/**
-	* Get job name
-	* @return value of 'id' attribute from <job>
-	*/
-	public String getJobName();
-	/**
-	* Get instance id for this job instance
-	* @return instance id
-	*/
+	 * Get unique id for this JobInstance.
+	 * @return instance id
+	 */
 	public long getInstanceId();
-
-    
+	/**
+	 * Get job name.
+	 * @return value of 'id' attribute from <job>
+	 */
+	public String getJobName();	
 }

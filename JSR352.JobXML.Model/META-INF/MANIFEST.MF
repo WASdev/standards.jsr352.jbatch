@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Model
-Bundle-SymbolicName: JSR352.JobXML.Model
-Bundle-Version: 1.0.0.qualifier
+Bundle-Name: com.ibm.jbatch-model
+Bundle-SymbolicName: com.ibm.jbatch-model
+Bundle-Version: 1.0
 Import-Package: javax.batch.runtime.context
 Export-Package: com.ibm.jbatch.container.jsl,
  com.ibm.jbatch.container.jsl.impl,

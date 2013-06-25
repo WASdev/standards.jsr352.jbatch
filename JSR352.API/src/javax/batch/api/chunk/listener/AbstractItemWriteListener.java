@@ -18,51 +18,46 @@
 package javax.batch.api.chunk.listener;
 
 import java.util.List;
-
 /**
- * The AbstractItemWriteListener provides default implementations of less
- * commonly implemented methods.
+ * The AbstractItemWriteListener provides default 
+ * implementations of less commonly implemented methods.
  */
-public abstract class AbstractItemWriteListener implements ItemWriteListener {
+public abstract class AbstractItemWriteListener implements
+		ItemWriteListener {
     /**
-     * Override this method if the ItemWriteListener will do something before
-     * the items are written. The default implementation does nothing.
-     * 
-     * @param items
-     *            specifies the items about to be written.
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void beforeWrite(List<Object> items) throws Exception {
-    }
-
+	 * Override this method if the ItemWriteListener
+	 * will do something before the items are written.  
+	 * The default implementation does nothing. 
+	 *
+	 * @param items specifies the items about to be 
+	 * written. 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */	
+	@Override
+	public void beforeWrite(List<Object> items) throws Exception {}
     /**
-     * Override this method if the ItemWriteListener will do something after the
-     * items are written. The default implementation does nothing.
-     * 
-     * @param items
-     *            specifies the items about to be written.
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void afterWrite(List<Object> items) throws Exception {
-    }
-
+	 * Override this method if the ItemWriteListener
+	 * will do something after the items are written.  
+	 * The default implementation does nothing. 
+	 *
+	 * @param items specifies the items about to be 
+	 * written. 
+	 * @throws Exception (or subclass) if an error occurs.
+	 */	
+	@Override
+	public void afterWrite(List<Object> items) throws Exception {}
     /**
-     * Override this method if the ItemWriteListener will do something when the
-     * ItemWriter writeItems method throws an exception. The default
-     * implementation does nothing.
-     * 
-     * @param items
-     *            specifies the items about to be written.
-     * @param ex
-     *            specifies the exception thrown by the item writer.
-     * @throws Exception
-     *             (or subclass) if an error occurs.
-     */
-    @Override
-    public void onWriteError(List<Object> items, Exception ex) throws Exception {
-    }
+	 * Override this method if the ItemWriteListener
+	 * will do something when the ItemWriter writeItems
+	 * method throws an exception.  
+	 * The default implementation does nothing.
+	 *
+	 * @param items specifies the items about to be 
+	 * written.
+	 * @param ex specifies the exception thrown by the item 
+	 * writer.
+	 * @throws Exception (or subclass) if an error occurs.
+	 */	
+	@Override
+	public void onWriteError(List<Object> items, Exception ex) throws Exception {}
 }
