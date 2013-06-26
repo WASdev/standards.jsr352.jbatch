@@ -112,7 +112,7 @@
                         <Implementation-Version>${spec.implementation.version}</Implementation-Version>
                         <Specification-Version>${spec.specification.version}</Specification-Version> 
                         <Bundle-Description>
-                            Java(TM) Interceptor ${spec.version} API Design Specification
+                            Bundle Description
                         </Bundle-Description>
                     </instructions>
                 </configuration>

@@ -8,7 +8,7 @@
 	<taskdef resource="testngtasks" classpath="${workspace.home.dir}/JSR352.BinaryDependencies/shipped/testng/testng-6.8.jar"/>
 
 	<!-- NOTE: Set this to an Oracle jre prior to running the task to generate the sigtest signature file -->
-	<property name="sigtest.java7.home" value="C:/SunJava7"/>
+	<property name="sigtest.java7.home" value="C:/SunJava7/jre"/>
 	
 	<!-- NOTE: Set this to an Oracle jre prior to running the task to generate the sigtest signature file -->
 	<property name="sigtest.java6.home" value="C:/SunJava6"/>
