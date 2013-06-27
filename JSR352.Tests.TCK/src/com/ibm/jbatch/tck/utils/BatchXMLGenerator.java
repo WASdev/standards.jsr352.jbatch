@@ -103,6 +103,11 @@ public class BatchXMLGenerator {
 		Class<?> artifactClass = null;
 		try {
 			artifactClass = Class.forName(qualifiedClassName);
+
+			boolean isBatchArtifact = isBatchArtifact(artifactClass);
+			if (!isBatchArtifact) {
+				return;
+			}
 			Named namedAnnotation = artifactClass.getAnnotation(Named.class);
 			if (namedAnnotation != null) {
 				namedAnnotationValue = namedAnnotation.value();
@@ -132,6 +137,31 @@ public class BatchXMLGenerator {
 	}
 
 
+	private boolean isBatchArtifact(Class artifactClass) {
+		// logger.fine("Entering isBatchArtifact for class: " + artifactClass == null ? "<null>" : artifactClass.getCanonicalName());
+		
+		if (artifactClass == null) {
+			logger.fine("End of the line, returning false.");
+			return false;
+		}
+		
+		//
+		// All batch artifacts implement an API interface.
+		//
+		Class[] interfaces = artifactClass.getInterfaces(); 
+		if (interfaces.length == 0) {
+			logger.fine("No batch interfaces found for class: " + artifactClass.getCanonicalName() + ", since it doesn't implement any interfaces. Will try superclass (if one exists).");
+			return isBatchArtifact(artifactClass.getSuperclass());
+		} 
+		for (Class interfaze : interfaces) {
+			if (interfaze.getCanonicalName().startsWith("javax.batch")) {
+				logger.fine("Found a batch interface found for class: " + artifactClass.getCanonicalName() + ".  Continuing to add this entry to batch.xml");
+				return true;
+			}
+		}
+		logger.fine("No batch interfaces found for class: " + artifactClass.getCanonicalName() + ".  Will try superclass (if one exists).");
+		return isBatchArtifact(artifactClass.getSuperclass());
+	}
 
 
 	private static List<String> findClasses(String dir) {
