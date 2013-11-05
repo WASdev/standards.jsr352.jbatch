@@ -16,6 +16,7 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.listener.SkipReadListener;
@@ -39,12 +40,12 @@ public class NumbersSkipReadListener implements SkipReadListener {
     public void onSkipReadItem(Exception e) {
         Reporter.log("In onSkipReadItem" + e + "<p>");
 
-        stepCtx.getProperties().setProperty("skip.read.item.invoked", "true");
+        ((Properties)stepCtx.getTransientUserData()).setProperty("skip.read.item.invoked", "true");
         if (e instanceof MyParentException){
-        	stepCtx.getProperties().setProperty("skip.read.item.match", "true");
+        	((Properties)stepCtx.getTransientUserData()).setProperty("skip.read.item.match", "true");
         }
         else {
-        	stepCtx.getProperties().setProperty("skip.read.item.match", "false");
+        	((Properties)stepCtx.getTransientUserData()).setProperty("skip.read.item.match", "false");
         }
     }
 }

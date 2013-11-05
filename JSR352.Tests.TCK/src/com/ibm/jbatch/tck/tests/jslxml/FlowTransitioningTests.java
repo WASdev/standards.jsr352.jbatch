@@ -83,7 +83,9 @@ public class FlowTransitioningTests {
 	 * @assertion: Section 5.3 Flow
 	 * @test_Strategy: 1. setup a job consisting of one flow (w/ 3 steps) and one step
 	 * 				   2. start job 
-	 * 				   3. this job should fail because the flow step flow1step2 next to outside the flow
+	 * 				   3. this job should fail because the flow step flow1step2 next to outside the flow 
+	 *                   (Alternatively, the implementation may choose to validate and prevent this from starting,
+	 *                   by throwing a JobStartException).
 	 * 
 	 * 	<flow id="flow1">
 	 *		<step id="flow1step1" next="flow1step2">
@@ -113,19 +115,25 @@ public class FlowTransitioningTests {
 		String METHOD = " testFlowTransitionToStepOutOfScope";
 
 		try {
-
+			boolean seenException = false;
 			Reporter.log("starting job");
 			JobExecution jobExec = null;
 			try {
 				jobExec = jobOp.startJobAndWaitForResult("flow_transition_to_step_out_of_scope", null);
 			} catch (JobStartException e) {
-				Reporter.log("job failed to start " + e.getLocalizedMessage());
+				Reporter.log("Caught JobStartException:  " + e.getLocalizedMessage());
+				seenException = true;
 			}
 
-			Reporter.log("Job Status = " + jobExec.getBatchStatus());
+			// If we caught an exception we'd expect that a JobExecution would not have been created,
+			// though we won't validate that it wasn't created.  
 
-			assertWithMessage("Job should have failed because of out of scope execution elements.", 
-					BatchStatus.FAILED, jobExec.getBatchStatus());
+			// If we didn't catch an exception that we require that the implementation fail the job execution.
+			if (!seenException) {
+				Reporter.log("Didn't catch JobStartException, Job Batch Status = " + jobExec.getBatchStatus());
+				assertWithMessage("Job should have failed because of out of scope execution elements.", 
+						BatchStatus.FAILED, jobExec.getBatchStatus());
+			}
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}

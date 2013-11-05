@@ -16,6 +16,8 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
+import java.util.Properties;
+
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.ItemProcessor;
 import javax.batch.runtime.context.StepContext;
@@ -87,14 +89,14 @@ public class RetryProcessor implements ItemProcessor {
 		
 		if (testState == STATE_RETRY)
 		{
-			if(stepCtx.getProperties().getProperty("retry.process.exception.invoked") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.process.exception.invoked") != "true") {
 				Reporter.log("onRetryProcessException not invoked<p>");
 				throw new Exception("onRetryProcessException not invoked");
 			} else {
 				Reporter.log("onRetryProcessException was invoked<p>");
 			}
 			
-			if(stepCtx.getProperties().getProperty("retry.process.exception.match") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.process.exception.match") != "true") {
 				Reporter.log("retryable exception does not match<p>");
 				throw new Exception("retryable exception does not match");
 			} else {
@@ -103,14 +105,14 @@ public class RetryProcessor implements ItemProcessor {
 			
 			testState = STATE_EXCEPTION;
 		} else if(testState == STATE_SKIP) {
-			if(stepCtx.getProperties().getProperty("skip.process.item.invoked") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("skip.process.item.invoked") != "true") {
 				Reporter.log("onSkipProcessItem not invoked<p>");
 				throw new Exception("onSkipProcessItem not invoked");
 			} else {
 				Reporter.log("onSkipProcessItem was invoked<p>");
 			}
 			
-			if(stepCtx.getProperties().getProperty("skip.process.item.match") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("skip.process.item.match") != "true") {
 				Reporter.log("skippable exception does not match<p>");
 				throw new Exception("skippable exception does not match");
 			} else {

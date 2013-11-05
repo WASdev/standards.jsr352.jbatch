@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Properties;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.api.chunk.AbstractItemWriter;
@@ -107,14 +108,14 @@ public class RetryWriter extends AbstractItemWriter {
 			if (testState == STATE_RETRY)
 			{
 				
-				if(stepCtx.getProperties().getProperty("retry.write.exception.invoked") != "true") {
+				if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.write.exception.invoked") != "true") {
 					Reporter.log("onRetryWriteException not invoked<p>");
 					throw new Exception("onRetryWriteException not invoked");
 				} else {
 					Reporter.log("onRetryWriteException was invoked<p>");
 				}
 				
-				if(stepCtx.getProperties().getProperty("retry.write.exception.match") != "true") {
+				if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.write.exception.match") != "true") {
 					Reporter.log("retryable exception does not match");
 					throw new Exception("retryable exception does not match");
 				} else {
@@ -123,14 +124,14 @@ public class RetryWriter extends AbstractItemWriter {
 				
 				testState = STATE_EXCEPTION;
 			} else if(testState == STATE_SKIP) {
-				if(stepCtx.getProperties().getProperty("skip.write.item.invoked") != "true") {
+				if (((Properties)stepCtx.getTransientUserData()).getProperty("skip.write.item.invoked") != "true") {
 					Reporter.log("onSkipWriteItem not invoked<p>");
 					throw new Exception("onSkipWriteItem not invoked");
 				} else {
 					Reporter.log("onSkipWriteItem was invoked<p>");
 				}
 				
-				if(stepCtx.getProperties().getProperty("skip.write.item.match") != "true") {
+				if (((Properties)stepCtx.getTransientUserData()).getProperty("skip.write.item.match") != "true") {
 					Reporter.log("skippable exception does not match<p>");
 					throw new Exception("skippable exception does not match");
 				} else {

@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.api.BatchProperty;
@@ -85,10 +86,11 @@ public class RetryReader extends AbstractItemReader {
 		InitialContext ctx = new InitialContext();
 		dataSource = (DataSource) ctx.lookup(RetryConnectionHelper.jndiName);
 		
+		initializeUserDataWithProperties();
 		
 		if (cpd != null) {
 			this.readerIndex = numbersCheckpointData.getCount();
-			stepCtx.getProperties().setProperty("init.checkpoint", this.readerIndex + "");
+			((Properties)stepCtx.getTransientUserData()).setProperty("init.checkpoint", this.readerIndex + "");
 		} 	
 	}
 
@@ -126,20 +128,20 @@ public class RetryReader extends AbstractItemReader {
 			// should be retrying at last checkpoint with rollback
 			else {
 						
-					int checkpointIndex = Integer.parseInt(stepCtx.getProperties().getProperty("checkpoint.index"));
+					int checkpointIndex = Integer.parseInt((Properties)stepCtx.getTransientUserData()).getProperty("checkpoint.index"));
 							
 					if(checkpointIndex != readerIndex)
 						throw new Exception("Error reading data.  Expected to be at index " + checkpointIndex + " but got index " + readerIndex);
 			}*/
 			
-			if(stepCtx.getProperties().getProperty("retry.read.exception.invoked") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.read.exception.invoked") != "true") {
 				Reporter.log("onRetryReadException not invoked<p>");
 				throw new Exception("onRetryReadException not invoked");
 			} else {
 				Reporter.log("onRetryReadException was invoked<p>");
 			}
 			
-			if(stepCtx.getProperties().getProperty("retry.read.exception.match") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.read.exception.match") != "true") {
 				Reporter.log("retryable exception does not match<p>");
 				throw new Exception("retryable exception does not match");
 			} else {
@@ -150,14 +152,14 @@ public class RetryReader extends AbstractItemReader {
 			//throw new MyParentException("Test skip after retry -- Fail on purpose in NumbersRecord.readItem()");	
 		}
 		else if(testState == STATE_SKIP) {
-			if(stepCtx.getProperties().getProperty("skip.read.item.invoked") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("skip.read.item.invoked") != "true") {
 				Reporter.log("onSkipReadItem not invoked<p>");
 				throw new Exception("onSkipReadItem not invoked");
 			} else {
 				Reporter.log("onSkipReadItem was invoked<p>");
 			}
 			
-			if(stepCtx.getProperties().getProperty("skip.read.item.match") != "true") {
+			if (((Properties)stepCtx.getTransientUserData()).getProperty("skip.read.item.match") != "true") {
 				Reporter.log("skippable exception does not match<p>");
 				throw new Exception("skippable exception does not match");
 			} else {
@@ -202,11 +204,18 @@ public class RetryReader extends AbstractItemReader {
 	 public Serializable checkpointInfo() throws Exception {
 		 NumbersCheckpointData _chkptData = new  NumbersCheckpointData();
 		_chkptData.setCount(readerIndex);
-		stepCtx.getProperties().setProperty("checkpoint.index", Integer.toString(readerIndex));
+		((Properties)stepCtx.getTransientUserData()).setProperty("checkpoint.index", Integer.toString(readerIndex));
 		return _chkptData; 
 	}
 
-
+	// Since this is a late change to the TCK, we'll be a bit more lenient than we might and not worry
+	// about when exactly the Properties object should or shouldn't already be in the userdata.  We'll just 
+	// create if needed and if not continue on.
+	private void initializeUserDataWithProperties() {
+		if (stepCtx.getTransientUserData() == null) {
+			stepCtx.setTransientUserData(new Properties());
+		}
+	}
 
 }
 

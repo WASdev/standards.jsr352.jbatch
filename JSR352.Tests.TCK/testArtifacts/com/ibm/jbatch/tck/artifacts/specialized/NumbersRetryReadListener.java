@@ -16,6 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.listener.RetryReadListener;
@@ -38,12 +39,12 @@ public class NumbersRetryReadListener implements RetryReadListener {
 	    public void onRetryReadException(Exception e) {
 	    	Reporter.log("In onRetryReadException()" + e);
 	    	logger.finer("In onRetryReadException()" + e);
-	    	stepCtx.getProperties().setProperty("retry.read.exception.invoked", "true");
+	    	((Properties)stepCtx.getTransientUserData()).setProperty("retry.read.exception.invoked", "true");
 	        if (e instanceof MyParentException){
-	        	stepCtx.getProperties().setProperty("retry.read.exception.match", "true");
+	        	((Properties)stepCtx.getTransientUserData()).setProperty("retry.read.exception.match", "true");
 	        }
 	        else {
-	        	stepCtx.getProperties().setProperty("retry.read.exception.match", "false");
+	        	((Properties)stepCtx.getTransientUserData()).setProperty("retry.read.exception.match", "false");
 	        }
 	    }
 }

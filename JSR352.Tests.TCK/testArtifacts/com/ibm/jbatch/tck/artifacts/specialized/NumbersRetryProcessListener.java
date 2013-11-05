@@ -16,6 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.listener.RetryProcessListener;
@@ -38,12 +39,12 @@ public class NumbersRetryProcessListener implements RetryProcessListener {
 	    public void onRetryProcessException(Object o, Exception e) {
 	    	Reporter.log("In onRetryProcessException()" + e + "<p>");
 	    	logger.finer("In onRetryProcessException()" + e);
-	    	stepCtx.getProperties().setProperty("retry.process.exception.invoked", "true");
+	    	((Properties)stepCtx.getTransientUserData()).setProperty("retry.process.exception.invoked", "true");
 	        if (e instanceof MyParentException){
-	        	stepCtx.getProperties().setProperty("retry.process.exception.match", "true");
+	        	((Properties)stepCtx.getTransientUserData()).setProperty("retry.process.exception.match", "true");
 	        }
 	        else {
-	        	stepCtx.getProperties().setProperty("retry.process.exception.match", "false");
+	        	((Properties)stepCtx.getTransientUserData()).setProperty("retry.process.exception.match", "false");
 	        }
 	    }
 }

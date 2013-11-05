@@ -65,10 +65,9 @@ public class InventoryReader extends AbstractItemReader {
 		
 		if (cpd != null) {
 			this.readerIndex = checkpointData.getInventoryCount();
-			
-			stepCtx.getProperties().setProperty("init.checkpoint", this.readerIndex + "");
+			// Fix for Bug 5490:    https://java.net/bugzilla/show_bug.cgi?id=5490
+			stepCtx.setTransientUserData(this.readerIndex);
 		} 	
-
 	}
 
 	public InventoryRecord readItem() throws Exception {

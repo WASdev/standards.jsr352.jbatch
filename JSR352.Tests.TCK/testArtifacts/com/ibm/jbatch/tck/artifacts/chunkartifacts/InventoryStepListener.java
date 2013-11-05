@@ -61,7 +61,8 @@ public class InventoryStepListener extends AbstractStepListener implements Statu
 
         int finalInventoryCount = this.getInventoryCount();
         int orderCount = this.getOrderCount();
-        String initCheckpoint = stepCtx.getProperties().getProperty("init.checkpoint");
+		// Fix for Bug 5490:    https://java.net/bugzilla/show_bug.cgi?id=5490
+        String initCheckpoint = String.valueOf((Integer)stepCtx.getTransientUserData());
 
         String exitStatus = "Inventory=" + finalInventoryCount + " InitialCheckpoint=" + initCheckpoint + " OrderCount="+orderCount;
         jobCtx.setExitStatus(exitStatus);

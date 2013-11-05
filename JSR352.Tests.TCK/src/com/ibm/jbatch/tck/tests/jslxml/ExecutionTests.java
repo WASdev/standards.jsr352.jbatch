@@ -28,6 +28,7 @@ import javax.batch.runtime.JobExecution;
 import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.testng.Reporter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeMethod;
@@ -264,8 +265,9 @@ public class ExecutionTests {
 	 * @assertion: FIXME
 	 * @test_Strategy: FIXME
 	 */
-	@Test
 	@org.junit.Test
+	@Test(enabled=false) // Disabling per Bug 5379
+	@Ignore("Bug 5379.  Decided to exclude this test.")
 	public void testInvokeJobChunkWithFullAttributes() throws Exception {
 		String METHOD = "testInvokeJobChunkWithFullAttributes";
 		begin(METHOD);

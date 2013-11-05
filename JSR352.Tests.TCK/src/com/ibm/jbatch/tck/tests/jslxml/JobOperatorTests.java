@@ -88,7 +88,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorStart
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - start
+	 * @assertion:  Job Operator - start
 	 * @test_Strategy: start a job that completes successfully with no exceptions thrown.
 	 * @throws JobStartException               
 	 */
@@ -116,7 +116,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorRestart
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - restart.  Tests also that a restart JobExecution is associated with the
+	 * @assertion:  Job Operator - restart.  Tests also that a restart JobExecution is associated with the
 	 *             same JobInstance as the original execution.
 	 * @test_Strategy: start a job that is configured to fail. Change configuration of job to ensure success. Restart job.
 	 *                 Test that job completes successfully and no exceptions are thrown.
@@ -276,7 +276,7 @@ public class JobOperatorTests {
 	 * 
 	 * @assertion: testJobOperatorAbandonJobDuringARestart
 	 * @test_Strategy: start a job that is configured to fail. Change configuration of job to cause the job to sleep for 5 seconds. Restart job
-	 *                 and let it run without waiting for completion.  TAttempt to abandon the job and confirm a JobExecutionIsRunningException
+	 *                 and let it run without waiting for completion.  Attempt to abandon the job and confirm a JobExecutionIsRunningException
 	 *                 is caught.
 	 *                 
 	 *                  
@@ -473,7 +473,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorGetStepExecutions
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobNames
+	 * @assertion:  Job Operator - getStepExecutions
 	 * @test_Strategy: start a job that completes successfully. Get the list of all StepException objects associated with job execution id.
 	 *                 Test that all objects retrieved are of type StepExecution.
 	 * @throws Exception
@@ -514,7 +514,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOpGetJobNames
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobNames
+	 * @assertion:  Job Operator - getJobNames
 	 * @test_Strategy: This test is a bit weak in that, while the first time it runs,
 	 *                 it does perform a real validation that the newly-submitted job
 	 *                 is added to the getJobNames() result set, on subsequent runs
@@ -551,7 +551,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testAbandoned
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobNames
+	 * @assertion:  Job Operator - abandon()
 	 * @test_Strategy: run a job that completes successfully. Abandon the job. Test to ensure the Batch Status for the said job is marked as 'ABANDONED'
 	 * @throws Exception
 	 * 
@@ -572,7 +572,8 @@ public class JobOperatorTests {
 
 			jobOp.abandonJobExecution(jobExec.getExecutionId());
 
-			assertObjEquals(BatchStatus.ABANDONED, jobExec.getBatchStatus());
+			JobExecution jobExec2 = jobOp.getJobExecution(jobExec.getExecutionId());
+			assertObjEquals(BatchStatus.ABANDONED, jobExec2.getBatchStatus());
 
 		} catch (Exception e) {
 			handleException(METHOD, e);
@@ -582,7 +583,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOpgetJobInstanceCount
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstanceCount
+	 * @assertion:  Job Operator - getJobInstanceCount
 	 * @test_Strategy: Retrieve the job instance count for a known job name. Run that job. 
 	 *                 Retrieve the job instance count for that job again. Test that the count has increased by 1.
 	 * @throws Exception
@@ -649,7 +650,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOpgetJobInstanceCountException
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstanceCountException
+	 * @assertion:  Job Operator - getJobInstanceCountException
 	 * @test_Strategy: Retrieve the job instance count for a known job name. Run that job. 
 	 *                 Retrieve the job instance count for a job name that does not exist. Test that the NoSuchJobException is returned.
 	 * @throws Exception
@@ -715,7 +716,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOpgetJobInstances
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstances
+	 * @assertion:  Job Operator - getJobInstances
 	 * @test_Strategy: start a job 10 times which will ensure at least one job instance known to the runtime. 
 	 *                 Retrieve a list of job instance ids for the job name just started. Ask for the first 200 found.
 	 *                 Test that size grows by 10. 
@@ -784,7 +785,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOpgetJobInstancesException
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstancesException
+	 * @assertion:  Job Operator - getJobInstancesException
 	 * @test_Strategy: Retrieve a list of job instances for a job name that does not exist. 
 	 *                 Test that the NoSuchJobException is thrown.
 	 * @throws  Exception 
@@ -840,7 +841,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorGetParameters
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getParameters
+	 * @assertion:  Job Operator - getParameters
 	 * @test_Strategy: Start a job with a set of parameters. Restart the job with a set of override parameters. Once completed, retrieve the 
 	 *                 parameters object associated with the job instance. Test that the object retrieved is a Properties object. 
 	 *                 Test that the NoSuchJobException is thrown.
@@ -931,7 +932,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorGetJobInstances
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstances
+	 * @assertion:  Job Operator - getJobInstances
 	 * @test_Strategy: Start a specific job four times, all of which will finish successfully. Retrieve two separate lists of JobExecutions for the job.
 	 *                 List 1 will contain JobExecution Objects for job start 1 - 3. List 2 will contain JobExecution Objects for job start 2 - 4.
 	 *                 Test that the second and third JobExecution objects of List 1 is equivalent to the first and second JobExecution objects in List 2.
@@ -1028,7 +1029,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorGetRunningJobExecutions
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getRunningExecutions
+	 * @assertion:  Job Operator - getRunningExecutions
 	 * @test_Strategy: start a job which will ensure at least one job execution is known to the runtime. Job will be long running. Testcase does not wait for job to complete.
 	 *                 Retrieve a list of JobExecution(s) for the job name just started that are in running state. Ensure that at least one JobExecution is returned
 	 *                 Test that 
@@ -1078,7 +1079,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorGetRunningJobInstancesException
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobInstances
+	 * @assertion:  Job Operator - getJobInstances
 	 * @test_Strategy: start a job which will ensure at least one job instance known to the runtime. Job will be long running. Testcase does not wait for job to complete.
 	 *                 Retrieve a list of job instance ids for a job name that does not exist in running state. Ensure that NoSuchJobException exception is thrown
 	 *                 Test that 
@@ -1128,7 +1129,7 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorGetJobExecution
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobExecution
+	 * @assertion:  Job Operator - getJobExecution
 	 * @test_Strategy: start a job which will run to successful completion.
 	 *                 Retrieve a JobExecution object using the execution ID returned by the start command.
 	 *                 Ensure the object returned is an instance of JobExecution
@@ -1197,9 +1198,11 @@ public class JobOperatorTests {
 	/*
 	 * @testName: testJobOperatorGetJobExecutions
 	 * 
-	 * @assertion: Section 7.7.9 Job Operator - getJobExecutions and JobExecution APIs
+	 * @assertion:  Job Operator - getJobExecutions and JobExecution APIs
 	 * @test_Strategy: start a job which will fail, then restart and run to successful completion.
-	 *                 Validate the two JobExecution instances, e.g. get
+	 *                 Validate the two JobExecution instances, e.g. ensure both map to the same
+	 *                 JobInstance when getJobInstance() is passed the respective executionIds.
+	 *                 Also ensure that getJobExecutions() on the instance returns these same two executionIds. 
 	 * @throws Exception 
 	 * 
 	 */

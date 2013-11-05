@@ -651,9 +651,8 @@ public class MetricsTests {
 			Reporter.log("AJM: step start time: " + step.getStartTime() + "<p>");
 			Reporter.log("AJM: step end time: " + step.getEndTime() + "<p>");
 
-			assertWithMessage("Start time of step occurs no sooner than start time of test", ts.compareTo(step.getStartTime()) <= 0);
-			assertWithMessage("End time of step occurs no sooner than start time of step", step.getEndTime().compareTo(step.getStartTime()) >= 0);
-			assertWithMessage("End time of step occurs no sooner than start time of test", step.getEndTime().compareTo(ts) >= 0);
+			assertWithMessage("Start time of test occurs approximately before start time of step", roughlyOrdered(ts, step.getStartTime()));
+			assertWithMessage("Start time of step occurs approximately before end time of step", roughlyOrdered(step.getStartTime(), step.getEndTime()));
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
@@ -703,11 +702,10 @@ public class MetricsTests {
 			Reporter.log("AJM: job last updated time: " + execution1.getLastUpdatedTime() + "<p>");
 			Reporter.log("AJM: job end time: " + execution1.getEndTime() + "<p>");
 
-			assertWithMessage("Start time of job occurs no sooner than start time of test", ts.compareTo(execution1.getStartTime()) <= 0);
-			assertWithMessage("Create time of job occurs no later than start time of job", execution1.getCreateTime().compareTo(execution1.getStartTime()) <= 0);
-			assertWithMessage("End time of job occurs no sooner than start time of job", execution1.getEndTime().compareTo(execution1.getStartTime()) >= 0);
-			assertWithMessage("Last Updated time of job occurs no sooner than start time of job", execution1.getLastUpdatedTime().compareTo(execution1.getStartTime()) >= 0);
-			assertWithMessage("End time of job occurs no sooner than start time of test", execution1.getEndTime().compareTo(ts) >= 0);
+			assertWithMessage("Start time of test occurs approximately before create time of job", roughlyOrdered(ts, execution1.getCreateTime()));
+			assertWithMessage("Create time of job occurs approximately before start time of job", roughlyOrdered(execution1.getCreateTime(), execution1.getStartTime()));
+			assertWithMessage("Start time of job occurs approximately before end time of job", roughlyOrdered(execution1.getStartTime(), execution1.getEndTime()));
+			assertWithMessage("Start time of job occurs approximately before Last Updated time of job", roughlyOrdered(execution1.getStartTime(), execution1.getLastUpdatedTime()));
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
@@ -718,6 +716,34 @@ public class MetricsTests {
 		Reporter.log("Caught exception: " + e.getMessage() + "<p>");
 		Reporter.log(methodName + " failed<p>");
 		throw e;
+	}
+	
+	/*
+	 * We want to confirm that 'd1' is roughly before 'd2', and also to
+	 * allow for the fact that dates may be stored with a loss of precision.
+	 * 
+	 * Let's assume then that we only have whole seconds precision (without
+	 * necessarily accounting for any fractional seconds).
+	 * 
+	 * So we can't simply perform d1 < d2, or even d1 <= d2 (the inclusion of 'equals' 
+	 * corrects for a different problem, the problem of running so fast that
+	 * the times for d1 and d2 are the same even though d1 may still have
+	 * been executed first).
+	 * 
+	 * The "worst" case (in terms of highest rounding error), then, is that 'd1' gets
+	 * rounded up while 'd2' gets rounded down, leaving the rounded 'd1' value a full 
+	 * second higher than the rounded 'd2' value.
+	 * 
+	 * Therefore we check that d2 minus d1, which before rounding should be >= 0, is
+	 * instead no less than -1000 (1 second).
+	 */
+	private static boolean roughlyOrdered(Date d1, Date d2) {
+		long time1 = d1.getTime();
+		long time2 = d2.getTime();
+		
+		long diff = time2 - time1;
+		
+		return diff >= -1000 ? true : false;
 	}
 
 }

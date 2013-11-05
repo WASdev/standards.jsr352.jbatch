@@ -16,6 +16,7 @@
  */
 package com.ibm.jbatch.tck.artifacts.specialized;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.listener.SkipProcessListener;
@@ -39,12 +40,12 @@ public class NumbersSkipProcessListener implements SkipProcessListener {
     public void onSkipProcessItem(Object o, Exception e) {
         Reporter.log("In onSkipProcessItem" + e + "<p>");
 
-        stepCtx.getProperties().setProperty("skip.process.item.invoked", "true");
+        ((Properties)stepCtx.getTransientUserData()).setProperty("skip.process.item.invoked", "true");
         if (e instanceof MyParentException){
-        	stepCtx.getProperties().setProperty("skip.process.item.match", "true");
+        	((Properties)stepCtx.getTransientUserData()).setProperty("skip.process.item.match", "true");
         }
         else {
-        	stepCtx.getProperties().setProperty("skip.process.item.match", "false");
+        	((Properties)stepCtx.getTransientUserData()).setProperty("skip.process.item.match", "false");
         }
     }
 }

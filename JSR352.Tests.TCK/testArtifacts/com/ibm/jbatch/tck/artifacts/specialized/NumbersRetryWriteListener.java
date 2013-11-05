@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.listener.RetryWriteListener;
@@ -39,12 +40,12 @@ public class NumbersRetryWriteListener implements RetryWriteListener {
 	    public void onRetryWriteException(List w, Exception e) {
 	    	Reporter.log("In onRetryWriteException()" + e);
 	    	logger.finer("In onRetryWriteException()" + e);
-	    	stepCtx.getProperties().setProperty("retry.write.exception.invoked", "true");
+	    	((Properties)stepCtx.getTransientUserData()).setProperty("retry.write.exception.invoked", "true");
 	        if (e instanceof MyParentException){
-	        	stepCtx.getProperties().setProperty("retry.write.exception.match", "true");
+	        	((Properties)stepCtx.getTransientUserData()).setProperty("retry.write.exception.match", "true");
 	        }
 	        else {
-	        	stepCtx.getProperties().setProperty("retry.write.exception.match", "false");
+	        	((Properties)stepCtx.getTransientUserData()).setProperty("retry.write.exception.match", "false");
 	        }
 	    }
 }

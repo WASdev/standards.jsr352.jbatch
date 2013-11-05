@@ -17,10 +17,12 @@
 package com.ibm.jbatch.tck.tests.jslxml;
 
 import static com.ibm.jbatch.tck.utils.AssertionUtils.assertObjEquals;
+import static com.ibm.jbatch.tck.utils.AssertionUtils.assertWithMessage;
 
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.batch.operations.JobStartException;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 
@@ -39,7 +41,7 @@ public class DeciderTests implements StatusConstants {
 
 	private final static String FORCE_STOP_EXITSTATUS = "STEP_COMPLETE_BUT_FORCE_JOB_STOPPED_STATUS";
 	private final static String FORCE_FAIL_EXITSTATUS = "STEP_COMPLETE_BUT_FORCE_JOB_FAILED_STATUS";
-	
+
 
 	public static void setup(String[] args, Properties props) throws Exception {
 		String METHOD = "setup";
@@ -402,410 +404,426 @@ public class DeciderTests implements StatusConstants {
 		}
 	}
 
-    /*
-     * @testName: testDeciderExitStatusIsSetOnJobContext
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderExitStatusIsSetOnJobContext() throws Exception {
-    	
-    	String METHOD = "testDeciderExitStatusIsSetOnJobContext";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "true");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "None");
-	        jobParameters.setProperty("fail.job.after.this.step", "step1");
-	
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.FAILED, jobExec.getBatchStatus());
-	        assertObjEquals("1:"+FORCE_FAIL_EXITSTATUS, jobExec.getExitStatus());
-    	} catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
-	
-    /*
-     * @testName: testDeciderCannotbeFirstElementOnStart
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderCannotbeFirstElementOnStart() throws Exception {
+	/*
+	 * @testName: testDeciderExitStatusIsSetOnJobContext
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderExitStatusIsSetOnJobContext() throws Exception {
 
-    	String METHOD = "testDeciderCannotbeFirstElementOnStart";
-    	
-    	try {
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_as_first_job_element_fails"); 
-	
-	        assertObjEquals(BatchStatus.FAILED, jobExec.getBatchStatus());
-    	} catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
-	
-    /*
-     * @testName: testDeciderTransitionFromStepAndAllowRestart
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromStepAndAllowRestart() throws Exception {
-    	String METHOD = "testDeciderTransitionFromStepAndAllowRestart";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "true");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "step1");
-	        jobParameters.setProperty("fail.job.after.this.step", "None");
-	
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("1:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-	    } catch(Exception e) {
-			handleException(METHOD, e);
-		}
-        
-        
-    }
+		String METHOD = "testDeciderExitStatusIsSetOnJobContext";
 
-    /*
-     * @testName: testDeciderTransitionFromStepWithinFlowAndAllowRestart
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromStepWithinFlowAndAllowRestart() throws Exception {
-    	
-    	String METHOD = "testDeciderTransitionFromStepWithinFlowAndAllowRestart";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "true");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "flow1step1");
-	        jobParameters.setProperty("fail.job.after.this.step", "None");
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("2:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-	    } catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
-    
-    /*
-     * @testName: testDeciderTransitionFromFlowAndAllowRestart
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromFlowAndAllowRestart() throws Exception {
-       
-    	String METHOD = "testDeciderTransitionFromFlowAndAllowRestart";
-    	
+		try {
+			Reporter.log("Build job parameters.<p>");    
 
-        try {
-        	Reporter.log("Build job parameters.<p>");    
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "true");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "flow1step2");
-	        jobParameters.setProperty("fail.job.after.this.step", "None");
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("3:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-	    } catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
-    
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
 
-    
-    /*
-     * @testName: testDeciderTransitionFromSplitAndAllowRestart
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromSplitAndAllowRestart() throws Exception {
-    	
-    	String METHOD = "testDeciderTransitionFromSplitAndAllowRestart";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "true");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "split1flow1step2");
-	        jobParameters.setProperty("stop.job.after.this.step2", "split1flow2step2");
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_from_split_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("4:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        jobParameters.setProperty("stop.job.after.this.step2", "None");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("4:split1flow2step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-    	} catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
-    
-    /*
-     * @testName: testDeciderTransitionFromStepAndAllowRestartFalse
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromStepAndAllowRestartFalse() throws Exception {
-    	
-    	String METHOD = "testDeciderTransitionFromStepAndAllowRestartFalse";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "false");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "step1");
-	        jobParameters.setProperty("fail.job.after.this.step", "None");
-	
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("1:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        restartJobParameters.setProperty("is.restart", "true");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-    	} catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
+			jobParameters.setProperty("allow.start.if.complete", "true");
 
-    /*
-     * @testName: testDeciderTransitionFromStepWithinFlowAndAllowRestartFalse
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromStepWithinFlowAndAllowRestartFalse() throws Exception {
-    	
-    	String METHOD = "testDeciderTransitionFromStepWithinFlowAndAllowRestartFalse";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "false");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "flow1step1");
-	        jobParameters.setProperty("fail.job.after.this.step", "None");
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("2:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        restartJobParameters.setProperty("is.restart", "true");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-    	} catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
-    
-    /*
-     * @testName: testDeciderTransitionFromFlowAndAllowRestartFalse
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromFlowAndAllowRestartFalse() throws Exception {
-    	
-    	String METHOD = "testDeciderTransitionFromFlowAndAllowRestartFalse";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "false");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "flow1step2");
-	        jobParameters.setProperty("fail.job.after.this.step", "None");
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("3:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        restartJobParameters.setProperty("is.restart", "true");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-    	} catch(Exception e) {
-			handleException(METHOD, e);
-		}
-    }
+			jobParameters.setProperty("stop.job.after.this.step", "None");
+			jobParameters.setProperty("fail.job.after.this.step", "step1");
 
-    
-    /*
-     * @testName: testDeciderTransitionFromSplitAndAllowRestartFalse
-     * @assertion: 
-     * @test_Strategy:
-     */
-    @Test
-    @org.junit.Test
-    public void testDeciderTransitionFromSplitAndAllowRestartFalse() throws Exception {
-    	
-    	String METHOD = "testDeciderTransitionFromSplitAndAllowRestartFalse";
-    	
-    	try {
-	        Reporter.log("Build job parameters.<p>");    
-	
-	        Properties jobParameters = new Properties();
-	        jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
-	        jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
-	        
-	        jobParameters.setProperty("allow.start.if.complete", "false");
-	        
-	        jobParameters.setProperty("stop.job.after.this.step", "split1flow1step2");
-	        jobParameters.setProperty("stop.job.after.this.step2", "split1flow2step2");
-	        
-	        Reporter.log("Invoke startJobAndWaitForResult<p>");
-	        JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_from_split_on_restart", jobParameters); 
-	
-	        assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
-	        assertObjEquals("4:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
-	        
-	        Properties restartJobParameters = new Properties(jobParameters);
-	        restartJobParameters.setProperty("stop.job.after.this.step", "None");
-	        restartJobParameters.setProperty("is.restart", "true");
-	        
-	        Reporter.log("Invoke restartJobAndWaitForResult<p>");
-	        JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
-	        
-	        assertObjEquals("4:split1flow2step2_CONTINUE", jobExec2.getExitStatus());
-	        assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
-    	} catch(Exception e) {
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.FAILED, jobExec.getBatchStatus());
+			assertObjEquals("1:"+FORCE_FAIL_EXITSTATUS, jobExec.getExitStatus());
+		} catch(Exception e) {
 			handleException(METHOD, e);
 		}
-    }
-    
+	}
 
-    
+	/*
+	 * @testName: testDeciderCannotbeFirstElementOnStart
+	 * @assertion: Tests that the first execution element of a job cannot be a decision 
+	 *  (it's a misnomer to say 'decider' but we'll leave the test name alone).
+	 * @test_Strategy: Since an implementation may either throw a JobStartException or 
+	 *  begin an execution which fails, we will pass the test if we see either JobStartException
+	 *  or BatchStatus of FAILED.
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderCannotbeFirstElementOnStart() throws Exception {
+
+		String METHOD = "testDeciderCannotbeFirstElementOnStart";
+
+		try {
+			boolean seenException = false;
+			JobExecution jobExec = null;
+			try {
+				jobExec = jobOp.startJobAndWaitForResult("decider_as_first_job_element_fails"); 
+			} catch (JobStartException e) {
+				Reporter.log("Caught JobStartException:  " + e.getLocalizedMessage());
+				seenException = true;
+			}
+
+			// If we caught an exception we'd expect that a JobExecution would not have been created,
+			// though we won't validate that it wasn't created.  
+
+			// If we didn't catch an exception that we require that the implementation fail the job execution.
+			if (!seenException) {
+				Reporter.log("Didn't catch JobStartException, Job Batch Status = " + jobExec.getBatchStatus());
+				assertWithMessage("Job should have failed because of decision as first execution element.", BatchStatus.FAILED, jobExec.getBatchStatus());
+			}
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	/*
+	 * @testName: testDeciderTransitionFromStepAndAllowRestart
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromStepAndAllowRestart() throws Exception {
+		String METHOD = "testDeciderTransitionFromStepAndAllowRestart";
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "true");
+
+			jobParameters.setProperty("stop.job.after.this.step", "step1");
+			jobParameters.setProperty("fail.job.after.this.step", "None");
+
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("1:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+
+
+	}
+
+	/*
+	 * @testName: testDeciderTransitionFromStepWithinFlowAndAllowRestart
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromStepWithinFlowAndAllowRestart() throws Exception {
+
+		String METHOD = "testDeciderTransitionFromStepWithinFlowAndAllowRestart";
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "true");
+
+			jobParameters.setProperty("stop.job.after.this.step", "flow1step1");
+			jobParameters.setProperty("fail.job.after.this.step", "None");
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("2:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	/*
+	 * @testName: testDeciderTransitionFromFlowAndAllowRestart
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromFlowAndAllowRestart() throws Exception {
+
+		String METHOD = "testDeciderTransitionFromFlowAndAllowRestart";
+
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "true");
+
+			jobParameters.setProperty("stop.job.after.this.step", "flow1step2");
+			jobParameters.setProperty("fail.job.after.this.step", "None");
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("3:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+
+
+	/*
+	 * @testName: testDeciderTransitionFromSplitAndAllowRestart
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromSplitAndAllowRestart() throws Exception {
+
+		String METHOD = "testDeciderTransitionFromSplitAndAllowRestart";
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "true");
+
+			jobParameters.setProperty("stop.job.after.this.step", "split1flow1step2");
+			jobParameters.setProperty("stop.job.after.this.step2", "split1flow2step2");
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_from_split_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("4:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+			jobParameters.setProperty("stop.job.after.this.step2", "None");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("4:split1flow2step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	/*
+	 * @testName: testDeciderTransitionFromStepAndAllowRestartFalse
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromStepAndAllowRestartFalse() throws Exception {
+
+		String METHOD = "testDeciderTransitionFromStepAndAllowRestartFalse";
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "false");
+
+			jobParameters.setProperty("stop.job.after.this.step", "step1");
+			jobParameters.setProperty("fail.job.after.this.step", "None");
+
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("1:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+			restartJobParameters.setProperty("is.restart", "true");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	/*
+	 * @testName: testDeciderTransitionFromStepWithinFlowAndAllowRestartFalse
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromStepWithinFlowAndAllowRestartFalse() throws Exception {
+
+		String METHOD = "testDeciderTransitionFromStepWithinFlowAndAllowRestartFalse";
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "false");
+
+			jobParameters.setProperty("stop.job.after.this.step", "flow1step1");
+			jobParameters.setProperty("fail.job.after.this.step", "None");
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("2:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+			restartJobParameters.setProperty("is.restart", "true");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+	/*
+	 * @testName: testDeciderTransitionFromFlowAndAllowRestartFalse
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromFlowAndAllowRestartFalse() throws Exception {
+
+		String METHOD = "testDeciderTransitionFromFlowAndAllowRestartFalse";
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "false");
+
+			jobParameters.setProperty("stop.job.after.this.step", "flow1step2");
+			jobParameters.setProperty("fail.job.after.this.step", "None");
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("3:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+			restartJobParameters.setProperty("is.restart", "true");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("3:flow1step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+
+	/*
+	 * @testName: testDeciderTransitionFromSplitAndAllowRestartFalse
+	 * @assertion: 
+	 * @test_Strategy:
+	 */
+	@Test
+	@org.junit.Test
+	public void testDeciderTransitionFromSplitAndAllowRestartFalse() throws Exception {
+
+		String METHOD = "testDeciderTransitionFromSplitAndAllowRestartFalse";
+
+		try {
+			Reporter.log("Build job parameters.<p>");    
+
+			Properties jobParameters = new Properties();
+			jobParameters.setProperty("step.complete.but.force.job.stopped.status", FORCE_STOP_EXITSTATUS);
+			jobParameters.setProperty("step.complete.but.force.job.failed.status", FORCE_FAIL_EXITSTATUS);
+
+			jobParameters.setProperty("allow.start.if.complete", "false");
+
+			jobParameters.setProperty("stop.job.after.this.step", "split1flow1step2");
+			jobParameters.setProperty("stop.job.after.this.step2", "split1flow2step2");
+
+			Reporter.log("Invoke startJobAndWaitForResult<p>");
+			JobExecution jobExec = jobOp.startJobAndWaitForResult("decider_transitions_from_split_on_restart", jobParameters); 
+
+			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			assertObjEquals("4:"+FORCE_STOP_EXITSTATUS, jobExec.getExitStatus());
+
+			Properties restartJobParameters = new Properties(jobParameters);
+			restartJobParameters.setProperty("stop.job.after.this.step", "None");
+			restartJobParameters.setProperty("is.restart", "true");
+
+			Reporter.log("Invoke restartJobAndWaitForResult<p>");
+			JobExecution jobExec2 = jobOp.restartJobAndWaitForResult(jobExec.getExecutionId(), restartJobParameters);
+
+			assertObjEquals("4:split1flow2step2_CONTINUE", jobExec2.getExitStatus());
+			assertObjEquals(BatchStatus.COMPLETED, jobExec2.getBatchStatus());
+		} catch(Exception e) {
+			handleException(METHOD, e);
+		}
+	}
+
+
+
 	private static void handleException(String methodName, Exception e) throws Exception {
 		Reporter.log("Caught exception: " + e.getMessage()+"<p>");
 		Reporter.log(methodName + " failed<p>");

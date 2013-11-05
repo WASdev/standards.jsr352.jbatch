@@ -17,6 +17,7 @@
 package com.ibm.jbatch.tck.artifacts.specialized;
 
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.batch.api.chunk.listener.SkipWriteListener;
@@ -40,12 +41,12 @@ public class NumbersSkipWriteListener implements SkipWriteListener {
     public void onSkipWriteItem(List w, Exception e) {
         Reporter.log("In onSkipWriteItem" + e + "<p>");
 
-        stepCtx.getProperties().setProperty("skip.write.item.invoked", "true");
+        ((Properties)stepCtx.getTransientUserData()).setProperty("skip.write.item.invoked", "true");
         if (e instanceof MyParentException){
-        	stepCtx.getProperties().setProperty("skip.write.item.match", "true");
+        	((Properties)stepCtx.getTransientUserData()).setProperty("skip.write.item.match", "true");
         }
         else {
-        	stepCtx.getProperties().setProperty("skip.write.item.match", "false");
+        	((Properties)stepCtx.getTransientUserData()).setProperty("skip.write.item.match", "false");
         }
     }
 }
