@@ -462,8 +462,10 @@ public class JobOperatorTests {
 			Reporter.log("Invoking stopJobAndWaitForResult for Execution #1<p>");
 			jobOp.stopJobAndWaitForResult(jobExec);
 
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec.getBatchStatus()+"<p>");
-			assertObjEquals(BatchStatus.STOPPED, jobExec.getBatchStatus());
+			JobExecution jobExec2 = jobOp.getJobExecution(jobExec.getExecutionId());
+			Reporter.log("execution #1 JobExecution getBatchStatus()="+jobExec2.getBatchStatus()+"<p>");
+			assertObjEquals(BatchStatus.STOPPED, jobExec2.getBatchStatus());
+
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}

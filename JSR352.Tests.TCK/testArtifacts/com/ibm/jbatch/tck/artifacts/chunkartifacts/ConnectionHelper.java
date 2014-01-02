@@ -16,6 +16,7 @@
  */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,21 +30,24 @@ public class ConnectionHelper {
 	private static final String CLASSNAME = ConnectionHelper.class.getName();
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 	
+	// The below is what is really used in CTS.  
+	//   public static final String jndiName = "java:module/env/jdbc/orderDB";
+	// I can't get this to work in Glassfish, so for internal use am sticking with what we had before.
 	public static final String jndiName = "jdbc/orderDB";
 	
-	public static final String INSERT_INVENTORY = "insert into inventory values(?, ?)";
+	public static final String INSERT_INVENTORY = "insert into app.inventory values(?, ?)";
 
-	public static final String UPDATE_INVENTORY = "update inventory set quantity = ? where itemID = ?";
+	public static final String UPDATE_INVENTORY = "update app.inventory set quantity = ? where itemID = ?";
 
-	public static final String SELECT_INVENTORY = "select itemID, quantity from inventory where itemID = ?";
+	public static final String SELECT_INVENTORY = "select itemID, quantity from app.inventory where itemID = ?";
 
-	public static final String DELETE_INVENTORY = "delete from Inventory where itemID = ?";
+	public static final String DELETE_INVENTORY = "delete from app.Inventory where itemID = ?";
 	
-	public static final String DELETE_ALL_ORDERS = "delete from Orders where orderID > 0";
+	public static final String DELETE_ALL_ORDERS = "delete from app.Orders where orderID > 0";
 	
-	public static final String INSERT_ORDER = "insert into Orders values(DEFAULT, ?, ?)";
+	public static final String INSERT_ORDER = "insert into app.Orders values(DEFAULT, ?, ?)";
 	
-	public static final String COUNT_ORDERS = "select COUNT(*) AS rowcount from Orders";
+	public static final String COUNT_ORDERS = "select COUNT(*) AS rowcount from app.Orders";
 	
 	/*
 	 * Connection where autoCommit defaults to true unless we are in a global tran where it gets ignored

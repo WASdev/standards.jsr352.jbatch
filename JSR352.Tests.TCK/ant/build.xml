@@ -1,5 +1,8 @@
 <project name="jsr352.tck" default="mainTckBuild" basedir="../">
 
+	<property name="ant.build.javac.source" value="1.6"/>
+	<property name="ant.build.javac.target" value="1.6"/>
+
 	<dirname property="jsr352.tck.basedir" file="${ant.file.jsr352.tck}"/>
 	<property file="${imported.basedir}/imported.properties"/>
 	<property name="workspace.home.dir" value="${jsr352.tck.basedir}/../.."/>

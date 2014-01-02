@@ -242,7 +242,7 @@ public class BatchletRestartStateMachineTests {
 			long lastExecutionId = 0L;
 			TCKJobExecutionWrapper exec = null;
 
-			for (int i = 1; i < 6; i++) {
+			for (int i = 1; i <= 6; i++) {
 				String execString = new Integer(i).toString();
 				Properties jobParameters = new Properties();
 				jobParameters.put("execution.number", execString);

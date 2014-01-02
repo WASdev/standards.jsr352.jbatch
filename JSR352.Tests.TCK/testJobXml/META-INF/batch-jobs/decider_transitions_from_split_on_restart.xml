@@ -18,7 +18,7 @@
 			</properties>
 		</batchlet>
 	</step>
-	<flow id="flow1" next="decider1">
+	<flow id="flow1" next="decider2">
 		<step id="flow1step1" next="deciderInFlow" allow-start-if-complete="#{jobParameters['allow.start.if.complete']}">
 			<batchlet ref="multipleExitStatusBatchlet">
 				<properties>
@@ -52,7 +52,7 @@
 			</batchlet>
 		</step>
 	</flow>
-	<split id="split1" next="decider1">
+	<split id="split1" next="decider3">
 		<flow id="split1flow1">
 			<step id="split1flow1step1" next="split1flow1step2" allow-start-if-complete="#{jobParameters['allow.start.if.complete']}">
 				<batchlet ref="multipleExitStatusBatchlet">
@@ -114,7 +114,26 @@
 		</properties>
 		<stop on="*:#{jobParameters['step.complete.but.force.job.stopped.status']}" />
 		<next on="*:step1_CONTINUE" to="flow1" />
+		<fail on="*" />
+	</decision>
+	<!--  Bug 5412 - Don't loopback to repeat decision elements within an execution -->
+	<decision id="decider2" ref="transitionDecider">
+		<properties>
+			<!-- We need this property only for the allow-start-if-complete=false tests. Otherwise we don't want 
+				to set it to prove that we rerun the completed step and use the new exit status. -->
+			<property name="is.restart" value="#{jobParameters['is.restart']}" />
+		</properties>
+		<stop on="*:#{jobParameters['step.complete.but.force.job.stopped.status']}" />
 		<next on="*:flow1step2_CONTINUE" to="split1" />
+		<fail on="*" />
+	</decision>
+	<decision id="decider3" ref="transitionDecider">
+		<properties>
+			<!-- We need this property only for the allow-start-if-complete=false tests. Otherwise we don't want 
+				to set it to prove that we rerun the completed step and use the new exit status. -->
+			<property name="is.restart" value="#{jobParameters['is.restart']}" />
+		</properties>
+		<stop on="*:#{jobParameters['step.complete.but.force.job.stopped.status']}" />
 		<end on="*:split1flow1step2_CONTINUE" />
 		<end on="*:split1flow2step2_CONTINUE" />
 		<fail on="*" />

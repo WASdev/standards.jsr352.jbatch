@@ -39,6 +39,7 @@ import com.ibm.jbatch.tck.utils.JobOperatorBridge;
 import com.ibm.jbatch.tck.utils.TCKJobExecutionWrapper;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.testng.Reporter;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -850,8 +851,9 @@ public class ChunkTests {
      *                  test that the job completes fails and that the application recognized the skippable exception 
      *                  that extends the unskippable is not treated as skippable.     
      */
-    @Test
     @org.junit.Test
+	@Test(enabled=false) // Disabling per Bug 5403
+	@Ignore("Bug 5403.  Decided to exclude this test. Hopefully will introduce a modified version in 1.1")
     public void testChunkSkipMultipleExceptions() throws Exception {
 
         String METHOD = "testChunkSkipRead";
@@ -1418,8 +1420,9 @@ public class ChunkTests {
      *                  as unretryable itself.
      *                  test that the job completes fails and that the application recognized the retryable exception that extends the unretryable is not treated as retryable.  
      */
-    @Test
     @org.junit.Test
+	@Test(enabled=false) // Disabling per Bug 5403
+	@Ignore("Bug 5403.  Decided to exclude this test. Hopefully will introduce a modified version in 1.1")
     public void testChunkRetryMultipleExceptions() throws Exception {
 
         String METHOD = "testChunkRetryMultipleExceptions";

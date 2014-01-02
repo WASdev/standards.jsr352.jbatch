@@ -173,8 +173,10 @@ public class ParallelExecutionTests {
 			Reporter.log("Invoke stopJobAndWaitForResult<p>");
 			jobOp.stopJobAndWaitForResult(jobExecution);
 
-			Reporter.log("JobExecution getBatchStatus()="+jobExecution.getBatchStatus()+"<p>");
-			assertObjEquals(BatchStatus.STOPPED, jobExecution.getBatchStatus());    
+			JobExecution jobExec2 = jobOp.getJobExecution(jobExecution.getExecutionId());
+			Reporter.log("JobExecution getBatchStatus()=" + jobExec2.getBatchStatus() + "<p>");
+			assertObjEquals(BatchStatus.STOPPED, jobExec2.getBatchStatus());
+
 		} catch (Exception e) {
 			handleException(METHOD, e);
 		}
@@ -215,8 +217,9 @@ public class ParallelExecutionTests {
 			Reporter.log("Invoke stopJobAndWaitForResult<p>");
 			jobOp.stopJobAndWaitForResult(origJobExecution);
 
-			Reporter.log("JobExecution getBatchStatus()=" + origJobExecution.getBatchStatus() + "<p>");
-			assertObjEquals(BatchStatus.STOPPED, origJobExecution.getBatchStatus());
+			JobExecution jobExec2 = jobOp.getJobExecution(origJobExecution.getExecutionId());
+			Reporter.log("JobExecution getBatchStatus()=" + jobExec2.getBatchStatus() + "<p>");
+			assertObjEquals(BatchStatus.STOPPED, jobExec2.getBatchStatus());
 
 			Reporter.log("Create restart job parameters<p>");
 			Properties restartJobParams = new Properties();

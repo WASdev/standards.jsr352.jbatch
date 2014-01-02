@@ -16,6 +16,7 @@
 */
 package com.ibm.jbatch.tck.artifacts.chunkartifacts;
 
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,13 +30,16 @@ public class RetryConnectionHelper {
 	private static final String CLASSNAME = RetryConnectionHelper.class.getName();
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 	
+	// The below is what is really used in CTS.  
+	//   public static final String jndiName = "java:module/env/jdbc/orderDB";
+	// I can't get this to work in Glassfish, so for internal use am sticking with what we had before.
 	public static final String jndiName = "jdbc/orderDB";
 	
-	public static final String INSERT_NUMBERS = "insert into numbers values(?, ?)";
+	public static final String INSERT_NUMBERS = "insert into app.numbers values(?, ?)";
 
-	public static final String UPDATE_NUMBERS = "update numbers set quantity = ? where item = ?";
+	public static final String UPDATE_NUMBERS = "update app.numbers set quantity = ? where item = ?";
 
-	public static final String SELECT_NUMBERS = "select item, quantity from numbers where item = ?";
+	public static final String SELECT_NUMBERS = "select item, quantity from app.numbers where item = ?";
 
 	
 	/*

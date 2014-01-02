@@ -90,20 +90,24 @@ public class StopOrFailOnExitStatusWithRestartTests {
 			Reporter.log("Sleep " +  sleepTime  + "<p>");
 			Thread.sleep(sleepTime); 
 
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
-			assertWithMessage("Hopefully job isn't finished already, if it is fail the test and use a longer sleep time within the batch step-related artifact.",
-					BatchStatus.STARTED, execution1.getBatchStatus());
+			BatchStatus exec1BatchStatus = execution1.getBatchStatus();
+			Reporter.log("execution #1 JobExecution getBatchStatus()="+ exec1BatchStatus + "<p>");
+			
+			// Bug 5614 - Tolerate STARTING state in addition to STARTED 
+			boolean startedOrStarting = exec1BatchStatus == BatchStatus.STARTED || exec1BatchStatus == BatchStatus.STARTING;
+			assertWithMessage("Found BatchStatus of " + exec1BatchStatus.toString() + "; Hopefully job isn't finished already, if it is fail the test and use a longer sleep time within the batch step-related artifact.", startedOrStarting);
 
 			Reporter.log("Invoke stopJobAndWaitForResult");
 			jobOp.stopJobAndWaitForResult(execution1);
 
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getBatchStatus()+"<p>");
+			JobExecution postStopJobExecution = jobOp.getJobExecution(execution1.getExecutionId());
+			Reporter.log("execution #1 JobExecution getBatchStatus()="+postStopJobExecution.getBatchStatus()+"<p>");
 			assertWithMessage("The stop should have taken effect by now, even though the batchlet artifact had control at the time of the stop, it should have returned control by now.", 
-					BatchStatus.STOPPED, execution1.getBatchStatus());  
+					BatchStatus.STOPPED, postStopJobExecution.getBatchStatus());  
 
-			Reporter.log("execution #1 JobExecution getBatchStatus()="+execution1.getExitStatus()+"<p>");
+			Reporter.log("execution #1 JobExecution getBatchStatus()="+postStopJobExecution.getExitStatus()+"<p>");
 			assertWithMessage("If this assert fails with an exit status of STOPPED, try increasing the sleep time. It's possible" +
-					"the JobOperator stop is being issued before the Batchlet has a chance to run.", "BATCHLET CANCELED BEFORE COMPLETION", execution1.getExitStatus());
+					"the JobOperator stop is being issued before the Batchlet has a chance to run.", "BATCHLET CANCELED BEFORE COMPLETION", postStopJobExecution.getExitStatus());
 
 			Reporter.log("Create job parameters for execution #2:<p>");
 			Reporter.log("run.indefinitely=false<p>");

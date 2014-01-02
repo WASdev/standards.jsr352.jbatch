@@ -406,8 +406,10 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderExitStatusIsSetOnJobContext
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 * @test_Strategy:  The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *   be equal to the return value of the last decision (i.e. Decider#decide). Note the test doesn't necessarily 
+	 *   confirm that the exit status is set on the JobContext directly, but this is the intent behind the test method name.
 	 */
 	@Test
 	@org.junit.Test
@@ -477,8 +479,17 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromStepAndAllowRestart
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed the 
+	 *                 StepExecution corresponding to the new, restarted execution (not the original execution). 
+	 *                 (See Sec. 10.8 Restart Processing)
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Steps are configured with allow-start-if-complete = true.  Job parameter is used to vary 
+	 *                     exit status on original vs. restart execution and, on restart, the
+	 *                     StepExecution exit status is asserted to be the one on the restarted execution. 
+	 *                     JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                     been performed.
 	 */
 	@Test
 	@org.junit.Test
@@ -521,8 +532,19 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromStepWithinFlowAndAllowRestart
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed the 
+	 *                 StepExecution corresponding to the new, restarted execution (not the original execution). 
+	 *                 (See Sec. 10.8 Restart Processing)
+	 *              3. Tests that a decision within a flow can terminate the top-level job through appropriate transition elements
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Steps are configured with allow-start-if-complete = true.  Job parameter is used to vary 
+	 *                     exit status on original vs. restart execution and, on restart, the
+	 *                     StepExecution exit status is asserted to be the one on the restarted execution. 
+	 *                     JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                     been performed.
+	 *                  3. A decision within a flow is configured to stop (based on exit status matching against a <stop> element).
 	 */
 	@Test
 	@org.junit.Test
@@ -563,8 +585,19 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromFlowAndAllowRestart
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed the 
+	 *                 StepExecution corresponding to the new, restarted execution (not the original execution). 
+	 *                 (See Sec. 10.8 Restart Processing)
+	 *              3. Tests that when a flow is followed by a decision, that the decision element's Decider#decide 
+	 *                 will be passed the StepExecution of the last step in the preceding flow.
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Steps are configured with allow-start-if-complete = true.  Job parameter is used to vary 
+	 *                     exit status on original vs. restart execution and, on restart, the
+	 *                     StepExecution exit status is asserted to be the one on the restarted execution. 
+	 *                     JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                     been performed.
 	 */
 	@Test
 	@org.junit.Test
@@ -607,8 +640,21 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromSplitAndAllowRestart
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed StepExecution(s) 
+	 *                 corresponding to the new, restarted execution (not the original execution). 
+	 *                 (See Sec. 10.8 Restart Processing)
+	 *              3. Tests that when a split is followed by a decision, that the decision element's Decider#decide 
+	 *                 will be passed the StepExecution(s) of each of the last steps of the member flows in the preceding split.
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Steps are configured with allow-start-if-complete = true.  Job parameter is used to vary 
+	 *                     exit status on original vs. restart execution and, on restart, the
+	 *                     StepExecution exit status is asserted to be the one on the restarted execution. 
+	 *                     JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                     been performed.
+	 *              	3. NOTE: TODO for future - Perhaps the strategy in asserting that EACH StepExecution is passed should be
+	 *                     tightened.  We could go further to assert that the full list of StepExecution(s) is what we'd expect.
 	 */
 	@Test
 	@org.junit.Test
@@ -650,8 +696,20 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromStepAndAllowRestartFalse
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed the 
+	 *                 StepExecution corresponding to the original execution (since the step doesn't re-execute on the
+	 *                 new, restart execution),  with the original StepExecution's exit status.
+	 *                 (See Sec. 10.8 Restart Processing)
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Allow-start-if-complete for the steps is set to "false".   (This is where the "False" in the
+	 *                  test method name comes from).   Decision is configured to expect the StepExecution exitStatus
+	 *                  from the original execution, and the test will fail if not.  I.e. the exit status from the earlier 
+	 *                  execution is confirmed to have been persisted. Job parameter is used to allow Decider#decide
+	 *                  to return a different result on restart.
+	 *                  JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                  been performed.
 	 */
 	@Test
 	@org.junit.Test
@@ -694,8 +752,22 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromStepWithinFlowAndAllowRestartFalse
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed the 
+	 *                 StepExecution corresponding to the original execution (since the step doesn't re-execute on the
+	 *                 new, restart execution),  with the original StepExecution's exit status.
+	 *                 (See Sec. 10.8 Restart Processing)
+	 *              3. Tests that a decision within a flow can terminate the top-level job through appropriate transition elements
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Allow-start-if-complete for the steps is set to "false".   (This is where the "False" in the
+	 *                     test method name comes from).   Decision is configured to expect the StepExecution exitStatus
+	 *                     from the original execution, and the test will fail if not.  I.e. the exit status from the earlier 
+	 *                     execution is confirmed to have been persisted. Job parameter is used to allow Decider#decide
+	 *                     to return a different result on restart.      
+	 *                     JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                     been performed.
+	 *                  3. A decision within a flow is configured to stop (based on exit status matching against a <stop> element).
 	 */
 	@Test
 	@org.junit.Test
@@ -737,8 +809,22 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromFlowAndAllowRestartFalse
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed the 
+	 *                 StepExecution corresponding to the original execution (since the step doesn't re-execute on the
+	 *                 new, restart execution),  with the original StepExecution's exit status.
+	 *                 (See Sec. 10.8 Restart Processing)
+	 *              3. Tests that when a flow is followed by a decision, that the decision element's Decider#decide 
+	 *                 will be passed the StepExecution of the last step in the preceding flow.
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Allow-start-if-complete for the steps is set to "false".   (This is where the "False" in the
+	 *                     test method name comes from).   Decision is configured to expect the StepExecution exitStatus
+	 *                     from the original execution, and the test will fail if not.  I.e. the exit status from the earlier 
+	 *                     execution is confirmed to have been persisted. Job parameter is used to allow Decider#decide
+	 *                     to return a different result on restart.
+	 *                     JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                     been performed.
 	 */
 	@Test
 	@org.junit.Test
@@ -781,8 +867,24 @@ public class DeciderTests implements StatusConstants {
 
 	/*
 	 * @testName: testDeciderTransitionFromSplitAndAllowRestartFalse
-	 * @assertion: 
-	 * @test_Strategy:
+	 * @assertion:  1. Tests that the exit return value of Decider#decide is set as the value of the job's exit status.
+	 *              2. Tests that the decider re-executes on a restart and the decide() method is passed the 
+	 *                 StepExecution corresponding to the original execution (since the step doesn't re-execute on the
+	 *                 new, restart execution),  with the original StepExecution's exit status.
+	 *                 (See Sec. 10.8 Restart Processing)
+	 *              3. Tests that when a split is followed by a decision, that the decision element's Decider#decide 
+	 *                 will be passed the StepExecution(s) of each of the last steps of the member flows in the preceding split.
+	 * @test_Strategy:  1. The exit status is not set via JobContext#setExitStatus or other means, but is asserted to 
+	 *                     be equal to the return value of the last decision (i.e. Decider#decide).
+	 *                  2. Allow-start-if-complete for the steps is set to "false".   (This is where the "False" in the
+	 *                     test method name comes from).   Decision is configured to expect the StepExecution exitStatus
+	 *                     from the original execution, and the test will fail if not.  I.e. the exit status from the earlier 
+	 *                     execution is confirmed to have been persisted. Job parameter is used to allow Decider#decide
+	 *                     to return a different result on restart.
+	 *                     JobContext transient user data is used to assert the correct number of decider invocations have
+	 *                     been performed.
+	 *              	3. NOTE: TODO for future - Perhaps the strategy in asserting that EACH StepExecution is passed should be
+	 *                     tightened.  We could go further to assert that the full list of StepExecution(s) is what we'd expect.
 	 */
 	@Test
 	@org.junit.Test
