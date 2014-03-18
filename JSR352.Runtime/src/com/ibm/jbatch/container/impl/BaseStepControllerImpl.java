@@ -407,7 +407,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 		if (jslProps != null) {
 			for (Property property : jslProps.getPropertyList()) {
-				Properties contextProps = stepContext.getProperties();
+				Properties contextProps = stepContext.getJSLProperties();
 				contextProps.setProperty(property.getName(), property.getValue());
 			}	
 		}

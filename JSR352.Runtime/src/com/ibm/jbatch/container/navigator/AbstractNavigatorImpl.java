@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.ibm.batch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
 import com.ibm.jbatch.container.jsl.Transition;
@@ -63,9 +64,14 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 			logger.fine(method + " , Found start element: " + startElement);
 		}                
 
-		// We allow repeating a decision
-		if (!(startElement instanceof Decision)) {
+		if (!disallowDecisionLoopback) {
+			// We allow repeating a decision
+			if (!(startElement instanceof Decision)) {
+				alreadyExecutedElements.put(startElement.getId(), startElement);
+			}
+		} else {
 			alreadyExecutedElements.put(startElement.getId(), startElement);
+			
 		}
 
 		validateElementType(startElement);
@@ -138,8 +144,12 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 				throw new IllegalTransitionException(errorMsg);
 			}
 
-			// We allow repeating a decision
-			if (!(nextExecutionElement instanceof Decision)) {
+			if (!disallowDecisionLoopback) {
+				// We allow repeating a decision
+				if (!(nextExecutionElement instanceof Decision)) {
+					alreadyExecutedElements.put(nextExecutionElement.getId(), nextExecutionElement);
+				}
+			} else {
 				alreadyExecutedElements.put(nextExecutionElement.getId(), nextExecutionElement);
 			}
 			logger.fine(method + " Transitioning to next element id = " + nextExecutionElement.getId());
@@ -246,4 +256,6 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 		}
 	}
 
+	@TCKExperimentProperty
+	private final static boolean disallowDecisionLoopback = Boolean.getBoolean("disallow.decision.loopback");
 }

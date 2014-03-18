@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import javax.batch.runtime.BatchStatus;
 
+import com.ibm.batch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
@@ -48,10 +49,21 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 	Timestamp updateTime;
 	Properties parameters;
 	String batchStatus;
+	BatchStatus cachedBatchStatus;
 	String exitStatus;
+	String cachedExitStatus;
 	Properties jobProperties = null;
 	String jobName = null;
 	private JobContextImpl jobContext = null;
+	
+	public JobOperatorJobExecution(long executionId, long instanceId) {
+		this.executionID = executionId;
+		this.instanceID = instanceId;
+		if (cacheFirstStatus) {
+			cachedBatchStatus = getCurrentBatchStatus();
+			cachedExitStatus = getCurrentExitStatus();
+		}
+	}
 
 	public void setJobName(String jobName) {
 		this.jobName = jobName;
@@ -61,26 +73,36 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 		this.jobContext = jobContext;
 	}
 
-	public JobOperatorJobExecution(long executionId, long instanceId) {
-		this.executionID = executionId;
-		this.instanceID = instanceId;
+	@Override
+	public BatchStatus getBatchStatus() {
+		if (cacheFirstStatus) { 
+			return cachedBatchStatus;
+		}  else {
+			return getCurrentBatchStatus();
+		}
 	}
 
 	@Override
-	public BatchStatus getBatchStatus() {
-
-		BatchStatus batchStatus  = null;
-
+	public String getExitStatus() {
+		if (cacheFirstStatus) { 
+			return cachedExitStatus;
+		}  else {
+			return getCurrentExitStatus();
+		}
+	}
+	
+	public BatchStatus getCurrentBatchStatus() {
+		BatchStatus batchStatusEnum = null;
 		if (this.jobContext != null){
-			batchStatus = this.jobContext.getBatchStatus();
+			batchStatusEnum = this.jobContext.getBatchStatus();
 			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
 		}
 		else {
 			// old job, retrieve from the backend
-			batchStatus = BatchStatus.valueOf(_persistenceManagementService.jobOperatorQueryJobExecutionBatchStatus(executionID));
+			batchStatusEnum = BatchStatus.valueOf(_persistenceManagementService.jobOperatorQueryJobExecutionBatchStatus(executionID));
 			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
 		}
-		return batchStatus;
+		return batchStatusEnum;
 	}
 
 	@Override
@@ -115,8 +137,7 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 		return executionID;
 	}
 
-	@Override
-	public String getExitStatus() {
+	public String getCurrentExitStatus() {
 
 		if (this.jobContext != null){
 			return this.jobContext.getExitStatus();
@@ -230,4 +251,6 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 		return buf.toString();
 	}
 
+	@TCKExperimentProperty
+	private final static boolean cacheFirstStatus = Boolean.getBoolean("JobExecution.cache.first.status");
 }

@@ -27,10 +27,15 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.StepContext;
 
+import com.ibm.batch.container.annotation.TCKExperimentProperty;
+
 public class StepContextImpl implements StepContext {
 
     private final static String sourceClass = StepContextImpl.class.getName();
     private final static Logger logger = Logger.getLogger(sourceClass);
+    
+    @TCKExperimentProperty
+    private final static boolean cloneContextProperties = Boolean.getBoolean("clone.context.properties");
     
     private String stepId = null;
     private BatchStatus batchStatus = null;
@@ -100,7 +105,17 @@ public class StepContextImpl implements StepContext {
 
     @Override
     public Properties getProperties() {
-        return properties;
+    	if (cloneContextProperties) {
+    		logger.fine("Cloning job context properties");
+    		return (Properties)properties.clone();
+    	} else {
+    		logger.fine("Returing ref (non-clone) to job context properties");
+    		return properties;
+    	}
+    }
+    
+    public Properties getJSLProperties() {
+    	return properties;
     }
 
     public Object getTransientUserData() {
@@ -116,10 +131,10 @@ public class StepContextImpl implements StepContext {
     }
 
     public void setBatchStatus(BatchStatus status) {
-        this.batchStatus = status;
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, "Batch status set to: " + status + " for step id:" + getStepName());
+            logger.log(Level.FINE, "Batch status set to: " + status + " from " + batchStatus + " for step id:" + getStepName());
         }
+        this.batchStatus = status;
     }
 
     @Override

@@ -333,7 +333,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 		//Start up to to the max num we are allowed from the num threads attribute
 		for (int i=0; i < this.threads && i < numTotalForThisExecution; i++, numCurrentSubmitted++) {
-			if (stepStatus.getStartCount() > 1 && !!!plan.getPartitionsOverride()) {
+			if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
 				batchKernel.restartGeneratedJob(parallelBatchWorkUnits.get(i));
 			} else {
 				batchKernel.startGeneratedJob(parallelBatchWorkUnits.get(i));
@@ -379,9 +379,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 					if (numCurrentSubmitted < numTotalForThisExecution) {
 						logger.fine("Submitting # " + numCurrentSubmitted + " out of " + numTotalForThisExecution + " total for this execution");
 						if (stepStatus.getStartCount() > 1) {
-							batchKernel.startGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
-						} else {
 							batchKernel.restartGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
+						} else {
+							batchKernel.startGeneratedJob(parallelBatchWorkUnits.get(numCurrentSubmitted++));
 						}
 						readyToSubmitAnother = false;
 					}

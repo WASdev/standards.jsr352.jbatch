@@ -76,6 +76,7 @@ public class BatchletStepControllerImpl extends SingleThreadedStepControllerImpl
 		if (wasStopIssued()) {
 			logger.fine("Exit without executing batchlet since stop() request has been received.");
 		} else {
+			logger.fine("Starting process() for the Batchlet Artifact");
 			String processRetVal = batchletProxy.process();
 
 			logger.fine("Set process() return value = " + processRetVal + " for possible use as exitStatus");

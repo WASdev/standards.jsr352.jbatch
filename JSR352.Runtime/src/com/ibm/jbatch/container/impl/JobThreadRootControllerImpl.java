@@ -136,7 +136,7 @@ public abstract class JobThreadRootControllerImpl implements IThreadRootControll
 		JSLProperties jslProps = jobModel.getProperties();
 
 		if (jslProps != null) {
-			Properties contextProps = jobContext.getProperties();
+			Properties contextProps = jobContext.getJSLProperties();
 			for (Property property : jslProps.getPropertyList()) {
 				contextProps.setProperty(property.getName(), property.getValue());
 			}	
@@ -280,16 +280,18 @@ public abstract class JobThreadRootControllerImpl implements IThreadRootControll
 
 	@Override
 	public void stop() {
-		if (jobContext.getBatchStatus().equals(BatchStatus.STARTING) || jobContext.getBatchStatus().equals(BatchStatus.STARTED)) {
-
+		if (jobContext.getBatchStatus().equals(BatchStatus.STARTED) ||
+				jobContext.getBatchStatus().equals(BatchStatus.STARTING)) {
 			batchStatusStopping();
-
-			IController stoppableElementController = transitioner.getCurrentStoppableElementController();
-			if (stoppableElementController != null) {
-				stoppableElementController.stop();
-			}
+			
+			if(transitioner != null) {
+				IController stoppableElementController = transitioner.getCurrentStoppableElementController();
+				if (stoppableElementController != null) {
+					stoppableElementController.stop();
+				}
+			} 
 		} else {
-			logger.info("Stop ignored since batch status for job is already set to: " + jobContext.getBatchStatus());
+			logger.info("Stop ignored since batch status for job is already set to: " + jobContext.getBatchStatus());	
 		}
 	}
 

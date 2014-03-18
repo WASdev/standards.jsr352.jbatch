@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.context.JobContext;
 
+import com.ibm.batch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.navigator.ModelNavigator;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.JSLProperties;
@@ -49,6 +50,8 @@ public class JobContextImpl implements JobContext {
 	private long instanceId;
 	protected String restartOn;
 
+	@TCKExperimentProperty
+	private final static boolean cloneContextProperties = Boolean.getBoolean("clone.context.properties");
 
 
 
@@ -102,8 +105,18 @@ public class JobContextImpl implements JobContext {
 	}
 
 
-	public Properties getProperties() {
+	public Properties getJSLProperties() {
 		return properties;
+	}
+	
+	public Properties getProperties() {
+		if (cloneContextProperties) {
+			logger.fine("Cloning job context properties");
+			return (Properties)properties.clone();
+		} else {
+			logger.fine("Returing ref (non-clone) to job context properties");
+			return properties;
+		}
 	}
 
 	public void setTransientUserData(Object data) {

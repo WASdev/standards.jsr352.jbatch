@@ -1107,7 +1107,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				stepEx.setStartTime(startTS);
 				stepEx.setEndTime(endTS);	
 				stepEx.setPersistentUserData(persistentData);
-
+				
+				logger.fine("BatchStatus: " + batchstatus + " | StepName: " + stepname + " | JobExecID: " + jobexecid + " | StepExecID: " + stepexecid);
+				
 				data.add(stepEx);
 			}
 		} catch (SQLException e) {
@@ -1195,7 +1197,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
                 stepEx.setEndTime(endTS);
                 stepEx.setPersistentUserData(persistentData);
 
-
+                logger.fine("stepExecution BatchStatus: " + batchstatus + " StepName: " + stepname);
             }
         } catch (SQLException e) {
             throw new PersistenceException(e);
@@ -1778,7 +1780,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
 		String exitStatus = stepContext.getExitStatus();
 		String stepName = stepContext.getStepName();
-
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("batchStatus: " + batchStatus + " | stepName: " + stepName + " | stepExecID: " + stepContext.getStepExecutionId());
+		}
 		long readCount = 0;
 		long writeCount = 0;
 		long commitCount = 0;
@@ -1883,7 +1887,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
 		String exitStatus = stepContext.getExitStatus();
 		String stepName = stepContext.getStepName();
-
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("batchStatus: " + batchStatus + " | stepName: " + stepName + " | stepExecID: " + stepContext.getStepExecutionId());
+		}
 		long readCount = 0;
 		long writeCount = 0;
 		long commitCount = 0;
@@ -2038,6 +2044,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	@Override
 	public void updateJobStatus(long instanceId, JobStatus jobStatus) {
 		logger.entering(CLASSNAME, "updateJobStatus", new Object[] {instanceId, jobStatus});
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("Updating Job Status to: " + jobStatus.getBatchStatus());
+		}
 		Connection conn = null;
 		PreparedStatement statement = null;
 		try {
@@ -2125,6 +2134,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	@Override
 	public void updateStepStatus(long stepExecutionId, StepStatus stepStatus) {
 		logger.entering(CLASSNAME, "updateStepStatus", new Object[] {stepExecutionId, stepStatus});
+
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine("Updating StepStatus to: " + stepStatus.getBatchStatus());
+		}
 		Connection conn = null;
 		PreparedStatement statement = null;
 		try {
