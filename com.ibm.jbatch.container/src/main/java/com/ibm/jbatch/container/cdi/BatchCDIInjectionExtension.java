@@ -27,13 +27,8 @@ import javax.enterprise.inject.spi.Extension;
 
 public class BatchCDIInjectionExtension implements Extension {
 
-    private final static String sourceClass = BatchProducerBean.class.getName();
-    private final static Logger logger = Logger.getLogger(sourceClass);
+    private final static Logger logger = Logger.getLogger(BatchCDIInjectionExtension.class.getName());
 
-
-
-
-    
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
 
         logger.log(Level.FINE, "BatchCDIInjectionExtension.beforeBeanDiscovery() bm=" + bm);
@@ -43,5 +38,4 @@ public class BatchCDIInjectionExtension implements Extension {
         
         logger.log(Level.FINE, "BatchCDIInjectionExtension.beforeBeanDiscovery() added annotated type: " + BatchProducerBean.class.getName());
     }
-
 }

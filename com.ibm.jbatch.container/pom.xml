@@ -131,7 +131,7 @@
 					<systemPropertyVariables>
 						<com.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE>true</com.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE>
 						<com.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE>com.ibm.jbatch.container.services.impl.GrowableThreadPoolServiceImpl</com.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE>
-						<com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl</com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>
+						<com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>com.ibm.jbatch.container.services.impl.WeldSEBatchArtifactFactoryImpl</com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
