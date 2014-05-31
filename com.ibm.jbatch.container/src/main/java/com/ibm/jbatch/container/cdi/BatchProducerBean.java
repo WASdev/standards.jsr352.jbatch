@@ -17,7 +17,6 @@
 package com.ibm.jbatch.container.cdi;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.batch.api.BatchProperty;
 import javax.batch.runtime.context.JobContext;
@@ -31,53 +30,36 @@ import com.ibm.jbatch.container.util.DependencyInjectionUtility;
 import com.ibm.jbatch.jsl.model.Property;
 
 public class BatchProducerBean {
-    
-    private final static String sourceClass = BatchProducerBean.class.getName();
-    private final static Logger logger = Logger.getLogger(sourceClass);
 
     @Produces
     @Dependent
     @BatchProperty
     public String produceProperty(InjectionPoint injectionPoint) {
-
-        //Seems like this is a CDI bug where null injection points are getting passed in. 
-        //We should be able to ignore these as a workaround.
-        if (injectionPoint != null) {
-
-            if (ProxyFactory.getInjectionReferences() == null) {
-                return null;
-            }
-            
-            
-            BatchProperty batchPropAnnotation = injectionPoint.getAnnotated().getAnnotation(BatchProperty.class);
-
-            // If a name is not supplied the batch property name defaults to
-            // the field name
-            String batchPropName = null;
-            if (batchPropAnnotation.name().equals("")) {
-                batchPropName = injectionPoint.getMember().getName();
-            } else {
-                batchPropName = batchPropAnnotation.name();
-            }
-
-            List<Property> propList = ProxyFactory.getInjectionReferences().getProps();
-
-            String propValue =  DependencyInjectionUtility.getPropertyValue(propList, batchPropName);
-            
-            return propValue;
-            
+        if (ProxyFactory.getInjectionReferences() == null) {
+            return null;
         }
 
-        return null;
+        BatchProperty batchPropAnnotation = injectionPoint.getAnnotated().getAnnotation(BatchProperty.class);
 
+        // If a name is not supplied the batch property name defaults to
+        // the field name
+        String batchPropName;
+        if (batchPropAnnotation.name().equals("")) {
+            batchPropName = injectionPoint.getMember().getName();
+        } else {
+            batchPropName = batchPropAnnotation.name();
+        }
+
+        List<Property> propList = ProxyFactory.getInjectionReferences().getProps();
+
+        return DependencyInjectionUtility.getPropertyValue(propList, batchPropName);
     }
 
     @Produces
     @Dependent
     public JobContext getJobContext() {
-        
         if (ProxyFactory.getInjectionReferences() != null) {
-                return ProxyFactory.getInjectionReferences().getJobContext();
+            return ProxyFactory.getInjectionReferences().getJobContext();
         } else {
             return null;
         }
@@ -86,17 +68,10 @@ public class BatchProducerBean {
     @Produces
     @Dependent
     public StepContext getStepContext() {
-        
         if (ProxyFactory.getInjectionReferences() != null) {
             return ProxyFactory.getInjectionReferences().getStepContext();
         } else {
             return null;
         }
-        
     }
-
-
-
-
-
 }
