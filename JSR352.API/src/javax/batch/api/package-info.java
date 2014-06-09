@@ -16,5 +16,6 @@
 */
 /**
  * Provides APIs used by Batch artifacts.
+ * @version 1.0
  */
 package javax.batch.api;

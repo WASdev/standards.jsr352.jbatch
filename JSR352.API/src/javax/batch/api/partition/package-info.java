@@ -16,5 +16,6 @@
 */
 /**
  * Provides APIs for artifacts specific to a Batch partitioned step.
+ * @version 1.0
  */
 package javax.batch.api.partition;

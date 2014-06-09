@@ -16,5 +16,6 @@
 */
 /**
  * Provides APIs for context classes allowing data sharing across Batch artifacts within a job instance and within a step.
+ * @version 1.0
  */
 package javax.batch.runtime.context;

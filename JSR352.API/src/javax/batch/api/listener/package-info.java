@@ -16,5 +16,6 @@
 */
 /**
  * Provides APIs defining Batch job-level and step-level listener artifacts.
+ * @version 1.0
  */
 package javax.batch.api.listener;

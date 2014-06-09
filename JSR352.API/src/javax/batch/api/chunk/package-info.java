@@ -16,5 +16,6 @@
 */
 /**
  * Provides APIs used by artifacts in a Batch chunk step.
+ * @version 1.0
  */
 package javax.batch.api.chunk;

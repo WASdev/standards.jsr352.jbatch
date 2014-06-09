@@ -16,5 +16,6 @@
 */
 /**
  * Provides APIs defining listener artifacts for a Batch chunk step.
+ * @version 1.0
  */
 package javax.batch.api.chunk.listener;
