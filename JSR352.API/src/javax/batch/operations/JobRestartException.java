@@ -16,11 +16,12 @@
  */
 package javax.batch.operations;
 
+/**
+ * JobRestartException is thrown when an error occurs during the JobOperator
+ * restart operation.
+ */
+
 public class JobRestartException extends BatchRuntimeException {
-	/**
-	 * JobRestartException is thrown when an error occurs during the JobOperator
-	 * restart operation.
-	 */
 	public JobRestartException() {
 	}
 

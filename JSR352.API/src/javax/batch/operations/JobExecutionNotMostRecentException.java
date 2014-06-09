@@ -16,6 +16,13 @@
  */
 package javax.batch.operations;
 
+import javax.batch.runtime.BatchStatus;
+
+/**
+ * JobExecutionNotMostRecentException is thrown when {@link JobOperator#restart(long, java.util.Properties)}
+ * is called on a job instance which has already completed (i.e. the most recent execution has ended with 
+ * {@link BatchStatus} of COMPLETED.
+ */
 public class JobExecutionNotMostRecentException extends BatchRuntimeException {
 
 	/**

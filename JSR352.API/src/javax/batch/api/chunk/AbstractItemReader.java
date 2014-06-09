@@ -30,7 +30,7 @@ public abstract class AbstractItemReader implements ItemReader {
 	 * any open time processing.  
 	 * The default implementation does nothing. 
 	 * 
-	 * @param last checkpoint for this ItemReader - may be null.
+	 * @param checkpoint last checkpoint for this ItemReader - may be null.
 	 * @throws Exception (or subclass) if an error occurs. 
 	 */
 	@Override

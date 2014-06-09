@@ -26,7 +26,11 @@ package javax.batch.api.partition;
  */
 public interface PartitionReducer {
 	
+	/**
+	 * An enum used in {@link PartitionReducer#afterPartitionedStepCompletion(PartitionStatus)}.
+	 */
 	public enum PartitionStatus {COMMIT, ROLLBACK}
+
 	/**
 	 * The beginPartitionedStep method receives 
 	 * control at the start of partition processing. 

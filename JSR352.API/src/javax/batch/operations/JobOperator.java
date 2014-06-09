@@ -42,7 +42,9 @@ public interface JobOperator {
 	 * Returns a set of all job names known to the batch runtime.
 	 * 
 	 * @return a set of job names.
-	 * @throws JobSecurityException
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public Set<String> getJobNames() throws JobSecurityException;
 	/**
@@ -51,8 +53,12 @@ public interface JobOperator {
 	 * @param jobName
 	 *            specifies the name of the job.
 	 * @return count of instances of the named job.
-	 * @throws NoSuchJobException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobException Thrown when the jobName parameter
+	 *   value doesn't correspond to a job recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public int getJobInstanceCount(String jobName) throws 
          NoSuchJobException,
@@ -72,8 +78,12 @@ public interface JobOperator {
 	 *            specifies the number of job instances to return from the
 	 *            starting position of the maximal list of job instances.
 	 * @return list of JobInstances. 
-	 * @throws NoSuchJobException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobException Thrown when the jobName parameter
+	 *   value doesn't correspond to a job recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public List<JobInstance> getJobInstances(String jobName, int start, 
         int count)throws NoSuchJobException, JobSecurityException;
@@ -85,8 +95,12 @@ public interface JobOperator {
 	 * @param jobName
 	 *            specifies the job name.
 	 * @return a list of execution ids. 
-	 * @throws NoSuchJobException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobException Thrown when the jobName parameter
+	 *   value doesn't correspond to a job recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public List<Long> getRunningExecutions(String jobName) throws 
         NoSuchJobException, JobSecurityException;
@@ -102,15 +116,19 @@ public interface JobOperator {
        * parameters. 
 	 * @return a Properties object containing the key/value job parameter 
        * pairs.
-	 * @throws NoSuchJobExecutionException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobExecutionException Thrown when the executionId parameter
+	 *   value doesn't correspond to an execution recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public Properties getParameters(long executionId)
 			throws NoSuchJobExecutionException, JobSecurityException;
 
 	/**
 	 * Creates a new job instance and starts the first execution of that
-	 * instance.
+	 * instance, which executes asynchronously.
 	 * 
 	 * Note the Job XML describing the job is first searched for by name
 	 * according to a means prescribed by the batch runtime implementation.
@@ -127,14 +145,21 @@ public interface JobOperator {
 	 *            specifies the keyword/value pairs for attribute 
 	 *            substitution in the Job XML.
 	 * @return executionId for the job execution.
-	 * @throws JobStartException
-	 * @throws JobSecurityException
+	 * @throws JobStartException Thrown for some error condition other than
+	 * those listed by the other checked exceptions on this method.  Note that
+	 * batch runtime implementations have a choice of detecting certain 
+	 * conditions via upfront validation or only later, during execution.  
+	 * This nets out to the fact that one implementation may throw 
+	 * JobStartException on a given error condition while another may not.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public long start(String jobXMLName, Properties jobParameters) throws 
         JobStartException, JobSecurityException;
 
 	/**
-	 * Restarts a failed or stopped job instance.
+	 * Restarts a failed or stopped job instance, which executes asynchronously.
 	 * 
 	 * @param executionId
 	 *            specifies the execution to to restart. This execution 
@@ -143,11 +168,23 @@ public interface JobOperator {
 	 *            specifies the keyword/value pairs for attribute 
 	 *            substitution in the Job XML.            
 	 * @return new executionId
-	 * @throws JobExecutionAlreadyCompleteException
-	 * @throws NoSuchJobExecutionException
-	 * @throws JobExecutionNotMostRecentException,
-	 * @throws JobRestartException
-	 * @throws JobSecurityException
+	 * @throws JobExecutionAlreadyCompleteException Thrown when the job execution
+	 * associated with executionId is currently complete.
+	 * @throws NoSuchJobExecutionException Thrown when the executionId parameter
+	 *   value doesn't correspond to an execution recognized by the 
+     *   implementation's repository.
+	 * @throws JobExecutionNotMostRecentException Thrown when the executionId
+	 * parameter value does not represent the most recent execution for the
+	 * corresponding job instance.
+	 * @throws JobRestartException Thrown for some error condition other than
+	 * those listed by the other checked exceptions on this method.  Note that
+	 * batch runtime implementations have a choice of detecting certain 
+	 * conditions via upfront validation or only later, during execution.  
+	 * This nets out to the fact that one implementation may throw 
+	 * JobRestartException on a given error condition while another may not.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public long restart(long executionId, Properties restartParameters)			
 			throws JobExecutionAlreadyCompleteException,
@@ -172,9 +209,14 @@ public interface JobOperator {
 	 * @param executionId
 	 *            specifies the job execution to stop. 
 	 *            The job execution must be running.
-	 * @throws NoSuchJobExecutionException
-	 * @throws JobExecutionNotRunningException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobExecutionException Thrown when the executionId parameter
+	 *   value doesn't correspond to an execution recognized by the 
+     *   implementation's repository.
+	 * @throws JobExecutionNotRunningException Thrown when the associated
+	 *   execution is not running (is not already STARTED or STARTING).
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public void stop(long executionId) throws NoSuchJobExecutionException,
 			JobExecutionNotRunningException, JobSecurityException;
@@ -187,9 +229,14 @@ public interface JobOperator {
 	 * 
 	 * @param executionId
 	 *            specifies the job execution to abandon.
-	 * @throws NoSuchJobExecutionException
-	 * @throws JobExecutionIsRunningException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobExecutionException Thrown when the executionId parameter
+	 *   value doesn't correspond to an execution recognized by the 
+     *   implementation's repository.
+	 * @throws JobExecutionIsRunningException Thrown when the job execution
+	 * associated with executionId is currently running
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public void abandon(long executionId) throws 
                   NoSuchJobExecutionException, 
@@ -202,8 +249,12 @@ public interface JobOperator {
 	 * @param executionId
 	 *            specifies the job execution.
 	 * @return job instance
-	 * @throws NoSuchJobExecutionException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobExecutionException Thrown when the executionId parameter
+	 *   value doesn't correspond to an execution recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public JobInstance getJobInstance(long executionId) throws 
         NoSuchJobExecutionException, JobSecurityException;
@@ -211,35 +262,47 @@ public interface JobOperator {
 	/**
 	 * Return all job executions belonging to the specified job instance.
 	 * 
-	 * @param jobInstance
+	 * @param instance
 	 *            specifies the job instance.
 	 * @return list of job executions
-	 * @throws NoSuchJobInstanceException
-	 * @throws JobSecurityException 
+	 * @throws NoSuchJobInstanceException Thrown when the instance parameter
+	 *   value doesn't correspond to a job instance recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public List<JobExecution> getJobExecutions(JobInstance instance) throws 
         NoSuchJobInstanceException, JobSecurityException;
 
 	/**
-	 * Return job execution for specified execution id
+	 * Return job execution for specified execution id.
 	 * 
 	 * @param executionId
 	 *            specifies the job execution.
 	 * @return job execution
-	 * @throws NoSuchJobExecutionException
-	 * @throws JobSecurityException
+	 * @throws NoSuchJobExecutionException Thrown when the executionId parameter
+	 *   value doesn't correspond to an execution recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
-	public JobExecution getJobExecution(long executionId) throws 
-        NoSuchJobExecutionException, JobSecurityException;
+	public JobExecution getJobExecution(long executionId) 
+        throws NoSuchJobExecutionException, JobSecurityException;
 
 	/**
 	 * Return StepExecutions for specified execution id. 
 	 * 
-	 * @param executionId
+	 * @param jobExecutionId
 	 *            specifies the job execution.
 	 * @return step executions (order not guaranteed)
-	 * @throws NoSuchJobExecutionException
-	 * @throws JobSecurityException 
+	 * @throws NoSuchJobExecutionException Thrown when the jobExecutionId parameter
+	 *   value doesn't correspond to an execution recognized by the 
+     *   implementation's repository.
+	 * @throws JobSecurityException Thrown when the implementation determines 
+	 *   that execution of this method with these parameters is not authorized
+	 *    (by some implementation-specific mechanism).
 	 */
 	public List<StepExecution> getStepExecutions(long jobExecutionId) 
         throws NoSuchJobExecutionException, JobSecurityException;	

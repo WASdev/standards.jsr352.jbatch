@@ -36,6 +36,7 @@ public abstract class AbstractItemReadListener implements
 	 * will do something after the item is read.  
 	 * The default implementation does nothing. 
 	 * 
+	 * @param item last item read by ItemReader
 	 * @throws Exception (or subclass) if an error occurs.
 	 */	
 	@Override
@@ -46,6 +47,7 @@ public abstract class AbstractItemReadListener implements
 	 * method throws an exception.  
 	 * The default implementation does nothing. 
 	 * 
+	 * @param ex exception thrown from readItem method
 	 * @throws Exception (or subclass) if an error occurs.
 	 */	
 	@Override

@@ -16,21 +16,23 @@
  */
 
 package javax.batch.runtime.context;
-/**
-  * 
-  * A StepContext provides information about the current step 
-  * of a job execution.
-  * 
-  */
+
 import java.io.Serializable;
 import java.util.Properties;
 
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.Metric;
 
+/**
+  * 
+  * A StepContext provides information about the current step 
+  * of a job execution.
+  * 
+  */
+
 public interface StepContext {	
 	/**
-	 * Get step name
+	 * Get step name.
 	 * @return value of 'id' attribute from <step>
 	 * 
 	 */	
@@ -56,7 +58,17 @@ public interface StepContext {
 	/**
 	 * The getProperties method returns the step level properties
 	 * specified in a job definition.
-	 * @return job level properties 
+	 * <p>
+	 * A couple notes:
+	 * <ul>
+	 * <li> There is no guarantee that the same Properties object instance is 
+	 * always returned in the same (step) scope. 
+	 * <li> Besides the properties which are defined in JSL within a child 
+	 * &lt;properties&gt; element of a &lt;step&gt; element, the batch runtime 
+	 * implementation may choose to include additional, implementation-defined 
+	 * properties.
+	 * </ul>
+	 * @return step level properties 
 	 */
 	public Properties getProperties();
 	/**
@@ -96,7 +108,7 @@ public interface StepContext {
 	 * the value specified through setExitStatus. If setExitStatus was not 
 	 * called or was called with a null value, then the exit status 
 	 * defaults to the batch status of the step. 
-	 * @Param status string 
+	 * @param status string 
 	 */
 	public void setExitStatus(String status);
 	/**

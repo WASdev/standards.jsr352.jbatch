@@ -16,20 +16,20 @@
  */
 
 package javax.batch.runtime.context;
+
+import java.util.Properties;
+import javax.batch.runtime.BatchStatus;
+
 /**
   * 
   * A JobContext provides information about the current  
   * job execution.
   *
   */
-import java.util.Properties;
-
-import javax.batch.runtime.BatchStatus;
-
 public interface JobContext  {
 	
 	/**
-	 * Get job name
+	 * Get job name.
 	 * @return value of 'id' attribute from <job>
 	 */
 	public String getJobName();
@@ -62,7 +62,18 @@ public interface JobContext  {
 
 	/**
 	 * The getProperties method returns the job level properties
-	 * specified in a job definition.
+	 * specified in a job definition.  
+	 * <p>
+	 * A couple notes:
+	 * <ul>
+	 * <li> There is no guarantee that the same Properties object instance 
+	 * is always returned in the same (job) scope. 
+	 * <li> Besides the properties which are defined in JSL within a child 
+	 * &lt;properties&gt; element of a &lt;job&gt; element, the batch runtime 
+	 * implementation may choose to	include additional, 
+	 * implementation-defined properties.
+	 * </ul>
+	 * 
 	 * @return job level properties 
 	 */
 	public Properties getProperties();
@@ -85,7 +96,7 @@ public interface JobContext  {
 	 * the value specified through setExitStatus. If setExitStatus was not 
 	 * called or was called with a null value, then the exit status 
 	 * defaults to the batch status of the job. 
-	 * @Param status string 
+	 * @param status exit status string 
 	 */
 	public void setExitStatus(String status);
 }

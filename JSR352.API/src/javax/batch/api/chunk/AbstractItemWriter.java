@@ -31,7 +31,7 @@ public abstract class AbstractItemWriter implements ItemWriter {
 	 * any open time processing.   
 	 * The default implementation does nothing. 
 	 * 
-	 * @param last checkpoint for this ItemReader
+	 * @param checkpoint last checkpoint for this ItemReader
 	 * @throws Exception (or subclass) if an error occurs.
 	 */
 	@Override

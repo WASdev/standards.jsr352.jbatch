@@ -28,11 +28,11 @@ public abstract class AbstractCheckpointAlgorithm implements
 	 * Override this method if the CheckpointAlgorithm
 	 * establishes a checkpoint timeout.   
 	 * The default implementation returns 0, which means
-	 * maximum permissible timeout allowed by 
+	 * the maximum permissible timeout allowed by the
 	 * runtime environment.  
 	 * 
-	 * @return the timeout interval to use for the next 
-	 * checkpoint interval
+	 * @return the timeout interval (expressed in seconds) 
+	 * to use for the next checkpoint interval 
 	 * @throws Exception (or subclass) if an error occurs. 
 	 */
 	@Override
@@ -41,7 +41,8 @@ public abstract class AbstractCheckpointAlgorithm implements
 	}
 	/**
 	 * Override this method for the CheckpointAlgorithm 
-	 * to do something before a checkpoint begins. 
+	 * to do something before a checkpoint interval 
+	 * begins (before the next chunk transaction begins). 
 	 * The default implementation does nothing.   
 	 * 
 	 * @throws Exception (or subclass) if an error occurs.
@@ -50,7 +51,7 @@ public abstract class AbstractCheckpointAlgorithm implements
 	public void beginCheckpoint() throws Exception {}
 	/**
 	 * Implement logic in this method
-       * to decide if a checkpoint should be taken now. 
+	 * to decide if a checkpoint should be taken now. 
 	 *    
 	 * @return boolean indicating whether or not 
 	 * to checkpoint now. 
@@ -60,7 +61,8 @@ public abstract class AbstractCheckpointAlgorithm implements
 	public abstract boolean isReadyToCheckpoint() throws Exception;
 	/**
 	 * Override this method for the CheckpointAlgorithm 
-	 * to do something after a checkpoint ends. 
+	 * to do something after a checkpoint is taken (after
+	 * the chunk transaction is committed). 
 	 * The default implementation does nothing.   
 	 * 
 	 * @throws Exception (or subclass) if an error occurs.

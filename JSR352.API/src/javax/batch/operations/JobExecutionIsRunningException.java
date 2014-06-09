@@ -16,6 +16,11 @@
  */
 package javax.batch.operations;
 
+/**
+ * JobExecutionIsRunningException is thrown when {@link JobOperator#abandon(long)} 
+ * is called on a job execution which is currently running (i.e. has a 
+ * {@link BatchStatus} of STARTING or STARTED).
+ */
 public class JobExecutionIsRunningException extends BatchRuntimeException {
 
 	/**

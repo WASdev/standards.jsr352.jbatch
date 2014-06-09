@@ -32,7 +32,7 @@ public interface ItemProcessor {
 	 * passed onto the item writer. Returning null 
      * indicates that the item should not be continued 
      * to be processed.  This effectively enables processItem 
-	 * to filter out unwanted input items.
+     * to filter out unwanted input items.
 	 * @param item specifies the input item to process.
 	 * @return output item to write.
 	 * @throws Exception thrown for any errors. 

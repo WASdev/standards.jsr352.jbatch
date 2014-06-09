@@ -17,6 +17,9 @@
 
 package javax.batch.runtime;
 
+/**
+ * Provides a view of a job instance to the JobOperator.
+ */
 public interface JobInstance {
 	/**
 	 * Get unique id for this JobInstance.

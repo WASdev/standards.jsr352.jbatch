@@ -16,6 +16,10 @@
  */
 package javax.batch.operations;
 
+/**
+ * JobExecutionNotRunningException is thrown when {@link JobOperator#stop(long)}
+ * is called on a job instance which is not currently running.
+ */
 public class JobExecutionNotRunningException extends BatchRuntimeException {
 
 	/**

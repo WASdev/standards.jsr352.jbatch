@@ -56,6 +56,9 @@ public interface ItemWriter {
 	 * The writeItems method writes a list of item
 	 * for the current chunk. 
 	 * @param items specifies the list of items to write.
+	 * This may be an empty list (e.g. if all the
+	 * items have been filtered out by the 
+	 * ItemProcessor).
 	 * @throws Exception is thrown for any errors.
 	 */
 	public void writeItems(List<Object> items) throws Exception;

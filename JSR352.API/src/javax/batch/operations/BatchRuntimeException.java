@@ -16,6 +16,10 @@
  */
 package javax.batch.operations;
 
+/**
+ * This is the common base class for all of the RuntimeException(s) thrown
+ * by the {@link JobOperator} API methods to its callers.
+ */
 public class BatchRuntimeException extends RuntimeException {
 
 	/**

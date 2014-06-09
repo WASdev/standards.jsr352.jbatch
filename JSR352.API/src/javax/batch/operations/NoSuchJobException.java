@@ -16,6 +16,11 @@
  */
 package javax.batch.operations;
 
+/**
+ * Used in JobOperator methods when referencing a job name value
+ * which does not correspond to a job recognized by the 
+ * implementation's repository.
+ */
 public class NoSuchJobException extends BatchRuntimeException {
 
 	/**

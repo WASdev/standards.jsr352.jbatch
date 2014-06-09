@@ -25,6 +25,12 @@ import java.lang.annotation.Target;
 import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
 
+/**
+ * Annotation used by batch artifacts to declare a 
+ * field which is injectable via a JSL-defined value
+ * (possibly leveraging Job XML substitutions).
+ *
+ */
 @Qualifier
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)

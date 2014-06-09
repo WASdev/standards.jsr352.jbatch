@@ -20,6 +20,9 @@ package javax.batch.runtime;
 import java.util.Date;
 import java.util.Properties;
 
+/**
+ * Provides a view of a job execution to the JobOperator.
+ */
 public interface JobExecution {
 	/**
 	 * Get unique id for this JobExecution.
@@ -42,7 +45,7 @@ public interface JobExecution {
 	 */
 	public Date getStartTime();
 	/**
-	 * Get time execution entered end status: COMPLETED, STOPPED, FAILED 
+	 * Get time execution entered end status: COMPLETED, STOPPED, FAILED.
 	 * @return date (time)
 	 */
 	public Date getEndTime();

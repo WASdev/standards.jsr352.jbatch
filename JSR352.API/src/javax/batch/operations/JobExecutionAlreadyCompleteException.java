@@ -16,12 +16,14 @@
  */
 package javax.batch.operations;
 
-public class JobExecutionAlreadyCompleteException extends BatchRuntimeException {
+import javax.batch.runtime.BatchStatus;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+/**
+ * JobExecutionAlreadyCompleteException is thrown when restart is called for an already-completed job instance.
+ * I.e. when {@link JobOperator#restart(long, java.util.Properties)} is called, and the most recent 
+ * job execution for the corresponding job instance has ended with {@link BatchStatus} of COMPLETED.
+ */
+public class JobExecutionAlreadyCompleteException extends BatchRuntimeException {
 
 	public JobExecutionAlreadyCompleteException() {
 		// TODO Auto-generated constructor stub
@@ -41,5 +43,7 @@ public class JobExecutionAlreadyCompleteException extends BatchRuntimeException 
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
+
+	private static final long serialVersionUID = 1L;
 
 }

@@ -20,6 +20,9 @@ package javax.batch.runtime;
 import java.util.Date;
 import java.io.Serializable;
 
+/**
+ * Provides a view of a step execution to the JobOperator.
+ */
 public interface StepExecution {
 	/**
 	 * Get unique id for this StepExecution.
@@ -52,12 +55,19 @@ public interface StepExecution {
 	 */
 	public String getExitStatus();
 	/**
-	 * Get user persistent data
+	 * Get persistent user data.
+	 * <p>
+	 * For a partitioned step, this returns
+	 * the persistent user data of the 
+	 * <code>StepContext</code> of the "top-level"
+	 * or main thread (the one the <code>PartitionAnalyzer</code>, etc.
+	 * execute on).   It does not return the persistent user
+	 * data of the partition threads. 
 	 * @return persistent data 
 	 */
 	public Serializable getPersistentUserData();
 	/**
-	 * Get step metrics
+	 * Get step metrics.
 	 * @return array of metrics 
 	 */
 	public Metric[] getMetrics();

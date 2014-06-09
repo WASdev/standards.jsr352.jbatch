@@ -16,12 +16,12 @@
  */
 package javax.batch.operations;
 
+/**
+ * SecurityException is thrown when an user is not authorized to run a JobOperator method, such as
+ * restart, stop, abandon, any getters, etc.
+ */
 public class JobSecurityException extends BatchRuntimeException {
 
-	/**
-	 * SecurityException is thrown when an user is not authorized to run a JobOperator method, such as
-	 * restart, stop, abandon, any getters, etc 
-	 */
 	public JobSecurityException() {
 	}
 

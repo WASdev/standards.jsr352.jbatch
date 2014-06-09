@@ -30,7 +30,7 @@ public interface ItemWriteListener {
 	 * The beforeWrite method receives control before 
 	 * an item writer is called to write its items.  The 
 	 * method receives the list of items sent to the item 
-	 * reader as an input.
+	 * writer as an input.
 	 * @param items specifies the items about to be 
 	 * written.
 	 * @throws Exception is thrown if an error occurs.
@@ -39,9 +39,8 @@ public interface ItemWriteListener {
 	/**
 	 * The afterWrite method receives control after an 
 	 * item writer writes its items.  The method receives the 
-	 * list of items sent to the item reader as an input.  
-	 * @param items specifies the items about to be 
-	 * written.
+	 * list of items sent to the item writer as an input.  
+	 * @param items specifies the items written by the item writer.
 	 * @throws Exception is thrown if an error occurs.
 	 */
 	public void afterWrite(List<Object> items) throws Exception;
@@ -49,10 +48,9 @@ public interface ItemWriteListener {
 	/**
 	 * The onWriteError method receives control after an 
 	 * item writer writeItems throws an exception.  The method 
-	 * receives the 
-	 * list of items sent to the item reader as an input. 
-	 * @param items specifies the items about to be 
-	 * written.
+	 * receives the list of items sent to the item writer as input. 
+	 * @param items specifies the items which the item writer
+	 * attempted to write.
 	 * @param ex specifies the exception thrown by the item 
 	 * writer.
 	 * @throws Exception is thrown if an error occurs.

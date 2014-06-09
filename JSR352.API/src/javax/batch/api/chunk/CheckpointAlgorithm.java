@@ -27,28 +27,32 @@ public interface CheckpointAlgorithm {
 	/**
 	 * The checkpointTimeout is invoked at the beginning of a new 
 	 * checkpoint interval for the purpose of establishing the checkpoint 
-	 * timeout. 
-	 * It is invoked before the next checkpoint transaction begins. This 
-       * method returns an integer value, 
-	 * which is the timeout value that will be used for the next checkpoint 
-	 * transaction.  This method is useful to automate the setting of the 
-	 * checkpoint timeout based on factors known outside the job 	 	 	 * definition. 
-	 * 
-	 * @param timeout specifies the checkpoint timeout value for the 	 * 
-       * next checkpoint interval.
-	 * @return the timeout interval to use for the next checkpoint interval 
+	 * timeout.
+	 * It is invoked before the next chunk transaction begins. This 
+	 * method returns an integer value, which is the timeout value 
+	 * (expressed in seconds) which will be used for the next chunk
+	 * transaction.  
+	 * This method is useful to automate the setting of the 
+	 * checkpoint timeout based on factors known outside the job 	
+	 * definition. 
+	 * A value of '0' signifies no maximum established by this 
+	 * CheckpointAlgorithm, i.e. the maximum permissible timeout allowed by 
+	 * the runtime environment.
+	 * @return the timeout interval (expressed in seconds) 
+	 * to use for the next checkpoint interval 
 	 * @throws Exception thrown for any errors.
-	 */
+	 */	
 	public int checkpointTimeout() throws Exception;
 	/**
 	 * The beginCheckpoint method is invoked before the 
-	 * next checkpoint interval begins. 
+	 * next checkpoint interval begins (before the next
+	 * chunk transaction begins).
 	 * @throws Exception thrown for any errors.
 	 */
 	public void beginCheckpoint() throws Exception;
 	/**
 	 * The isReadyToCheckpoint method is invoked by 
-	 * the batch runtime after each item processed 
+	 * the batch runtime after each item is processed 
 	 * to determine if now is the time to checkpoint 
 	 * the current chunk.  
 	 * @return boolean indicating whether or not 
@@ -58,7 +62,8 @@ public interface CheckpointAlgorithm {
 	public boolean isReadyToCheckpoint() throws Exception;
 	/**
 	 * The endCheckpoint method is invoked after the   
-	 * current checkpoint ends.
+	 * last checkpoint is taken (after the chunk
+	 * transaction is committed).
 	 * @throws Exception thrown for any errors.
 	 */
 	public void endCheckpoint() throws Exception;
