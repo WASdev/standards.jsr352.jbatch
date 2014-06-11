@@ -51,16 +51,9 @@ public class JobStatus implements Serializable, Cloneable{
 
     public JobStatus(long jobInstanceId) {
         this.jobInstanceId = jobInstanceId;
+        this.batchStatus = BatchStatus.STARTING;
     }
     
-    public JobStatus(JobInstance jobInstance) {
-        this.batchStatus = BatchStatus.STARTING;
-        //this.restartCount = 0;
-       // this.updateCount = 0;  
-        this.jobInstance = jobInstance;
-        this.jobInstanceId = jobInstance.getInstanceId();
-    }
-
     public long getJobInstanceId() {
         return this.jobInstanceId;
     }

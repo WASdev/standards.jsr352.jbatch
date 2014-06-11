@@ -101,47 +101,47 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 
     @Override
     public Date getStartTime() {
-       	if (stepContext != null){
+        if (stepContext != null){
     		return this.stepContext.getStartTimeTS();
-    	}
-    	else {
-    		if (startTime != null) {
-    			return new Date(startTime.getTime());
-    		} else {
-    			return null;
-    		}
-    	}
-    }
+        }
+        else {
+			if (startTime != null) {
+				return new Date(startTime.getTime());
+			} else {
+				return null;
+			}
+		}
+	}
 
-    @Override
-    public String toString() {
-        StringBuffer buf = new StringBuffer();
+	@Override
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
 		buf.append("---------------------------------------------------------------------------------");
 		buf.append("getStepName(): " + this.getStepName() + "\n");
 		buf.append("getStepExecutionId(): " + this.stepExecutionId + "\n");
-		buf.append("getJobExecutionId(): " + this.jobExecutionId + "\n");			
-		//buf.append("getCommitCount(): " + this.getCommitCount() + "\n");
-		//buf.append("getFilterCount(): " + this.getFilterCount() + "\n");
-		//buf.append("getProcessSkipCount(): " + this.getProcessSkipCount() + "\n");
-		//buf.append("getReadCount(): " + this.getReadCount() + "\n");
-		//buf.append("getReadSkipCount(): " + this.getReadSkipCount() + "\n");
-		//buf.append("getRollbackCount(): " + this.getRollbackCount() + "\n");
-		//buf.append("getWriteCount(): " + this.getWriteCount() + "\n");
-		//buf.append("getWriteSkipCount(): " + this.getWriteSkipCount() + "\n");
+		buf.append("getJobExecutionId(): " + this.jobExecutionId + "\n");
+		// buf.append("getCommitCount(): " + this.getCommitCount() + "\n");
+		// buf.append("getFilterCount(): " + this.getFilterCount() + "\n");
+		// buf.append("getProcessSkipCount(): " + this.getProcessSkipCount() + "\n");
+		// buf.append("getReadCount(): " + this.getReadCount() + "\n");
+		// buf.append("getReadSkipCount(): " + this.getReadSkipCount() + "\n");
+		// buf.append("getRollbackCount(): " + this.getRollbackCount() + "\n");
+		// buf.append("getWriteCount(): " + this.getWriteCount() + "\n");
+		// buf.append("getWriteSkipCount(): " + this.getWriteSkipCount() + "\n");
 		buf.append("getStartTime(): " + this.getStartTime() + "\n");
 		buf.append("getEndTime(): " + this.getEndTime() + "\n");
-		//buf.append("getLastUpdateTime(): " + this.getLastUpdateTime() + "\n");
+		// buf.append("getLastUpdateTime(): " + this.getLastUpdateTime() + "\n");
 		buf.append("getBatchStatus(): " + this.getBatchStatus().name() + "\n");
 		buf.append("getExitStatus(): " + this.getExitStatus());
 		buf.append("---------------------------------------------------------------------------------");
-        return buf.toString();
-    }
+		return buf.toString();
+	}
 
 	@Override
 	public Metric[] getMetrics() {
+
 		
-		
-		if (stepContext != null){
+		if (stepContext != null) {
 			return stepContext.getMetrics();
 		}
 		else {
@@ -161,8 +161,8 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 
 	@Override
 	public BatchStatus getBatchStatus() {
-		
-		if (stepContext != null){
+
+		if (stepContext != null) {
 			return this.stepContext.getBatchStatus();
 		}
 		else {
@@ -172,7 +172,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 
 	@Override
 	public Serializable getPersistentUserData() {
-		if (stepContext != null){
+		if (stepContext != null) {
 			return this.stepContext.getPersistentUserData();
 		}
 		else {
@@ -182,87 +182,87 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     
 	
 	// impl specific setters
-    public void setFilterCount(long filterCnt) {
-        this.filterCount = filterCnt;
-    }
+	public void setFilterCount(long filterCnt) {
+		this.filterCount = filterCnt;
+	}
 
-    public void setLastUpdateTime(Timestamp lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
-    }
+	public void setLastUpdateTime(Timestamp lastUpdateTime) {
+		this.lastUpdateTime = lastUpdateTime;
+	}
 
-    public void setProcessSkipCount(long processSkipCnt) {
-        this.processSkipCount = processSkipCnt;
-    }
+	public void setProcessSkipCount(long processSkipCnt) {
+		this.processSkipCount = processSkipCnt;
+	}
 
-    public void setReadCount(long readCnt) {
-        this.readCount = readCnt;
-    }
+	public void setReadCount(long readCnt) {
+		this.readCount = readCnt;
+	}
 
-    public void setReadSkipCount(long readSkipCnt) {
-        this.readSkipCount = readSkipCnt;
-    }
+	public void setReadSkipCount(long readSkipCnt) {
+		this.readSkipCount = readSkipCnt;
+	}
 
-    public void setRollbackCount(long rollbackCnt) {
-        this.rollbackCount = rollbackCnt;
-    }
-    
-    public void setJobExecutionId(long jobexecID){
-    	this.jobExecutionId = jobexecID;
-    }
-    
-    public void setStepExecutionId(long stepexecID){
-    	this.stepExecutionId = stepexecID;
-    }
+	public void setRollbackCount(long rollbackCnt) {
+		this.rollbackCount = rollbackCnt;
+	}
+	
+	public void setJobExecutionId(long jobexecID) {
+		this.jobExecutionId = jobexecID;
+	}
+	
+	public void setStepExecutionId(long stepexecID) {
+		this.stepExecutionId = stepexecID;
+	}
 
         
-    public void setStepName(String stepName) {
-        this.stepName = stepName;
-    }
+	public void setStepName(String stepName) {
+		this.stepName = stepName;
+	}
 
-    public void setWriteCount(long writeCnt) {     
-        this.writeCount = writeCnt;
-    }
+	public void setWriteCount(long writeCnt) {
+		this.writeCount = writeCnt;
+	}
 
-    public void setWriteSkipCount(long writeSkipCnt) {        
-        this.writeSkipCount = writeSkipCnt;
-    }  
+	public void setWriteSkipCount(long writeSkipCnt) {
+		this.writeSkipCount = writeSkipCnt;
+	}
     
-    public void setStepContext(StepContextImpl stepContext) {
-        this.stepContext = stepContext;
-    }
-    
-    public void setCommitCount(long commitCnt) {
-        this.commitCount = commitCnt;
-    }
-    
-    public void setBatchStatus(BatchStatus batchstatus){
-    	this.batchStatus = batchstatus;
-    }
-    
-    public void setExitStatus(String exitstatus){
-    	this.exitStatus = exitstatus;
-    }
-    
-    public void setStartTime(Timestamp startts){
-    	this.startTime = startts;
-    }
-    
-    public void setEndTime(Timestamp endts){
-    	this.endTime = endts;
-    }
-    
-    public void setPersistentUserData(Serializable data){
-    	this.persistentUserData = data;
-    }
+	public void setStepContext(StepContextImpl stepContext) {
+		this.stepContext = stepContext;
+	}
+	
+	public void setCommitCount(long commitCnt) {
+		this.commitCount = commitCnt;
+	}
+	
+	public void setBatchStatus(BatchStatus batchstatus) {
+		this.batchStatus = batchstatus;
+	}
+
+	public void setExitStatus(String exitstatus) {
+		this.exitStatus = exitstatus;
+	}
+
+	public void setStartTime(Timestamp startts) {
+		this.startTime = startts;
+	}
+
+	public void setEndTime(Timestamp endts) {
+		this.endTime = endts;
+	}
+
+	public void setPersistentUserData(Serializable data) {
+		this.persistentUserData = data;
+	}
 
 	@Override
 	public String getStepName() {
-    	if (stepContext != null){
-    		return this.stepContext.getStepName();
-    	}
-    	else {
-    		return stepName;
-    	}
+		if (stepContext != null) {
+			return this.stepContext.getStepName();
+		}
+		else {
+			return stepName;
+		}
 	}
 
 	public void setPlan(PartitionPlan plan) {

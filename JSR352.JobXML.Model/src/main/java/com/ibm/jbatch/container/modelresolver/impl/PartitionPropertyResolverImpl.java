@@ -46,23 +46,23 @@ public class PartitionPropertyResolverImpl extends AbstractPropertyResolver<Part
     	
         // Resolve all the properties defined for a partition
         if (partition.getMapper() != null) {
-        	PropertyResolverFactory.createPartitionMapperPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getMapper(), submittedProps, null);
+        	PropertyResolverFactory.createPartitionMapperPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getMapper(), submittedProps, parentProps);
         }
     	
         if (partition.getPlan() != null) {
-        	PropertyResolverFactory.createPartitionPlanPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getPlan(), submittedProps, null);
+        	PropertyResolverFactory.createPartitionPlanPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getPlan(), submittedProps, parentProps);
         }
         
         if (partition.getCollector() != null) {
-        	PropertyResolverFactory.createCollectorPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getCollector(), submittedProps, null);
+        	PropertyResolverFactory.createCollectorPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getCollector(), submittedProps, parentProps);
         }
         
         if (partition.getAnalyzer() != null) {
-        	PropertyResolverFactory.createAnalyzerPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getAnalyzer(), submittedProps, null);
+        	PropertyResolverFactory.createAnalyzerPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getAnalyzer(), submittedProps, parentProps);
         }
         
         if (partition.getReducer() != null) {
-        	PropertyResolverFactory.createPartitionReducerPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getReducer(), submittedProps, null);
+        	PropertyResolverFactory.createPartitionReducerPropertyResolver(this.isPartitionedStep).substituteProperties(partition.getReducer(), submittedProps, parentProps);
         }
         
         return partition;

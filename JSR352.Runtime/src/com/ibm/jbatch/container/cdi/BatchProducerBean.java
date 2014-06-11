@@ -37,7 +37,6 @@ public class BatchProducerBean {
 
     @Produces
     @Dependent
-    @BatchProperty
     public String produceProperty(InjectionPoint injectionPoint) {
 
         //Seems like this is a CDI bug where null injection points are getting passed in. 
