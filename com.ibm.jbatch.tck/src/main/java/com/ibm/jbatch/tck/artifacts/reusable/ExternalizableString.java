@@ -23,6 +23,15 @@ import java.io.ObjectOutput;
 
 public class ExternalizableString implements Externalizable {
 
+	private String string;
+
+	public ExternalizableString() {
+	}
+
+	public ExternalizableString(final String string) {
+		this.string = string;
+	}
+
 	public String getString() {
 		return string;
 	}
@@ -36,25 +45,14 @@ public class ExternalizableString implements Externalizable {
 		return this.string;
 	}
 	
-	private String string;
-	
-	public ExternalizableString(String string) {
-		this.string = string;
-	}
-	
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		
 		string = (String)in.readObject();
-
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
-		
 		out.writeObject(string);
-
 	}
-
 }
