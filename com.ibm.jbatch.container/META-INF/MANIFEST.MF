@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: com.ibm.jbatch-ri-runtime
-Bundle-SymbolicName: com.ibm.jbatch-ri-runtime
+Bundle-Name: com.ibm.jbatch.container
+Bundle-SymbolicName: com.ibm.jbatch.container
 Bundle-Version: 1.0
 Export-Package: com.ibm.jbatch.container,
  com.ibm.jbatch.container.api.impl,
@@ -12,12 +12,11 @@ Export-Package: com.ibm.jbatch.container,
  com.ibm.jbatch.container.util,
  com.ibm.jbatch.container.validation,
  com.ibm.jbatch.spi.services
-Import-Package: com.ibm.jbatch.container.jsl,
+ com.ibm.jbatch.container.jsl,
  com.ibm.jbatch.container.jsl.impl,
  com.ibm.jbatch.container.modelresolver,
  com.ibm.jbatch.jsl.model,
- com.ibm.jbatch.spi,
- com.ibm.websphere.asynchbeans;resolution:=optional,
+Import-Package: com.ibm.jbatch.spi,
  javax.batch.api,
  javax.batch.api.chunk,
  javax.batch.api.chunk.listener,

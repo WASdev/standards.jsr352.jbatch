@@ -1,10 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <!-- Sticking with the groupId of the original release.   Should this be separated out as a pure-RI name?  Not sure of the
+         conventions/expectations here. -->
     <groupId>javax.batch</groupId>
     <artifactId>jbatch</artifactId>
-    <version>1.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-	<name>JSR-352 RI</name>
+	<name>com.ibm.jbatch</name>
 	<description>
 		Batch processing is a pervasive workload pattern, expressed by a distinct application organization and
 		execution model. It is found across virtually every industry, applied to such tasks as statement
@@ -113,13 +115,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <modules>
-	<module>JSR352.API</module>
-	<module>JSR352.JobXML.Model</module>
-	<module>JSR352.Runtime</module>
-	<module>JSR352.RI.SPI</module>
-	<module>JSR352.TCK.SPI</module>
-	<module>JSR352.Tests.TCK</module>
-	<module>JSR352.Aggregation/runtime</module>
+	<module>javax.batch</module>
+	<module>com.ibm.jbatch.container</module>
+	<module>com.ibm.jbatch.spi</module>
+	<module>com.ibm.jbatch.tck</module>
+	<module>com.ibm.jbatch.tck.spi</module>
     </modules>
 
 	<build>
@@ -142,7 +142,7 @@
 				<configuration>
 					<bottom>
 					<![CDATA[
-					<p align="left">&#169; Copyright IBM Corp. 2013<br>Licensed under the Apache License, Version 2.0
+					<p align="left">&#169; Copyright IBM Corp. 2014<br>Licensed under the Apache License, Version 2.0
 					]]>
 					</bottom>
 				</configuration>
@@ -166,29 +166,15 @@
 							<excludes>
 								<exclude>**/*.txt</exclude>
 								<exclude>**/*.sql</exclude>
-								<exclude>LICENSE.txt</exclude>
-								<exclude>Documentation</exclude>
-								<exclude>JSR352.Aggregation</exclude>
-								<exclude>JSR352.BinaryDependencies</exclude>
-								<exclude>JSR352.BinaryDependencies.WeDoNotShip</exclude>
-								<exclude>JSR352.JEE.CDI.Integration</exclude>
-								<exclude>JSR352.TCK.CTS</exclude>
-								<exclude>JSR352.WASExtensions</exclude>
-								<exclude>Legal.and.Release.Utils</exclude>
 								<exclude>**/build.properties</exclude>
 								<exclude>**/build.xml</exclude>
 								<exclude>**/src/test/resources/**</exclude>
 								<exclude>**/src/test/data/**</exclude>
 								<exclude>**/bin/**</exclude>
 								<exclude>**/jaxbgen/**</exclude>
-								<exclude>**/toStringStubs/**</exclude>
 								<exclude>**/*.html</exclude>
 								<exclude>**/*.css</exclude>
-								<exclude>**/.jazzignore</exclude>
 								<exclude>**/*.ddl</exclude>
-								<exclude>**/testJunitsBin/**</exclude>
-								<exclude>**/testArtifactsBin/**</exclude>
-								<exclude>**/testResources/**</exclude>
 								<exclude>**/jsr352-tck.properties</exclude>
 								<exclude>**/jsr352-tck-impl-*.xml</exclude>
 								<exclude>**/testng-class.xml</exclude>
@@ -196,12 +182,11 @@
 								<exclude>**/beans.xml</exclude>
 							</excludes>
 							<includes>
-								<include>JSR352.API/**</include>
-								<include>JSR352.JobXML.Model/**</include>
-								<include>JSR352.Runtime/**</include>
-								<include>JSR352.RI.SPI/**</include>
-								<include>JSR352.TCK.SPI/**</include>
-								<include>JSR352.Tests.TCK/**</include>
+								<include>javax.batch/**</include>
+								<include>com.ibm.jbatch.container/**</include>
+								<include>com.ibm.jbatch.spi/**</include>
+								<include>com.ibm.jbatch.tck.spi/**</include>
+								<include>com.ibm.jbatch.tck/**</include>
 							</includes>
 						</configuration>
 						<executions>

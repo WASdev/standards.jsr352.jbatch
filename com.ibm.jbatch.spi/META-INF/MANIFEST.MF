@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: com.ibm.jbatch-ri-spi
-Bundle-SymbolicName: com.ibm.jbatch-ri-spi
+Bundle-Name: com.ibm.jbatch.spi
+Bundle-SymbolicName: com.ibm.jbatch.spi
 Bundle-Version: 1.0
 Export-Package: com.ibm.jbatch.spi
