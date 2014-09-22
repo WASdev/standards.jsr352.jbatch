@@ -40,7 +40,7 @@ import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
 
-public class ImplSpecificJobOperatorTests {
+public class ImplSpecificJobOperatorTest {
 
 	static JobOperator jobOp = null;
 

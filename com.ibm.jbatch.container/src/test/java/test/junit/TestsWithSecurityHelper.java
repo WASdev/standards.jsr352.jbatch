@@ -28,6 +28,7 @@ import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobInstance;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import test.utils.TestSecurityHelper;
@@ -58,6 +59,7 @@ public class TestsWithSecurityHelper {
 	}
 
 	@Test
+	@Ignore("This is only useful with a job repository that has had this test already run against it")
 	public void getJobInstancesAndGetJobInstanceCount() throws Exception {
 		int COUNT = 5;
 		int instanceCounts[] = new int[NUM_HELPERS];

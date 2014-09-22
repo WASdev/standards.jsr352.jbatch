@@ -32,7 +32,7 @@ import javax.batch.runtime.StepExecution;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class StepFailureTests {
+public class StepFailureTest {
 
 	static JobOperator jobOp = null;
 	

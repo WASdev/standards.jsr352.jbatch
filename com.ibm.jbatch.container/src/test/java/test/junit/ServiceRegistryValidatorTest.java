@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import com.ibm.jbatch.container.servicesmanager.ServiceTypes;
 
-public class ServiceRegistryValidator {
+public class ServiceRegistryValidatorTest {
 
 	@Test
 	public void testCorrectNumberOfEntries() {

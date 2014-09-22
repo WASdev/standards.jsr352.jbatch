@@ -23,14 +23,14 @@ import org.junit.Test;
 
 import com.ibm.jbatch.container.jsl.impl.GlobPatternMatcherImpl;
 
-public class PatternMatchingTests {
+public class PatternMatchingTest {
 
 	private boolean matchSpecifiedExitStatus(String toMatch, String pattern) {
 		GlobPatternMatcherImpl matcher = new GlobPatternMatcherImpl();
 		return matcher.matchWithoutBackslashEscape(toMatch, pattern);
 	}
 
-	public PatternMatchingTests() {
+	public PatternMatchingTest() {
 		super();
 	}
 

@@ -16,19 +16,31 @@
  */
 package test.artifacts;
 
-import java.io.Serializable;
-
-import javax.batch.api.partition.AbstractPartitionAnalyzer;
+import javax.batch.api.BatchProperty;
+import javax.batch.api.partition.PartitionCollector;
+import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
-public class PartitionPropertyAnalyzer extends AbstractPartitionAnalyzer{
+public class PartitionPropertyCollector implements PartitionCollector{
 
+	@Inject
+	JobContext jobCtx;
+	
 	@Inject
 	StepContext stepCtx;
 	
+	@Inject @BatchProperty(name="xx")
+	String stepProp;
+
+	
 	@Override
-	public void analyzeCollectorData(Serializable data) throws Exception {
-		stepCtx.setPersistentUserData(stepCtx.getPersistentUserData() + (String) data);
+	public String collectPartitionData() throws Exception {
+		String propData = String.valueOf(stepCtx.getProperties());
+		String[] tokens = propData.split("[{}=]");
+		String value = tokens[2];
+		String data = ":#" + value + "$" + stepProp;
+		return data;
 	}
+
 }

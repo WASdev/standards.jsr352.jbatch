@@ -29,7 +29,7 @@ import javax.batch.runtime.StepExecution;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class PartitionStopTests {
+public class PartitionStopTest {
 	
 	private static JobOperator jobOp = null;
 	private static int sleepTime = 1000;
