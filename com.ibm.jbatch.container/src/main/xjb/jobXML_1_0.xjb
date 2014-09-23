@@ -4,7 +4,7 @@
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     jaxb:version="2.1">
 
-    <jaxb:bindings schemaLocation="jobXML_1_0.xsd" node="/xsd:schema">
+    <jaxb:bindings schemaLocation="../xsd/jobXML_1_0.xsd" node="/xsd:schema">
         <jaxb:schemaBindings >
           <jaxb:package name="com.ibm.jbatch.jsl.model"/>
         </jaxb:schemaBindings>

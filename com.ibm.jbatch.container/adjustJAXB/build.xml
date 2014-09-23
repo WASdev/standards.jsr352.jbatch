@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
-<project name="gen.xjcl.model" default="generate">
+<project name="gen.xjcl.model" default="adjustGeneratedCode">
 		
-  <property name="proj.dir" value="${basedir}/.."/>
-  <property name="prereq.dir" value="${proj.dir}/prereqs"/>
-  <property name="generate.dir" value = "${proj.dir}/jaxbgen"/>
+  <property name="generate.dir" value = "${basedir}/target/generated-sources/jaxb"/>
   <property name="generate.pkg.dir" value = "${generate.dir}/com/ibm/jbatch/jsl/model"/>
-  <property name="work.dir" value = "${proj.dir}/work"/>
-  <property name="stubs.dir" value = "${proj.dir}/toStringAndExtraAppendedCodeStubs"/>
+  <property name="stubs.dir" value = "${basedir}/adjustJAXB/toStringAndExtraAppendedCodeStubs"/>
 	
+  <!--
   <target name="generateJAXB">
 		<taskdef name="xjc" classname="com.ibm.jtc.jax.tools.xjc.XJC2Task">
 			<classpath>
@@ -25,13 +23,12 @@
 			<schema dir="${proj.dir}/src/main/resources">
 			 	<include name="**/jobXML_1_0.xsd"/>
 			</schema>
-			<!-- Uncomment if we want to switch to only doing codegen when XSD or XJC has changed. 
             <depends dir="${proj.dir}/src/main/resources" includes="**/*"/>
             <produces dir="${generate.dir}" includes="**/*.java"/>
-            --> 
 		</xjc>
 	</target>
 	
+            --> 
 	<!-- 
 	     The goal here is to have a set of JAXBs implement a common interface (the one that the property from the 
 	     containing Job specifies:  com.ibm.jbatch.container.jsl.ExecutionElement.
@@ -50,7 +47,7 @@
 	<target name="AddExecutionElement.Intf.ToJAXBs">
 		<replaceregexp 
 		  match="public class (.*) \{"
-		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* since we can't seem to get JAXB's XJC to generate ${line.separator} \* elements implementing a common interface. ${line.separator} \*${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.jbatch.container.jsl.ExecutionElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.jbatch.container.jsl.ExecutionElement \{">  
+		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* ${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.jbatch.container.jsl.ExecutionElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.jbatch.container.jsl.ExecutionElement \{">  
 		               
 			<fileset dir="${generate.dir}">
 				<include name="**/Decision.java"/>
@@ -80,7 +77,7 @@
 	<target name="AddTransitionElement.Intf.ToJAXBs">
 		<replaceregexp 
 		  match="public class (.*) \{"
-		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* since we can't seem to get JAXB's XJC to generate ${line.separator} \* elements implementing a common interface. ${line.separator} \*${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.jbatch.container.jsl.TransitionElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.jbatch.container.jsl.TransitionElement \{">  
+		  replace="/\*\*\${line.separator} \* Modified post-XJC-gen by custom JSR352 RI build logic ${line.separator} \* ${line.separator} \* This custom logic adds the interface implementation : ${line.separator} \*      implements com.ibm.jbatch.container.jsl.TransitionElement ${line.separator} \*/${line.separator} public class \1 implements com.ibm.jbatch.container.jsl.TransitionElement \{">  
 		               
 			<fileset dir="${generate.dir}">
 				<include name="**/End.java"/>
@@ -93,7 +90,10 @@
 	</target>
 
 	<target name="addInterfaces" depends="AddExecutionElement.Intf.ToJAXBs, AddTransitionElement.Intf.ToJAXBs"/>
+    <!--
 	<target name="generate" depends="generateJAXB, addInterfaces, addExtraCodes"/>
+-->
+	<target name="adjustGeneratedCode" depends="addInterfaces, addExtraCodes"/>
 	
 	<macrodef name="appendExtraCode">
 	  <attribute name="class"/>

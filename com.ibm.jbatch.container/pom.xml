@@ -98,6 +98,24 @@
 							<encoding>${project.build.sourceEncoding}</encoding>
 						</configuration>
 					</plugin> 
+                    <plugin> 
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>jaxb2-maven-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>xjc</id>
+                                <goals>
+                                    <goal>xjc</goal>
+                                </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/xsd</schemaDirectory>
+                            <schemaFiles>jobXML_1_0.xsd</schemaFiles>
+                            <target>2.1</target>
+                        </configuration>
+                            </execution>
+                       </executions>
+                    </plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jar-plugin</artifactId>
@@ -123,7 +141,27 @@
 									<goal>run</goal>
 								</goals>
 							</execution>
+							<execution>
+                                <id>ant-process-sources</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<tasks>
+										<echo>Adjusting generated JAXBs</echo>
+                                        <ant antfile="${basedir}/adjustJAXB/build.xml"/>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
 						</executions>
+                                 <dependencies>
+           <dependency>
+             <groupId>ant</groupId>
+             <artifactId>ant-nodeps</artifactId>
+             <version>1.6.5</version>
+           </dependency>
+         </dependencies>
 					</plugin>
 				</plugins>
 			</build>
@@ -155,6 +193,23 @@
 							<encoding>${project.build.sourceEncoding}</encoding>
 						</configuration>
 					</plugin>
+                    <plugin> 
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>jaxb2-maven-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>xjc</id>
+                                <goals>
+                                    <goal>xjc</goal>
+                                </goals>
+                        <configuration>
+                            <schemaFiles>jobXML_1_0.xsd</schemaFiles>
+                            <target>2.1</target>
+                        </configuration>
+                            </execution>
+                       </executions>
+                    </plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jar-plugin</artifactId>
@@ -180,7 +235,27 @@
 									<goal>run</goal>
 								</goals>
 							</execution>
+							<execution>
+                                <id>ant-process-sources</id>
+								<phase>process-sources</phase>
+								<configuration>
+									<tasks>
+										<echo>Adjusting generated JAXBs</echo>
+                                        <ant antfile="${basedir}/adjustJAXB/build.xml"/>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
 						</executions>
+                                 <dependencies>
+           <dependency>
+             <groupId>ant</groupId>
+             <artifactId>ant-nodeps</artifactId>
+             <version>1.6.5</version>
+           </dependency>
+         </dependencies>
 					</plugin>
 				</plugins>
 			</build>
