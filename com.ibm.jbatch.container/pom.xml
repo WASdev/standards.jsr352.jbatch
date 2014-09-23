@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>javax.batch</groupId>
-        <artifactId>jbatch</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
-    </parent>
+		<artifactId>jbatch</artifactId>
+		<version>1.0.1-SNAPSHOT</version>
+	</parent>
 	<groupId>com.ibm.jbatch</groupId>
 	<artifactId>com.ibm.jbatch.container</artifactId>
 	<packaging>jar</packaging>
@@ -13,12 +13,12 @@
 	<name>com.ibm.jbatch.container</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>javax.batch</groupId>
 			<artifactId>javax.batch-api</artifactId>
@@ -69,14 +69,17 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<profiles>
 		<profile>
-			<id>JavaEE</id> 
+			<id>JavaEE</id>
 			<build>
 				<resources>
 					<resource>
 						<directory>src/main/resources</directory>
+						<excludes>
+							<exclude>*-properties/**</exclude>
+						</excludes>
 					</resource>
 				</resources>
 				<plugins>
@@ -97,25 +100,25 @@
 						<configuration>
 							<encoding>${project.build.sourceEncoding}</encoding>
 						</configuration>
-					</plugin> 
-                    <plugin> 
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>jaxb2-maven-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>xjc</id>
-                                <goals>
-                                    <goal>xjc</goal>
-                                </goals>
-                        <configuration>
-                            <schemaDirectory>src/main/xsd</schemaDirectory>
-                            <schemaFiles>jobXML_1_0.xsd</schemaFiles>
-                            <target>2.1</target>
-                        </configuration>
-                            </execution>
-                       </executions>
-                    </plugin>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>jaxb2-maven-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>xjc</id>
+								<goals>
+									<goal>xjc</goal>
+								</goals>
+								<configuration>
+									<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+									<schemaFiles>jobXML_1_0.xsd</schemaFiles>
+									<target>2.1</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jar-plugin</artifactId>
@@ -133,8 +136,12 @@
 								<configuration>
 									<tasks>
 										<echo>Java EE Build</echo>
-										<copy overwrite="true" file="src/main/resources/jee-properties/batch-config.properties" tofile="src/main/resources/META-INF/services/batch-config.properties"/>
-										<copy overwrite="true" file="src/main/resources/jee-properties/batch-services.properties" tofile="src/main/resources/META-INF/services/batch-services.properties"/>
+										<copy overwrite="true"
+											file="src/main/resources/jee-properties/batch-config.properties"
+											tofile="src/main/resources/META-INF/services/batch-config.properties" />
+										<copy overwrite="true"
+											file="src/main/resources/jee-properties/batch-services.properties"
+											tofile="src/main/resources/META-INF/services/batch-services.properties" />
 									</tasks>
 								</configuration>
 								<goals>
@@ -142,12 +149,12 @@
 								</goals>
 							</execution>
 							<execution>
-                                <id>ant-process-sources</id>
+								<id>ant-process-sources</id>
 								<phase>process-sources</phase>
 								<configuration>
 									<tasks>
 										<echo>Adjusting generated JAXBs</echo>
-                                        <ant antfile="${basedir}/adjustJAXB/build.xml"/>
+										<ant antfile="${basedir}/adjustJAXB/build.xml" />
 									</tasks>
 								</configuration>
 								<goals>
@@ -155,25 +162,33 @@
 								</goals>
 							</execution>
 						</executions>
-                                 <dependencies>
-           <dependency>
-             <groupId>ant</groupId>
-             <artifactId>ant-nodeps</artifactId>
-             <version>1.6.5</version>
-           </dependency>
-         </dependencies>
+						<dependencies>
+							<dependency>
+								<groupId>ant</groupId>
+								<artifactId>ant-nodeps</artifactId>
+								<version>1.6.5</version>
+							</dependency>
+						</dependencies>
 					</plugin>
 				</plugins>
 			</build>
 		</profile>
 		<profile>
 			<id>JavaSE</id>
-			
+
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
-			
+
 			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<excludes>
+							<exclude>*-properties/**</exclude>
+						</excludes>
+					</resource>
+				</resources>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -193,23 +208,24 @@
 							<encoding>${project.build.sourceEncoding}</encoding>
 						</configuration>
 					</plugin>
-                    <plugin> 
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>jaxb2-maven-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>xjc</id>
-                                <goals>
-                                    <goal>xjc</goal>
-                                </goals>
-                        <configuration>
-                            <schemaFiles>jobXML_1_0.xsd</schemaFiles>
-                            <target>2.1</target>
-                        </configuration>
-                            </execution>
-                       </executions>
-                    </plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>jaxb2-maven-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>xjc</id>
+								<goals>
+									<goal>xjc</goal>
+								</goals>
+								<configuration>
+									<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+									<schemaFiles>jobXML_1_0.xsd</schemaFiles>
+									<target>2.1</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-jar-plugin</artifactId>
@@ -227,8 +243,12 @@
 								<configuration>
 									<tasks>
 										<echo>Java SE Build</echo>
-										<copy overwrite="true" file="src/main/resources/se-properties/META-INF/services/batch-config.properties" tofile="src/main/resources/META-INF/services/batch-config.properties"/>
-										<copy overwrite="true" file="src/main/resources/se-properties/META-INF/services/batch-services.properties" tofile="src/main/resources/META-INF/services/batch-services.properties"/>
+										<copy overwrite="true"
+											file="src/main/resources/se-properties/META-INF/services/batch-config.properties"
+											tofile="src/main/resources/META-INF/services/batch-config.properties" />
+										<copy overwrite="true"
+											file="src/main/resources/se-properties/META-INF/services/batch-services.properties"
+											tofile="src/main/resources/META-INF/services/batch-services.properties" />
 									</tasks>
 								</configuration>
 								<goals>
@@ -236,12 +256,12 @@
 								</goals>
 							</execution>
 							<execution>
-                                <id>ant-process-sources</id>
+								<id>ant-process-sources</id>
 								<phase>process-sources</phase>
 								<configuration>
 									<tasks>
 										<echo>Adjusting generated JAXBs</echo>
-                                        <ant antfile="${basedir}/adjustJAXB/build.xml"/>
+										<ant antfile="${basedir}/adjustJAXB/build.xml" />
 									</tasks>
 								</configuration>
 								<goals>
@@ -249,16 +269,17 @@
 								</goals>
 							</execution>
 						</executions>
-                                 <dependencies>
-           <dependency>
-             <groupId>ant</groupId>
-             <artifactId>ant-nodeps</artifactId>
-             <version>1.6.5</version>
-           </dependency>
-         </dependencies>
+						<dependencies>
+							<dependency>
+								<groupId>ant</groupId>
+								<artifactId>ant-nodeps</artifactId>
+								<version>1.6.5</version>
+							</dependency>
+						</dependencies>
 					</plugin>
 				</plugins>
 			</build>
 		</profile>
 	</profiles>
 </project>
+
