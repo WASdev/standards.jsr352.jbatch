@@ -17,6 +17,7 @@
 package com.ibm.jbatch.container.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 	private final static Logger logger = Logger.getLogger(sourceClass);
 
 	private Map<Long, IThreadRootController> executionId2jobControllerMap = new ConcurrentHashMap<Long, IThreadRootController>();
-	private Set<Long> instanceIdExecutingSet = new HashSet<Long>();
+	private Set<Long> instanceIdExecutingSet = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
 
 	ServicesManager servicesManager = ServicesManagerImpl.getInstance();
 
