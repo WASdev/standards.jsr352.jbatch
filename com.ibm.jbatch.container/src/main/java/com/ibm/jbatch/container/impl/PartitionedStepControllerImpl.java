@@ -28,6 +28,7 @@ import javax.batch.api.partition.PartitionPlan;
 import javax.batch.api.partition.PartitionReducer.PartitionStatus;
 import javax.batch.operations.JobExecutionAlreadyCompleteException;
 import javax.batch.operations.JobExecutionNotMostRecentException;
+import javax.batch.operations.JobExecutionNotRunningException;
 import javax.batch.operations.JobRestartException;
 import javax.batch.operations.JobStartException;
 import javax.batch.runtime.BatchStatus;
@@ -104,8 +105,14 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 			if (parallelBatchWorkUnits != null) {
 				for (BatchWorkUnit subJob : parallelBatchWorkUnits) {
+					long jobExecutionId = -1;
 					try {
-						batchKernel.stopJob(subJob.getJobExecutionImpl().getExecutionId());
+						jobExecutionId = subJob.getJobExecutionImpl().getExecutionId();
+						batchKernel.stopJob(jobExecutionId);
+					} catch (JobExecutionNotRunningException e) {
+						logger.fine("Caught exception trying to stop subjob: " + jobExecutionId + ", which was not running.");
+						// We want to stop all running sub steps. 
+						// We do not want to throw an exception if a sub step has already been completed.
 					} catch (Exception e) {
 						// TODO - Is this what we want to know.  
 						// Blow up if it happens to force the issue.
