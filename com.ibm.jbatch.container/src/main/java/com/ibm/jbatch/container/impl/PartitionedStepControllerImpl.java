@@ -86,9 +86,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 	final List<JSLJob> subJobs = new ArrayList<JSLJob>();
 	protected List<StepListenerProxy> stepListeners = null;
 
-	List<BatchPartitionWorkUnit> completedWork = new ArrayList<BatchPartitionWorkUnit>();
+	List<BatchPartitionWorkUnit> finishedWork = new ArrayList<BatchPartitionWorkUnit>();
 	
-	BlockingQueue<BatchPartitionWorkUnit> completedWorkQueue = null;
+	BlockingQueue<BatchPartitionWorkUnit> finishedWorkQueue = null;
 
 	protected PartitionedStepControllerImpl(final RuntimeJobExecution jobExecutionImpl, final Step step, StepContextImpl stepContext, long rootJobExecutionId) {
 		super(jobExecutionImpl, step, stepContext, rootJobExecutionId);
@@ -288,7 +288,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		if (this.analyzerProxy != null) {
 			this.analyzerStatusQueue =  new LinkedBlockingQueue<PartitionDataWrapper>();
 		}
-		this.completedWorkQueue = new LinkedBlockingQueue<BatchPartitionWorkUnit>();
+		this.finishedWorkQueue = new LinkedBlockingQueue<BatchPartitionWorkUnit>();
 
 		// Build all sub jobs from partitioned step
 		buildSubJobBatchWorkUnits();
@@ -297,8 +297,14 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		executeAndWaitForCompletion();
 
 		// Deal with the results.
-		checkCompletedWork();
+		checkFinishedPartitions();
+
+		// Call before completion
+		if (this.partitionReducerProxy != null) {
+			this.partitionReducerProxy.beforePartitionedStepCompletion();
+		}
 	}
+
 	private void buildSubJobBatchWorkUnits() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException  {
 		synchronized (subJobs) {		
 			//check if we've already issued a stop
@@ -311,7 +317,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 				subJobs.add(PartitionedStepBuilder.buildPartitionSubJob(jobExecutionImpl.getInstanceId(),jobExecutionImpl.getJobContext(), step, instance));
 			}
 
-			PartitionsBuilderConfig config = new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, completedWorkQueue, jobExecutionImpl.getExecutionId());
+			PartitionsBuilderConfig config = new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, finishedWorkQueue, jobExecutionImpl.getExecutionId());
 			// Then build all the subjobs but do not start them yet
 			if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
 				parallelBatchWorkUnits = batchKernel.buildOnRestartParallelPartitions(config);
@@ -348,6 +354,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		}
 
 		boolean readyToSubmitAnother = false;
+		boolean exceptionThrownAnalyzingCollectorData = false;
+		boolean exceptionThrownAnalyzingStatus = false;
+
 		while (true) {
 			logger.finer("Begin main loop in waitForQueueCompletion(), readyToSubmitAnother = " + readyToSubmitAnother);
 			try {
@@ -356,22 +365,35 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 					PartitionDataWrapper dataWrapper = analyzerStatusQueue.take();
 					if (PartitionEventType.ANALYZE_COLLECTOR_DATA.equals(dataWrapper.getEventType())) {
 						logger.finer("Analyze collector data: " + dataWrapper.getCollectorData());
-						analyzerProxy.analyzeCollectorData(dataWrapper.getCollectorData());
+						try {
+							analyzerProxy.analyzeCollectorData(dataWrapper.getCollectorData());
+						} catch (Throwable t) {
+							exceptionThrownAnalyzingCollectorData = true;
+							logger.warning("Caught exception calling analyzeCollectorData(), catching and continuing.");
+						}
 						continue; // without being ready to submit another
 					} else if (PartitionEventType.ANALYZE_STATUS.equals(dataWrapper.getEventType())) {
-						analyzerProxy.analyzeStatus(dataWrapper.getBatchstatus(), dataWrapper.getExitStatus());
+						logger.fine("Calling analyzeStatus()");
+						try {
+							analyzerProxy.analyzeStatus(dataWrapper.getBatchstatus(), dataWrapper.getExitStatus());
+						} catch (Throwable t) {
+							exceptionThrownAnalyzingStatus = true;
+							// TODO - If we've caught an exception here we might want to stop submitting new partitions!
+							// To start, it is a smaller change in the working code to continue to submit them, so let's do that.
+							logger.warning("Caught exception calling analyzeStatus(), catching and continuing.  Will even continue starting new partitions if there are more to run.");
+						}
 						logger.fine("Analyze status called for completed partition: batchStatus= " + dataWrapper.getBatchstatus() + ", exitStatus = " + dataWrapper.getExitStatus());
-						completedWork.add(completedWorkQueue.take());  // Shouldn't be a a long wait.
+						finishedWork.add(finishedWorkQueue.take());  // Shouldn't be a a long wait.
 						readyToSubmitAnother = true;
 					} else {
 						logger.warning("Invalid partition state");
 						throw new IllegalStateException("Invalid partition state");
 					}
 				} else {
-					logger.fine("No analyzer, proceeding on completedWorkQueue path");
+					logger.fine("No analyzer, proceeding on finishedWorkQueue path");
 					// block until at least one thread has finished to
 					// submit more batch work. hold on to the finished work to look at later
-					completedWork.add(completedWorkQueue.take());
+					finishedWork.add(finishedWorkQueue.take());
 					readyToSubmitAnother = true;
 				}
 			} catch (InterruptedException e) {
@@ -400,49 +422,63 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 				logger.fine("Not ready to submit another."); // Must have just done a collector
 			}
 		}
+		
+		if (exceptionThrownAnalyzingCollectorData) {
+			rollbackPartitionedStepAndThrowExc("Throwable previously caught analyzing collector data, rolling back step.");
+		}
+		
+		if (exceptionThrownAnalyzingStatus) {
+			rollbackPartitionedStepAndThrowExc("Throwable previously caught analyzing status, rolling back step.");
+		}
 	}        
 
-	private void checkCompletedWork() {
-
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("Check completed work list.");
-		}
+	private void checkFinishedPartitions() {
 
 		/**
 		 * check the batch status of each subJob after it's done to see if we need to issue a rollback
 		 * start rollback if any have stopped or failed
 		 */
-		boolean rollback = false;
-		boolean partitionFailed = false;
+		boolean failingPartitionSeen = false;
+		boolean stoppedPartitionSeen = false;
 		
-		for (final BatchWorkUnit subJob : completedWork) {
+		for (final BatchWorkUnit subJob : finishedWork) {
 			BatchStatus batchStatus = subJob.getJobExecutionImpl().getJobContext().getBatchStatus();
+			logger.fine("Subjob " + subJob.getJobExecutionImpl().getExecutionId() + " ended with status '" + batchStatus);
+			// Keep looping, just to see the log messages perhaps.
 			if (batchStatus.equals(BatchStatus.FAILED)) {
-				logger.fine("Subjob " + subJob.getJobExecutionImpl().getExecutionId() + " ended with status '" + batchStatus + "'; Starting logical transaction rollback.");
-
-				rollback = true;
-				partitionFailed = true;
-
-				//Keep track of the failing status and throw an exception to propagate after the rest of the partitions are complete
+				failingPartitionSeen = true;
 				stepContext.setBatchStatus(BatchStatus.FAILED);
 			} 
+			// This code seems to suggest it might be valid for a partition to end up in STOPPED state without 
+			// the "top-level" step having been aware of this.   It's unclear from the spec if this is even possible
+			// or a desirable spec interpretation.  Nevertheless, we'll code it as such noting the ambiguity.
+			// 
+			// However, in the RI at least, we won't bother updating the step level BatchStatus, since to date we 
+			// would only transition the status in such a way independently.
+			if (batchStatus.equals(BatchStatus.STOPPED)) {
+				stoppedPartitionSeen = true;
+			}
 		}
 
+		if (failingPartitionSeen) {
+			rollbackPartitionedStepAndThrowExc("One or more partitions failed");
+		} else if (stoppedPartitionSeen) {
+			rollbackPartitionedStep();
+		}
+	}
+
+	private void rollbackPartitionedStep() {
 		//If rollback is false we never issued a rollback so we can issue a logicalTXSynchronizationBeforeCompletion
 		//NOTE: this will get issued even in a subjob fails or stops if no logicalTXSynchronizationRollback method is provied
 		//We are assuming that not providing a rollback was intentional
-		if (rollback == true) {
-			if (this.partitionReducerProxy != null) {
-				this.partitionReducerProxy.rollbackPartitionedStep();
-			}
-			if (partitionFailed) {
-				throw new BatchContainerRuntimeException("One or more partitions failed");
-			}
-		} else {
-			if (this.partitionReducerProxy != null) {
-				this.partitionReducerProxy.beforePartitionedStepCompletion();
-			}
+		if (this.partitionReducerProxy != null) {
+			this.partitionReducerProxy.rollbackPartitionedStep();
 		}
+	}
+
+	private void rollbackPartitionedStepAndThrowExc(String msg) {
+		rollbackPartitionedStep();
+		throw new BatchContainerRuntimeException(msg);
 	}
 
 	@Override
