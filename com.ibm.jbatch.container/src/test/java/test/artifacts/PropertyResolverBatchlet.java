@@ -24,9 +24,9 @@ import javax.batch.runtime.context.JobContext;
 import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
-public class PropertyResolverBatchImplTest extends AbstractBatchlet{
+public class PropertyResolverBatchlet extends AbstractBatchlet{
 
-	private final static Logger logger = Logger.getLogger(PropertyResolverBatchImplTest.class.getName());
+	private final static Logger logger = Logger.getLogger(PropertyResolverBatchlet.class.getName());
 
 	private volatile static int count = 1;
 	private volatile static String data = "";

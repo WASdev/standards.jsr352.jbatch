@@ -31,20 +31,18 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import test.utils.TestSecurityHelper;
-
-import com.ibm.jbatch.spi.BatchSPIManager;
+import com.ibm.jbatch.spi.*;
 
 public class TestsWithSecurityHelper {
 
 	static JobOperator jobOp = null;
 	static BatchSPIManager spiMgr = null;
-	static Map<Integer, TestSecurityHelper> helperPool = new HashMap<Integer, TestSecurityHelper>();
-	static TestSecurityHelper adminHelper;
+	static Map<Integer, SimpleSecurityHelper> helperPool = new HashMap<Integer, SimpleSecurityHelper>();
+	static SimpleSecurityHelper adminHelper;
 	static int NUM_HELPERS = 3;
 
 	private void registerHelper(int i) {
-		TestSecurityHelper helper = helperPool.get(i % NUM_HELPERS );
+		SimpleSecurityHelper helper = helperPool.get(i % NUM_HELPERS );
 		spiMgr.registerBatchSecurityHelper(helper);
 	}
 
@@ -52,10 +50,10 @@ public class TestsWithSecurityHelper {
 	public static void setup() {
 		jobOp = BatchRuntime.getJobOperator();
 		for (int i = 0; i < NUM_HELPERS; i++) {
-			helperPool.put(i, new TestSecurityHelper("Test.Helper." + i));
+			helperPool.put(i, new SimpleSecurityHelper("Test.Helper." + i));
 		}
 		spiMgr = BatchSPIManager.getInstance();
-		adminHelper = new TestSecurityHelper(true, "AdminTestHelper");
+		adminHelper = new SimpleSecurityHelper(true, "AdminTestHelper");
 	}
 
 	@Test
@@ -122,5 +120,37 @@ public class TestsWithSecurityHelper {
 			List<JobInstance> jobInstances = jobOp.getJobInstances("runtimejunit.alwaysFails1", 0, Integer.MAX_VALUE);
 			assertEquals("Checking instances list size", adminInstanceCount + COUNT * NUM_HELPERS,  jobInstances.size());
 		}
+	} 
+
+	private static class SimpleSecurityHelper implements BatchSecurityHelper {
+
+	final static String defaultTag = "internal.default.tag.for.SimpleSecurityHelper";
+	
+	private String currentTag;
+	private boolean isAdmin = false;
+	
+	SimpleSecurityHelper(boolean isAdmin, String currentTag) {
+		this.isAdmin = isAdmin;
+		this.currentTag = currentTag;
 	}
+	
+	SimpleSecurityHelper(String currentTag) {
+		this(false, currentTag);
+	}
+	
+	@Override
+	public String getCurrentTag() {
+		if (currentTag == null) {
+			return defaultTag;
+		} else {
+			return currentTag;
+		}
+	}
+
+	@Override
+	public boolean isAdmin(String tag) {
+		return isAdmin;
+	}
+
+}
 }

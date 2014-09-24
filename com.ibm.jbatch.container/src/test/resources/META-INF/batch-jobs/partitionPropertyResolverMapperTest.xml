@@ -20,7 +20,7 @@
 		<properties>
 			<property name="stepProp" value="stepPropValue" />
 		</properties>
-		<batchlet ref="test.artifacts.PropertyResolverBatchImplTest">
+		<batchlet ref="test.artifacts.PropertyResolverBatchlet">
 			<properties>
 				<property name="partitionString" value="#{jobProperties['stepProp']}#{partitionPlan['part']}" />
 			</properties>
