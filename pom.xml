@@ -90,11 +90,19 @@
 				</pluginRepository>
 			</pluginRepositories>
 			<build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-gpg-plugin</artifactId>
+                            <version>${version.org.apache.maven.plugins.maven-gpg-plugin}</version>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.4</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -113,16 +121,173 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <version.java>1.6</version.java>
+
+        <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
+        <version.org.apache.maven.plugins.maven-compiler-plugin>2.0.2</version.org.apache.maven.plugins.maven-compiler-plugin>
+        <version.org.apache.maven.plugins.maven-gpg-plugin>1.4</version.org.apache.maven.plugins.maven-gpg-plugin>
+        <version.org.apache.maven.plugins.maven-jar-plugin>2.4</version.org.apache.maven.plugins.maven-jar-plugin>
+        <version.org.apache.maven.plugins.maven-javadoc-plugin>2.9.1</version.org.apache.maven.plugins.maven-javadoc-plugin>
+        <version.org.apache.maven.plugins.maven-resources-plugin>2.2</version.org.apache.maven.plugins.maven-resources-plugin>
+        <version.org.apache.maven.plugins.maven-shade-plugin>2.1</version.org.apache.maven.plugins.maven-shade-plugin>
+        <version.org.apache.maven.plugins.maven-source-plugin>2.2.1</version.org.apache.maven.plugins.maven-source-plugin>
+        <version.org.apache.maven.plugins.maven-surefire-plugin>2.12.4</version.org.apache.maven.plugins.maven-surefire-plugin>
+        <version.org.codehaus.mojo.build-helper-maven-plugin>1.8</version.org.codehaus.mojo.build-helper-maven-plugin>
+        <version.org.codehaus.mojo.jaxb2-maven-plugin>1.6</version.org.codehaus.mojo.jaxb2-maven-plugin>
     </properties>
+
     <modules>
-	<module>javax.batch</module>
-	<module>com.ibm.jbatch.container</module>
-	<module>com.ibm.jbatch.spi</module>
-	<module>com.ibm.jbatch.tck</module>
-	<module>com.ibm.jbatch.tck.spi</module>
+        <module>javax.batch</module>
+        <module>com.ibm.jbatch.container</module>
+        <module>com.ibm.jbatch.spi</module>
+        <module>com.ibm.jbatch.tck</module>
+        <module>com.ibm.jbatch.tck.spi</module>
     </modules>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>javax.batch</groupId>
+                <artifactId>javax.batch-api</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch-model</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch-ri-spi</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch-tck-spi</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch-runtime</artifactId>
+                <version>1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.enterprise</groupId>
+                <artifactId>cdi-api</artifactId>
+                <version>1.1-20121030</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>1</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject-tck</artifactId>
+                <version>1</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.transaction</groupId>
+                <artifactId>jta</artifactId>
+                <version>1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.derby</groupId>
+                <artifactId>derby</artifactId>
+                <version>10.10.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.derby</groupId>
+                <artifactId>derbynet</artifactId>
+                <version>10.1.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld.se</groupId>
+                <artifactId>weld-se</artifactId>
+                <version>2.0.0.Alpha3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>6.8</version>
+            </dependency>
+            <dependency>
+                <groupId>xmlunit</groupId>
+                <artifactId>xmlunit</artifactId>
+                <version>1.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 	<build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.mycila.maven-license-plugin</groupId>
+                    <artifactId>maven-license-plugin</artifactId>
+                    <version>${version.com.mycila.maven-license-plugin.maven-license-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-compiler-plugin}</version>
+                    <configuration>
+                        <source>${version.java}</source>
+                        <target>${version.java}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-jar-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-javadoc-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-resources-plugin}</version>
+                    <configuration>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-shade-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-source-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-surefire-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>${version.org.codehaus.mojo.build-helper-maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>jaxb2-maven-plugin</artifactId>
+                    <version>${version.org.codehaus.mojo.jaxb2-maven-plugin}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -155,52 +320,52 @@
 					</execution>
 				</executions>
 			</plugin>
-					<plugin>
-						<groupId>com.mycila.maven-license-plugin</groupId>
-						<artifactId>maven-license-plugin</artifactId>
-						<configuration>
-							<header>header.txt</header>
-							<skipExistingHeaders>true</skipExistingHeaders>
-							<!-- <strictCheck>true</strictCheck> -->
-							<aggregate>true</aggregate>
-							<excludes>
-								<exclude>**/*.txt</exclude>
-								<exclude>**/*.sql</exclude>
-								<exclude>**/build.properties</exclude>
-								<exclude>**/build.xml</exclude>
-								<exclude>**/src/test/resources/**</exclude>
-								<exclude>**/src/test/data/**</exclude>
-								<exclude>**/bin/**</exclude>
-								<exclude>**/jaxbgen/**</exclude>
-								<exclude>**/*.html</exclude>
-								<exclude>**/*.css</exclude>
-								<exclude>**/*.ddl</exclude>
-								<exclude>**/jsr352-tck.properties</exclude>
-								<exclude>**/jsr352-tck-impl-*.xml</exclude>
-								<exclude>**/testng-class.xml</exclude>
-								<exclude>**/testng-method.xml</exclude>
-								<exclude>**/beans.xml</exclude>
-							</excludes>
-							<includes>
-								<include>javax.batch/**</include>
-								<include>com.ibm.jbatch.container/**</include>
-								<include>com.ibm.jbatch.spi/**</include>
-								<include>com.ibm.jbatch.tck.spi/**</include>
-								<include>com.ibm.jbatch.tck/**</include>
-							</includes>
-						</configuration>
-						<executions>
-						<!-- 
-							<execution>
-								<id>check-headers</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>check</goal>
-								</goals>
-							</execution>
+			<plugin>
+				<groupId>com.mycila.maven-license-plugin</groupId>
+				<artifactId>maven-license-plugin</artifactId>
+				<configuration>
+					<header>header.txt</header>
+					<skipExistingHeaders>true</skipExistingHeaders>
+					<!-- <strictCheck>true</strictCheck> -->
+					<aggregate>true</aggregate>
+					<excludes>
+						<exclude>**/*.txt</exclude>
+						<exclude>**/*.sql</exclude>
+						<exclude>**/build.properties</exclude>
+						<exclude>**/build.xml</exclude>
+						<exclude>**/src/test/resources/**</exclude>
+						<exclude>**/src/test/data/**</exclude>
+						<exclude>**/bin/**</exclude>
+						<exclude>**/jaxbgen/**</exclude>
+						<exclude>**/*.html</exclude>
+						<exclude>**/*.css</exclude>
+						<exclude>**/*.ddl</exclude>
+						<exclude>**/jsr352-tck.properties</exclude>
+						<exclude>**/jsr352-tck-impl-*.xml</exclude>
+						<exclude>**/testng-class.xml</exclude>
+						<exclude>**/testng-method.xml</exclude>
+						<exclude>**/beans.xml</exclude>
+					</excludes>
+					<includes>
+						<include>javax.batch/**</include>
+						<include>com.ibm.jbatch.container/**</include>
+						<include>com.ibm.jbatch.spi/**</include>
+						<include>com.ibm.jbatch.tck.spi/**</include>
+						<include>com.ibm.jbatch.tck/**</include>
+					</includes>
+				</configuration>
+				<executions>
+				<!--
+					<execution>
+						<id>check-headers</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
 						-->
-						</executions>
-					</plugin>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>
