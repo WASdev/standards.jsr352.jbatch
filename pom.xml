@@ -154,23 +154,18 @@
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
-                <artifactId>com.ibm.jbatch-model</artifactId>
-                <version>1.0</version>
+                <artifactId>com.ibm.jbatch.spi</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
-                <artifactId>com.ibm.jbatch-ri-spi</artifactId>
-                <version>1.0</version>
+                <artifactId>com.ibm.jbatch.tck.spi</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
-                <artifactId>com.ibm.jbatch-tck-spi</artifactId>
-                <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch</groupId>
-                <artifactId>com.ibm.jbatch-runtime</artifactId>
-                <version>1.0</version>
+                <artifactId>com.ibm.jbatch.container</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.enterprise</groupId>

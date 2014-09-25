@@ -30,12 +30,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
-			<artifactId>com.ibm.jbatch-model</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.ibm.jbatch</groupId>
-			<artifactId>com.ibm.jbatch-ri-spi</artifactId>
+			<artifactId>com.ibm.jbatch.spi</artifactId>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>

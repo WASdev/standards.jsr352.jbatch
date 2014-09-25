@@ -29,22 +29,17 @@
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
-			<artifactId>com.ibm.jbatch-model</artifactId>
+			<artifactId>com.ibm.jbatch.spi</artifactId>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
-			<artifactId>com.ibm.jbatch-ri-spi</artifactId>
+			<artifactId>com.ibm.jbatch.tck.spi</artifactId>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.ibm.jbatch</groupId>
-			<artifactId>com.ibm.jbatch-tck-spi</artifactId>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.ibm.jbatch</groupId>
-			<artifactId>com.ibm.jbatch-runtime</artifactId>
+			<artifactId>com.ibm.jbatch.container</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>javax.inject</groupId>
