@@ -29,7 +29,7 @@ public class UnmarshalledJSLComparator {
 	public static boolean equals(JSLJob job1, JSLJob job2) {
 		if(job1 == null && job2 == null) return true;
 		if(job1 == null || job2 == null) return false;
-		
+
 		boolean stillEqual = true;
 		//for each attribute, stillEqual && equal(that attribute)
 		stillEqual = stillEqual &&
@@ -38,19 +38,19 @@ public class UnmarshalledJSLComparator {
 				true;
 		return stillEqual;
 	}
-	
+
 	/**
-	 * Compare two <properties> elements and their contents. The properties need not
+	 * Compare two &lt;properties&gt; elements and their contents. The properties need not
 	 * be in the same order.
-	 * @param jslprops1 first <properties> element, could be null
-	 * @param jslprops2 second <properties> element, could be null
+	 * @param jslprops1 first &lt;properties&gt; element, could be null
+	 * @param jslprops2 second &lt;properties&gt; element, could be null
 	 * @return whether JSLProperties contain the same property names/values
 	 */
 	public static boolean equals(JSLProperties jslprops1, JSLProperties jslprops2) {
 		//TODO: test cases
 		if(jslprops1 == null && jslprops2 == null) return true;
 		if(jslprops1 == null || jslprops2 == null) return false;
-		
+
 		boolean stillEqual = true;
 		for(Property prop1 : jslprops1.getPropertyList()) {
 			boolean isListenerInOtherList = false;
@@ -62,7 +62,7 @@ public class UnmarshalledJSLComparator {
 		}
 		return stillEqual;
 	}
-	
+
 	/**
 	 * Checks parameters for null before .equals() comparison between them. To be used
 	 * on leaf nodes of JSLJob hierarchy, e.g.; Java Strings or other built-ins.
@@ -75,19 +75,19 @@ public class UnmarshalledJSLComparator {
 		if(o1 == null || o2 == null) return false; // null != non-null
 		return o1.equals(o2); //evaluate
 	}
-	
+
 	public static boolean equals(Property prop1, Property prop2) {
 		if(prop1 == null && prop2 == null) return true;
 		if(prop1 == null || prop2 == null) return false;
-		
+
 		return nullSafeEquals(prop1.getName(), prop2.getName()) &&
 				nullSafeEquals(prop1.getValue(), prop2.getValue());
 	}
-	
+
 	public static boolean equals(Listeners listeners1, Listeners listeners2) {
 		if(listeners1 == null && listeners2 == null) return true;
 		if(listeners1 == null || listeners2 == null) return false;
-		
+
 		boolean stillEqual = true;
 		for(Listener listener1 : listeners1.getListenerList()) {
 			boolean isListenerInOtherList = false;
@@ -99,18 +99,18 @@ public class UnmarshalledJSLComparator {
 		}
 		return stillEqual;
 	}
-	
+
 	public static boolean equals(Listener listener1, Listener listener2) {
 		if(listener1 == null && listener2 == null) return true;
 		if(listener1 == null || listener2 == null) return false;
-		
+
 		boolean stillEqual = true;
 		stillEqual = stillEqual &&
 				nullSafeEquals(listener1.getRef(), listener2.getRef()) &&
 				equals(listener1.getProperties(), listener2.getProperties());
 		return stillEqual;
 	}
-	
+
 	public static boolean equals(Step step1, Step step2) {
 		if(step1 == null && step2 == null) return true;
 		if(step1 == null || step2 == null) return false;
@@ -122,11 +122,11 @@ public class UnmarshalledJSLComparator {
 				nullSafeEquals(step1.getAllowStartIfComplete(), step2.getAllowStartIfComplete()) &&
 				nullSafeEquals(step1.getNextFromAttribute(), step2.getNextFromAttribute());
 	}
-	
+
 	public static boolean equals(Chunk chunk1, Chunk chunk2) {
 		if(chunk1 == null && chunk2 == null) return true;
 		if(chunk1 == null || chunk2 == null) return false;
-		
+
 		return 	nullSafeEquals(chunk1.getCheckpointPolicy(), chunk2.getCheckpointPolicy()) &&
 				nullSafeEquals(chunk1.getItemCount(), chunk2.getItemCount()) &&
 				nullSafeEquals(chunk1.getTimeLimit(), chunk2.getTimeLimit()) &&
@@ -136,6 +136,6 @@ public class UnmarshalledJSLComparator {
 				nullSafeEquals(chunk1.getSkipLimit(), chunk2.getSkipLimit()) &&
 				nullSafeEquals(chunk1.getWriter(), chunk2.getWriter());
 	}
-	
-	
+
+
 }

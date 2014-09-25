@@ -1,13 +1,13 @@
 /*
  * Copyright 2012 International Business Machines Corp.
- * 
+ *
  * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Licensed under the Apache License, 
+ * regarding copyright ownership. Licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,7 +52,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 				throw new IllegalStateException("Didn't find an execution element maching restart-on designated element: " + restartOn);
 			}
 		} else {
-			if (peerExecutionElements.size() > 0) {                
+			if (peerExecutionElements.size() > 0) {
 				startElement = peerExecutionElements.get(0);
 			} else {
 				logger.fine(method + " , Container appears to contain no execution elements.  Returning.");
@@ -62,7 +62,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine(method + " , Found start element: " + startElement);
-		}                
+		}
 
 		if (!disallowDecisionLoopback) {
 			// We allow repeating a decision
@@ -71,7 +71,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 			}
 		} else {
 			alreadyExecutedElements.put(startElement.getId(), startElement);
-			
+
 		}
 
 		validateElementType(startElement);
@@ -83,14 +83,14 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 
 	/**
 	 * Precedence is: look at elements, then look at attribute, then return quietly
-	 * 
+	 *
 	 * @param currentElem
 	 * @param peerExecutionElements
-	 * @param currentExitStatus
+	 * @param currentStatus
 	 * @return
 	 * @throws IllegalTransitionException
 	 */
-	public Transition getNextTransition(ExecutionElement currentElem, List<ExecutionElement> peerExecutionElements, ExecutionStatus currentStatus) 
+	public Transition getNextTransition(ExecutionElement currentElem, List<ExecutionElement> peerExecutionElements, ExecutionStatus currentStatus)
 			throws IllegalTransitionException {
 		final String method = "getNextTransition";
 
@@ -122,7 +122,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 					return returnTransition;
 				}
 			}
-		} 
+		}
 
 		// We've returned already if we matched a Stop, End or Fail
 		if (nextExecutionElement == null) {
@@ -161,7 +161,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 	}
 
 
-	private ExecutionElement getExecutionElementFromId(List<ExecutionElement> executionElements, String id) 
+	private ExecutionElement getExecutionElementFromId(List<ExecutionElement> executionElements, String id)
 			throws IllegalTransitionException {
 		if (id != null) {
 			logger.finer("attribute value is " + id);
@@ -183,7 +183,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 
 		logger.finer("matchSpecifiedExitStatus, matching current exitStatus  " + currentStepExitStatus + " against pattern: " + exitStatusPattern);
 
-		GlobPatternMatcherImpl matcher = new GlobPatternMatcherImpl(); 
+		GlobPatternMatcherImpl matcher = new GlobPatternMatcherImpl();
 		boolean match = matcher.matchWithoutBackslashEscape(currentStepExitStatus, exitStatusPattern);
 
 		if (match) {
@@ -249,10 +249,10 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 
 	private void validateElementType(ExecutionElement elem) {
 		if (elem != null) {
-			if (!((elem instanceof Decision) || (elem instanceof Flow) || (elem instanceof Split) || (elem instanceof Step))) { 
+			if (!((elem instanceof Decision) || (elem instanceof Flow) || (elem instanceof Split) || (elem instanceof Step))) {
 				throw new IllegalArgumentException("Unknown execution element found, elem = " + elem + ", found with type: " + elem.getClass().getCanonicalName() +
 						" , which is not an instance of Decision, Flow, Split, or Step.");
-			} 
+			}
 		}
 	}
 

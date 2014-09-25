@@ -1,13 +1,13 @@
 /*
  * Copyright 2012 International Business Machines Corp.
- * 
+ *
  * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Licensed under the Apache License, 
+ * regarding copyright ownership. Licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ import com.ibm.jbatch.spi.services.IJobIdManagementService;
 /**
  * Used to generate job instance, job execution and step execution id
  *
- * @deprecated use {@link com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl()} instead.  
+ * @deprecated use {@link com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl} instead.
  */
 @Deprecated
 public class JobIdManagerImpl implements IJobIdManagementService {
@@ -32,16 +32,16 @@ public class JobIdManagerImpl implements IJobIdManagementService {
 //	protected String rootDir;
 //	private static final String JOBID_FILE_NAME = "jobId.dat";
 //	private static Logger logger = Logger.getLogger(JobIdManagerImpl.class.getPackage().getName());
-//	
+//
 	public void init(IBatchConfig batchConfig)
 			throws BatchContainerServiceException {
 //		rootDir = System.getProperty("user.home");
 	}
 	public void shutdown() throws BatchContainerServiceException
 	{
-	
+
 	}
-//	
+//
 //    @Override
 //    public long getExecutionId() {
 //        return getId();
@@ -50,24 +50,24 @@ public class JobIdManagerImpl implements IJobIdManagementService {
 //    public long getInstanceId() {
 //        return getId();
 //    }
-//    
+//
 //    @Override
 //    public long getStepExecutionId() {
 //    	return getId();
 //    }
-//    
+//
 //    private synchronized String getJobIdFromStorage() {
 //    	StringBuilder contents = new StringBuilder("0");
-//    	File jobIdFile = new File(rootDir + File.separator + JOBID_FILE_NAME);  
+//    	File jobIdFile = new File(rootDir + File.separator + JOBID_FILE_NAME);
 //		if(jobIdFile.exists())
 //		{
 //				// Read the file
 //				try {
-//				  
-//				  BufferedReader input = 
+//
+//				  BufferedReader input =
 //					new BufferedReader(new FileReader(rootDir + File.separator + JOBID_FILE_NAME));
 //				  try {
-//					String line = null; 
+//					String line = null;
 //					while (( line = input.readLine()) != null){
 //					  contents.append(line);
 //					  break;
@@ -82,18 +82,18 @@ public class JobIdManagerImpl implements IJobIdManagementService {
 //				  throw new RuntimeException(ex);
 //				}
 //		}
-//		
+//
 //		return contents.toString();
 //    }
-//    
+//
 //    private synchronized void saveJobIdToStorage(long currentId) {
-//    	File jobIdFile = new File(rootDir + File.separator + JOBID_FILE_NAME); 
+//    	File jobIdFile = new File(rootDir + File.separator + JOBID_FILE_NAME);
 //		try {
 //
 //			BufferedWriter output = new BufferedWriter(new FileWriter(jobIdFile));
-//			
+//
 //			try {
-//				output.write(String.valueOf(currentId) );	
+//				output.write(String.valueOf(currentId) );
 //			} finally {
 //				output.close();
 //			}
@@ -104,15 +104,15 @@ public class JobIdManagerImpl implements IJobIdManagementService {
 //			throw new RuntimeException(e);
 //		}
 //    }
-//    
+//
 //	private long getId() {
-//		
+//
 //		String id = getJobIdFromStorage();
-//		
+//
 //		long jobId = Long.valueOf(id);
-//	
+//
 //		saveJobIdToStorage(++jobId);
-//	
+//
 //		return jobId;
 //	}
 

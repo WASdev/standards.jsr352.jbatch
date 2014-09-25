@@ -23,3 +23,13 @@ idea
 /com.ibm.jbatch.container/derby.log
 /com.ibm.jbatch.container/RUNTIMEDB
 RUNTIMEDB
+
+# IDEA
+*.iml
+*.ipr
+*.iws
+.idea/
+idea
+
+# VIM
+*.swp

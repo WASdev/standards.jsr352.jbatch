@@ -1,13 +1,13 @@
 /*
  * Copyright 2012 International Business Machines Corp.
- * 
+ *
  * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Licensed under the Apache License, 
+ * regarding copyright ownership. Licensed under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,16 +31,16 @@ public interface JobExecution {
 	public long getExecutionId();
 	/**
 	 * Get job name.
-	 * @return value of 'id' attribute from <job>
+	 * @return value of 'id' attribute from &lt;job&gt;
 	 */
-	public String getJobName(); 
+	public String getJobName();
 	/**
 	 * Get batch status of this execution.
 	 * @return batch status value.
 	 */
 	public BatchStatus getBatchStatus();
 	/**
-	 * Get time execution entered STARTED status. 
+	 * Get time execution entered STARTED status.
 	 * @return date (time)
 	 */
 	public Date getStartTime();
@@ -66,8 +66,8 @@ public interface JobExecution {
 	public Date getLastUpdatedTime();
 	/**
 	 * Get job parameters for this execution.
-	 * @return job parameters  
+	 * @return job parameters
 	 */
 	public Properties getJobParameters();
-	
+
 }
