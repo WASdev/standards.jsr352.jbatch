@@ -67,6 +67,9 @@ public class SplitControllerImpl implements IExecutionElementController {
 
 	protected Split split;
 
+	// Moving to a field to hold state across flow statuses.
+	private ExtendedBatchStatus aggregateStatus = null;
+
 	public SplitControllerImpl(RuntimeJobExecution jobExecution, Split split, long rootJobExecutionId) {
 		this.jobExecution = jobExecution;
 		this.jobContext = jobExecution.getJobContext();
@@ -177,7 +180,6 @@ public class SplitControllerImpl implements IExecutionElementController {
 	private SplitExecutionStatus waitForCompletionAndAggregateStatus() {
 
 		SplitExecutionStatus splitStatus = new SplitExecutionStatus();
-		ExtendedBatchStatus aggregateTerminatingStatus = null;
 
 		for (int i=0; i < subJobs.size(); i++) {
 			BatchFlowInSplitWorkUnit batchWork;
@@ -192,16 +194,16 @@ public class SplitControllerImpl implements IExecutionElementController {
 			if (logger.isLoggable(Level.FINE)) {
 				logger.fine("Subjob " + flowExecution.getExecutionId() + "ended with flow-in-split status: " + flowStatus);
 			}
-			aggregateTerminatingStatusFromSingleFlow(aggregateTerminatingStatus, flowStatus, splitStatus);
+			aggregateTerminatingStatusFromSingleFlow(flowStatus, splitStatus);
 		}
 		
 		// If this is still set to 'null' that means all flows completed normally without terminating the job.
-		if (aggregateTerminatingStatus == null) {
+		if (aggregateStatus == null) {
 			logger.fine("Setting normal split status as no contained flows ended the job.");
-			aggregateTerminatingStatus = ExtendedBatchStatus.NORMAL_COMPLETION;
+			aggregateStatus = ExtendedBatchStatus.NORMAL_COMPLETION;
 		}
 
-		splitStatus.setExtendedBatchStatus(aggregateTerminatingStatus);
+		splitStatus.setExtendedBatchStatus(aggregateStatus);
 		logger.fine("Returning from waitForCompletionAndAggregateStatus with return value: " + splitStatus);
 		return splitStatus;
 	}
@@ -211,8 +213,7 @@ public class SplitControllerImpl implements IExecutionElementController {
 	// A <fail> and an uncaught exception are peers.  They each take precedence over a <stop>, which take precedence over an <end>.
 	// Among peers the last one seen gets to set the exit stauts.
 	//
-	private void aggregateTerminatingStatusFromSingleFlow(ExtendedBatchStatus aggregateStatus, ExecutionStatus flowStatus, 
-			SplitExecutionStatus splitStatus) {
+	private void aggregateTerminatingStatusFromSingleFlow(ExecutionStatus flowStatus, SplitExecutionStatus splitStatus) {
 
 		String exitStatus = flowStatus.getExitStatus();
 		String restartOn = flowStatus.getRestartOn();
@@ -286,7 +287,12 @@ public class SplitControllerImpl implements IExecutionElementController {
             
             List<Long> stepExecIds = workUnit.getController().getLastRunStepExecutions();
             
-            stepExecIdList.addAll(stepExecIds);
+            // Though this would have been one way to have a failure in a constituent flow
+            // "bubble up" to a higher-level failure, let's not use this as the mechanism, so 
+            // it's clearer how our transitioning logic functions.
+            if (stepExecIds != null) {
+            	stepExecIdList.addAll(stepExecIds);
+            }
         }
         
         return stepExecIdList;
