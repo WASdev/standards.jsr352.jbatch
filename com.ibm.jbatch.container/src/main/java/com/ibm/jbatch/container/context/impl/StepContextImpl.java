@@ -52,7 +52,7 @@ public class StepContextImpl implements StepContext {
 
     private String batchletProcessRetVal = null;
     
-
+	public final static String TOP_LEVEL_STEP_EXECUTION_ID_PROP = "com.ibm.jbatch.container.context.impl.StepContextImpl#getExecutionId";
 
 	private ConcurrentHashMap<String, Metric> metrics = new ConcurrentHashMap<String, Metric>();
 
@@ -161,6 +161,14 @@ public class StepContextImpl implements StepContext {
 
 	@Override
 	public long getStepExecutionId() {
+		if (properties.containsKey(TOP_LEVEL_STEP_EXECUTION_ID_PROP)) {
+			return Long.parseLong(properties.getProperty(TOP_LEVEL_STEP_EXECUTION_ID_PROP));
+		} else {
+			return this.stepExecID;
+		}
+	}
+	
+	public long getInternalStepExecutionId() {
 		return stepExecID;
 	}
 

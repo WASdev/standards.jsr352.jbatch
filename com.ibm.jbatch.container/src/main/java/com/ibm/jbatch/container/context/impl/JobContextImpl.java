@@ -26,6 +26,7 @@ import com.ibm.batch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.navigator.ModelNavigator;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.JSLProperties;
+import com.ibm.jbatch.jsl.model.ObjectFactory;
 import com.ibm.jbatch.jsl.model.Property;
 
 
@@ -53,7 +54,9 @@ public class JobContextImpl implements JobContext {
 	@TCKExperimentProperty
 	private final static boolean cloneContextProperties = Boolean.getBoolean("clone.context.properties");
 
-
+	public final static String TOP_LEVEL_JOB_NAME_PROP = "com.ibm.jbatch.container.context.impl.JobContextImpl#getJobName";
+	public final static String TOP_LEVEL_INSTANCE_ID_PROP = "com.ibm.jbatch.container.context.impl.JobContextImpl#getInstanceId";
+	public final static String TOP_LEVEL_EXECUTION_ID_PROP = "com.ibm.jbatch.container.context.impl.JobContextImpl#getExecutionId";
 
 	public JobContextImpl(ModelNavigator<JSLJob> navigator, JSLProperties jslProperties) {
 		this.navigator = navigator;
@@ -86,7 +89,11 @@ public class JobContextImpl implements JobContext {
 
 
 	public String getJobName() {
-		return id;
+		if (properties.containsKey(TOP_LEVEL_EXECUTION_ID_PROP)) {
+			return properties.getProperty(TOP_LEVEL_JOB_NAME_PROP);
+		} else {
+			return this.id;
+		}
 	}
 
 
@@ -125,13 +132,20 @@ public class JobContextImpl implements JobContext {
 
 	@Override
 	public long getExecutionId() {
-		// TODO Auto-generated method stub
-		return this.executionId;
+		if (properties.containsKey(TOP_LEVEL_EXECUTION_ID_PROP)) {
+			return Long.parseLong(properties.getProperty(TOP_LEVEL_EXECUTION_ID_PROP));
+		} else {
+			return this.executionId;
+		}
 	}
 
 	@Override
 	public long getInstanceId() {
-		return this.instanceId;
+		if (properties.containsKey(TOP_LEVEL_INSTANCE_ID_PROP)) {
+			return Long.parseLong(properties.getProperty(TOP_LEVEL_INSTANCE_ID_PROP));
+		} else {
+			return this.instanceId;
+		}
 	}
 
 	public void setExecutionId(long executionId){
@@ -151,6 +165,43 @@ public class JobContextImpl implements JobContext {
 		this.restartOn = restartOn;
 	}
 
+	/**
+	 * 
+	 * Intended to be called in building split-flow and partition level 
+	 * contexts.   This will propagate the top-level info returned by the
+	 * JobContext API.
+	 * 
+	 * Note that by calling the getters first to get the value used to set, 
+	 * e.g. in this line:
+	 * 
+	 *   jobName.setValue(getJobName());
+	 *   
+	 * we allow for chaining together multiple levels of delegation.  This could
+	 * be useful for a split-flow within a split-flow, for example.
+	 *   
+	 */
+	public JSLProperties addTopLevelContextProperties(JSLProperties properties) {
+		ObjectFactory jslFactory = new ObjectFactory();
+		// job name
+		Property jobName = jslFactory.createProperty();
+		jobName.setName(TOP_LEVEL_JOB_NAME_PROP);
+		jobName.setValue(getJobName());
+		properties.getPropertyList().add(jobName);
+		// instance id
+		Property instanceId = jslFactory.createProperty();
+		instanceId.setName(TOP_LEVEL_INSTANCE_ID_PROP);
+		instanceId.setValue(String.valueOf(getInstanceId()));
+		properties.getPropertyList().add(instanceId);
+		// execution id
+		Property executionId = jslFactory.createProperty();
+		executionId.setName(TOP_LEVEL_EXECUTION_ID_PROP);
+		executionId.setValue(String.valueOf(getExecutionId()));
+		properties.getPropertyList().add(executionId);
+		
+		return properties;
+	}
+	
+	
 	public String toString() {
 
 		StringBuffer buf = new StringBuffer();

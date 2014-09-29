@@ -1781,7 +1781,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		String exitStatus = stepContext.getExitStatus();
 		String stepName = stepContext.getStepName();
 		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("batchStatus: " + batchStatus + " | stepName: " + stepName + " | stepExecID: " + stepContext.getStepExecutionId());
+			logger.fine("batchStatus: " + batchStatus + " | stepName: " + stepName);
 		}
 		long readCount = 0;
 		long writeCount = 0;
@@ -1883,7 +1883,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	@Override
 	public void updateStepExecution(long rootJobExecId, StepContextImpl stepContext) {
-		long stepExecutionId = stepContext.getStepExecutionId();
+		long stepExecutionId = stepContext.getInternalStepExecutionId();
 		String batchStatus = stepContext.getBatchStatus() == null ? BatchStatus.STARTING.name() : stepContext.getBatchStatus().name();
 		String exitStatus = stepContext.getExitStatus();
 		String stepName = stepContext.getStepName();

@@ -29,10 +29,7 @@ public class PropertyMapperCollector implements PartitionCollector {
 		
 	@Override
 	public Serializable collectPartitionData() throws Exception {
-		String stepProperty = String.valueOf(stepCtx.getProperties());
-		String[] tokens = stepProperty.split("[{}=]");
-		String stepPropValue = tokens[2];
-
+		String stepPropValue = stepCtx.getProperties().getProperty("stepProp");
 		String data = (String) stepCtx.getPersistentUserData() + "?" + stepPropValue;
 		
 		return data;

@@ -18,12 +18,16 @@ package com.ibm.jbatch.container.impl;
 
 import javax.batch.runtime.context.JobContext;
 
+import com.ibm.jbatch.container.context.impl.JobContextImpl;
+import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.jsl.CloneUtility;
 import com.ibm.jbatch.jsl.model.Flow;
 import com.ibm.jbatch.jsl.model.JSLJob;
+import com.ibm.jbatch.jsl.model.JSLProperties;
 import com.ibm.jbatch.jsl.model.ObjectFactory;
 import com.ibm.jbatch.jsl.model.Partition;
 import com.ibm.jbatch.jsl.model.PartitionPlan;
+import com.ibm.jbatch.jsl.model.Property;
 import com.ibm.jbatch.jsl.model.Split;
 import com.ibm.jbatch.jsl.model.Step;
 
@@ -35,7 +39,7 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used to build subjobs from splits.
      * 
      */
-    public static JSLJob buildFlowInSplitSubJob(Long parentJobExecutionId, JobContext jobContext, Split split, Flow flow) {
+    public static JSLJob buildFlowInSplitSubJob(Long parentJobExecutionId, JobContextImpl jobContext, Split split, Flow flow) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
@@ -53,16 +57,20 @@ public class PartitionedStepBuilder {
         //where one step instance can be executed with different properties on multiple threads.
 
         subJob.getExecutionElements().add(flow);
+        
+        jobContext.addTopLevelContextProperties(subJob.getProperties());
 
         return subJob;
     }
 	
+
+
     /*
      * Build a generated job with only one step in it to submit to the
      * BatchKernel. This is used for partitioned steps.
      * 
      */
-    public static JSLJob buildPartitionSubJob(Long parentJobInstanceId, JobContext jobContext, Step step, int partitionInstance) {
+    public static JSLJob buildPartitionSubJob(Long parentJobInstanceId, JobContextImpl jobContext, StepContextImpl stepCtx, Step step, int partitionInstance) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
@@ -119,7 +127,25 @@ public class PartitionedStepBuilder {
         }
         
         newStep.setStartLimit(step.getStartLimit());
-        newStep.setProperties(CloneUtility.cloneJSLProperties(step.getProperties()));
+        JSLProperties newProperties = CloneUtility.cloneJSLProperties(step.getProperties());
+
+        // 
+        // Propagate StepContext info.  Note that unlike the JobContext info, this is
+        // propagated for partitions, but NOT split-flows, since only for a partition
+        // is a step split up across threads.
+        // 
+        if (newProperties == null) {
+        	newProperties = jslFactory.createJSLProperties();
+        }
+
+		Property jobName = jslFactory.createProperty();
+		jobName.setName(StepContextImpl.TOP_LEVEL_STEP_EXECUTION_ID_PROP);
+		// No such thing as a partition of a partition so internal and "external" execution IDs are identical here.
+		jobName.setValue(String.valueOf(stepCtx.getInternalStepExecutionId()));  
+		newProperties.getPropertyList().add(jobName);
+		
+		// Link back to Step object
+        newStep.setProperties(newProperties);
         
         // Don't try to only clone based on type (e.g. ChunkListener vs. StepListener).
         // We don't know the type at the model level, and a given artifact could implement more
@@ -130,7 +156,9 @@ public class PartitionedStepBuilder {
         
         subJob.getExecutionElements().add(newStep);
 
-
+        // Propagate JobContext info
+        jobContext.addTopLevelContextProperties(subJob.getProperties());
+        
         return subJob;
     }
 

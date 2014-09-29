@@ -314,7 +314,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			}
 
 			for (int instance = 0; instance < partitions; instance++) {
-				subJobs.add(PartitionedStepBuilder.buildPartitionSubJob(jobExecutionImpl.getInstanceId(),jobExecutionImpl.getJobContext(), step, instance));
+				subJobs.add(PartitionedStepBuilder.buildPartitionSubJob(jobExecutionImpl.getInstanceId(),jobExecutionImpl.getJobContext(), stepContext, step, instance));
 			}
 
 			PartitionsBuilderConfig config = new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, finishedWorkQueue, jobExecutionImpl.getExecutionId());
