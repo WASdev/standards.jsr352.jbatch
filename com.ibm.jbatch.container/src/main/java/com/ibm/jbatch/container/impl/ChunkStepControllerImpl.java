@@ -534,7 +534,6 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 		List<Object> chunkToWrite = new ArrayList<Object>();
 		boolean checkPointed = true;
 		boolean rollback = false;
-		Throwable caughtThrowable = null;
 
 		// begin new transaction at first iteration or after a checkpoint commit
 
@@ -607,74 +606,95 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 					// 2.- ask Andy about retry
 					// 3.- when do we stop?
 
-							checkpointManager.checkpoint();
+					checkpointManager.checkpoint();
 
-							for (ChunkListenerProxy chunkProxy : chunkListeners) {
-								chunkProxy.afterChunk();
-							}
+					for (ChunkListenerProxy chunkProxy : chunkListeners) {
+						chunkProxy.afterChunk();
+					}
 
-							this.persistUserData();
+					this.persistUserData();
 
-							this.chkptAlg.beginCheckpoint();
+					this.chkptAlg.beginCheckpoint();
 
-							transactionManager.commit();
+					transactionManager.commit();
 
-							this.chkptAlg.endCheckpoint();
+					this.chkptAlg.endCheckpoint();
 
-							invokeCollectorIfPresent();
+					invokeCollectorIfPresent();
 
-							// exit loop when last record is written
-							if (status.isFinished()) {
-								transactionManager.begin();
+					// exit loop when last record is written
+					if (status.isFinished()) {
+						transactionManager.begin();
 
-								readerProxy.close();
-								writerProxy.close();
+						readerProxy.close();
+						writerProxy.close();
 
-								transactionManager.commit();
-								// increment commitCount
-								stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
-								break;
-							} else {
-								// increment commitCount
-								stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
-							}
-
-				}
-
-			}
-		} catch (Exception e) {
-			caughtThrowable = e;
-			logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", e);
-			// Only try to call onError() if we have an Exception, but not an Error.
-			for (ChunkListenerProxy chunkProxy : chunkListeners) {
-				try {
-					chunkProxy.onError(e);
-				} catch (Exception e1) {
-					StringWriter sw = new StringWriter();
-					PrintWriter pw = new PrintWriter(sw);
-					e1.printStackTrace(pw);
-					logger.warning("Caught secondary exception when calling chunk listener onError() with stack trace: " + sw.toString() + "\n. Will continue to remaining chunk listeners (if any) and rethrow wrapping the primary exception.");
+						transactionManager.commit();
+						// increment commitCount
+						stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
+						break;
+					} else {
+						// increment commitCount
+						stepContext.getMetric(MetricImpl.MetricType.COMMIT_COUNT).incValue();
+					}
 				}
 			}
-		} catch (Throwable t) {
-			caughtThrowable = t;
-			logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", t);
-		} finally {
-			if (caughtThrowable != null) {
+		} catch (Throwable t) {		
+			try {
+				logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", t);
 				transactionManager.setRollbackOnly();
-				logger.warning("Caught throwable in chunk processing. Attempting to close all readers and writers.");
-				readerProxy.close();
-				writerProxy.close();
+
+				callReaderAndWriterCloseOnThrowable(t);
+
+				// Signature is onError(Exception) so only try to call if we have an Exception, but not an Error.
+				if (t instanceof Exception) {
+					callChunkListenerOnError((Exception)t);
+				}
+			} finally {
 				transactionManager.rollback();
-				logger.exiting(sourceClass, "invokeChunk");
-				throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", caughtThrowable);
-			} else {
-				logger.finest("Exiting normally");
-				logger.exiting(sourceClass, "invokeChunk");
+			}
+			logger.exiting(sourceClass, "invokeChunk");
+			throw new BatchContainerRuntimeException("Failure in Read-Process-Write Loop", t);
+		} 
+
+		logger.finest("Exiting normally");
+		logger.exiting(sourceClass, "invokeChunk");
+	}
+	
+	private void callChunkListenerOnError(Exception e) {
+		logger.fine("Caught exception in chunk processing. Attempting to call onError() for chunk listeners.");
+		for (ChunkListenerProxy chunkProxy : chunkListeners) {
+			try {
+				chunkProxy.onError(e);
+		    // 2. Catch throwable, not exception
+			} catch (Throwable t) {
+				logWarning("Caught secondary throwable when calling chunk listener onError(). Will continue to call remaining chunk listeners (if any).", t);
 			}
 		}
 	}
-
+	
+	private void callReaderAndWriterCloseOnThrowable(Throwable t) {
+		logger.fine("Caught throwable in chunk processing. Attempting to close all readers and writers.");
+			
+		try {
+			readerProxy.close();
+		} catch (Throwable t1) {
+			logWarning("Secondary throwable closing reader on rollback path.  Swallow throwable and continue to close writer.", t1);
+		} 
+		try {
+			writerProxy.close();
+		} catch (Throwable t1) {
+			logWarning("Secondary throwable closing writer on rollback path.  Swallow throwable and continue with rollback.", t1);
+		}		
+	}
+	
+	private void logWarning(String msg, Throwable t) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		t.printStackTrace(pw);			
+		logger.warning(msg + "Exception stack trace: \n" + sw.toString());
+	}
+	
 	protected void invokeCoreStep() throws BatchContainerServiceException {
 
 		this.chunk = step.getChunk();
