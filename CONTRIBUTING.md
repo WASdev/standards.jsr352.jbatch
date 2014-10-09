@@ -8,7 +8,7 @@ change your rights to use your own Contributions for any other purpose.
 
 You can download the CLAs here:
 
- - [individual](jbatch-cla-individual.pdf)
+ - [individual](jbatch-cla-individual.pdf?raw=true)
 
 If you are an IBMer, please contact us directly as the contribution process is
 slightly different.
