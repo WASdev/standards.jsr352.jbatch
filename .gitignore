@@ -2,7 +2,8 @@
 **/.classpath
 **/.project
 **/target/
-**/.settings/
+**/.settings/**
+.settings
 /com.ibm.jbatch.container/src/main/resources/META-INF/services/*.properties
 /com.ibm.jbatch.container/derby.log
 /com.ibm.jbatch.container/RUNTIMEDB
