@@ -124,17 +124,23 @@
 
         <version.java>1.6</version.java>
 
+        <version.javax.enterprise.cdi-api>1.1-20121030</version.javax.enterprise.cdi-api>
+        <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
+        <version.org.testng.testng>6.8</version.org.testng.testng>
+
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
+        <version.org.apache.maven.plugins.maven-antrun-plugin>1.6</version.org.apache.maven.plugins.maven-antrun-plugin>
         <version.org.apache.maven.plugins.maven-compiler-plugin>2.0.2</version.org.apache.maven.plugins.maven-compiler-plugin>
         <version.org.apache.maven.plugins.maven-gpg-plugin>1.4</version.org.apache.maven.plugins.maven-gpg-plugin>
         <version.org.apache.maven.plugins.maven-jar-plugin>2.4</version.org.apache.maven.plugins.maven-jar-plugin>
         <version.org.apache.maven.plugins.maven-javadoc-plugin>2.9.1</version.org.apache.maven.plugins.maven-javadoc-plugin>
-        <version.org.apache.maven.plugins.maven-resources-plugin>2.2</version.org.apache.maven.plugins.maven-resources-plugin>
+        <version.org.apache.maven.plugins.maven-resources-plugin>2.7</version.org.apache.maven.plugins.maven-resources-plugin>
         <version.org.apache.maven.plugins.maven-shade-plugin>2.1</version.org.apache.maven.plugins.maven-shade-plugin>
         <version.org.apache.maven.plugins.maven-source-plugin>2.2.1</version.org.apache.maven.plugins.maven-source-plugin>
         <version.org.apache.maven.plugins.maven-surefire-plugin>2.12.4</version.org.apache.maven.plugins.maven-surefire-plugin>
         <version.org.codehaus.mojo.build-helper-maven-plugin>1.8</version.org.codehaus.mojo.build-helper-maven-plugin>
         <version.org.codehaus.mojo.jaxb2-maven-plugin>1.6</version.org.codehaus.mojo.jaxb2-maven-plugin>
+        <version.org.codehaus.mojo.properties-maven-plugin>1.0-alpha-2</version.org.codehaus.mojo.properties-maven-plugin>
     </properties>
 
     <modules>
@@ -143,6 +149,8 @@
         <module>com.ibm.jbatch.spi</module>
         <module>com.ibm.jbatch.tck</module>
         <module>com.ibm.jbatch.tck.spi</module>
+        <module>com.ibm.jbatch.tck.exec</module>
+        <module>com.ibm.jbatch.tck.dist</module>
     </modules>
 
     <dependencyManagement>
@@ -159,8 +167,37 @@
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch.tck</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch.tck</artifactId>
+                <version>${project.version}</version>
+                <classifier>sources</classifier>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch.tck</artifactId>
+                <version>${project.version}</version>
+                <classifier>javadoc</classifier>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.tck.spi</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch.tck.spi</artifactId>
+                <version>${project.version}</version>
+                <classifier>sources</classifier>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.jbatch</groupId>
+                <artifactId>com.ibm.jbatch.tck.spi</artifactId>
+                <version>${project.version}</version>
+                <classifier>javadoc</classifier>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
@@ -170,17 +207,17 @@
             <dependency>
                 <groupId>javax.enterprise</groupId>
                 <artifactId>cdi-api</artifactId>
-                <version>1.1-20121030</version>
+                <version>${version.javax.enterprise.cdi-api}</version>
             </dependency>
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
-                <version>1</version>
+                <version>${version.javax.inject.javax.inject}</version>
             </dependency>
             <dependency>
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject-tck</artifactId>
-                <version>1</version>
+                <version>${version.javax.inject.javax.inject}</version>
             </dependency>
             <dependency>
                 <groupId>javax.transaction</groupId>
@@ -210,7 +247,7 @@
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
-                <version>6.8</version>
+                <version>${version.org.testng.testng}</version>
             </dependency>
             <dependency>
                 <groupId>xmlunit</groupId>
@@ -280,6 +317,11 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxb2-maven-plugin</artifactId>
                     <version>${version.org.codehaus.mojo.jaxb2-maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>properties-maven-plugin</artifactId>
+                    <version>${version.org.codehaus.mojo.properties-maven-plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

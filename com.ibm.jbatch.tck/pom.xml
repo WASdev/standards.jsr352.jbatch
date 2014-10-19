@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
+    <parent>
 		<groupId>javax.batch</groupId>
 		<artifactId>jbatch</artifactId>
 		<version>1.0.1-SNAPSHOT</version>
@@ -12,6 +12,11 @@
 	<version>1.0.1-SNAPSHOT</version>
 	<name>com.ibm.jbatch.tck</name>
 	<url>http://maven.apache.org</url>
+
+    <properties>
+        <version.net.java.sigtest.sigtestdev>3.0-b12-v20140219</version.net.java.sigtest.sigtestdev>
+    </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -43,22 +48,14 @@
 		</dependency>
 		<dependency>
 			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject-tck</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derbynet</artifactId>
+			<artifactId>javax.inject</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>xmlunit</groupId>
 			<artifactId>xmlunit</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>maven2-repository.dev.java.net</id>
@@ -66,25 +63,153 @@
 			<url>http://download.java.net/maven/glassfish/</url>
 		</pluginRepository>
 	</pluginRepositories>
-	
+
 	<build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-antrun-plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>filter-build.xml</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>none</phase>
+                            <configuration>
+                                <target>
+                                    <copy file="${project.basedir}/testng/build.xml"
+                                          tofile="${project.basedir}/testng/filtered.build.xml"
+                                          filtering="true"
+                                          overwrite="true">
+                                        <filterset>
+                                            <filter token="project.version" value="${project.version}" />
+                                            <filter token="version.org.testng.testng" value="${version.org.testng.testng}" />
+                                        </filterset>
+                                    </copy>
+                                </target>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>generate-batch.xml</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>none</phase>
+                            <configuration>
+                                <target>
+                                    <echo message="building ${project.basedir}/src/main/resources/META-INF/build.xml"/>
+                                    <java classname="com.ibm.jbatch.tck.utils.BatchXMLGenerator">
+                                        <arg value="${project.build.outputDirectory}"/>
+                                        <arg value="com/ibm/jbatch/tck/artifacts/"/>
+                                        <arg value="${project.basedir}/src/main/resources/META-INF"/>
+                                        <classpath refid="maven.compile.classpath"/>
+                                        <classpath>
+                                            <dirset dir="${project.build.outputDirectory}/com/ibm/jbatch/tck">
+                                                <include name="artifacts utils"/>
+                                            </dirset>
+                                        </classpath>
+                                    </java>
+                                </target>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>generate-sigtest-java6</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>none</phase>
+                            <configuration>
+                                <target>
+                                    <taskdef name="setup" classname="com.sun.tdk.signaturetest.ant.ASetup" classpathref="maven.plugin.classpath"/>
+                                    <setup failonerror="true" filename="${project.basedir}/sigtest/jsr352-api-sigtest-java6.sig"
+                                           package="javax.batch">
+                                        <classpath refid="maven.compile.classpath"/>
+                                        <classpath refid="maven.plugin.classpath"/>
+                                        <classpath>
+                                            <pathelement location="${sigtest.java6.home}/jre/lib/rt.jar"/>
+                                        </classpath>
+                                    </setup>
+                                </target>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>generate-sigtest-java7</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>none</phase>
+                            <configuration>
+                                <target>
+                                    <taskdef name="setup" classname="com.sun.tdk.signaturetest.ant.ASetup" classpathref="maven.plugin.classpath"/>
+                                    <setup failonerror="true" filename="${project.basedir}/sigtest/jsr352-api-sigtest-java7.sig"
+                                           package="javax.batch">
+                                        <classpath refid="maven.compile.classpath"/>
+                                        <classpath refid="maven.plugin.classpath"/>
+                                        <classpath>
+                                            <pathelement location="${sigtest.java7.home}/jre/lib/rt.jar"/>
+                                        </classpath>
+                                    </setup>
+                                </target>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>generate-sigtest-java8</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <phase>none</phase>
+                            <configuration>
+                                <target>
+                                    <taskdef name="setup" classname="com.sun.tdk.signaturetest.ant.ASetup" classpathref="maven.plugin.classpath"/>
+                                    <setup failonerror="true" filename="${project.basedir}/sigtest/jsr352-api-sigtest-java8.sig"
+                                           package="javax.batch">
+                                        <classpath refid="maven.compile.classpath"/>
+                                        <classpath refid="maven.plugin.classpath"/>
+                                        <classpath>
+                                            <pathelement location="${sigtest.java8.home}/jre/lib/rt.jar"/>
+                                        </classpath>
+                                    </setup>
+                                </target>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.enterprise</groupId>
+                            <artifactId>cdi-api</artifactId>
+                            <version>${version.javax.enterprise.cdi-api}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>net.java.sigtest</groupId>
+                            <artifactId>sigtestdev</artifactId>
+                            <version>${version.net.java.sigtest.sigtestdev}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
 		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-batch.xml</id>
+                        <phase>process-classes</phase>
+                    </execution>
+                    <execution>
+                        <id>filter-build.xml</id>
+                        <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>test-compile</id>
-						<phase>process-test-sources</phase>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-						<configuration>
-							<source>${java.version}</source>
-							<target>${java.version}</target>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -106,6 +231,89 @@
 			  		<skipTests>true</skipTests>
 				</configuration>
 		  	</plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>${project.basedir}/../sigtest.properties</file>
+                            </files>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
+
+    <profiles>
+        <profile>
+            <id>sigtest6</id>
+            <activation>
+                <property><name>sigtest6</name></property>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-sigtest-java6</id>
+                                <phase>generate-resources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>sigtest7</id>
+            <activation>
+                <property><name>sigtest7</name></property>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-sigtest-java7</id>
+                                <phase>generate-resources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>sigtest8</id>
+            <activation>
+                <property><name>sigtest8</name></property>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-sigtest-java8</id>
+                                <phase>generate-resources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

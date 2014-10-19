@@ -20,6 +20,15 @@ idea
 *~
 
 /com.ibm.jbatch.container/src/main/resources/META-INF/services/*.properties
-/com.ibm.jbatch.container/derby.log
-/com.ibm.jbatch.container/RUNTIMEDB
+
+# TCK Output
+derby.log
 RUNTIMEDB
+
+# JDK locations for sigtest generation
+sigtest.properties
+
+# Generated Files
+com.ibm.jbatch.tck/src/main/resources/META-INF/batch.xml
+com.ibm.jbatch.tck/sigtest/jsr352*
+com.ibm.jbatch.tck/testng/filtered.build.xml

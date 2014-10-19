@@ -1,6 +1,6 @@
-<project name="jsr352_tck" default="run" basedir=".">
+<project name="jsr352_tck" default="run" basedir="">
 
-	<taskdef resource="testngtasks" classpath=".\lib\testng-6.8.jar"/>
+	<taskdef resource="testngtasks" classpath=".\lib\testng-@version.org.testng.testng@.jar"/>
 	
 	<description>
 		JSR 352 TCK
@@ -14,8 +14,11 @@
 	
 	<!-- Directory which will contain the TestNG report after running the TCK -->
 	<property name="results" location="results"/>
-	
-	<target name="compile" depends="init" description="Compile the JSR352 TCK source code" >
+
+    <!-- Override with value "EE" to run TestNG EE tests. -->
+    <property name="tck.type" value="SE" />
+
+    <target name="compile" depends="init" description="Compile the JSR352 TCK source code" >
 		<mkdir dir="${build}"/>
 		
 		<!-- compile test artifacts -->
@@ -26,37 +29,36 @@
 				</fileset>
 				<pathelement path="${batch.impl.classes}"/>
 				<fileset dir="artifacts">
-					<include name="**/jsr352-tck-SPI.jar"/>
+					<include name="**/com.ibm.jbatch.tck.spi-@project.version@.jar"/>
 				</fileset>
 			</classpath>
 		</javac>
 	</target>
-	
+
 	<target name="init">
 		 <loadproperties srcFile="jsr352-tck.properties"/>
 	</target>
-	
+
 	<target name="clean">
 	    <delete dir="${build}"/>
 		<delete dir="${results}"/>
 	</target>
-	
+
 	<target name="run" depends="init" description="Runs the JSR352 TCK suite" >
-		
-        	<path id="jsr352.tck.classpath">
-        				<fileset dir="lib">
-        						<include name="**/*.jar"/>
-        					</fileset>
-        					<fileset dir="artifacts">
-        						<include name="**/jsr352-tck-SPI.jar"/>
-        						<include name="**/jsr352-tck-impl.jar"/>
-        					</fileset>
-        					<pathelement path="${batch.impl.classes}"/> 
-        			</path>
+        <path id="jsr352.tck.classpath">
+            <fileset dir="lib">
+                <include name="**/*.jar"/>
+            </fileset>
+            <fileset dir="artifacts">
+                <include name="**/com.ibm.jbatch.tck.spi-@project.version@.jar"/>
+                <include name="**/com.ibm.jbatch.tck-@project.version@.jar"/>
+            </fileset>
+            <pathelement path="${batch.impl.classes}"/>
+        </path>
 	
 		<testng mode="testng" classpathref="jsr352.tck.classpath" dumpCommand="true" workingDir="." haltonfailure="true" outputdir="${results}">
 			
-			<xmlfileset dir="." includes="artifacts/jsr352-tck-impl-suite.xml"/>
+			<xmlfileset dir="." includes="artifacts/jsr352-tck-impl-${tck.type}-suite.xml"/>
 			
 			<!-- user specified JVM arguments -->
 			<jvmarg line="${jvm.options}"/>
