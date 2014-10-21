@@ -106,25 +106,8 @@ public class JobModelTest {
         assertTrue("XSD invalid, see sysout", handler.eventOccurred());
     }
     
-    @Test
-    @Ignore
-    public void testValidateInvalidEmptyString() throws Exception {
-        
-        JAXBContext ctx = JAXBContext.newInstance("com.ibm.jbatch.jsl.model");
-        
-        Unmarshaller u = ctx.createUnmarshaller();
-        u.setSchema(ValidatorHelper.getXJCLSchema());
-        JSLValidationEventHandler handler = new JSLValidationEventHandler();
-        u.setEventHandler(handler);
-        URL url = this.getClass().getResource("/emptyString.xml");
-        
-        // Use this for anonymous type
-        //Job job = (Job)u.unmarshal(url.openStream());
-        
-        // Use this for named complex type
-        Object elem = u.unmarshal(url.openStream());
-        assertTrue("XSD invalid, see sysout", handler.eventOccurred());
-    }
+    
+    // Empty string is schema-valid so deleting previous test in this place.
 
 
 }
