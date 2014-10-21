@@ -98,18 +98,17 @@
 	<macrodef name="appendExtraCode">
 	  <attribute name="class"/>
 	  <sequential>
-		 <concat destfile="${generate.dir}/@{class}.java.tmp" force="no">
+		 <concat destfile="${generate.dir}/@{class}.java.tmp">
 		 	<path path="${generate.pkg.dir}/@{class}.java"/>
 		 	<filterchain>
 		 		<!-- Strip off last line -->
 		 		<tailfilter lines="-1" skip="1"/>
 		 	</filterchain>
  		</concat>
-		<concat destfile="${generate.pkg.dir}/@{class}.java" force="no">
+		<concat destfile="${generate.pkg.dir}/@{class}.java">
 		 	<path path="${generate.dir}/@{class}.java.tmp"/>
 		 	<path path="${stubs.dir}/@{class}ExtraCode.java"/>
-		 	<footer filtering="no">
-}</footer> <!-- No, I don't know how to do the whitespace/newline any better .-->
+		 	<footer>${line.separator}}</footer>
  		</concat>
  		<delete file="${generate.dir}/@{class}.java.tmp"/>
 	  </sequential>
