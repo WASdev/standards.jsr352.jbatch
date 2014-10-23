@@ -54,7 +54,7 @@
         					<pathelement path="${batch.impl.classes}"/> 
         			</path>
 	
-		<testng mode="testng" classpathref="jsr352.tck.classpath" dumpCommand="true" workingDir="." failureProperty="tests.failed" outputdir="${results}">
+		<testng mode="testng" classpathref="jsr352.tck.classpath" dumpCommand="true" workingDir="." haltonfailure="true" outputdir="${results}">
 			
 			<xmlfileset dir="." includes="artifacts/jsr352-tck-impl-suite.xml"/>
 			
