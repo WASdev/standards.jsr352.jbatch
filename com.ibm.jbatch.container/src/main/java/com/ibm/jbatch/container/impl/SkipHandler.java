@@ -258,7 +258,6 @@ public class SkipHandler {
 	    }
 	    else
 	    {
-	      System.out.println("## NO SKIP");
 	      // No skip.  Throw it back. - No, exit without throwing
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No skip.  Rethrow ", e);
