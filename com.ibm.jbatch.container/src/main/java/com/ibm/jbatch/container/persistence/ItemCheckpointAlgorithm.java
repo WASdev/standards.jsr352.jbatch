@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 International Business Machines Corp.
+ * Copyright 2012,2014 International Business Machines Corp.
  * 
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership. Licensed under the Apache License, 
@@ -27,202 +27,99 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
 	private static final String className = ItemCheckpointAlgorithm.class.getName();
 	private static Logger logger  = Logger.getLogger(ItemCheckpointAlgorithm.class.getPackage().getName());;
 		
-    CheckpointAlgorithm ichkp = null;
-    boolean inCheckpoint = false;
-    private static final int defaultRecordValue = 10;
-    private static final int defaultTimeValue = 10;
-	private static final int defaultTimeoutValue = 60;
-    int threshold = defaultRecordValue;
-    long requests = 0;
-    int timeout = defaultTimeoutValue;
-    
-    java.util.Date date = null;
+    long itemsReadAndProcessed = 0;
+    protected int itemCount;
+    protected int timeLimitSeconds;
     long checkpointBeginTime = 0;
-    int interval = 10;  // 10 sec interval?
-    long numTimes = 0;
     
-    int time; 
-    int item;
-    
-    public ItemCheckpointAlgorithm(){
-    	date = new java.util.Date();
-    	checkpointBeginTime = date.getTime();
-        logger.finer("ITEMTIME: in ctor, ts = " + checkpointBeginTime);
-
+    public void setItemCount(int itemCount) {
+    	this.itemCount = itemCount;
     }
 
-	public void endCheckpoint() throws Exception {
-    	inCheckpoint = false; 
-	}
+    public void setTimeLimitSeconds(int timeLimitSeconds) {
+    	this.timeLimitSeconds = timeLimitSeconds;
+    }
 
-	public int getCheckpointTimeOut(int timeOut) throws Exception {
-    	return timeout;
-	}
+    @Override
+	public void endCheckpoint() throws Exception { }
 
-	public boolean isReadyToCheckpointItem() throws Exception {
-       	String method = "isReadyToCheckpoint";
-    	if(logger.isLoggable(Level.FINER)) { logger.entering(className, method); }
+	public boolean isReadyToCheckpointItem() {
 
-        requests++;
-
-        boolean itemready = (requests >= item);
+        boolean itemready = (itemsReadAndProcessed >= itemCount);
 
         if ( itemready) {
-        	logger.finer("ITEMTIMECHKPT: item checkpoint hit");
-            long millis =  Long.valueOf( (new Date().getTime()) - checkpointBeginTime );
-            if ( millis>0 ) { 
-                String rate =  Integer.valueOf ( Long.valueOf( (requests*1000/millis) ).intValue()).toString();
-                if(logger.isLoggable(Level.FINE)) { logger.fine(" - true [requests/second " + rate + "]"); }
 
-            } else {
-            	if(logger.isLoggable(Level.FINE)) { logger.fine(" - true [requests " + requests + "]"); }
+        	logger.fine("ITEMCHKPT: item checkpoint hit");
 
-            }
+        	if(logger.isLoggable(Level.FINER)) { 
+        		long millis =  Long.valueOf( (new Date().getTime()) - checkpointBeginTime );
+        		if ( millis>0 ) { 
+        			String rate =  Integer.valueOf ( Long.valueOf( (itemsReadAndProcessed*1000/millis) ).intValue()).toString();
+        			logger.finer(" - true [itemsReadAndProcessed/second " + rate + "]");
+        		} else {
+        			logger.finer(" - true [itemsReadAndProcessed " + itemsReadAndProcessed + "]");
+        		}
+        	}
         }
-
-        if ( itemready ) requests = 0;
 
         return itemready;
 	}
 	
-	public boolean isReadyToCheckpointTime() throws Exception {
+	public boolean isReadyToCheckpointTime() {
     	String method = "isReadyToCheckpoint";
     	if(logger.isLoggable(Level.FINER)) { logger.entering(className, method); }
 
         boolean timeready = false;
-        numTimes++;
         java.util.Date curDate = new java.util.Date();
         long curts = curDate.getTime();
         long curdiff = curts - checkpointBeginTime;
         int diff = (int)curdiff / 1000;
         
-        if (diff >= time) {
-        	logger.finer("ITEMTIMECHKPT: time checkpoint hit");
+        if (diff >= timeLimitSeconds) {
+        	logger.fine("ITEMTIMECHKPT: time checkpoint hit");
             timeready = true;
-            if(logger.isLoggable(Level.FINER)) { logger.fine("Num of requests="+numTimes+" at a rate="+numTimes/diff+" req/sec");}
-         
-            numTimes = 0;
-            
-            date = new java.util.Date();
-            checkpointBeginTime = date.getTime();
-            
+            if(logger.isLoggable(Level.FINER)) { logger.finer("Num of itemsReadAndProcessed="+ itemsReadAndProcessed +" at a rate="+itemsReadAndProcessed/diff+" itemsReadAndProcessed/sec");}
         }
 
-           
         if(logger.isLoggable(Level.FINER)) { logger.exiting(className, method, timeready); }
 
         return timeready;
 	}
 	
-	public void setThreshold(int INthreshHold){
-		threshold = INthreshHold;
+
+	@Override
+	public boolean isReadyToCheckpoint() {
+		throw new UnsupportedOperationException("This is an internal class which happens to implement" + 
+				"CheckpointAlgorithm.  Don't call this method but call one of the related ones.");
 	}
 
-	public boolean isReadyToCheckpoint() throws Exception {
-		
-		boolean ready = false; 
-		
-		if (time == 0){ // no time limit, just check if item count has been reached
-			if (isReadyToCheckpointItem()){
-				ready = true;
-			}
-		} else if (isReadyToCheckpointItem() || isReadyToCheckpointTime()) {
-			ready = true;
+	public boolean isReadyToCheckpoint(boolean filteredByProcessor) {
+			
+		if (!filteredByProcessor) {
+			itemsReadAndProcessed++;
+		}
+			
+		if (isReadyToCheckpointItem()){
+			return true;
+		}
+
+		if (timeLimitSeconds > 0 && isReadyToCheckpointTime()) {
+			return true;
 		}
 		
-		return ready;
-	}
-
-	public void setThresholds(int itemthreshold, int timethreshold) {
-
-		item = itemthreshold;
-        time = timethreshold;
-		
+		return false;
 	}
 
 	@Override
 	public void beginCheckpoint() throws Exception {
+		java.util.Date date = new java.util.Date();
         checkpointBeginTime = date.getTime();
+        itemsReadAndProcessed = 0;
 	}
 
 	@Override
 	public int checkpointTimeout() throws Exception {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	
-	
-	// Old Item only chkpt code
-	/*
-	private static final String className = ItemCheckpointAlgorithm.class.getName();
-	private static Logger logger  = Logger.getLogger(ItemCheckpointAlgorithm.class.getPackage().getName());;
-		
-    CheckpointAlgorithm ichkp = null;
-    boolean inCheckpoint = false;
-    private static final int defaultRecordValue = 10;
-	private static final int defaultTimeoutValue = 60;
-    int itemthreshold = defaultRecordValue;
-    int timethreshold = 0; // default time threshold is 0
-    long timeStarted = 0;
-    long requests = 0;
-    int timeout = defaultTimeoutValue;
-    
-	//@BeginCheckpoint
-	public void beginCheckpoint() throws Exception {
-        inCheckpoint = true;
-        timeStarted = new Date().getTime();
-	}
-
-	//@EndCheckpoint
-	public void endCheckpoint() throws Exception {
-    	inCheckpoint = false; 
-	}
-
-	//@GetCheckpointTimeout
-	public int getCheckpointTimeOut(int timeOut) throws Exception {
-    	return timeout;
-	}
-
-	//@IsReadyToCheckpoint
-	public boolean isReadyToCheckpoint() throws Exception {
-       	String method = "ShouldCheckpointBeExecuted";
-    	if(logger.isLoggable(Level.FINER)) { logger.entering(className, method); }
-
-        requests++;
-
-        boolean ready = (requests >= itemthreshold);
-
-        if ( ready) {
-            long millis =  Long.valueOf( (new Date().getTime()) - timeStarted );
-            if ( millis>0 ) { 
-                String rate =  Integer.valueOf ( Long.valueOf( (requests*1000/millis) ).intValue()).toString();
-                if(logger.isLoggable(Level.FINE)) { logger.fine(" - true [requests/second " + rate + "]"); }
-
-            } else {
-            	if(logger.isLoggable(Level.FINE)) { logger.fine(" - true [requests " + requests + "]"); }
-
-            }
-        }
-
-        if ( ready ) requests = 0;
-
-        return ready;
-	}
-	
-	public void setThreshold(int INthreshHold){
-		itemthreshold = INthreshHold;
-	}
-
-	//@Override
-	public void setThresholds(int itemthreshold, int timethreshold) {
-		this.itemthreshold = itemthreshold; 		
-	}
-
-	@Override
-	public int checkpointTimeout(int timeout) throws Exception {
-		this.timeout = timeout;
-		return this.timeout;
-	}
-*/
 }

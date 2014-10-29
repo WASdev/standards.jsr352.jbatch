@@ -80,9 +80,9 @@ public class CheckpointManager {
 	}
 
 
-	public boolean ApplyCheckPointPolicy(/*boolean forceCheckpoint*/)
+	public boolean isReadyToCheckpoint()
 	{
-		String method = "ApplyCheckPointPolicy";
+		String method = "isReadyToCheckpoint";
 		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method); }
 
 		boolean checkpoint = false;
@@ -94,7 +94,7 @@ public class CheckpointManager {
 		}
 
 		if (logger.isLoggable(Level.FINE) && checkpoint)
-			logger.fine("ApplyCheckPointPolicy - " + checkpoint);
+			logger.fine("isReadyToCheckpoint - " + checkpoint);
 
 		if(logger.isLoggable(Level.FINER)) { logger.exiting(sourceClass, method);}
 		

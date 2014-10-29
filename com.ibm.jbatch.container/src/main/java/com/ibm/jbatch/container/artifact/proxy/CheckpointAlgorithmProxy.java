@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 International Business Machines Corp.
+ * Copyright 2012,2014 International Business Machines Corp.
  * 
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership. Licensed under the Apache License, 
@@ -19,39 +19,12 @@ package com.ibm.jbatch.container.artifact.proxy;
 import javax.batch.api.chunk.CheckpointAlgorithm;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
-import com.ibm.jbatch.container.persistence.ItemCheckpointAlgorithm;
 
 public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm> implements CheckpointAlgorithm {
 
-    private String checkpointType = null;
-    private String checkpointName = null;
-
-    /*
-     * Allow this to be public as a special case so we can easily treat the built-in algorithms
-     * as identical to custom ones.
-     */
-    public CheckpointAlgorithmProxy(final CheckpointAlgorithm delegate) {
+    CheckpointAlgorithmProxy(final CheckpointAlgorithm delegate) {
         super(delegate);
-
-        if (delegate instanceof ItemCheckpointAlgorithm) {
-            checkpointType = "item";
-            checkpointName = ItemCheckpointAlgorithm.class.getName();
-        } else {
-			checkpointType = "custom";
-			checkpointName = delegate.getClass().getName();
-        }
-
     }
-
-
-    public String getCheckpointType() {
-        return checkpointType;
-    }
-
-    public String getCheckpointAlgorithmClassName() {
-        return checkpointName;
-    }
-
 
     @Override
     public void beginCheckpoint() {
@@ -63,7 +36,6 @@ public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm>
         }
     }
 
-
     @Override
     public int checkpointTimeout() {
         try {
@@ -73,7 +45,6 @@ public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm>
             throw new BatchContainerRuntimeException(e);
         }
     }
-
 
     @Override
     public void endCheckpoint() {
@@ -85,7 +56,6 @@ public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm>
         }
     }
 
-
     @Override
     public boolean isReadyToCheckpoint() {
         try {
@@ -95,6 +65,4 @@ public class CheckpointAlgorithmProxy extends AbstractProxy<CheckpointAlgorithm>
             throw new BatchContainerRuntimeException(e);
         }
     }
-
-    
 }

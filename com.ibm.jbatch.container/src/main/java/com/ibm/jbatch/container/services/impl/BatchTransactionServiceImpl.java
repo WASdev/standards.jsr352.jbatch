@@ -35,8 +35,6 @@ public class BatchTransactionServiceImpl implements ITransactionManagementServic
     private static final String CLASSNAME = BatchTransactionServiceImpl.class.getName();
     private static final Logger logger = Logger.getLogger(CLASSNAME);
     
-    private static final int DEFAULT_TRAN_TIMEOUT = 180; // seconds
-
     /**
      * batch configuration properties.
      */
@@ -101,42 +99,10 @@ public class BatchTransactionServiceImpl implements ITransactionManagementServic
             transactionManager = new DefaultNonTransactionalManager();
         }
 
-
-        int timeout = getTransactionTimeout(stepContext);
-        logger.log(Level.FINE, "transaction timeout {0}", timeout);
-        try {
-            transactionManager.setTransactionTimeout(timeout);
-        } catch (Exception e) {
-            throw new TransactionManagementException(e);
-        }
-
         logger.exiting(CLASSNAME, "getTransactionManager", transactionManager);
         return transactionManager;
     }
 
 
-    /**
-     * @param stepContext
-     * @return global transaction timeout defined in step properties. default
-     *         timeout value is 180
-     * 
-     */
-    private int getTransactionTimeout(final StepContext stepContext) {
-        logger.entering(CLASSNAME, "getTransactionTimeout", stepContext);
-        Properties p = stepContext.getProperties();
-        int timeout = DEFAULT_TRAN_TIMEOUT; // default as per spec.
-        if (p != null && !p.isEmpty()) {
-
-            String propertyTimeOut = p.getProperty("javax.transaction.global.timeout");
-            if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "javax.transaction.global.timeout = {0}", propertyTimeOut==null ? "<null>" : propertyTimeOut);
-            }
-            if (propertyTimeOut != null && !propertyTimeOut.isEmpty()) {
-                timeout = Integer.parseInt(propertyTimeOut, 10);
-            }
-        }
-        logger.exiting(CLASSNAME, "getTransactionTimeout", timeout);
-        return timeout;
-    }
 
 }

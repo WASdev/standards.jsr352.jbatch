@@ -44,19 +44,20 @@ public class ChunkHelper {
 		return timeLimit;
     }
     
-    public static String getCheckpointPolicy(Chunk chunk) {
+    public static boolean isCustomCheckpointPolicy(Chunk chunk) {
 		String checkpointPolicy = chunk.getCheckpointPolicy();
 		
 		if (checkpointPolicy != null && !checkpointPolicy.isEmpty()) {
-			if (!(checkpointPolicy.equals("item") || checkpointPolicy.equals("custom"))) {
+			if (checkpointPolicy.equals("item")) {
+				return false;
+			} else if (checkpointPolicy.equals("custom")) {
+				return true;
+			} else {
 				throw new IllegalArgumentException("The only supported attributed values for 'checkpoint-policy' are 'item' and 'custom'.");				
 			}
 		} else {
-			checkpointPolicy = "item";
+			return false;
 		}
-		
-		chunk.setCheckpointPolicy(checkpointPolicy);
-		return checkpointPolicy;
     }
     
     public static int getSkipLimit(Chunk chunk) {
