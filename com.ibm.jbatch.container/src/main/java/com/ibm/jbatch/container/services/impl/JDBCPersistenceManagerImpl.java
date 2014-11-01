@@ -1337,50 +1337,16 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		Timestamp createtime = null;
-		Timestamp starttime = null;
-		Timestamp endtime = null;
-		Timestamp updatetime = null;
-		long instanceId = 0;
-		String batchStatus = null;
-		String exitStatus = null;
-		JobOperatorJobExecution jobEx = null;
+		IJobExecution jobEx = null;
 		ObjectInputStream objectIn = null;
-		String jobName = null;
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.jobinstanceid, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B on A.jobinstanceid = B.jobinstanceid where jobexecid = ?"); 
+			statement = conn.prepareStatement("select A.jobexecid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.jobinstanceid, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B on A.jobinstanceid = B.jobinstanceid where jobexecid = ?"); 
 			statement.setLong(1, jobExecutionId);
 			rs = statement.executeQuery();
-			while (rs.next()) {
-				createtime = rs.getTimestamp("createtime");
-				starttime = rs.getTimestamp("starttime");
-				endtime = rs.getTimestamp("endtime");
-				updatetime = rs.getTimestamp("updatetime");
-				instanceId = rs.getLong("jobinstanceid");
 
-				// get the object based data
-				batchStatus = rs.getString("batchstatus");
-				exitStatus = rs.getString("exitstatus");
-
-				// get the object based data
-				Properties params = null;
-				byte[] buf = rs.getBytes("parameters");
-				params = (Properties)deserializeObject(buf);
-
-				jobName = rs.getString("name");
-
-				jobEx = new JobOperatorJobExecution(jobExecutionId, instanceId);
-				jobEx.setCreateTime(createtime);
-				jobEx.setStartTime(starttime);
-				jobEx.setEndTime(endtime);
-				jobEx.setJobParameters(params);
-				jobEx.setLastUpdateTime(updatetime);
-				jobEx.setBatchStatus(batchStatus);
-				jobEx.setExitStatus(exitStatus);
-				jobEx.setJobName(jobName);
-			}
+			jobEx = (rs.next()) ?  readJobExecutionRecord(rs) : null;
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
 		} catch (IOException e) {
@@ -1405,48 +1371,16 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		Timestamp createtime = null;
-		Timestamp starttime = null;
-		Timestamp endtime = null;
-		Timestamp updatetime = null;
-		long jobExecutionId = 0;
-		long instanceId = 0;
-		String batchStatus = null;
-		String exitStatus = null;
-		String jobName = null;
 		List<IJobExecution> data = new ArrayList<IJobExecution>();
-		JobOperatorJobExecution jobEx = null;
 		ObjectInputStream objectIn = null;
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select A.jobexecid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B ON A.jobinstanceid = B.jobinstanceid where A.jobinstanceid = ?"); 
+			statement = conn.prepareStatement("select A.jobexecid, A.jobinstanceid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B ON A.jobinstanceid = B.jobinstanceid where A.jobinstanceid = ?"); 
 			statement.setLong(1, jobInstanceId);
 			rs = statement.executeQuery();
 			while (rs.next()) {
-				jobExecutionId = rs.getLong("jobexecid");
-				createtime = rs.getTimestamp("createtime");
-				starttime = rs.getTimestamp("starttime");
-				endtime = rs.getTimestamp("endtime");
-				updatetime = rs.getTimestamp("updatetime");
-				batchStatus = rs.getString("batchstatus");
-				exitStatus = rs.getString("exitstatus");
-				jobName = rs.getString("name");
-
-				// get the object based data
-				byte[] buf = rs.getBytes("parameters");
-				Properties params = (Properties)deserializeObject(buf);
-
-				jobEx = new JobOperatorJobExecution(jobExecutionId, instanceId);
-				jobEx.setCreateTime(createtime);
-				jobEx.setStartTime(starttime);
-				jobEx.setEndTime(endtime);
-				jobEx.setLastUpdateTime(updatetime);
-				jobEx.setBatchStatus(batchStatus);
-				jobEx.setExitStatus(exitStatus);
-				jobEx.setJobName(jobName);
-
-				data.add(jobEx);
+				data.add(readJobExecutionRecord(rs));
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
@@ -1465,6 +1399,28 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			cleanupConnection(conn, rs, statement);
 		}
 		return data;
+	}
+
+	private IJobExecution readJobExecutionRecord(ResultSet rs) throws SQLException, IOException, ClassNotFoundException {
+		if (rs == null) {
+			return null;
+		}
+			
+	    JobOperatorJobExecution retMe = 
+	    		new JobOperatorJobExecution(rs.getLong("jobexecid"), rs.getLong("jobinstanceid"));
+
+	    retMe.setCreateTime(rs.getTimestamp("createtime"));
+	    retMe.setStartTime(rs.getTimestamp("starttime"));
+	    retMe.setEndTime(rs.getTimestamp("endtime"));
+	    retMe.setLastUpdateTime(rs.getTimestamp("updatetime"));
+
+	    retMe.setJobParameters((Properties)deserializeObject(rs.getBytes("parameters")));
+
+	    retMe.setBatchStatus(rs.getString("batchstatus"));
+	    retMe.setExitStatus(rs.getString("exitstatus"));
+	    retMe.setJobName(rs.getString("name"));
+	    
+	    return retMe;
 	}
 
 	@Override

@@ -94,7 +94,8 @@ public class ImplSpecificJobOperatorTest {
 	}
 	
 	@Test
-	//@Ignore("If the timing of the sleeps becomes a problem feel free to ignore this test.")
+	@Ignore("If the timing of the sleeps becomes a problem feel free to ignore this test.") 
+	// Took the above line's advice
 	public void testRestartWhileStillRunning() throws Exception {
 		Properties props = new Properties();
 		props.put("sleepTime", "100");  // short sleep, could have omitted
