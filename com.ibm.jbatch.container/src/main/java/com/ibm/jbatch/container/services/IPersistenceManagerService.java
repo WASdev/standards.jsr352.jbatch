@@ -130,6 +130,16 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	 */
 	public void updateStepExecution(long jobExecId, StepContextImpl stepContext);
 	
+	/**
+	 * Update a StepExecution for the "top-level" StepExecution of a partitioned step.
+	 * 
+	 * This will aggregate the metrics from the "partition-level" StepExecution(s), 
+	 * (which by the way are not spec-defined and not accessible through standard, public APIs.)
+	 * 
+	 * @param jobExecId the parent JobExecution id
+	 * @param stepContext the step context for this step execution
+	 */
+	public void updateWithFinalPartitionAggregateStepExecution(long rootJobExecutionId, StepContextImpl stepContext);
 
 	
 	// JOB_STATUS

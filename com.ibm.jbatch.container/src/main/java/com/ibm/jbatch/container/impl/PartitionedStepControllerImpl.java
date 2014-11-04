@@ -357,6 +357,12 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		boolean exceptionThrownAnalyzingCollectorData = false;
 		boolean exceptionThrownAnalyzingStatus = false;
 
+
+		if (numTotalForThisExecution == 0) {
+			logger.finer("All partitions have already completed on a previous execution.  Returning");
+			return;
+		}
+
 		while (true) {
 			logger.finer("Begin main loop in waitForQueueCompletion(), readyToSubmitAnother = " + readyToSubmitAnother);
 			try {
@@ -567,5 +573,11 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		// Since we're already on the main thread, there will never
 		// be anything to do on this thread.  It's only on the partitioned
 		// threads that there is something to send back.
+	}
+	
+	@Override
+	protected void persistStepExecution() {
+		// Call special aggregating method
+		_persistenceManagementService.updateWithFinalPartitionAggregateStepExecution(rootJobExecutionId, stepContext);
 	}
 }

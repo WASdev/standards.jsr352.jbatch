@@ -78,7 +78,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 	protected TransactionManagerAdapter	transactionManager = null;
 
-	private static IPersistenceManagerService _persistenceManagementService = ServicesManagerImpl.getInstance().getPersistenceManagerService();
+	protected static IPersistenceManagerService _persistenceManagementService = ServicesManagerImpl.getInstance().getPersistenceManagerService();
 
 	private static IJobStatusManagerService _jobStatusService = (IJobStatusManagerService) ServicesManagerImpl.getInstance().getJobStatusManagerService();
 
@@ -198,7 +198,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			persistUserData();
 			transitionToFinalBatchStatus();
 			defaultExitStatusIfNecessary();
-			persistExitStatusAndEndTimestamp();
+			persistExitStatusEndTimestampAndStepExecution();
 		} catch (Throwable t) {
 			// Don't let an exception caught here prevent us from persisting the failed batch status.
 			markJobAndStepFailed();
@@ -386,7 +386,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
 	}
 
-	protected void persistExitStatusAndEndTimestamp() {
+	protected void persistExitStatusEndTimestampAndStepExecution() {
 		stepStatus.setExitStatus(stepContext.getExitStatus());
 		_jobStatusService.updateStepStatus(stepStatus.getStepExecutionId(), stepStatus);
 
@@ -395,6 +395,10 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		Timestamp endTS = new Timestamp(time);
 		stepContext.setEndTime(endTS);
 
+		persistStepExecution();
+	} 
+
+	protected void persistStepExecution() {
 		_persistenceManagementService.updateStepExecution(rootJobExecutionId, stepContext);
 	}
 
