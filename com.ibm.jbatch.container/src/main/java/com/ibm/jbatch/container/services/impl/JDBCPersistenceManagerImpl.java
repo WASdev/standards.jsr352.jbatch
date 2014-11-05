@@ -380,12 +380,13 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	private void setSchemaOnConnection(Connection connection) throws SQLException {
 		logger.finest("Entering " + CLASSNAME +".setSchemaOnConnection()");
 
-		PreparedStatement ps = null;
-		ps = connection.prepareStatement("SET SCHEMA ?");
-		ps.setString(1, schema);
-		ps.executeUpdate(); 
-
-		ps.close();
+		if (!"Oracle".equals(connection.getMetaData().getDatabaseProductName())) {
+			PreparedStatement ps = null;
+			ps = connection.prepareStatement("SET SCHEMA ?");
+			ps.setString(1, schema);
+			ps.executeUpdate(); 
+			ps.close();
+		}
 
 		logger.finest("Exiting " + CLASSNAME +".setSchemaOnConnection()");
 	}
@@ -1432,7 +1433,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("SELECT A.jobexecid FROM executioninstancedata AS A INNER JOIN jobinstancedata AS B ON A.jobinstanceid = B.jobinstanceid WHERE A.batchstatus IN (?,?,?) AND B.name = ?"); 
+			statement = conn.prepareStatement("SELECT A.jobexecid FROM executioninstancedata A INNER JOIN jobinstancedata B ON A.jobinstanceid = B.jobinstanceid WHERE A.batchstatus IN (?,?,?) AND B.name = ?"); 
 			statement.setString(1, BatchStatus.STARTED.name());
 			statement.setString(2, BatchStatus.STARTING.name());
 			statement.setString(3, BatchStatus.STOPPING.name());
@@ -1482,13 +1483,13 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		String deleteJobs = "DELETE FROM jobinstancedata WHERE apptag = ?";
 		String deleteJobExecutions = "DELETE FROM executioninstancedata " 
 				+ "WHERE jobexecid IN (" 
-				+ "SELECT B.jobexecid FROM jobinstancedata AS A INNER JOIN executioninstancedata AS B " 
+				+ "SELECT B.jobexecid FROM jobinstancedata A INNER JOIN executioninstancedata B " 
 				+ "ON A.jobinstanceid = B.jobinstanceid " 
 				+ "WHERE A.apptag = ?)";
 		String deleteStepExecutions = "DELETE FROM stepexecutioninstancedata " 
 				+ "WHERE stepexecid IN ("
-				+ "SELECT C.stepexecid FROM jobinstancedata AS A INNER JOIN executioninstancedata AS B "
-				+ "ON A.jobinstanceid = B.jobinstanceid INNER JOIN stepexecutioninstancedata AS C "
+				+ "SELECT C.stepexecid FROM jobinstancedata A INNER JOIN executioninstancedata B "
+				+ "ON A.jobinstanceid = B.jobinstanceid INNER JOIN stepexecutioninstancedata C "
 				+ "ON B.jobexecid = C.jobexecid "
 				+ "WHERE A.apptag = ?)";
 
@@ -1626,7 +1627,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("INSERT INTO jobinstancedata (name, apptag) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
+			statement = conn.prepareStatement("INSERT INTO jobinstancedata (name, apptag) VALUES(?, ?)", new String[] { "JOBINSTANCEID" } );
 			statement.setString(1, name);
 			statement.setString(2, apptag); 
 			statement.executeUpdate();
@@ -1656,7 +1657,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("INSERT INTO jobinstancedata (name, apptag) VALUES(?, ?)", Statement.RETURN_GENERATED_KEYS);
+			statement = conn.prepareStatement("INSERT INTO jobinstancedata (name, apptag) VALUES(?, ?)", new String[] { "JOBINSTANCEID" } );
 			statement.setString(1, name);
 			statement.setString(2, apptag);
 			statement.executeUpdate();
@@ -1695,7 +1696,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		long newJobExecutionId = 0L;
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("INSERT INTO executioninstancedata (jobinstanceid, createtime, updatetime, batchstatus, parameters) VALUES(?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			statement = conn.prepareStatement("INSERT INTO executioninstancedata (jobinstanceid, createtime, updatetime, batchstatus, parameters) VALUES(?, ?, ?, ?, ?)", new String[] { "JOBEXECID" });
 			statement.setLong(1, jobInstance.getInstanceId());
 			statement.setTimestamp(2, timestamp);
 			statement.setTimestamp(3, timestamp);
@@ -1798,7 +1799,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+			statement = conn.prepareStatement(query, new String[] { "STEPEXECID" });
 			statement.setLong(1, rootJobExecId);
 			statement.setString(2, batchStatus);
 			statement.setString(3, exitStatus);
