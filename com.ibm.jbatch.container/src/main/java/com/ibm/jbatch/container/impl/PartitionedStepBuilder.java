@@ -39,19 +39,18 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used to build subjobs from splits.
      * 
      */
-    public static JSLJob buildFlowInSplitSubJob(Long parentJobExecutionId, JobContextImpl jobContext, Split split, Flow flow) {
+    public static JSLJob buildFlowInSplitSubJob(JobContextImpl jobContext, Split split, Flow flow) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
 
-        // Set the generated subjob id
-        String subJobId = generateSubJobId(parentJobExecutionId, split.getId(), flow.getId());
+        // Uses the true top-level job instance id, not an internal "subjob" id.
+        String subJobId = generateSubJobId(jobContext.getInstanceId(), split.getId(), flow.getId());
         subJob.setId(subJobId);
         
         
         //Copy all properties from parent JobContext to flow threads
         subJob.setProperties(CloneUtility.javaPropsTojslProperties(jobContext.getProperties()));
-        
 
         //We don't need to do a deep copy here since each flow is already independent of all others, unlike in a partition
         //where one step instance can be executed with different properties on multiple threads.
@@ -70,14 +69,15 @@ public class PartitionedStepBuilder {
      * BatchKernel. This is used for partitioned steps.
      * 
      */
-    public static JSLJob buildPartitionSubJob(Long parentJobInstanceId, JobContextImpl jobContext, StepContextImpl stepCtx, Step step, int partitionInstance) {
+    public static JSLJob buildPartitionSubJob(JobContextImpl jobContext, StepContextImpl stepCtx, Step step, int partitionInstance) {
 
         ObjectFactory jslFactory = new ObjectFactory();
         JSLJob subJob = jslFactory.createJSLJob();
         
 
         // Set the generated subjob id
-        String subJobId = generateSubJobId(parentJobInstanceId, step.getId(), partitionInstance);
+        // Uses the true top-level job instance id, not an internal "subjob" id.
+        String subJobId = generateSubJobId(jobContext.getInstanceId(), step.getId(), partitionInstance);
         subJob.setId(subJobId);
         
         

@@ -389,13 +389,13 @@ public class BatchKernelImpl implements IBatchKernelService {
 			throw new IllegalStateException(errorMsg);
 		}
 
-		List<IJobExecution> partitionExecs = persistenceService.jobOperatorGetJobExecutions(instanceIds.get(0));
+		List<IJobExecution> subJobExecs = persistenceService.jobOperatorGetJobExecutions(instanceIds.get(0));
 
 		Long execId = Long.MIN_VALUE;
 
-		for (IJobExecution partitionExec : partitionExecs ) {
-			if (partitionExec.getExecutionId() > execId ) {
-				execId = partitionExec.getExecutionId();
+		for (IJobExecution subJobExec : subJobExecs ) {
+			if (subJobExec.getExecutionId() > execId ) {
+				execId = subJobExec.getExecutionId();
 			}
 		}
 		return execId;

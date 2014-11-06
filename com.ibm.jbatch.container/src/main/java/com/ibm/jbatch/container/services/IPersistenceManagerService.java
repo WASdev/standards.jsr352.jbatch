@@ -136,7 +136,7 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	 * This will aggregate the metrics from the "partition-level" StepExecution(s), 
 	 * (which by the way are not spec-defined and not accessible through standard, public APIs.)
 	 * 
-	 * @param jobExecId the parent JobExecution id
+	 * @param rootJobExecutionId the root job execution id
 	 * @param stepContext the step context for this step execution
 	 */
 	public void updateWithFinalPartitionAggregateStepExecution(long rootJobExecutionId, StepContextImpl stepContext);

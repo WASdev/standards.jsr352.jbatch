@@ -21,7 +21,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import java.util.Properties;
 
+import javax.batch.api.AbstractBatchlet;
 import javax.batch.api.BatchProperty;
+import javax.batch.api.Batchlet;
 import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.api.chunk.ItemProcessor;
@@ -104,17 +106,26 @@ public class PartitionMetricsTest {
 		assertEquals("write count", 45, getMetricVal(metrics2, Metric.MetricType.WRITE_COUNT));			
 	}
 
-	@Test
 	// 2 steps, complete.  Didn't go ahead and
 	// give partitions unique counts but that would be an
 	// even more thorough test.
-	public void testMetrics() throws Exception {
+	@Test
+	public void testPartitionMetrics() throws Exception {
+		testPartitionedMetrics("partitionMetrics");
+	}
+	
+	@Test
+	public void testNestedSplitFlowPartitionMetrics() throws Exception {
+		testPartitionedMetrics("partitionSplitFlowMetrics");
+	}
+
+	private void testPartitionedMetrics(String jslName) throws Exception {
 		Properties origParams = new Properties();
 		origParams.setProperty("step1Size", "15");
 		origParams.setProperty("step2Size", "20");
 		origParams.setProperty("forceFailure", "false");
 
-		long execId = jobOp.start("partitionMetrics", origParams);
+		long execId = jobOp.start(jslName, origParams);
 		Thread.sleep(sleepTime);
 		assertEquals("Didn't complete successfully", BatchStatus.COMPLETED, jobOp.getJobExecution(execId).getBatchStatus());
 		StepExecution step1Exec = null;  StepExecution step2Exec = null; 
@@ -210,4 +221,10 @@ public class PartitionMetricsTest {
 		}
 	}
 
+	public static class NoOpBatchlet extends AbstractBatchlet {
+		@Override
+		public String process() {
+			return "true";
+		}
+	}
 }

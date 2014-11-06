@@ -144,8 +144,10 @@ public class SplitControllerImpl implements IExecutionElementController {
 		// Build all sub jobs from flows in split
 		synchronized (subJobs) {
 			for (Flow flow : flows) {
-				subJobs.add(PartitionedStepBuilder.buildFlowInSplitSubJob(jobExecution.getExecutionId(), jobContext, this.split, flow));
+				subJobs.add(PartitionedStepBuilder.buildFlowInSplitSubJob(jobContext, this.split, flow));
 			}
+			// Go back to earlier idea that we may have seen this id before, and need a special "always restart" behavior
+			// for split-flows.
 			for (JSLJob job : subJobs) {				
 				int count = batchKernel.getJobInstanceCount(job.getId());
 				FlowInSplitBuilderConfig config = new FlowInSplitBuilderConfig(job, completedWorkQueue, rootJobExecutionId);

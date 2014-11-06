@@ -212,7 +212,30 @@ public class JobExecutionHelper {
 
 	public static RuntimeFlowInSplitExecution restartFlowInSplit(long execId, JSLJob gennedJobModel) throws JobRestartException, 
 	JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException, NoSuchJobExecutionException {
-		return (RuntimeFlowInSplitExecution)restartExecution(execId, gennedJobModel, null, true, true);	
+		
+		long jobInstanceId = _persistenceManagementService.getJobInstanceIdByExecutionId(execId);
+		
+		JobStatus jobStatus = _jobStatusManagerService.getJobStatus(jobInstanceId);
+		
+		validateJobExecutionIsMostRecent(jobInstanceId, execId);
+		
+		// In particular, don't ensure that job hasn't been completed, since we always restart 
+		// split-flows.
+		
+		JobInstanceImpl jobInstance = jobStatus.getJobInstance();
+
+		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(gennedJobModel, null, true);
+		
+		JobContextImpl jobContext = getJobContext(jobNavigator);
+		
+		RuntimeFlowInSplitExecution executionHelper = _persistenceManagementService.createFlowInSplitExecution(jobInstance, jobContext.getBatchStatus());
+
+		executionHelper.prepareForExecution(jobContext, jobStatus.getRestartOn());
+
+		_jobStatusManagerService.updateJobStatusWithNewExecution(jobInstance.getInstanceId(), executionHelper.getExecutionId());        
+
+		return executionHelper;
+		
 	}
 	
 	public static RuntimeJobExecution restartJob(long executionId, Properties restartJobParameters) throws JobRestartException, 
