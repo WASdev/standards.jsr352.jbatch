@@ -1898,27 +1898,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	private String getPartitionLevelJobInstanceWildCard(long rootJobExecutionId, String stepName) {
 		
-		Connection conn = null;
-		PreparedStatement statement = null;
-		ResultSet rs = null;
-		long jobInstanceId = 0L;
-		
-		try {
-			conn = getConnection();
-			statement = conn.prepareStatement("select jobinstanceid from jbatch.EXECUTIONINSTANCEDATA where jobexecid = ?"); 
-
-			statement.setLong(1, rootJobExecutionId);
-			rs = statement.executeQuery();
-			if(rs.next()) {
-				jobInstanceId = rs.getLong(1);
-			} else {
-				return null;
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException(e);
-		} finally {
-			cleanupConnection(conn, rs, statement);
-		}
+		long jobInstanceId = getJobInstanceIdByExecutionId(rootJobExecutionId);
 		
 		StringBuilder sb = new StringBuilder(":");
 		sb.append(Long.toString(jobInstanceId));
