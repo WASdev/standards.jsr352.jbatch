@@ -257,7 +257,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		Timestamp startTS = new Timestamp(time);
 		stepContext.setStartTime(startTS);
 		
-		_persistenceManagementService.updateStepExecution(rootJobExecutionId, stepContext);
+		_persistenceManagementService.updateStepExecution(stepContext);
 	}
 	
 
@@ -399,7 +399,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 	} 
 
 	protected void persistStepExecution() {
-		_persistenceManagementService.updateStepExecution(rootJobExecutionId, stepContext);
+		_persistenceManagementService.updateStepExecution(stepContext);
 	}
 
 	private StepExecutionImpl getNewStepExecution(long rootJobExecutionId, StepContextImpl stepContext) {

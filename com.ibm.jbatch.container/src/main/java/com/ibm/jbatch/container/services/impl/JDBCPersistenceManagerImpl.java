@@ -1838,10 +1838,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	
 		
 	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#updateStepExecution(long, com.ibm.jbatch.container.context.impl.StepContextImpl)
+	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#updateStepExecution(com.ibm.jbatch.container.context.impl.StepContextImpl)
 	 */
 	@Override
-	public void updateStepExecution(long rootJobExecId, StepContextImpl stepContext) {
+	public void updateStepExecution(StepContextImpl stepContext) {
 		
 		Metric[] metrics = stepContext.getMetrics();
 		
@@ -1874,7 +1874,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 		}
 		
-		updateStepExecutionWithMetrics(rootJobExecId, stepContext,  readCount, 
+		updateStepExecutionWithMetrics(stepContext,  readCount, 
 				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount,
 				writeSkipCount);
 	}
@@ -1972,12 +1972,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			cleanupConnection(conn, rs, statement);
 		}
 
-		updateStepExecutionWithMetrics(rootJobExecutionId, stepContext,  readCount, 
+		updateStepExecutionWithMetrics(stepContext,  readCount, 
 				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount,
 				writeSkipCount);
 	}
 
-	private void updateStepExecutionWithMetrics(long rootJobExecId, StepContextImpl stepContext, long readCount, 
+	private void updateStepExecutionWithMetrics(StepContextImpl stepContext, long readCount, 
 			long writeCount, long commitCount, long rollbackCount, long readSkipCount, long processSkipCount, long filterCount,
 			long writeSkipCount) {
 
@@ -1995,36 +1995,35 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Serializable persistentData = stepContext.getPersistentUserData();
 
 		if (logger.isLoggable(Level.FINER)) {
-			logger.log(Level.FINER, "About to update StepExecution with: ", new Object[] {stepExecutionId, rootJobExecId, batchStatus, exitStatus==null ? "<null>" : exitStatus, stepName, readCount, 
+			logger.log(Level.FINER, "About to update StepExecution with: ", new Object[] {stepExecutionId, batchStatus, exitStatus==null ? "<null>" : exitStatus, stepName, readCount, 
 				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime==null ? "<null>" : startTime,
 						endTime==null ? "<null>" : endTime, persistentData==null ? "<null>" : persistentData});
 		}
 
 		Connection conn = null;
 		PreparedStatement statement = null;
-		String query = "UPDATE stepexecutioninstancedata SET jobexecid = ?, batchstatus = ?, exitstatus = ?, stepname = ?,  readcount = ?," 
+		String query = "UPDATE stepexecutioninstancedata SET batchstatus = ?, exitstatus = ?, stepname = ?,  readcount = ?," 
 				+ "writecount = ?, commitcount = ?, rollbackcount = ?, readskipcount = ?, processskipcount = ?, filtercount = ?, writeskipcount = ?,"
 				+ " starttime = ?, endtime = ?, persistentdata = ? WHERE stepexecid = ?";
 
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement(query);
-			statement.setLong(1, rootJobExecId);
-			statement.setString(2, batchStatus);
-			statement.setString(3, exitStatus);
-			statement.setString(4, stepName);
-			statement.setLong(5, readCount);
-			statement.setLong(6, writeCount);
-			statement.setLong(7, commitCount);
-			statement.setLong(8, rollbackCount);
-			statement.setLong(9, readSkipCount);
-			statement.setLong(10, processSkipCount);
-			statement.setLong(11, filterCount);
-			statement.setLong(12, writeSkipCount);
-			statement.setTimestamp(13, startTime);
-			statement.setTimestamp(14, endTime);
-			statement.setObject(15, serializeObject(persistentData));
-			statement.setLong(16, stepExecutionId); 
+			statement.setString(1, batchStatus);
+			statement.setString(2, exitStatus);
+			statement.setString(3, stepName);
+			statement.setLong(4, readCount);
+			statement.setLong(5, writeCount);
+			statement.setLong(6, commitCount);
+			statement.setLong(7, rollbackCount);
+			statement.setLong(8, readSkipCount);
+			statement.setLong(9, processSkipCount);
+			statement.setLong(10, filterCount);
+			statement.setLong(11, writeSkipCount);
+			statement.setTimestamp(12, startTime);
+			statement.setTimestamp(13, endTime);
+			statement.setObject(14, serializeObject(persistentData));
+			statement.setLong(15, stepExecutionId); 
 			statement.executeUpdate();
 		} catch (SQLException e) {
 			throw new PersistenceException(e);

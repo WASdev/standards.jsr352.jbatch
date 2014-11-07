@@ -125,10 +125,9 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 	/**
 	 * Update a StepExecution
 	 * 
-	 * @param jobExecId the parent JobExecution id
 	 * @param stepContext the step context for this step execution
 	 */
-	public void updateStepExecution(long jobExecId, StepContextImpl stepContext);
+	public void updateStepExecution(StepContextImpl stepContext);
 	
 	/**
 	 * Update a StepExecution for the "top-level" StepExecution of a partitioned step.
