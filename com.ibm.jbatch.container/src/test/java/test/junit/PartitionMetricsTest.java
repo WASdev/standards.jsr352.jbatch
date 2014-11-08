@@ -23,10 +23,10 @@ import java.util.Properties;
 
 import javax.batch.api.AbstractBatchlet;
 import javax.batch.api.BatchProperty;
-import javax.batch.api.Batchlet;
 import javax.batch.api.chunk.AbstractItemReader;
 import javax.batch.api.chunk.AbstractItemWriter;
 import javax.batch.api.chunk.ItemProcessor;
+import javax.batch.api.chunk.listener.AbstractChunkListener;
 import javax.batch.api.listener.AbstractStepListener;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
@@ -57,7 +57,7 @@ public class PartitionMetricsTest {
 		Properties origParams = new Properties();
 		origParams.setProperty("step1Size", "10");
 		origParams.setProperty("step2Size", "5");
-		origParams.setProperty("forceFailure", "true");
+		origParams.setProperty("stepListener.forceFailure", "true");
 
 		long execId = jobOp.start("partitionMetrics", origParams);
 		Thread.sleep(sleepTime);
@@ -69,7 +69,7 @@ public class PartitionMetricsTest {
 		Properties restartParams = new Properties();
 		restartParams.setProperty("step1Size", "25");
 		restartParams.setProperty("step2Size", "6");
-		restartParams.setProperty("forceFailure", "false");
+		restartParams.setProperty("stepListener.forceFailure", "false");
 
 		long restartExecId = jobOp.restart(execId, restartParams);
 		Thread.sleep(sleepTime);
@@ -91,16 +91,16 @@ public class PartitionMetricsTest {
 
 		Metric[] metrics = step1Exec1.getMetrics();
 
-		// 3 partitions of 10 elements - for each partition, 6 will be written and 4 will be filtered, this will be 2 chunks (item-count=5)
-		assertEquals("commit count", 6, getMetricVal(metrics, Metric.MetricType.COMMIT_COUNT));
+		// 3 partitions of 10 elements - for each partition, 6 will be written and 4 will be filtered, this will be 2 chunks (item-count=5) + 1 zero-item chunk
+		assertEquals("commit count", 9, getMetricVal(metrics, Metric.MetricType.COMMIT_COUNT));
 		assertEquals("filter count", 12, getMetricVal(metrics, Metric.MetricType.FILTER_COUNT));
 		assertEquals("read count", 30, getMetricVal(metrics, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 18, getMetricVal(metrics, Metric.MetricType.WRITE_COUNT));
 		
 		Metric[] metrics2 = step1Exec2.getMetrics();
 
-		// 3 partitions of 25 elements - for each partition, 15 will be written and 10 will be filtered, this will be 3 chunks (item-count=5)
-		assertEquals("commit count", 9, getMetricVal(metrics2, Metric.MetricType.COMMIT_COUNT));
+		// 3 partitions of 25 elements - for each partition, 15 will be written and 10 will be filtered, this will be 5 chunks (item-count=5) + 1 zero-item chunk
+		assertEquals("commit count", 18, getMetricVal(metrics2, Metric.MetricType.COMMIT_COUNT));
 		assertEquals("filter count", 30, getMetricVal(metrics2, Metric.MetricType.FILTER_COUNT));
 		assertEquals("read count", 75, getMetricVal(metrics2, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 45, getMetricVal(metrics2, Metric.MetricType.WRITE_COUNT));			
@@ -123,7 +123,6 @@ public class PartitionMetricsTest {
 		Properties origParams = new Properties();
 		origParams.setProperty("step1Size", "15");
 		origParams.setProperty("step2Size", "20");
-		origParams.setProperty("forceFailure", "false");
 
 		long execId = jobOp.start(jslName, origParams);
 		Thread.sleep(sleepTime);
@@ -139,21 +138,53 @@ public class PartitionMetricsTest {
 
 		Metric[] metrics = step1Exec.getMetrics();
 
-		// 3 partitions of 15 elements - for each partition, 9 will be written and 6 will be filtered, this will be 2 chunks (item-count=5)
-		assertEquals("commit count", 6, getMetricVal(metrics, Metric.MetricType.COMMIT_COUNT));
+		// 3 partitions of 15 elements - for each partition, 9 will be written and 6 will be filtered, this will be 3 chunks (item-count=5) + 1 zero-item chunk
+		assertEquals("commit count", 12, getMetricVal(metrics, Metric.MetricType.COMMIT_COUNT));
 		assertEquals("filter count", 18, getMetricVal(metrics, Metric.MetricType.FILTER_COUNT));
 		assertEquals("read count", 45, getMetricVal(metrics, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 27, getMetricVal(metrics, Metric.MetricType.WRITE_COUNT));
 		
 		Metric[] metrics2 = step2Exec.getMetrics();
 
-		// 3 partitions of 20 elements - for each partition, 12 will be written and 8 will be filtered, this will be 3 chunks (item-count=5)
-		assertEquals("commit count", 9, getMetricVal(metrics2, Metric.MetricType.COMMIT_COUNT));
+		// 3 partitions of 20 elements - for each partition, 12 will be written and 8 will be filtered, this will be 4 chunks (item-count=5) + 1 zero-item chunk
+		assertEquals("commit count", 15, getMetricVal(metrics2, Metric.MetricType.COMMIT_COUNT));
 		assertEquals("filter count", 24, getMetricVal(metrics2, Metric.MetricType.FILTER_COUNT));
 		assertEquals("read count", 60, getMetricVal(metrics2, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 36, getMetricVal(metrics2, Metric.MetricType.WRITE_COUNT));				
 	}
 	
+	@Test
+	public void testPartitionedRollbackMetric() throws Exception {
+
+		Properties origParams = new Properties();
+		// These two don't matter
+		origParams.setProperty("step1Size", "15"); origParams.setProperty("step2Size", "20");
+
+		origParams.setProperty("chunkListener.forceFailure", "true");
+		long execId = jobOp.start("partitionMetrics", origParams);
+		Thread.sleep(sleepTime);
+		assertEquals("Didn't fail as expected successfully", BatchStatus.FAILED, jobOp.getJobExecution(execId).getBatchStatus());
+
+		StepExecution step1Exec = null;  StepExecution step2Exec = null; 
+		for (StepExecution se : jobOp.getStepExecutions(execId)) {
+			if (se.getStepName().equals("step1")) {
+				step1Exec = se;
+			} else if (se.getStepName().equals("step2")) {
+				step2Exec = se;
+			}
+		}
+		
+		Metric[] metrics = step1Exec.getMetrics();
+
+		// 3 partitions - this confirms that the read, filter, write counts get rolled back
+		assertEquals("commit count", 0, getMetricVal(metrics, Metric.MetricType.COMMIT_COUNT));
+		assertEquals("filter count", 0, getMetricVal(metrics, Metric.MetricType.FILTER_COUNT));
+		assertEquals("read count", 0, getMetricVal(metrics, Metric.MetricType.READ_COUNT));
+		assertEquals("write count", 0, getMetricVal(metrics, Metric.MetricType.WRITE_COUNT));
+		assertEquals("rollback count", 3, getMetricVal(metrics, Metric.MetricType.ROLLBACK_COUNT));
+		
+	}
+
 	private long getMetricVal(Metric[] metrics, MetricType type) {
 		long retVal = 0L;
 		for (Metric m : metrics) {
@@ -206,6 +237,21 @@ public class PartitionMetricsTest {
 		}
 	}
 	
+	public static class ChunkListener extends AbstractChunkListener {
+
+		@BatchProperty
+		String forceFailure;
+		
+		@Inject StepContext stepCtx;
+
+		@Override
+		public void afterChunk() throws Exception {
+			if (Boolean.parseBoolean(forceFailure) == true) {
+				throw new RuntimeException("Forcing failure for step: " + stepCtx.getStepName());
+			}
+		}
+	}
+
 	public static class StepListener extends AbstractStepListener {
 
 		@BatchProperty

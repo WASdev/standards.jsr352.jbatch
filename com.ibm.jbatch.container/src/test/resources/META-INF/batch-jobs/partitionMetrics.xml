@@ -11,6 +11,13 @@
 <job id="partitionMetrics" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
 	version="1.0">
 	<step id="step1" next="step2" allow-start-if-complete="true">
+		<listeners>
+			<listener ref="test.junit.PartitionMetricsTest$ChunkListener">
+				<properties>
+					<property name="forceFailure" value="#{jobParameters['chunkListener.forceFailure']}?:false;" />
+				</properties>
+			</listener>
+		</listeners>
 		<chunk item-count="5">
 			<reader ref="test.junit.PartitionMetricsTest$Reader">
 				<properties>
@@ -29,7 +36,7 @@
 		<listeners>
 			<listener ref="test.junit.PartitionMetricsTest$StepListener">
 				<properties>
-					<property name="forceFailure" value="#{jobParameters['forceFailure']}" />
+					<property name="forceFailure" value="#{jobParameters['stepListener.forceFailure']}?:false;" />
 				</properties>
 			</listener>
 		</listeners>

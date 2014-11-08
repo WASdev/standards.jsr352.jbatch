@@ -344,6 +344,11 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		logger.fine("Calculated that " + numPreviouslyCompleted + " partitions are already complete out of total # = " 
 				+ partitions + ", with # remaining =" + numTotalForThisExecution);
 
+		if (numTotalForThisExecution == 0) {
+			logger.finer("All partitions have already completed on a previous execution.  Returning");
+			return;
+		}
+
 		//Start up to to the max num we are allowed from the num threads attribute
 		for (int i=0; i < this.threads && i < numTotalForThisExecution; i++, numCurrentSubmitted++) {
 			if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
@@ -357,11 +362,6 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		boolean exceptionThrownAnalyzingCollectorData = false;
 		boolean exceptionThrownAnalyzingStatus = false;
 
-
-		if (numTotalForThisExecution == 0) {
-			logger.finer("All partitions have already completed on a previous execution.  Returning");
-			return;
-		}
 
 		while (true) {
 			logger.finer("Begin main loop in waitForQueueCompletion(), readyToSubmitAnother = " + readyToSubmitAnother);

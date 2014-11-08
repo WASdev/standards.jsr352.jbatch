@@ -42,7 +42,6 @@ public class CheckpointManager {
 	private ItemWriterProxy writerProxy = null;
 	int commitInterval = 0;
 	private CheckpointAlgorithm checkpointAlgorithm;
-	private boolean ckptStarted;
 	private long executionId = 0;
 	private String stepId = null;
 	private long jobInstanceID = 0;
@@ -60,28 +59,25 @@ public class CheckpointManager {
 		_persistenceManagerService = servicesManager.getPersistenceManagerService();
 	}
 
-	public void beginCheckpoint(int timeoutVal)
-	{
-		String method = "startCheckpoint";
-		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method);}
 
-        ckptStarted = true;
-
+	public void beginCheckpoint() {
+		try {
+			checkpointAlgorithm.beginCheckpoint();
+		} catch (Exception e) {
+		    throw new BatchContainerRuntimeException("Checkpoint algorithm failed", e);
+		}
 	}
 
-	public void beginCheckpoint()
-	{
-		String method = "beginCheckpoint";
-		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method);}
-        if(logger.isLoggable(Level.FINE)) { logger.fine("executionId=" + executionId );}
-        ckptStarted = true;
-
-
+	public void endCheckpoint() {
+		try {
+			checkpointAlgorithm.endCheckpoint();
+		} catch (Exception e) {
+		    throw new BatchContainerRuntimeException("Checkpoint algorithm failed", e);
+		}
 	}
 
+	public boolean isReadyToCheckpoint() {
 
-	public boolean isReadyToCheckpoint()
-	{
 		String method = "isReadyToCheckpoint";
 		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method); }
 
@@ -101,19 +97,10 @@ public class CheckpointManager {
 		return checkpoint;
 	}
 	
-	public boolean isStarted()
-	{
-		return ckptStarted;
-	}
-
-
-	public void checkpoint()
-	{
+	public void checkpoint() {
 		String method = "checkpoint";
 		if(logger.isLoggable(Level.FINER)) { logger.entering(sourceClass, method, " [executionId " + executionId + "] "); }
 
-		
-		
 		ByteArrayOutputStream readerChkptBA = new ByteArrayOutputStream();
 		ByteArrayOutputStream writerChkptBA = new ByteArrayOutputStream();
 		

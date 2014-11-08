@@ -80,7 +80,6 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 	private ItemReaderProxy readerProxy = null;
 	private ItemProcessorProxy processorProxy = null;
 	private ItemWriterProxy writerProxy = null;
-	private CheckpointAlgorithm checkpointAlgorithm = null;
 	private CheckpointManager checkpointManager;
 	private ServicesManager servicesManager = ServicesManagerImpl.getInstance();
 	private IPersistenceManagerService _persistenceManagerService = null;
@@ -226,8 +225,6 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 	 * reader (not more items to read), or the writer buffer is full or a
 	 * checkpoint is triggered.
 	 * 
-	 * @param chunkSize
-	 *            write buffer size
 	 * @return an array list of objects to write
 	 */
 	private List<Object> readAndProcess() {
@@ -259,34 +256,21 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 			}
 
 			// Break out of the loop to deliver one-at-a-time processing after rollback.
-			// No point calling isReadyToCheckpoint(), we know we're done.
-			
-			// Note this isn't quite the same as an item-count of '1', since that waits
-			// for one item to be processed (i.e. not filtered), which could involve
-			// more than the single-item-at-a-time we're dealing with.
+			// No point calling isReadyToCheckpoint(), we know we're done.  Let's not
+			// complicate the checkpoint algorithm to hold this logic, just break right here.
 			if (currentChunkStatus.isRetryingAfterRollback()) {
 				break;
+			}
+
+			// This will force the current item to finish processing on a stop request
+			if (stepContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
+				currentChunkStatus.setFinished(true);
 			}
 
 			// The spec, in Sec. 11.10, Chunk with Custom Checkpoint Processing, clearly
 			// outlines that this gets called even when we've already read a null (which
 			// arguably is pointless).   But we'll follow the spec.
-			Boolean checkpointNow = null;
-			if (customCheckpointPolicy) {
-				checkpointNow = checkpointManager.isReadyToCheckpoint();
-			} else {
-				// Don't count a read that was filtered against item count
-				checkpointNow = ((ItemCheckpointAlgorithm)checkpointAlgorithm).isReadyToCheckpoint(currentItemStatus.isFiltered());
-			}
-
-			// This will force the current item to finish processing on a stop
-			// request
-			if (stepContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
-				currentChunkStatus.setFinished(true);
-			}
-
-			// item-count, time, or custom checkpoint reached
-			if (checkpointNow) {
+			if (checkpointManager.isReadyToCheckpoint()) {
 				break;
 			}
 
@@ -605,7 +589,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 				// Remember we "wrap" the built-in item-count + time-limit "algorithm"
 				// in a CheckpointAlgorithm for ease in keeping the sequence consistent
-				checkpointAlgorithm.beginCheckpoint();
+				checkpointManager.beginCheckpoint();
 
 				transactionManager.begin();
 
@@ -641,7 +625,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 				transactionManager.commit();
 
-				checkpointAlgorithm.endCheckpoint();
+				checkpointManager.endCheckpoint();
 
 				invokeCollectorIfPresent();
 
@@ -671,6 +655,8 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 				if (t instanceof Exception) {
 					callChunkListenerOnError((Exception)t);
 				}
+				// Let's not count only retry rollbacks but also non-retry rollbacks.
+				stepContext.getMetric(MetricImpl.MetricType.ROLLBACK_COUNT).incValue();
 			} finally {
 				transactionManager.rollback();
 			}
@@ -760,6 +746,8 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 	private void initializeCheckpointManager() {
 		
+		CheckpointAlgorithm checkpointAlgorithm = null;
+
 		checkpointAtThisItemCount = ChunkHelper.getItemCount(chunk);
 		int timeLimitSeconds = ChunkHelper.getTimeLimit(chunk);
 		customCheckpointPolicy = ChunkHelper.isCustomCheckpointPolicy(chunk);  // Supplies default if needed
@@ -1054,25 +1042,20 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 	}
 
-	/**
-	 * Note that we're allowing the custom checkpoint algorithm to set the timeout 
-	 * 
-	 * smaller timeout he can, but the default of 180 seconds isn't exactly short, 
-	 * so let's not complicate things by trying to incorporate the 
-	 * javax.transaction.global.timeout property into the mix.
-	 * @return
-	 */
-	private int setNextChunkTransactionTimeout() {
+	private void setNextChunkTransactionTimeout() {
 		int nextTimeout = 0;
 
 		if (customCheckpointPolicy) {
+			// Even on a retry-with-rollback, we'll continue to let
+			// the custom CheckpointAlgorithm set a tran timeout.  
+			//
+			// We're guessing the application could need a smaller timeout than 
+			// 180 seconds, (the default established by the batch chunk).
 			nextTimeout = this.checkpointManager.checkpointTimeout();
 		} else  {
 			nextTimeout = stepPropertyTranTimeoutSeconds;
 		}
 		transactionManager.setTransactionTimeout(nextTimeout);
-
-		return nextTimeout;
 	}
 	
     /**

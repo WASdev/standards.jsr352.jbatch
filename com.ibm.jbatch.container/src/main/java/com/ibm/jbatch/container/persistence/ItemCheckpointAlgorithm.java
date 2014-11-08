@@ -27,7 +27,7 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
 	private static final String className = ItemCheckpointAlgorithm.class.getName();
 	private static Logger logger  = Logger.getLogger(ItemCheckpointAlgorithm.class.getPackage().getName());;
 		
-    long itemsReadAndProcessed = 0;
+    long itemsRead = 0;
     protected int itemCount;
     protected int timeLimitSeconds;
     long checkpointBeginTime = 0;
@@ -45,7 +45,7 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
 
 	public boolean isReadyToCheckpointItem() {
 
-        boolean itemready = (itemsReadAndProcessed >= itemCount);
+        boolean itemready = (itemsRead >= itemCount);
 
         if ( itemready) {
 
@@ -54,10 +54,10 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
         	if(logger.isLoggable(Level.FINER)) { 
         		long millis =  Long.valueOf( (new Date().getTime()) - checkpointBeginTime );
         		if ( millis>0 ) { 
-        			String rate =  Integer.valueOf ( Long.valueOf( (itemsReadAndProcessed*1000/millis) ).intValue()).toString();
+        			String rate =  Integer.valueOf ( Long.valueOf( (itemsRead*1000/millis) ).intValue()).toString();
         			logger.finer(" - true [itemsReadAndProcessed/second " + rate + "]");
         		} else {
-        			logger.finer(" - true [itemsReadAndProcessed " + itemsReadAndProcessed + "]");
+        			logger.finer(" - true [itemsReadAndProcessed " + itemsRead + "]");
         		}
         	}
         }
@@ -78,7 +78,7 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
         if (diff >= timeLimitSeconds) {
         	logger.fine("ITEMTIMECHKPT: time checkpoint hit");
             timeready = true;
-            if(logger.isLoggable(Level.FINER)) { logger.finer("Num of itemsReadAndProcessed="+ itemsReadAndProcessed +" at a rate="+itemsReadAndProcessed/diff+" itemsReadAndProcessed/sec");}
+            if(logger.isLoggable(Level.FINER)) { logger.finer("Num of itemsReadAndProcessed="+ itemsRead +" at a rate="+itemsRead/diff+" itemsReadAndProcessed/sec");}
         }
 
         if(logger.isLoggable(Level.FINER)) { logger.exiting(className, method, timeready); }
@@ -86,18 +86,10 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
         return timeready;
 	}
 	
-
 	@Override
 	public boolean isReadyToCheckpoint() {
-		throw new UnsupportedOperationException("This is an internal class which happens to implement" + 
-				"CheckpointAlgorithm.  Don't call this method but call one of the related ones.");
-	}
-
-	public boolean isReadyToCheckpoint(boolean filteredByProcessor) {
 			
-		if (!filteredByProcessor) {
-			itemsReadAndProcessed++;
-		}
+		itemsRead++;
 			
 		if (isReadyToCheckpointItem()){
 			return true;
@@ -114,7 +106,7 @@ public final class ItemCheckpointAlgorithm implements CheckpointAlgorithm {
 	public void beginCheckpoint() throws Exception {
 		java.util.Date date = new java.util.Date();
         checkpointBeginTime = date.getTime();
-        itemsReadAndProcessed = 0;
+        itemsRead = 0;
 	}
 
 	@Override
