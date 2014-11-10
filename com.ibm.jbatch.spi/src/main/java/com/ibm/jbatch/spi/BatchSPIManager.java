@@ -23,7 +23,7 @@ public final class BatchSPIManager {
 
 	private final static String sourceClass = BatchSPIManager.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
-        private Properties overrideProperties = new Properties();
+	private Properties overrideProperties = new Properties();
 
 	private BatchSPIManager() {}
 	
@@ -64,9 +64,9 @@ public final class BatchSPIManager {
 		return executorServiceProvider;
 	}
         
-        public Properties getBatchContainerOverrideProperties() {
-            return overrideProperties;
-        }
+	public Properties getBatchContainerOverrideProperties() {
+		return overrideProperties;
+	}
 
 	/**
 	 * May be called at any point and will be immediately reflected in the singleton,
@@ -95,12 +95,12 @@ public final class BatchSPIManager {
 		this.executorServiceProvider = provider;
 	}
         
-        /**
-         * Override container properties read from META-INF
-         */
-        public void registerBatchContainerOverrideProperties(Properties properties) {
-            this.overrideProperties.putAll(properties);
-        }
+	/**
+	 * Override container properties read from META-INF
+	 */
+	public void registerBatchContainerOverrideProperties(Properties properties) {
+		this.overrideProperties.putAll(properties);
+	}
 	
 	private final byte[] databaseConfigurationCompleteLock = new byte[0];
 	private Boolean databaseConfigurationComplete = Boolean.FALSE;

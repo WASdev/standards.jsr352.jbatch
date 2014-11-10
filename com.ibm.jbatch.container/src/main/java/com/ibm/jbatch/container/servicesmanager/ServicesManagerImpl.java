@@ -183,8 +183,9 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		batchContainerProps = new Properties();
 		batchContainerProps.putAll(adminProps);
 		batchContainerProps.putAll(serviceIntegratorProps);
-                //Merge in overrides from the SPI so the container can change properties
-                batchContainerProps.putAll(BatchSPIManager.getInstance().getBatchContainerOverrideProperties());
+
+		//Merge in overrides from the SPI so the container can change properties
+		batchContainerProps.putAll(BatchSPIManager.getInstance().getBatchContainerOverrideProperties());
 
 		logger.fine("Dumping contents of batchContainerProps after reading properties files.");
 		for (Object key : batchContainerProps.keySet()) {
