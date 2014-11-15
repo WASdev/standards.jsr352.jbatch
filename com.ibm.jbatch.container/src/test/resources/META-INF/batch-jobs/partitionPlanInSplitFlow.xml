@@ -1,0 +1,25 @@
+<job id="myJob" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+	<split id="mySplit" next="myDecider">
+		<flow id="myFlow">
+			<step id="myStep">
+				<batchlet ref="test.junit.PartitionPropertyResolverTest$Batchlet">
+					<properties>
+						<property name="prop1" value="#{partitionPlan['prop1']}" />
+					</properties>
+				</batchlet>
+				<partition>
+					<plan partitions="2">
+						<properties partition="0">
+							<property name="prop1" value="val1" />
+						</properties>
+						<properties partition="1">
+							<property name="prop1" value="val2" />
+						</properties>
+					</plan>
+					<analyzer ref="test.junit.PartitionPropertyResolverTest$Analyzer"/>
+				</partition>
+			</step>
+		</flow>
+	</split>
+	<decision id="myDecider" ref="test.junit.PartitionPropertyResolverTest$MyDecider"/>
+</job> 

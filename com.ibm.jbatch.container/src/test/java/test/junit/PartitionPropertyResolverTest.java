@@ -18,33 +18,60 @@ package test.junit;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import javax.batch.api.AbstractBatchlet;
+import javax.batch.api.BatchProperty;
+import javax.batch.api.Decider;
+import javax.batch.api.partition.AbstractPartitionAnalyzer;
 import javax.batch.operations.JobOperator;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
+import javax.batch.runtime.context.StepContext;
+import javax.inject.Inject;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import test.utils.TCKCandidate;
+
 public class PartitionPropertyResolverTest {
 	static JobOperator jobOp = null;	
-	
-	private static int sleepTime = 2000;
-	
+
+	private static int sleepTime = 2500;
+
 	@BeforeClass
 	public static void init() {
 		jobOp = BatchRuntime.getJobOperator();
 	}
-	
+
+	@Test
+	@TCKCandidate
+	public void testPartitionPlanInSplitFlow() throws Exception {
+		long execId = jobOp.start("partitionPlanInSplitFlow", null);
+		Thread.sleep(sleepTime);
+		JobExecution je = jobOp.getJobExecution(execId);		
+		assertEquals("batch status", BatchStatus.COMPLETED,je.getBatchStatus());
+		String exitStatus = je.getExitStatus();
+		System.out.println("Exit status in testPartitionPlanInSplitFlow = " + exitStatus);
+		String[] actualArr = exitStatus.split(":");
+		String[] expectedArr = {"val1", "val2"};
+		Set actual = new HashSet(Arrays.asList(actualArr));
+		Set expected = new HashSet(Arrays.asList(expectedArr));
+		assertEquals("Exit status didn't match", expected, actual);
+	}
+
 	@Test
 	public void testCollectorPropertyResolver() throws Exception {
 		long execId = jobOp.start("partitionPropertyResolverTest", null);
 		Thread.sleep(sleepTime);
 		JobExecution je = jobOp.getJobExecution(execId);
-		
+
 		assertEquals("batch status", BatchStatus.COMPLETED,je.getBatchStatus());
 
 		List<StepExecution> stepExecutions = jobOp.getStepExecutions(execId);		
@@ -54,37 +81,37 @@ public class PartitionPropertyResolverTest {
 		for(int i=1; i < tokens.length; i++) {
 			dataItems[i - 1] = tokens[i];
 		}
-		
+
 		for(String s : dataItems) {
 			String stepProp = s.substring(s.indexOf('#') + 1, s.indexOf('$'));
 			String collectorProp = s.substring(s.indexOf('$') + 1);
 			assertEquals("Step Property ", stepProp, collectorProp);
 		}
 	}
-	
+
 	@Test
 	public void testMapperPropertyResolver() throws Exception {
 		long execId = jobOp.start("partitionPropertyResolverMapperTest", null);
 		Thread.sleep(sleepTime);
 		JobExecution je = jobOp.getJobExecution(execId);
-		
+
 		assertEquals("batch status", BatchStatus.COMPLETED, je.getBatchStatus());
-		
+
 		List<StepExecution> stepExec = jobOp.getStepExecutions(execId);
 		String stepProp2Data = stepExec.get(0).getExitStatus();
 		String partitionAndStepPropData = String.valueOf(stepExec.get(0).getPersistentUserData());
-		
+
 		String[] prop2Tokens = stepProp2Data.split(":");
 		String stepProp2Value = prop2Tokens[1];
 		int partitionsTotal = Integer.parseInt(prop2Tokens[2]);
-		
+
 		String[] tokens = partitionAndStepPropData.split("#");
 		String[] partitionStepPropValues = new String[tokens.length - 1];
-		
+
 		for(int i=1; i < tokens.length; i++) {
 			partitionStepPropValues[i - 1] = tokens[i];
 		}
-		
+
 		int count = 0;
 		for(String s : partitionStepPropValues) {
 			String stepPropsValue = s.substring(s.indexOf("?") + 1);
@@ -95,6 +122,43 @@ public class PartitionPropertyResolverTest {
 			count++;
 		}
 
-		assertEquals("Paritions seen ", count, partitionsTotal);
+		assertEquals("Partitions seen ", count, partitionsTotal);
 	}
+
+	public static class Analyzer extends AbstractPartitionAnalyzer {
+		@Inject StepContext ctx;
+
+		@Override
+		public void analyzeStatus(BatchStatus batchStatus, String exitStatus) {
+
+			String currentExitStatus =  ctx.getExitStatus();
+
+			if (ctx.getExitStatus() == null) {
+				ctx.setExitStatus(exitStatus);
+			} else {
+				ctx.setExitStatus(currentExitStatus + ":" + exitStatus);
+			}
+		}
+	}
+
+	public static class Batchlet extends AbstractBatchlet {
+		@BatchProperty String prop1;
+
+		@Override
+		public String process() throws Exception {
+			return prop1;
+		}
+	}
+	
+	public static class MyDecider implements Decider {
+		@Override
+		public String decide(StepExecution[] executions) throws Exception {
+			if (executions.length != 1) {
+				throw new IllegalStateException("Expecting to see only one StepExecution in decider but found: " + executions.length);
+			} else {
+				return executions[0].getExitStatus();
+			}
+		}
+	}
+
 }

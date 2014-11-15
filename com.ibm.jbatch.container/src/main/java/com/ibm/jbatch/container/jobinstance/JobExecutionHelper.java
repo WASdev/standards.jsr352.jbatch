@@ -68,9 +68,9 @@ public class JobExecutionHelper {
 		return NavigatorFactory.createJobNavigator(jobModel);
 	}
 
-	private static ModelNavigator<JSLJob> getResolvedJobNavigator(JSLJob jobModel, Properties jobParameters, boolean parallelExecution) {
+	private static ModelNavigator<JSLJob> getResolvedJobNavigator(JSLJob jobModel, Properties jobParameters, boolean isPartitionedStep) {
 
-		PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(parallelExecution);
+		PropertyResolver<JSLJob> propResolver = PropertyResolverFactory.createJobPropertyResolver(isPartitionedStep);
 		propResolver.substituteProperties(jobModel, jobParameters);
 
 		return NavigatorFactory.createJobNavigator(jobModel);
@@ -135,7 +135,7 @@ public class JobExecutionHelper {
 	public static RuntimeFlowInSplitExecution startFlowInSplit(JSLJob jobModel) throws JobStartException{
 		logger.entering(CLASSNAME, "startFlowInSplit", jobModel);
 
-		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobModel, null, true);
+		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(jobModel, null, false);
 		JobContextImpl jobContext = getJobContext(jobNavigator);
 		
 		JobInstance jobInstance = getNewSubJobInstance(jobNavigator.getRootModelElement().getId());
@@ -224,7 +224,7 @@ public class JobExecutionHelper {
 		
 		JobInstanceImpl jobInstance = jobStatus.getJobInstance();
 
-		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(gennedJobModel, null, true);
+		ModelNavigator<JSLJob> jobNavigator = getResolvedJobNavigator(gennedJobModel, null, false);
 		
 		JobContextImpl jobContext = getJobContext(jobNavigator);
 		
