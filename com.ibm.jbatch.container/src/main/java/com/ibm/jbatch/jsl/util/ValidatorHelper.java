@@ -33,7 +33,10 @@ public class ValidatorHelper {
     private static SchemaFactory sf = 
         SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);              
 
-    public static Schema getXJCLSchema() {
+    /**
+     * This method must be synchronized as SchemaFactory is not thread-safe
+     */
+    public static synchronized Schema getXJCLSchema() {
         if (schema == null) {
             try {
                 URL url = ValidatorHelper.class.getResource("/" + SCHEMA_LOCATION);
