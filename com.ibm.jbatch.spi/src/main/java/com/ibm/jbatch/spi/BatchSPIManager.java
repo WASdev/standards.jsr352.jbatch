@@ -20,10 +20,14 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 public final class BatchSPIManager {
+	
+	public enum PlatformMode {SE, EE};
 
 	private final static String sourceClass = BatchSPIManager.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 	private Properties overrideProperties = new Properties();
+	
+	private Boolean EEMode = null;
 
 	private BatchSPIManager() {}
 	
@@ -58,6 +62,21 @@ public final class BatchSPIManager {
 	}
 
 	/**
+	 * Returns the EEMode set via this SPI, if one has been set.
+	 * 
+	 * A value of <code>TRUE</code> signifes EE mode while a value 
+	 * of <code>FALSE</code> signifies SE mode.
+	 * 
+	 * Here <code>null</code> is a significant value since we don't 
+	 * default at this layer. 
+	 * 
+	 * @return 
+	 */
+	public Boolean getEEMode() {
+		return EEMode;
+	}
+
+	/**
 	 * @return The most recently set ExecutorServiceProvider 
 	 */
 	public ExecutorServiceProvider getExecutorServiceProvider() {
@@ -87,6 +106,25 @@ public final class BatchSPIManager {
 	}
 	
 	/**
+	 * Override properties-file based config with programmatic setting of SE or EE 
+	 * platform mode.
+	 * 
+	 * Note that by not calling this method, we do not get a given default behavior,
+	 * we simply defer to looking at the properties-file based config.
+	 * 
+	 * @param mode - Configures the batch runtime in EE mode or SE mode.
+	 */
+	public void registerPlatformMode(PlatformMode mode) {
+		if (mode.equals(PlatformMode.EE)) {
+			logger.config("Batch configured in EE mode by SPI, taking precedence over properties file");
+			EEMode = Boolean.TRUE;
+		} else if (mode.equals(PlatformMode.SE)) {
+			logger.config("Batch configured in SE mode by SPI, taking precedence over properties file");
+			EEMode = Boolean.FALSE;
+		}
+	}
+
+	/**
 	 * May be called at any point and will be immediately reflected in the singleton,
 	 * i.e. getExecutorServiceProvider() will return this.
 	 * @param provider impl
@@ -99,6 +137,7 @@ public final class BatchSPIManager {
 	 * Override container properties read from META-INF
 	 */
 	public void registerBatchContainerOverrideProperties(Properties properties) {
+		logger.finer("Overriding properties file based config with programmatic config using properties: "+ properties);
 		this.overrideProperties.putAll(properties);
 	}
 	

@@ -19,7 +19,6 @@ idea
 *.swp
 *~
 
-/com.ibm.jbatch.container/src/main/resources/META-INF/services/*.properties
 /com.ibm.jbatch.container/derby.log
 /com.ibm.jbatch.container/RUNTIMEDB
 RUNTIMEDB

@@ -39,10 +39,10 @@ import com.ibm.jbatch.container.servicesmanager.ServiceTypes.Name;
 import com.ibm.jbatch.container.util.BatchContainerConstants;
 import com.ibm.jbatch.spi.BatchSPIManager;
 import com.ibm.jbatch.spi.DatabaseConfigurationBean;
+import com.ibm.jbatch.spi.ServiceRegistry;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
 import com.ibm.jbatch.spi.services.IBatchServiceBase;
 import com.ibm.jbatch.spi.services.IBatchThreadPoolService;
-import com.ibm.jbatch.spi.services.IJobIdManagementService;
 import com.ibm.jbatch.spi.services.IJobXMLLoaderService;
 import com.ibm.jbatch.spi.services.ITransactionManagementService;
 
@@ -69,10 +69,9 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 	private volatile Boolean isInited = Boolean.FALSE;
 
 	private DatabaseConfigurationBean databaseConfigBean = null;
-	private BatchConfigImpl batchRuntimeConfig;
+	private BatchConfigImpl batchConfigImpl;
 	private Properties batchContainerProps = null;
 
-	
 	private	Map<Name, String> serviceImplClassNames = ServiceTypes.getServiceImplClassNames();
 	private Map<String, Name> propertyNameTable = ServiceTypes.getServicePropertyNames();
 
@@ -94,12 +93,19 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 			synchronized (isInitedLock) {
 				if (!isInited) {
 					logger.config("--- Initializing ServicesManagerImpl ---");
-					batchRuntimeConfig = new BatchConfigImpl();
+					batchConfigImpl = new BatchConfigImpl();
 
+					// Read config
 					initFromPropertiesFiles();
+					initFromSPI();
+					initFromSystemProperties();
+
+					// Set config in memory
+					initBatchConfigImpl();
 					initServiceImplOverrides();
 					initDatabaseConfig();
-					initOtherConfig();
+					initPlatformSEorEE();
+
 					isInited = Boolean.TRUE;
 					
 					logger.config("--- Completed initialization of ServicesManagerImpl ---");
@@ -184,10 +190,27 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		batchContainerProps.putAll(adminProps);
 		batchContainerProps.putAll(serviceIntegratorProps);
 
+	}
+	
+	private void initFromSPI() {
 		//Merge in overrides from the SPI so the container can change properties
 		batchContainerProps.putAll(BatchSPIManager.getInstance().getBatchContainerOverrideProperties());
 
-		logger.fine("Dumping contents of batchContainerProps after reading properties files.");
+		Boolean eeMode = BatchSPIManager.getInstance().getEEMode();
+		
+		if (eeMode != null) {
+			String boolVal = eeMode.toString();
+			logger.config("Override platform selection (EE=true, SE=false) with value from SPI: " + boolVal);
+			batchContainerProps.setProperty(ServiceTypes.J2SE_MODE, boolVal);
+		}
+	}
+	
+	private void initFromSystemProperties() {
+		batchContainerProps.putAll(ServiceRegistry.getSystemPropertyOverrides());
+	}
+
+	private void initBatchConfigImpl() {
+		logger.fine("Dumping contents of batchContainerProps after reading properties files and calling SPI.");
 		for (Object key : batchContainerProps.keySet()) {
 			logger.config("key = " + key);
 			logger.config("value = " + batchContainerProps.get(key));
@@ -197,9 +220,14 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		// 
 		// WARNING:  This sets us up for collisions since this is just a single holder of properties
 		// potentially used by any service impl.
-		batchRuntimeConfig.setConfigProperties(batchContainerProps);
+		batchConfigImpl.setConfigProperties(batchContainerProps);
 	}
 
+	/**
+	 * The method name reflects the fact that we have default service impl classnames baked into
+	 * the runtime that will be used in the absence of any config property.   The config is only
+	 * necessary to 'override' one of these default impls.
+	 */
 	private void initServiceImplOverrides() {
 		
 		// For each property we care about (i.e that defines one of our service impls)
@@ -223,7 +251,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 			logger.config("First try to load 'suggested config' from BatchSPIManager");
 			databaseConfigBean = BatchSPIManager.getInstance().getFinalDatabaseConfiguration();
 			if (databaseConfigBean == null) { 
-				logger.fine("Loading database config from configuration properties file.");
+				logger.config("Loading database config from configuration properties file.");
 				// Initialize database-related properties
 				databaseConfigBean = new DatabaseConfigurationBean();
 				databaseConfigBean.setJndiName(batchContainerProps.getProperty(JNDI_NAME, DEFAULT_JDBC_JNDI_NAME));
@@ -238,14 +266,14 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 			logger.config("Database config has been set directly from SPI, do NOT load from properties file.");
 		}
 		// In either case, set this bean on the main config bean
-		batchRuntimeConfig.setDatabaseConfigurationBean(databaseConfigBean);
+		batchConfigImpl.setDatabaseConfigurationBean(databaseConfigBean);
 	}
 
 
-	private void initOtherConfig() {
+	private void initPlatformSEorEE() {
 		String seMode = serviceImplClassNames.get(Name.JAVA_EDITION_IS_SE_DUMMY_SERVICE);
 		if (seMode.equalsIgnoreCase("true")) {
-			batchRuntimeConfig.setJ2seMode(true);
+			batchConfigImpl.setJ2seMode(true);
 		}
 	}
 
@@ -311,11 +339,6 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 	}
 
 	@Override
-	public IJobIdManagementService getJobIdManagementService() {
-		return (IJobIdManagementService)getService(Name.JOB_ID_MANAGEMENT_SERVICE);
-	}
-
-	@Override
 	public IJobEndCallbackService getJobCallbackService() {
 		return (IJobEndCallbackService)getService(Name.CALLBACK_SERVICE);
 	}
@@ -358,7 +381,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 				synchronized (serviceRegistry) {
 					if (service == null) {
 						service = _loadServiceHelper(serviceType);
-						service.init(batchRuntimeConfig);
+						service.init(batchConfigImpl);
 						serviceRegistry.putIfAbsent(serviceType, service);
 					}
 				}

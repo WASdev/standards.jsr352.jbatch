@@ -54,216 +54,130 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>JavaEE</id>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<excludes>
-							<exclude>*-properties/**</exclude>
-						</excludes>
-					</resource>
-				</resources>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-resources-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>jaxb2-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>xjc</id>
-								<goals>
-									<goal>xjc</goal>
-								</goals>
-								<configuration>
-									<schemaDirectory>src/main/resources/xsd</schemaDirectory>
-									<schemaFiles>jobXML_1_0.xsd</schemaFiles>
-									<target>2.1</target>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-jar-plugin</artifactId>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0-alpha-2</version>
+				<executions>
+					<execution>
+						<id>set-additional-system-properties</id>
+						<goals>
+							<goal>set-system-properties</goal>
+						</goals>
 						<configuration>
-							<archive>
-								<manifestFile>META-INF/MANIFEST.MF</manifestFile>
-							</archive>
+							<properties>
+								<property>
+									<name>javax.xml.accessExternalSchema</name>
+									<value>file</value>
+								</property>
+							</properties>
 						</configuration>
-					</plugin>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>validate</phase>
-								<configuration>
-									<tasks>
-										<echo>Java EE Build</echo>
-										<copy overwrite="true"
-											file="src/main/resources/jee-properties/batch-config.properties"
-											tofile="src/main/resources/META-INF/services/batch-config.properties" />
-										<copy overwrite="true"
-											file="src/main/resources/jee-properties/batch-services.properties"
-											tofile="src/main/resources/META-INF/services/batch-services.properties" />
-									</tasks>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>ant-process-sources</id>
-								<phase>process-sources</phase>
-								<configuration>
-									<tasks>
-										<echo>Adjusting generated JAXBs</echo>
-										<ant antfile="${basedir}/adjustJAXB/build.xml" />
-									</tasks>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-						<dependencies>
-							<dependency>
-								<groupId>ant</groupId>
-								<artifactId>ant-nodeps</artifactId>
-								<version>${version.ant.ant-nodeps}</version>
-							</dependency>
-						</dependencies>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>JavaSE</id>
-
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<excludes>
-							<exclude>*-properties/**</exclude>
-						</excludes>
-					</resource>
-				</resources>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-compiler-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-resources-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>properties-maven-plugin</artifactId>
-						<version>1.0-alpha-2</version>
-						<executions>
-							<execution>
-								<id>set-additional-system-properties</id>
-								<goals>
-									<goal>set-system-properties</goal>
-								</goals>
-								<configuration>
-									<properties>
-										<property>
-											<name>javax.xml.accessExternalSchema</name>
-											<value>file</value>
-										</property>
-									</properties>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>jaxb2-maven-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>xjc</id>
-								<goals>
-									<goal>xjc</goal>
-								</goals>
-								<configuration>
-									<schemaDirectory>src/main/resources/xsd</schemaDirectory>
-									<schemaFiles>jobXML_1_0.xsd</schemaFiles>
-									<target>2.1</target>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-jar-plugin</artifactId>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>xjc</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
 						<configuration>
-							<archive>
-								<manifestFile>META-INF/MANIFEST.MF</manifestFile>
-							</archive>
+							<schemaDirectory>src/main/resources/xsd</schemaDirectory>
+							<schemaFiles>jobXML_1_0.xsd</schemaFiles>
+							<target>2.1</target>
 						</configuration>
-					</plugin>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<executions>
-							<execution>
-								<phase>validate</phase>
-								<configuration>
-									<tasks>
-										<echo>Java SE Build</echo>
-										<copy overwrite="true"
-											file="src/main/resources/se-properties/META-INF/services/batch-config.properties"
-											tofile="src/main/resources/META-INF/services/batch-config.properties" />
-										<copy overwrite="true"
-											file="src/main/resources/se-properties/META-INF/services/batch-services.properties"
-											tofile="src/main/resources/META-INF/services/batch-services.properties" />
-									</tasks>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>ant-process-sources</id>
-								<phase>process-sources</phase>
-								<configuration>
-									<tasks>
-										<echo>Adjusting generated JAXBs</echo>
-										<ant antfile="${basedir}/adjustJAXB/build.xml" />
-									</tasks>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-						<dependencies>
-							<dependency>
-								<groupId>ant</groupId>
-								<artifactId>ant-nodeps</artifactId>
-								<version>${version.ant.ant-nodeps}</version>
-							</dependency>
-						</dependencies>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestFile>META-INF/MANIFEST.MF</manifestFile>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>ant-process-sources</id>
+						<phase>process-sources</phase>
+						<configuration>
+							<tasks>
+								<echo>Adjusting generated JAXBs</echo>
+								<ant antfile="${basedir}/adjustJAXB/build.xml" />
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>ant</groupId>
+						<artifactId>ant-nodeps</artifactId>
+						<version>${version.ant.ant-nodeps}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions> 
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>                            
+                    </goals>
+            </execution>
+        </executions>
+                <configuration>
+                    <!-- Must be false for tests of service manager/registry since they assume they are not dealing with an earlier config from another test -->
+                    <reuseForks>false</reuseForks>
+                </configuration>
+			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!--
+                <executions>
+                    <execution>
+                        <id>api-tests</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+-->
+                        <configuration>
+                            <!--
+-->
+                            <systemPropertyVariables>
+                                <com.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE>true</com.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE>
+                                <com.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE>com.ibm.jbatch.container.services.impl.GrowableThreadPoolServiceImpl</com.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE>
+                                <com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl</com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>
+                            </systemPropertyVariables>
+                        </configuration>
+                    <!--
+                    </execution>
+                </executions>
+-->
+            </plugin>
+		</plugins>
+	</build>
 </project>
 

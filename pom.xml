@@ -126,13 +126,14 @@
 
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
         <version.org.apache.maven.plugins.maven-compiler-plugin>2.0.2</version.org.apache.maven.plugins.maven-compiler-plugin>
+        <version.org.apache.maven.plugins.maven-failsafe-plugin>2.18</version.org.apache.maven.plugins.maven-failsafe-plugin>
         <version.org.apache.maven.plugins.maven-gpg-plugin>1.4</version.org.apache.maven.plugins.maven-gpg-plugin>
         <version.org.apache.maven.plugins.maven-jar-plugin>2.4</version.org.apache.maven.plugins.maven-jar-plugin>
         <version.org.apache.maven.plugins.maven-javadoc-plugin>2.9.1</version.org.apache.maven.plugins.maven-javadoc-plugin>
         <version.org.apache.maven.plugins.maven-resources-plugin>2.2</version.org.apache.maven.plugins.maven-resources-plugin>
         <version.org.apache.maven.plugins.maven-shade-plugin>2.1</version.org.apache.maven.plugins.maven-shade-plugin>
         <version.org.apache.maven.plugins.maven-source-plugin>2.2.1</version.org.apache.maven.plugins.maven-source-plugin>
-        <version.org.apache.maven.plugins.maven-surefire-plugin>2.12.4</version.org.apache.maven.plugins.maven-surefire-plugin>
+        <version.org.apache.maven.plugins.maven-surefire-plugin>2.18</version.org.apache.maven.plugins.maven-surefire-plugin>
         <version.org.codehaus.mojo.build-helper-maven-plugin>1.8</version.org.codehaus.mojo.build-helper-maven-plugin>
         <version.org.codehaus.mojo.jaxb2-maven-plugin>1.6</version.org.codehaus.mojo.jaxb2-maven-plugin>
     </properties>
@@ -237,7 +238,12 @@
                         <target>${version.java}</target>
                         <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
-                </plugin>
+                </plugin> 
+                <plugin>
+                     <groupId>org.apache.maven.plugins</groupId>
+                     <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-failsafe-plugin}</version>
+                </plugin> 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
