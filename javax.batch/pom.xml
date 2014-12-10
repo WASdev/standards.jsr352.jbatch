@@ -1,86 +1,85 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>javax.batch</groupId>
-		<artifactId>jbatch</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
-	</parent>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.ibm.jbatch</groupId>
+        <artifactId>jbatch-parent</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
+    </parent>
 
-	<groupId>javax.batch</groupId>
-	<artifactId>javax.batch-api</artifactId>
-	<packaging>jar</packaging>
-	<version>1.0.1-SNAPSHOT</version>
+    <groupId>javax.batch</groupId>
+    <artifactId>javax.batch-api</artifactId>
+    <packaging>jar</packaging>
+    <!-- API artifacts will be separately versioned -->
+    <version>1.0-SNAPSHOT</version>
+    <name>javax.batch-api</name>
 
-	<name>javax.batch</name>
-	<url>http://maven.apache.org</url>
+    <!-- should we update to reflect maintenance release ? How so -->
+    <properties>
+        <non.final>false</non.final>
+        <extension.name>javax.batch</extension.name>
+        <spec.version>1.0</spec.version>
+    </properties>
 
-	<!-- should we update to reflect maintenance release ? How so -->
-	<properties>
-		<non.final>false</non.final>
-		<extension.name>javax.batch</extension.name>
-		<spec.version>1.0</spec.version>
-	</properties>
+    <dependencies>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 
-	<dependencies>
-		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.enterprise</groupId>
-			<artifactId>cdi-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifestFile>META-INF/MANIFEST.MF</manifestFile>
-					</archive>
-				</configuration>
-			</plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
 <!-- TODO - work with Glassfish to address this validation -->
 <!--
-			<plugin>
-				<groupId>org.glassfish.build</groupId>
-				<artifactId>spec-version-maven-plugin</artifactId>
-				<version>1.2</version>
-				<configuration>
-					<spec>
-						<nonFinal>${non.final}</nonFinal>
-						<jarType>api</jarType>
-						<specVersion>${spec.version}</specVersion>
-						<specImplVersion>${project.version}</specImplVersion>
-						<apiPackage>${extension.name}</apiPackage>
-					</spec>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>set-spec-properties</goal>
-							<goal>check-module</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>spec-version-maven-plugin</artifactId>
+                <version>1.2</version>
+                <configuration>
+                    <spec>
+                        <nonFinal>${non.final}</nonFinal>
+                        <jarType>api</jarType>
+                        <specVersion>${spec.version}</specVersion>
+                        <specImplVersion>${project.version}</specImplVersion>
+                        <apiPackage>${extension.name}</apiPackage>
+                    </spec>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>set-spec-properties</goal>
+                            <goal>check-module</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 -->
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 
 </project>
 

@@ -1,82 +1,80 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- Sticking with the groupId of the original release.   Should this be separated out as a pure-RI name?  Not sure of the
-         conventions/expectations here. -->
-    <groupId>javax.batch</groupId>
-    <artifactId>jbatch</artifactId>
+    <groupId>com.ibm.jbatch</groupId>
+    <artifactId>jbatch-parent</artifactId>
     <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-	<name>com.ibm.jbatch</name>
-	<description>
-		Batch processing is a pervasive workload pattern, expressed by a distinct application organization and
-		execution model. It is found across virtually every industry, applied to such tasks as statement
-		generation, bank postings, risk evaluation, credit score calculation, inventory management, portfolio
-		optimization, and on and on. Nearly any bulk processing task from any business sector is a candidate for
-		batch processing.
-		Batch processing is typified by bulk-oriented, non-interactive, background execution. Frequently long-
-		running, it may be data or computationally intensive, execute sequentially or in parallel, and may be
-		initiated through various invocation models, including ad hoc, scheduled, and on-demand.
-		Batch applications have common requirements, including logging, checkpointing, and parallelization.
-		Batch workloads have common requirements, especially operational control, which allow for initiation
-		of, and interaction with, batch instances; such interactions include stop and restart.
-	</description>
-	<url>http://java.net/projects/jbatch</url>
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<scm>
-		<url>git://github.com/WASdev/standards.jsr352.jbatch</url>
-		<connection>scm:git://github.com/WASdev/standards.jsr352.jbatch</connection>
-		<developerConnection>scm:git://github.com/WASdev/standards.jsr352.jbatch</developerConnection>
-	</scm>
-	<parent>
-		<groupId>net.java</groupId>
-		<artifactId>jvnet-parent</artifactId>
-		<version>1</version>
-	</parent>
-	<developers>
-		<developer>
-			<id>scottkurz</id>
-			<name>Scott Kurz</name>
-			<email>skurz@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id></id>
-			<name>Kaushik Mukherjee</name>
-			<email>kmukherj@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id>htavarez</id>
-			<name>Hendrix Tavarez</name>
-			<email>htavarez@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id>dmbelina</id>
-			<name>Dan Belina</name>
-			<email>belina@us.ibm.com</email>
-		</developer>
-		<developer>
-			<id>ajmauer</id>
-			<name>Andrew Mauer</name>
-			<email>ajmauer@us.ibm.com</email>
-		</developer>
-	</developers>
+    <name>jbatch-parent</name>
+    <description>
+        Batch processing is a pervasive workload pattern, expressed by a distinct application organization and
+        execution model. It is found across virtually every industry, applied to such tasks as statement
+        generation, bank postings, risk evaluation, credit score calculation, inventory management, portfolio
+        optimization, and on and on. Nearly any bulk processing task from any business sector is a candidate for
+        batch processing.
+        Batch processing is typified by bulk-oriented, non-interactive, background execution. Frequently long-
+        running, it may be data or computationally intensive, execute sequentially or in parallel, and may be
+        initiated through various invocation models, including ad hoc, scheduled, and on-demand.
+        Batch applications have common requirements, including logging, checkpointing, and parallelization.
+        Batch workloads have common requirements, especially operational control, which allow for initiation
+        of, and interaction with, batch instances; such interactions include stop and restart.
+    </description>
+    <url>http://java.net/projects/jbatch</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>git://github.com/WASdev/standards.jsr352.jbatch</url>
+        <connection>scm:git://github.com/WASdev/standards.jsr352.jbatch</connection>
+        <developerConnection>scm:git://github.com/WASdev/standards.jsr352.jbatch</developerConnection>
+    </scm>
+    <parent>
+        <groupId>net.java</groupId>
+        <artifactId>jvnet-parent</artifactId>
+        <version>1</version>
+    </parent>
+    <developers>
+        <developer>
+            <id>scottkurz</id>
+            <name>Scott Kurz</name>
+            <email>skurz@us.ibm.com</email>
+        </developer>
+        <developer>
+            <id></id>
+            <name>Kaushik Mukherjee</name>
+            <email>kmukherj@us.ibm.com</email>
+        </developer>
+        <developer>
+            <id>htavarez</id>
+            <name>Hendrix Tavarez</name>
+            <email>htavarez@us.ibm.com</email>
+        </developer>
+        <developer>
+            <id>dmbelina</id>
+            <name>Dan Belina</name>
+            <email>belina@us.ibm.com</email>
+        </developer>
+        <developer>
+            <id>ajmauer</id>
+            <name>Andrew Mauer</name>
+            <email>ajmauer@us.ibm.com</email>
+        </developer>
+    </developers>
 
     <!-- Activate PGP signing only when performing a release -->
-	<profiles>
-		<profile>
-			<id>release-sign-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
                 <pluginManagement>
                     <plugins>
                         <plugin>
@@ -86,25 +84,25 @@
                         </plugin>
                     </plugins>
                 </pluginManagement>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
 
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -128,6 +126,11 @@
         <version.org.apache.maven.plugins.maven-surefire-plugin>2.18</version.org.apache.maven.plugins.maven-surefire-plugin>
         <version.org.codehaus.mojo.jaxb2-maven-plugin>1.6</version.org.codehaus.mojo.jaxb2-maven-plugin>
         <version.org.codehaus.mojo.properties-maven-plugin>1.0-alpha-2</version.org.codehaus.mojo.properties-maven-plugin>
+
+        <version.javax.batch-api>1.0</version.javax.batch-api>
+        <version.com.ibm.jbatch>1.0.1-SNAPSHOT</version.com.ibm.jbatch>
+        <version.com.ibm.jbatch.tck>1.0.1-SNAPSHOT</version.com.ibm.jbatch.tck>
+
     </properties>
 
     <modules>
@@ -145,51 +148,51 @@
             <dependency>
                 <groupId>javax.batch</groupId>
                 <artifactId>javax.batch-api</artifactId>
-                <version>1.0</version>
+                <version>${version.javax.batch-api}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.spi</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch}</version>
             </dependency>
             <dependency>
-                <groupId>com.ibm.jbatch</groupId>
+                <groupId>com.ibm.jbatch.tck</groupId>
                 <artifactId>com.ibm.jbatch.tck</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch.tck}</version>
             </dependency>
             <dependency>
-                <groupId>com.ibm.jbatch</groupId>
+                <groupId>com.ibm.jbatch.tck</groupId>
                 <artifactId>com.ibm.jbatch.tck</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch.tck}</version>
                 <classifier>sources</classifier>
             </dependency>
             <dependency>
-                <groupId>com.ibm.jbatch</groupId>
+                <groupId>com.ibm.jbatch.tck</groupId>
                 <artifactId>com.ibm.jbatch.tck</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch.tck}</version>
                 <classifier>javadoc</classifier>
             </dependency>
             <dependency>
-                <groupId>com.ibm.jbatch</groupId>
+                <groupId>com.ibm.jbatch.tck</groupId>
                 <artifactId>com.ibm.jbatch.tck.spi</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch.tck}</version>
             </dependency>
             <dependency>
-                <groupId>com.ibm.jbatch</groupId>
+                <groupId>com.ibm.jbatch.tck</groupId>
                 <artifactId>com.ibm.jbatch.tck.spi</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch.tck}</version>
                 <classifier>sources</classifier>
             </dependency>
             <dependency>
-                <groupId>com.ibm.jbatch</groupId>
+                <groupId>com.ibm.jbatch.tck</groupId>
                 <artifactId>com.ibm.jbatch.tck.spi</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch.tck}</version>
                 <classifier>javadoc</classifier>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>
-                <version>${project.version}</version>
+                <version>${version.com.ibm.jbatch}</version>
             </dependency>
             <dependency>
                 <groupId>javax.enterprise</groupId>
@@ -243,8 +246,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-	<build>
+    <build>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -317,85 +319,85 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<configuration>
-					<bottom>
-					<![CDATA[
-					<p align="left">&#169; Copyright IBM Corp. 2014<br>Licensed under the Apache License, Version 2.0
-					]]>
-					</bottom>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.mycila.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<configuration>
-					<header>header.txt</header>
-					<skipExistingHeaders>true</skipExistingHeaders>
-					<!-- <strictCheck>true</strictCheck> -->
-					<aggregate>true</aggregate>
-					<excludes>
-						<exclude>**/*.txt</exclude>
-						<exclude>**/*.sql</exclude>
-						<exclude>**/build.properties</exclude>
-						<exclude>**/build.xml</exclude>
-						<exclude>**/src/test/resources/**</exclude>
-						<exclude>**/src/test/data/**</exclude>
-						<exclude>**/bin/**</exclude>
-						<exclude>**/jaxbgen/**</exclude>
-						<exclude>**/*.html</exclude>
-						<exclude>**/*.css</exclude>
-						<exclude>**/*.ddl</exclude>
-						<exclude>**/jsr352-tck.properties</exclude>
-						<exclude>**/jsr352-tck-impl-*.xml</exclude>
-						<exclude>**/testng-class.xml</exclude>
-						<exclude>**/testng-method.xml</exclude>
-						<exclude>**/beans.xml</exclude>
-					</excludes>
-					<includes>
-						<include>javax.batch/**</include>
-						<include>com.ibm.jbatch.container/**</include>
-						<include>com.ibm.jbatch.spi/**</include>
-						<include>com.ibm.jbatch.tck.spi/**</include>
-						<include>com.ibm.jbatch.tck/**</include>
-					</includes>
-				</configuration>
-				<executions>
-				<!--
-					<execution>
-						<id>check-headers</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-						-->
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <bottom>
+                    <![CDATA[
+                    <p align="left">&#169; Copyright IBM Corp. 2014<br>Licensed under the Apache License, Version 2.0
+                    ]]>
+                    </bottom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <configuration>
+                    <header>header.txt</header>
+                    <skipExistingHeaders>true</skipExistingHeaders>
+                    <!-- <strictCheck>true</strictCheck> -->
+                    <aggregate>true</aggregate>
+                    <excludes>
+                        <exclude>**/*.txt</exclude>
+                        <exclude>**/*.sql</exclude>
+                        <exclude>**/build.properties</exclude>
+                        <exclude>**/build.xml</exclude>
+                        <exclude>**/src/test/resources/**</exclude>
+                        <exclude>**/src/test/data/**</exclude>
+                        <exclude>**/bin/**</exclude>
+                        <exclude>**/jaxbgen/**</exclude>
+                        <exclude>**/*.html</exclude>
+                        <exclude>**/*.css</exclude>
+                        <exclude>**/*.ddl</exclude>
+                        <exclude>**/jsr352-tck.properties</exclude>
+                        <exclude>**/jsr352-tck-impl-*.xml</exclude>
+                        <exclude>**/testng-class.xml</exclude>
+                        <exclude>**/testng-method.xml</exclude>
+                        <exclude>**/beans.xml</exclude>
+                    </excludes>
+                    <includes>
+                        <include>javax.batch/**</include>
+                        <include>com.ibm.jbatch.container/**</include>
+                        <include>com.ibm.jbatch.spi/**</include>
+                        <include>com.ibm.jbatch.tck.spi/**</include>
+                        <include>com.ibm.jbatch.tck/**</include>
+                    </includes>
+                </configuration>
+                <executions>
+                <!--
+                    <execution>
+                        <id>check-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                        -->
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
 
