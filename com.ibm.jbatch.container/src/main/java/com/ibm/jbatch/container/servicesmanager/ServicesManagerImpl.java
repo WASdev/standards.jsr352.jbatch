@@ -421,12 +421,12 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		private IBatchServiceBase _loadService(String className) throws Exception {
 
 			IBatchServiceBase service = null;
-                        Class cls;
-                        try {
-			 cls = Class.forName(className);
-                        } catch (ClassNotFoundException cnfe) {
-                            cls = Thread.currentThread().getContextClassLoader().loadClass(className);
-                        }
+			Class cls;
+			try {
+				cls = Class.forName(className);
+			} catch (ClassNotFoundException cnfe) {
+				cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+			}
 
 			if (cls != null) {
 				Constructor ctor = cls.getConstructor();
