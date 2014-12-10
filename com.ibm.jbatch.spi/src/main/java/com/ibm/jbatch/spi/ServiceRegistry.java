@@ -50,7 +50,7 @@ public class ServiceRegistry {
 		public static final String BATCH_THREADPOOL_SERVICE = "BATCH_THREADPOOL_SERVICE";
 		//treat as internal-only still - public static final String CALLBACK_SERVICE = "CALLBACK_SERVICE";
 		/**
-		 * This is only a valid plug point in the default @see  {@link ServiceImplClassNames.DELEGATING_ARTIFACT_FACTORY_DEFAULT}
+		 * This is only a valid plug point in the default {@link ServiceImplClassNames#DELEGATING_ARTIFACT_FACTORY_DEFAULT}
 		 */
 		public static final String CONTAINER_ARTIFACT_FACTORY_SERVICE = "CONTAINER_ARTIFACT_FACTORY_SERVICE";
 		public static final String DELEGATING_ARTIFACT_FACTORY_SERVICE = "DELEGATING_ARTIFACT_FACTORY_SERVICE";
@@ -63,7 +63,7 @@ public class ServiceRegistry {
 		public static final String J2SE_MODE = "J2SE_MODE";
 		//treat as internal-only still - public static final String JOB_STATUS_MANAGEMENT_SERVICE = "JOB_STATUS_MANAGEMENT_SERVICE";
 		/**
-		 * This is only a valid plug point in the default @see {@link ServiceImplClassNames.DELEGATING_JOBXML_LOADER_SERVICE}
+		 * This is only a valid plug point in the default {@link ServiceImplClassNames#DELEGATING_JOBXML_LOADER_DEFAULT}
 		 */
 		public static final String JOBXML_LOADER_SERVICE = "JOBXML_LOADER_SERVICE";
 		//treat as internal-only still - public static final String PERSISTENCE_MANAGEMENT_SERVICE = "PERSISTENCE_MANAGEMENT_SERVICE";
@@ -78,13 +78,14 @@ public class ServiceRegistry {
 	}
 	
 	/**
-	 * Returns a Set of all ServiceInfo objects
-	 * @return
-	 */
-	/* Not clear it adds value to expose this, especially with the odd
-	 * J2SE_MODE in here.
+	 * Returns a Set of all property name String(s) in {@link ServicePropertyNames}
+	 * 
+	 * @return a set of all  {@link ServicePropertyNames} String values
 	 */
 	protected static Set<String> getAllServicePropertyNames() {
+	   /* Not clear it adds value to expose this publicly, especially with the odd
+	    * J2SE_MODE in here.
+	    */
 		HashSet<String> retVal = new HashSet<String>();
 		retVal.add(ServicePropertyNames.BATCH_THREADPOOL_SERVICE);
 		retVal.add(ServicePropertyNames.CONTAINER_ARTIFACT_FACTORY_SERVICE);
@@ -99,7 +100,7 @@ public class ServiceRegistry {
 	/**
 	 * 
 	 * @param servicePropertyName Should be a constant defined in @see {@link ServicePropertyNames}
-	 * @return
+	 * @return <code>ServiceInfo</code> associated with servicePropertyName
 	 */
 	public static ServiceInfo getServiceInfo(String servicePropertyName) {
 		final String s = servicePropertyName;
@@ -154,13 +155,13 @@ public class ServiceRegistry {
 	 * added to the return value Properties object.  The return 
 	 * value will include a property with key B and value V.
 	 * 
-	 * E.g. a system property of 
+	 * E.g. a system property (key=value) of:
 	 * 
-	 *  com.ibm.jbatch.spi.ServiceRegistry.TRANSACTION_SERVICE=>XXXX
+	 *  (com.ibm.jbatch.spi.ServiceRegistry.TRANSACTION_SERVICE=XXXX)
 	 *  
 	 * will result in the return value including a property of:
 	 * 
-	 *  TRANSACTION_SERVICE=>XXXX
+	 *  (TRANSACTION_SERVICE=XXXX)
 	 *  
 	 * @return Properties object as defined above.
 	 */

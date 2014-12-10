@@ -70,7 +70,7 @@ public final class BatchSPIManager {
 	 * Here <code>null</code> is a significant value since we don't 
 	 * default at this layer. 
 	 * 
-	 * @return 
+	 * @return the EEMode set via this SPI, or 'null' if one has not been set. 
 	 */
 	public Boolean getEEMode() {
 		return EEMode;
@@ -135,6 +135,7 @@ public final class BatchSPIManager {
         
 	/**
 	 * Override container properties read from META-INF
+     * @param properties The {@link Properties} to use as overrides.
 	 */
 	public void registerBatchContainerOverrideProperties(Properties properties) {
 		logger.finer("Overriding properties file based config with programmatic config using properties: "+ properties);
@@ -154,7 +155,7 @@ public final class BatchSPIManager {
      * 
      * @return the last-set DatabaseConfigurationBean
      * 
-     * @see getFinalDatabaseConfiguration()
+     * @see #getFinalDatabaseConfiguration()
      */
 	public DatabaseConfigurationBean getDataBaseConfigurationBean() {
 		return dataBaseConfigurationBean;
@@ -164,7 +165,7 @@ public final class BatchSPIManager {
      * This only will have an impact if the batch container has not already hardened its
      * persistent store database configuration.   There is no ability to dynamically update
      * the configuration, so if this call comes in after the lazy initialization, it is too late.
-     * @param bean 
+     * @param bean The batch runtime database configuration to use.
      * @throws DatabaseAlreadyInitializedException If configuration has already been queried by the batch runtime. 
      */
 	public void registerDatabaseConfigurationBean(DatabaseConfigurationBean bean) 
