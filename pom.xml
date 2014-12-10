@@ -29,9 +29,9 @@
 		</license>
 	</licenses>
 	<scm>
-		<url>git://java.net/jbatch~jsr-352-git-repository</url>
-		<connection>scm:git://java.net/jbatch~jsr-352-git-repository</connection>
-		<developerConnection>scm:git://java.net/jbatch~jsr-352-git-repository</developerConnection>
+		<url>git://github.com/WASdev/standards.jsr352.jbatch</url>
+		<connection>scm:git://github.com/WASdev/standards.jsr352.jbatch</connection>
+		<developerConnection>scm:git://github.com/WASdev/standards.jsr352.jbatch</developerConnection>
 	</scm>
 	<parent>
 		<groupId>net.java</groupId>
@@ -76,19 +76,6 @@
 					<value>true</value>
 				</property>
 			</activation>
-			<pluginRepositories>
-				<pluginRepository>
-					<id>mc-release</id>
-					<name>Local Maven repository of releases</name>
-					<url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-					<releases>
-						<enabled>true</enabled>
-					</releases>
-				</pluginRepository>
-			</pluginRepositories>
 			<build>
                 <pluginManagement>
                     <plugins>
