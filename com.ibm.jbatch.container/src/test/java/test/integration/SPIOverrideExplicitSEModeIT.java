@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 International Business Machines Corp.
+ * Copyright 2015 International Business Machines Corp.
  *
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership. Licensed under the Apache License,
@@ -22,20 +22,17 @@ import org.junit.Test;
 
 import com.ibm.jbatch.container.servicesmanager.ServicesManager;
 import com.ibm.jbatch.container.servicesmanager.ServicesManagerImpl;
+import com.ibm.jbatch.spi.BatchSPIManager;
 import com.ibm.jbatch.spi.BatchSPIManager.PlatformMode;
-import com.ibm.jbatch.spi.ServiceRegistry.ServiceImplClassNames;
 
-public class DefaultConfigFromShippedPropertiesFilesIT {
+public class SPIOverrideExplicitSEModeIT {
 
 	@Test
-	public void testDefaultConfigFromShippedPropertiesFiles() {
+	public void testSPIOverrideExplicitSEMode() {
+		BatchSPIManager spiMgr = BatchSPIManager.getInstance();
+		spiMgr.registerPlatformMode(PlatformMode.SE);
+
 		ServicesManager srvcMgr = ServicesManagerImpl.getInstance();
-		String artifactFactoryClassName = srvcMgr.getPreferredArtifactFactory().getClass().getName();
-		assertEquals(ServiceImplClassNames.CONTAINER_ARTIFACT_FACTORY_CDI, artifactFactoryClassName);
-		String threadPoolSrvcClassName = srvcMgr.getThreadPoolService().getClass().getName();
-		assertEquals(ServiceImplClassNames.BATCH_THREADPOOL_SPI_DELEGATING, threadPoolSrvcClassName);
-		PlatformMode mode = srvcMgr.getPlatformMode();
-		assertEquals(PlatformMode.EE, mode);
+		assertEquals(PlatformMode.SE,srvcMgr.getPlatformMode());
 	}
-	
 }

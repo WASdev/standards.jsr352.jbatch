@@ -21,13 +21,17 @@ import java.util.logging.Logger;
 
 public final class BatchSPIManager {
 	
+	/**
+	 * A value of <code>SE</code> signifies execution on an SE platform, 
+	 * while a value of <code>EE</code> signifies execution on an EE platform.
+	 */
 	public enum PlatformMode {SE, EE};
 
 	private final static String sourceClass = BatchSPIManager.class.getName();
 	private final static Logger logger = Logger.getLogger(sourceClass);
 	private Properties overrideProperties = new Properties();
 	
-	private Boolean EEMode = null;
+	private PlatformMode platformMode = null;
 
 	private BatchSPIManager() {}
 	
@@ -68,12 +72,14 @@ public final class BatchSPIManager {
 	 * of <code>FALSE</code> signifies SE mode.
 	 * 
 	 * Here <code>null</code> is a significant value since we don't 
-	 * default at this layer. 
+	 * default at this level of config. I.e., a <code>null</code> value here means
+	 * that the mode will be set by some other level of config (possibly
+	 * defaulting at that level).
 	 * 
 	 * @return the EEMode set via this SPI, or 'null' if one has not been set. 
 	 */
-	public Boolean getEEMode() {
-		return EEMode;
+	public PlatformMode getPlatformMode() {
+		return platformMode;
 	}
 
 	/**
@@ -110,17 +116,18 @@ public final class BatchSPIManager {
 	 * platform mode.
 	 * 
 	 * Note that by not calling this method, we do not get a given default behavior,
-	 * we simply defer to looking at the properties-file based config.
+	 * we simply defer to looking at other config mechanisms (properties files, etc.)
 	 * 
 	 * @param mode - Configures the batch runtime in EE mode or SE mode.
 	 */
 	public void registerPlatformMode(PlatformMode mode) {
+
+		platformMode = mode;
+
 		if (mode.equals(PlatformMode.EE)) {
 			logger.config("Batch configured in EE mode by SPI, taking precedence over properties file");
-			EEMode = Boolean.TRUE;
 		} else if (mode.equals(PlatformMode.SE)) {
 			logger.config("Batch configured in SE mode by SPI, taking precedence over properties file");
-			EEMode = Boolean.FALSE;
 		}
 	}
 

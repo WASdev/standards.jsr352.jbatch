@@ -20,6 +20,7 @@ import com.ibm.jbatch.container.callback.IJobEndCallbackService;
 import com.ibm.jbatch.container.services.IBatchKernelService;
 import com.ibm.jbatch.container.services.IJobStatusManagerService;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;
+import com.ibm.jbatch.spi.BatchSPIManager.PlatformMode;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
 import com.ibm.jbatch.spi.services.IBatchThreadPoolService;
 import com.ibm.jbatch.spi.services.IJobXMLLoaderService;
@@ -36,4 +37,5 @@ public interface ServicesManager {
 	public IBatchThreadPoolService getThreadPoolService();
 	public IBatchArtifactFactory getDelegatingArtifactFactory();
 	public IBatchArtifactFactory getPreferredArtifactFactory();
+	public PlatformMode getPlatformMode();
 }

@@ -63,6 +63,7 @@ public class ConfigWithSPIOverrideIT {
 		assertEquals(class4, srvcMgr.getDelegatingJobXMLLoaderService().getClass().getName());
 		assertEquals(class5, srvcMgr.getPreferredJobXMLLoaderService().getClass().getName());
 		assertEquals(class6, srvcMgr.getTransactionManagementService().getClass().getName());
+		assertEquals(PlatformMode.SE,srvcMgr.getPlatformMode());
 	}
-	
+
 }

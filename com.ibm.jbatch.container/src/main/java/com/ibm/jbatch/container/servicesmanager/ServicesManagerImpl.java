@@ -38,6 +38,7 @@ import com.ibm.jbatch.container.services.IPersistenceManagerService;
 import com.ibm.jbatch.container.servicesmanager.ServiceTypes.Name;
 import com.ibm.jbatch.container.util.BatchContainerConstants;
 import com.ibm.jbatch.spi.BatchSPIManager;
+import com.ibm.jbatch.spi.BatchSPIManager.PlatformMode;
 import com.ibm.jbatch.spi.DatabaseConfigurationBean;
 import com.ibm.jbatch.spi.ServiceRegistry;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
@@ -46,6 +47,11 @@ import com.ibm.jbatch.spi.services.IBatchThreadPoolService;
 import com.ibm.jbatch.spi.services.IJobXMLLoaderService;
 import com.ibm.jbatch.spi.services.ITransactionManagementService;
 
+
+/**
+ * Note a call to any of the getter methods besides getInstance() will perform the initialization routine and thereby
+ * 'harden' the config.
+ */
 public class ServicesManagerImpl implements BatchContainerConstants, ServicesManager {
 
 	private final static String sourceClass = ServicesManagerImpl.class.getName();
@@ -77,6 +83,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 
 	// Registry of all current services
 	private final ConcurrentHashMap<Name, IBatchServiceBase> serviceRegistry = new ConcurrentHashMap<Name, IBatchServiceBase>();
+	private PlatformMode platformMode = null;
 	
 	/**
 	 * Init doesn't actually load the service impls, which are still loaded lazily.   What it does is it
@@ -96,9 +103,9 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 					batchConfigImpl = new BatchConfigImpl();
 
 					// Read config
-					initFromPropertiesFiles();
-					initFromSPI();
-					initFromSystemProperties();
+					readConfigFromPropertiesFiles();
+					readConfigFromSPI();
+					readConfigFromSystemProperties();
 
 					// Set config in memory
 					initBatchConfigImpl();
@@ -116,7 +123,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		logger.config("Exiting initIfNecessary()");
 	}
 
-	private void initFromPropertiesFiles() {
+	private void readConfigFromPropertiesFiles() {
 
 		Properties serviceIntegratorProps = new Properties();
 		InputStream batchServicesListInputStream = this.getClass()
@@ -192,20 +199,24 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 
 	}
 	
-	private void initFromSPI() {
+	private void readConfigFromSPI() {
 		//Merge in overrides from the SPI so the container can change properties
 		batchContainerProps.putAll(BatchSPIManager.getInstance().getBatchContainerOverrideProperties());
 
-		Boolean eeMode = BatchSPIManager.getInstance().getEEMode();
-		
-		if (eeMode != null) {
-			String boolVal = eeMode.toString();
-			logger.config("Override platform selection (EE=true, SE=false) with value from SPI: " + boolVal);
-			batchContainerProps.setProperty(ServiceTypes.J2SE_MODE, boolVal);
+		// Don't cache in the 'platformMode' field variable just yet, wait until config is complete for consistency.
+		PlatformMode mode = BatchSPIManager.getInstance().getPlatformMode();
+		if (mode != null) {
+			if (mode.equals(PlatformMode.EE)) {
+				logger.config("SPI configured platform selection of EE");
+				batchContainerProps.setProperty(ServiceTypes.J2SE_MODE, "false");
+			} else if (mode.equals(PlatformMode.SE)) {
+				logger.config("SPI configured platform selection of SE");
+				batchContainerProps.setProperty(ServiceTypes.J2SE_MODE, "true");
+			}
 		}
 	}
 	
-	private void initFromSystemProperties() {
+	private void readConfigFromSystemProperties() {
 		batchContainerProps.putAll(ServiceRegistry.getSystemPropertyOverrides());
 	}
 
@@ -270,30 +281,29 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 	}
 
 
+	// Push hardened config value onto batchConfigImpl and cache the value in a field.
 	private void initPlatformSEorEE() {
 		String seMode = serviceImplClassNames.get(Name.JAVA_EDITION_IS_SE_DUMMY_SERVICE);
 		if (seMode.equalsIgnoreCase("true")) {
+			platformMode = PlatformMode.SE;
 			batchConfigImpl.setJ2seMode(true);
+		} else {
+			platformMode = PlatformMode.EE;
+			batchConfigImpl.setJ2seMode(false);
 		}
 	}
 
 	// Look up registry and return requested service if exist
 	// If not exist, create a new one, add to registry and return that one
-	/* (non-Javadoc)
-	 * @see com.ibm.jbatch.container.config.ServicesManager#getService(com.ibm.jbatch.container.config.ServicesManagerImpl.ServiceType)
-	 */
 	private IBatchServiceBase getService(Name serviceType) throws BatchContainerServiceException {
 		String sourceMethod = "getService";
-		if (logger.isLoggable(Level.FINE))
-			logger.entering(sourceClass, sourceMethod + ", serviceType=" + serviceType);
+		logger.entering(sourceClass, sourceMethod + ", serviceType=" + serviceType);
 
 		initIfNecessary();
 
 		IBatchServiceBase service = new ServiceLoader(serviceType).getService();
 
-		if (logger.isLoggable(Level.FINE))
-			logger.exiting(sourceClass, sourceMethod);
-
+		logger.exiting(sourceClass, sourceMethod);
 		return service;
 	}
 
@@ -312,7 +322,7 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		CONTAINER_ARTIFACT_FACTORY_SERVICE,   // Preferred
 		DELEGATING_ARTIFACT_FACTORY_SERVICE  // Delegating wrapper
 	 */
-	
+
 	@Override
 	public ITransactionManagementService getTransactionManagementService() {
 		return (ITransactionManagementService)getService(Name.TRANSACTION_SERVICE);
@@ -363,9 +373,19 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 		return (IBatchArtifactFactory)getService(Name.DELEGATING_ARTIFACT_FACTORY_SERVICE);
 	}
 
+	/**
+	 * Note this will always return a non-null platform mode, i.e. defaulting is
+	 * taken care of.
+	 * 
+	 * @return mode signifying whether we are executing on an SE or EE platform.  
+	 */
+	@Override
+	public PlatformMode getPlatformMode() {
+		initIfNecessary();
+		return platformMode;
+	}
 	
 	private class ServiceLoader {
-		
 		
 		volatile IBatchServiceBase service = null;
 		private Name serviceType = null;
