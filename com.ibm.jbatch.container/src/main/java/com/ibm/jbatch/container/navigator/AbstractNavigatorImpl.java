@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.ibm.batch.container.annotation.TCKExperimentProperty;
+import com.ibm.jbatch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.jsl.ExecutionElement;
 import com.ibm.jbatch.container.jsl.IllegalTransitionException;
 import com.ibm.jbatch.container.jsl.Transition;

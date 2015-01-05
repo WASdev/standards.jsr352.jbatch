@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.context.JobContext;
 
-import com.ibm.batch.container.annotation.TCKExperimentProperty;
+import com.ibm.jbatch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.navigator.ModelNavigator;
 import com.ibm.jbatch.jsl.model.JSLJob;
 import com.ibm.jbatch.jsl.model.JSLProperties;

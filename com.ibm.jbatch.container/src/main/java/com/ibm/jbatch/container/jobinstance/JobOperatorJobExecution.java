@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 import javax.batch.runtime.BatchStatus;
 
-import com.ibm.batch.container.annotation.TCKExperimentProperty;
+import com.ibm.jbatch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.services.IJobExecution;
 import com.ibm.jbatch.container.services.IPersistenceManagerService;

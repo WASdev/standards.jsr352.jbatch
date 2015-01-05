@@ -27,7 +27,7 @@ import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.context.StepContext;
 
-import com.ibm.batch.container.annotation.TCKExperimentProperty;
+import com.ibm.jbatch.container.annotation.TCKExperimentProperty;
 
 public class StepContextImpl implements StepContext {
 
