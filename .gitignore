@@ -28,6 +28,9 @@ RUNTIMEDB
 # JDK locations for sigtest generation
 sigtest.properties
 
+# TCK Properties
+test.properties
+
 # Generated Files
 com.ibm.jbatch.tck/src/main/resources/META-INF/batch.xml
 com.ibm.jbatch.tck/sigtest/jsr352*
