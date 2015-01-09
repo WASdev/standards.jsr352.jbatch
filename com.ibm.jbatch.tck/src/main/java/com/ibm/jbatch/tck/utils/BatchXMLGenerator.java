@@ -43,8 +43,6 @@ public class BatchXMLGenerator {
 
 	List<BeanDefinition> beanDefinitions = new ArrayList<BeanDefinition>();
 
-	private final static String BATCHXML = "META-INF/batch.xml";
-
 	private void writeBatchXML(File dir) {
 
 
@@ -164,8 +162,9 @@ public class BatchXMLGenerator {
 	}
 
 
-	private static List<String> findClasses(String dir) {
-		File directory = new File(dir);
+	private static List<String> findClasses(final String dir, final String prefix) {
+		File directory = new File(dir, prefix);
+        logger.info("Searching : " + directory);
 		if (!directory.exists()) {
 			throw new IllegalArgumentException("This directory does not exist: " + directory.toString());
 		} else if (!directory.isDirectory()) {
@@ -175,19 +174,25 @@ public class BatchXMLGenerator {
 
 		List<String> classList = new ArrayList<String>();
 
-		findClasses(directory, "" , classList);
+		findClasses(directory, prefix, classList);
 
 		return classList;
 
 	}
 
 	private static void findClasses(File directory, String path, List<String> classList) {
+        logger.info("Searching : " + directory);
 
 		File[] files = directory.listFiles();
-
+        if (files == null) {
+            return;
+        }
 		for (File file : files) {
 			if (file.isDirectory()){
-				findClasses(file, path + file.getName() + SLASH , classList);
+                final String nextPath = path.endsWith(SLASH)
+                        ? path + file.getName() + SLASH
+                        : path + SLASH + file.getName() + SLASH;
+				findClasses(file, nextPath , classList);
 
 			}
 
@@ -196,41 +201,45 @@ public class BatchXMLGenerator {
 
 				String classname = filename.substring(0, filename.lastIndexOf("."));
 
-				classList.add(path.replace(SLASH, ".") + classname);
-
+                final String fqcn = path.replace(SLASH, ".") + classname;
+                logger.info("Found " + fqcn);
+				classList.add(fqcn);
 			}
 
 		}
-
 	}
 
 	public static void main(String[] args){
 		logger.info("Starting BatchXMLGenerator");
 
+        final String srcDir = args[0];
+        final String startSearchAt = args[1];
+        final String outputDir = args[2];
+
 		BatchXMLGenerator bxg = new BatchXMLGenerator();
 
-		//FIXME Need more input validation here
+        final File src = new File(srcDir, startSearchAt);
+        if (!src.isDirectory()) {
+            throw new IllegalArgumentException("First and second arguments '" + srcDir + "' and '" + startSearchAt + "'\n"
+                    + "must combine to be a directory where the second argument is the directories that form the package name.\n"
+                    +" e.g. arg[0] = ${PROJECT_ROOT}/target/classes\n"
+                    +"      arg[1] = com/ibm/jbatch/tck/artifacts\n"
+                    + " Found: " + src
+            );
+        }
+        File batchXMLDir = new File(outputDir);
+        if (!batchXMLDir.isDirectory()) {
+            throw new IllegalArgumentException("Third argument must be a directory. Found: '" + outputDir + "'.");
+        }
 
-		List<String> classList = bxg.findClasses(args[0]);
+		List<String> classList = BatchXMLGenerator.findClasses(srcDir, startSearchAt);
 
 		for (String className : classList) {
 			bxg.processClass(className);
 		}
 
-		File batchXMLDir = new File(args[1]);
-
-		if (!batchXMLDir.exists()) {
-			throw new IllegalArgumentException("This directory does not exist: " + args[1]);
-		}
-
-		if (!batchXMLDir.isDirectory()) {
-			throw new IllegalArgumentException("This is not a directory: " + args[1]);
-
-		}
-
 		bxg.writeBatchXML(batchXMLDir);
 
 		logger.info("BatchXMLGenerator completed successfully.");
-
 	}
 }
