@@ -19,16 +19,16 @@ idea
 *.swp
 *~
 
-/com.ibm.jbatch.container/derby.log
-/com.ibm.jbatch.container/RUNTIMEDB
+/com.ibm.jbatch.container/src/main/resources/META-INF/services/*.properties
+
+# TCK Output
+derby.log
 RUNTIMEDB
 
-# IDEA
-*.iml
-*.ipr
-*.iws
-.idea/
-idea
+# JDK locations for sigtest generation
+sigtest.properties
 
-# VIM
-*.swp
+# Generated Files
+com.ibm.jbatch.tck/src/main/resources/META-INF/batch.xml
+com.ibm.jbatch.tck/sigtest/jsr352*
+com.ibm.jbatch.tck/testng/filtered.build.xml

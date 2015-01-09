@@ -1,7 +1,0 @@
-<suite name="Single Class Suite">
-   <test name="Class Test">
-      <classes>
-         <class name="@CLASS@"  />
-       </classes>
-   </test>
-</suite>
