@@ -244,6 +244,7 @@
                             <files>
                                 <file>${project.basedir}/../sigtest.properties</file>
                             </files>
+                            <quiet>true</quiet>
                         </configuration>
                     </execution>
                 </executions>
