@@ -22,8 +22,7 @@ public class AssertionUtils {
 		assertWithMessage(null, expected, actual);
 	}
 
-	static public void assertWithMessage(String message, Object expected, Object actual)
-	{
+	static public void assertWithMessage(String message, Object expected, Object actual) {
 	    if (expected == null && actual == null) {
 	        return;
 	    }
@@ -32,9 +31,7 @@ public class AssertionUtils {
 				throw new AssertionError("Expected 'null' but found value: " + actual);
 			else
 				throw new AssertionError(message + "; Expected 'null' but found value: " + actual);
-		} 
-		else if (!expected.equals(actual)) 
-		{
+		} else if (!expected.equals(actual)) {
 			if (message == null)
 				throw new AssertionError("Expected value: " + expected + ", but found value: " + actual);
 			else
@@ -42,10 +39,8 @@ public class AssertionUtils {
 		}
 	}
 	
-	static public void assertWithMessage(String message, boolean result)
-	{
-		if(!result)
-		{
+	static public void assertWithMessage(String message, boolean result) {
+		if (!result) {
 			if (message == null)
 	            throw new AssertionError();
 			else
@@ -56,8 +51,7 @@ public class AssertionUtils {
 	static public void assertWithMessage(String message, int expected, int actual) {
      boolean result = (expected == actual);
 		
-		if(!result)
-		{
+		if (!result) {
 			if (message == null)
 				throw new AssertionError("Expected value: " + expected + ", but found value: " + actual);
 			else

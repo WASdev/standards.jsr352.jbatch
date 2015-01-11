@@ -58,8 +58,7 @@ public class SkipHandler {
 	  private int _skipLimit = Integer.MIN_VALUE;
 	  private long _skipCount = 0;
 
-	  public SkipHandler(Chunk chunk, long l, String stepId)
-	  {
+	  public SkipHandler(Chunk chunk, long l, String stepId) {
 	    _jobId = l;
 	    _stepId = stepId;
 
@@ -70,8 +69,7 @@ public class SkipHandler {
 	   * Add the user-defined SkipReadListeners.
 	   *
 	   */
-	  public void addSkipReadListener(List<SkipReadListenerProxy> skipReadListener)
-	  {
+	  public void addSkipReadListener(List<SkipReadListenerProxy> skipReadListener) {
 	    _skipReadListener = skipReadListener;
 	  }
 	  
@@ -79,8 +77,7 @@ public class SkipHandler {
 	   * Add the user-defined SkipWriteListeners.
 	   *
 	   */
-	  public void addSkipWriteListener(List<SkipWriteListenerProxy> skipWriteListener)
-	  {
+	  public void addSkipWriteListener(List<SkipWriteListenerProxy> skipWriteListener) {
 	    _skipWriteListener = skipWriteListener;
 	  }
 	  
@@ -88,8 +85,7 @@ public class SkipHandler {
 	   * Add the user-defined SkipReadListeners.
 	   *
 	   */
-	  public void addSkipProcessListener(List<SkipProcessListenerProxy> skipProcessListener)
-	  {
+	  public void addSkipProcessListener(List<SkipProcessListenerProxy> skipProcessListener) {
 	    _skipProcessListener = skipProcessListener;
 	  }
 
@@ -97,24 +93,20 @@ public class SkipHandler {
 	  /**
 	   * Read the skip exception lists from the BDS props.
 	   */
-	  private void initialize(Chunk chunk)
-	  {
+	  private void initialize(Chunk chunk) {
 	    final String mName = "initialize";
 
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.entering(className, mName);
 
-	    try
-	    {
+	    try {
 	    	if (chunk.getSkipLimit() != null){
 	    		_skipLimit = Integer.parseInt(chunk.getSkipLimit());
 	    		if (_skipLimit < 0) {
 	    		    throw new IllegalArgumentException("The skip-limit attribute on a chunk cannot be a negative value");
 	    		}
 	    	}
-	    }
-	    catch (NumberFormatException nfe)
-	    {
+	    } catch (NumberFormatException nfe) {
 	      throw new RuntimeException("NumberFormatException reading " + SKIP_COUNT, nfe);
 	    }
 
@@ -172,8 +164,7 @@ public class SkipHandler {
 	  /**
 	   * Handle exception from a read failure.
 	   */
-	  public void handleExceptionRead(Exception e)
-	  {
+	  public void handleExceptionRead(Exception e) {
 	    final String mName = "handleException";
 	    
 	    logger.finer("SKIPHANDLE: in skiphandler handle exception on a read");
@@ -181,8 +172,7 @@ public class SkipHandler {
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
 	    
-	    if (!isSkipLimitReached() && isSkippable(e))
-	    {
+	    if (!isSkipLimitReached() && isSkippable(e)) {
 	      // Skip it.  Log it.  Call the SkipListener.
 	      ++_skipCount;
 	      logSkip(e);
@@ -192,9 +182,7 @@ public class SkipHandler {
 	    		  skipReadListenerProxy.onSkipReadItem(e);
 				}
 	      }
-	    }
-	    else
-	    {
+	    } else {
 	      // No skip.  Throw it back. don't throw it back - we might want to retry ...
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No skip.  Rethrow", e);
@@ -208,14 +196,12 @@ public class SkipHandler {
 	  /** 
 	   * Handle exception from a process failure.
 	   */
-	  public void handleExceptionWithRecordProcess(Exception e, Object w)
-	  {
+	  public void handleExceptionWithRecordProcess(Exception e, Object w) {
 	    final String mName = "handleExceptionWithRecordProcess";
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
 
-	    if (!isSkipLimitReached() && isSkippable(e))
-	    {
+	    if (!isSkipLimitReached() && isSkippable(e)) {
 	      // Skip it.  Log it.  Call the SkipProcessListener.
 	      ++_skipCount;
 	      logSkip(e);
@@ -225,9 +211,7 @@ public class SkipHandler {
 	    		  skipProcessListenerProxy.onSkipProcessItem(w, e);
 				}
 	      }
-	    }
-	    else
-	    {
+	    } else {
 	      // No skip.  Throw it back.
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No skip.  Rethrow ", e);
@@ -237,15 +221,13 @@ public class SkipHandler {
 	  /** 
 	   * Handle exception from a write failure.
 	   */
-	  public void handleExceptionWithRecordListWrite(Exception e, List<?> items)
-	  {
+	  public void handleExceptionWithRecordListWrite(Exception e, List<?> items) {
 	    final String mName = "handleExceptionWithRecordListWrite(Exception, List<?>)";
 	    
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
 
-	    if (!isSkipLimitReached() && isSkippable(e))
-	    {
+	    if (!isSkipLimitReached() && isSkippable(e)) {
 	      // Skip it.  Log it.  Call the SkipListener.
 	      ++_skipCount;
 	      logSkip(e);
@@ -255,9 +237,7 @@ public class SkipHandler {
 	    		  skipWriteListenerProxy.onSkipWriteItem(items, e);
 				}
 	      }
-	    }
-	    else
-	    {
+	    } else {
 	      // No skip.  Throw it back. - No, exit without throwing
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No skip.  Rethrow ", e);
@@ -270,8 +250,7 @@ public class SkipHandler {
 	   * Check the skipCount and skippable exception lists to determine whether
 	   * the given Exception is skippable.
 	   */
-	  private boolean isSkippable(Exception e)
-	  {
+	  private boolean isSkippable(Exception e) {
 	    final String mName = "isSkippable";
 
 	    String exClassName = e.getClass().getName();
@@ -287,8 +266,7 @@ public class SkipHandler {
 	  /**
 	   * Check whether given exception is in skippable exception list 
 	   */
-	  private boolean containsSkippable(Set<String> skipList, Exception e)
-	  {
+	  private boolean containsSkippable(Set<String> skipList, Exception e) {
 	    final String mName = "containsSkippable";
 	    boolean retVal = false;
 
@@ -325,21 +303,18 @@ public class SkipHandler {
         return (_skipCount >= _skipLimit);
     }
 	  
-	  private void logSkip(Exception e)
-	  {
+	  private void logSkip(Exception e) {
 	    Object[] details = { _jobId, _stepId, e.getClass().getName() + ": " + e.getMessage() };
 	    if(logger.isLoggable(Level.FINE)) 
 	      logger.logp(Level.FINE, className, "logSkip", "Logging details: ", details); 
 	  }
 
 
-	  public long getSkipCount()
-	  {
+	  public long getSkipCount() {
 	    return _skipCount;
 	  }
 
-	  public void setSkipCount(long skipCount)
-	  {
+	  public void setSkipCount(long skipCount) {
 	    final String mName = "setSkipCount";
 
 	    _skipCount = skipCount;
@@ -348,8 +323,7 @@ public class SkipHandler {
 	      logger.logp(Level.FINE, className, mName, "setSkipCount: " + _skipCount);
 	  }
 
-	  public String toString()
-	  {
+	  public String toString() {
 	    return "SkipHandler{" + super.toString() + "}count:limit=" + _skipCount + ":" + _skipLimit;
 	  }
 

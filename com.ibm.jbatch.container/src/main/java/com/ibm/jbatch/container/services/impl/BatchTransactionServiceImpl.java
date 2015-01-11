@@ -89,8 +89,7 @@ public class BatchTransactionServiceImpl implements ITransactionManagementServic
             // use the container JNDI java:comp/UserTransaction
             logger.fine("getting transaction object from JNDI java:comp/UserTransaction");
             transactionManager = new JTAUserTransactionAdapter("java:comp/UserTransaction");
-        } 
-        else if (this.batchConfig.isJ2seMode()) { 
+        } else if (this.batchConfig.isJ2seMode()) {
         // If we are in J2SE mode use the non-transactional manager
         
             // java environment is Java SE

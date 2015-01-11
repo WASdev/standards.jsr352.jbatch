@@ -96,8 +96,7 @@ public class NumbersReader extends AbstractItemReader {
 				throw new MyParentException("Fail on purpose in NumbersRecord.readItem()");	
 		} 
 		
-		if (testState == STATE_RETRY)
-		{
+		if (testState == STATE_RETRY) {
 			if(stepCtx.getProperties().getProperty("retry.read.exception.invoked") != "true") {
 				Reporter.log("onRetryReadException not invoked<p>");
 				throw new Exception("onRetryReadException not invoked");

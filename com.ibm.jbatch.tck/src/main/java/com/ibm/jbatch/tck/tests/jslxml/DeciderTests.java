@@ -60,8 +60,7 @@ public class DeciderTests implements StatusConstants {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

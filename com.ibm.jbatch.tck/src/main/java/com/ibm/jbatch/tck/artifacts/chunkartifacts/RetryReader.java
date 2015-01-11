@@ -117,8 +117,7 @@ public class RetryReader extends AbstractItemReader {
 		}
 		
 		
-		if (testState == STATE_RETRY)
-		{
+		if (testState == STATE_RETRY) {
 			// should be retrying at same index with no rollback
 			/*if(!rollback) {
 					if(failindex != readerIndex)

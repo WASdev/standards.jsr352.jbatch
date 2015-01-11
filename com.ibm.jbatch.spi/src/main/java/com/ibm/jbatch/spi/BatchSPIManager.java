@@ -209,8 +209,7 @@ public final class BatchSPIManager {
      * in which case the bean passed as input is ignored.
      * @param bean 
      
-	public void initalizeDatabaseConfigurationBean(DatabaseConfigurationBean bean) 
-			{
+	public void initalizeDatabaseConfigurationBean(DatabaseConfigurationBean bean) {
 		ServicesManagerImpl servicesMgr = ServicesManagerImpl.getInstance();
 		servicesMgr.initalizeDatabaseConfigurationBean(bean);
 	}

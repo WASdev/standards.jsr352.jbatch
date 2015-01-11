@@ -105,8 +105,7 @@ public class RetryWriter extends AbstractItemWriter {
 				throw new MyParentException("Test skip -- Fail on purpose in NumbersRecord.writeItems()");
 			}
 			
-			if (testState == STATE_RETRY)
-			{
+			if (testState == STATE_RETRY) {
 				
 				if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.write.exception.invoked") != "true") {
 					Reporter.log("onRetryWriteException not invoked<p>");

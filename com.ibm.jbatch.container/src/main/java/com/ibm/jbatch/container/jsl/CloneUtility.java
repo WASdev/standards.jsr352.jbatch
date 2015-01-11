@@ -84,25 +84,21 @@ public class CloneUtility {
                 newEnd.setOn(endElement.getOn());
 
                 newControlElements.add(newEnd);
-            }
-            else if (controlElement instanceof Fail){
+            } else if (controlElement instanceof Fail){
                 Fail failElement = (Fail)controlElement;
                 Fail newFail = jslFactory.createFail();
                 newFail.setExitStatus(failElement.getExitStatus());
                 newFail.setOn(failElement.getOn());
 
                 newControlElements.add(newFail);
-            }
-            else if (controlElement instanceof Next){
+            } else if (controlElement instanceof Next){
                 Next nextElement = (Next)controlElement;
                 Next newNext = jslFactory.createNext();
                 newNext.setOn(nextElement.getOn());
                 newNext.setTo(nextElement.getTo());
 
                 newControlElements.add(newNext);
-            }
-
-            else if (controlElement instanceof Stop){
+            } else if (controlElement instanceof Stop){
                 Stop stopElement = (Stop)controlElement;
                 Stop newStop = jslFactory.createStop();
                 newStop.setExitStatus(stopElement.getExitStatus());

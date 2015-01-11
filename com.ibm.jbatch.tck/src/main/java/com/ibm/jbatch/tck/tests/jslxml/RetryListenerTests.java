@@ -52,8 +52,7 @@ public class RetryListenerTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

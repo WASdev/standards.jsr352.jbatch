@@ -52,8 +52,7 @@ public class StepModelSerializerImpl implements ModelSerializer<Step> {
     		m.marshal( new JAXBElement(
     				new QName("http://xmlns.jcp.org/xml/ns/javaee","step"), Step.class, step ), baos);
     		resultXML = baos.toString();
-    	}
-    	catch(Exception e){
+    	} catch(Exception e){
     		throw new RuntimeException("Exception while marshalling Step", e);
     	}
     	

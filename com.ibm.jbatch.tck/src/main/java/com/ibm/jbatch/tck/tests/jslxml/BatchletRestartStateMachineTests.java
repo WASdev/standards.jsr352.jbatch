@@ -52,8 +52,7 @@ public class BatchletRestartStateMachineTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

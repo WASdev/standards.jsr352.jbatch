@@ -127,8 +127,7 @@ public class CheckpointManager {
 
 			_persistenceManagerService.updateCheckpointData(writerChkptDK, writerChkptData);
 			
-		}
-		catch (Exception ex){
+		} catch (Exception ex){
 			// is this what I should be throwing here?
 			throw new BatchContainerServiceException("Cannot persist the checkpoint data for [" + stepId + "]", ex);
 		}

@@ -638,8 +638,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
-		finally {
+		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
 		return count;
@@ -663,8 +662,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
-		finally {
+		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
 		return count;
@@ -690,20 +688,19 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
-		finally {
+		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
 
 		if (data.size() > 0){
 			try {
 				return data.subList(start, start+count);
-			}
-			catch (IndexOutOfBoundsException oobEx){
+			} catch (IndexOutOfBoundsException oobEx){
 				return data.subList(start, data.size());
 			}
-		}
-		else return data;
+		} else {
+            return data;
+        }
 	}
 	
 	@Override
@@ -725,20 +722,19 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
-		finally {
+		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
 
 		if (data.size() > 0){
 			try {
 				return data.subList(start, start+count);
-			}
-			catch (IndexOutOfBoundsException oobEx){
+			} catch (IndexOutOfBoundsException oobEx){
 				return data.subList(start, data.size());
 			}
-		}
-		else return data;
+		} else {
+            return data;
+        }
 	}
 
 	@Override
@@ -764,8 +760,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
-		finally {
+		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
 
@@ -798,8 +793,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
-		finally {
+		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
 
@@ -889,8 +883,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException(e);
-		}
-		finally {
+		} finally {
 			cleanupConnection(conn, rs, statement);
 		}
 

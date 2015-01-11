@@ -96,8 +96,7 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 		if (this.jobContext != null){
 			batchStatusEnum = this.jobContext.getBatchStatus();
 			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
-		}
-		else {
+		} else {
 			// old job, retrieve from the backend
 			batchStatusEnum = BatchStatus.valueOf(_persistenceManagementService.jobOperatorQueryJobExecutionBatchStatus(executionID));
 			logger.finest("Returning batch status of: " + batchStatus + " from JobContext.");
@@ -114,8 +113,9 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 
 		if (createTime != null){
 			return new Date(createTime.getTime());
-		}
-		else return createTime;
+		} else {
+            return createTime;
+        }
 	}
 
 	@Override
@@ -128,8 +128,9 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 
 		if (endTime != null){
 			return new Date(endTime.getTime());
-		}
-		else return endTime;
+		} else {
+            return endTime;
+        }
 	}
 
 	@Override
@@ -141,8 +142,7 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 
 		if (this.jobContext != null){
 			return this.jobContext.getExitStatus();
-		}
-		else {
+		} else {
 			exitStatus = _persistenceManagementService.jobOperatorQueryJobExecutionExitStatus(executionID);
 			return exitStatus;
 		}
@@ -158,8 +158,9 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 
 		if (updateTime != null) {
 			return new Date(this.updateTime.getTime());
-		}
-		else return updateTime;
+		} else {
+            return updateTime;
+        }
 	}
 
 	@Override
@@ -171,8 +172,9 @@ public class JobOperatorJobExecution implements IJobExecution, TaggedJobExecutio
 
 		if (startTime != null){
 			return new Date(startTime.getTime());
-		}
-		else return startTime;
+		} else {
+            return startTime;
+        }
 	}
 
 	@Override
