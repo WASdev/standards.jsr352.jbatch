@@ -12,11 +12,6 @@
 	<version>1.0.1-SNAPSHOT</version>
 	<name>com.ibm.jbatch.container</name>
 	<url>http://maven.apache.org</url>
-
-	<properties>
-		<version.ant.ant-nodeps>1.6.5</version.ant.ant-nodeps>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -97,23 +92,16 @@
 						<id>ant-process-sources</id>
 						<phase>process-sources</phase>
 						<configuration>
-							<tasks>
+							<target>
 								<echo>Adjusting generated JAXBs</echo>
-								<ant antfile="${basedir}/adjustJAXB/build.xml" />
-							</tasks>
+								<ant antfile="${project.basedir}/adjustJAXB/build.xml" />
+							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
 						</goals>
 					</execution>
 				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>ant</groupId>
-						<artifactId>ant-nodeps</artifactId>
-						<version>${version.ant.ant-nodeps}</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 			<!-- The main reason for using both the failsafe and surefire plugins 
 				is to allow some tests to be run all under a single JVM lifecycle, and some 
