@@ -50,8 +50,9 @@
 
     <files>
         <file>
-            <source>../README.txt</source>
+            <source>../README.md</source>
             <outputDirectory>/</outputDirectory>
+            <destName>README.txt</destName>
         </file>
         <file>
             <source>../LICENSE.txt</source>
