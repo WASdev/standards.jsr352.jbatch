@@ -1,16 +1,21 @@
-package test.junit;
+package test.integration;
 
 import com.ibm.jbatch.container.api.impl.JobOperatorImpl;
 import com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl;
 import com.ibm.jbatch.container.services.impl.WeldSEBatchArtifactFactoryImpl;
-import com.ibm.jbatch.container.servicesmanager.ServiceTypes;
+import com.ibm.jbatch.spi.ServiceRegistry.ServiceImplClassNames;
+import com.ibm.jbatch.spi.ServiceRegistry.ServicePropertyNames;
+
 import junit.framework.Assert;
+
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.NoSuchJobException;
+import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.StepExecution;
@@ -18,23 +23,23 @@ import javax.batch.runtime.StepExecution;
 /**
  * @author <a href="mailto:brent.n.douglas@gmail.com">Brent Douglas</a>
  */
-public class WeldTest {
+public class WeldIT {
+
+    static final String PROP_PREFIX = "com.ibm.jbatch.spi.ServiceRegistry";
 
     private static JobOperator operator;
 
     @BeforeClass
     public static void beforeClass() {
-        ServiceTypes.getServiceImplClassNames().put(ServiceTypes.Name.CONTAINER_ARTIFACT_FACTORY_SERVICE, WeldSEBatchArtifactFactoryImpl.class.getName());
-        operator = new JobOperatorImpl();
-    }
-
-    @AfterClass
-    public static void afterClass() {
-        ServiceTypes.getServiceImplClassNames().put(ServiceTypes.Name.CONTAINER_ARTIFACT_FACTORY_SERVICE, DelegatingBatchArtifactFactoryImpl.class.getName());
+		System.setProperty(PROP_PREFIX + "." + ServicePropertyNames.CONTAINER_ARTIFACT_FACTORY_SERVICE, ServiceImplClassNames.CONTAINER_ARTIFACT_FACTORY_WELD_SE);
+		System.setProperty(PROP_PREFIX + "." + ServicePropertyNames.J2SE_MODE, "true");
+		System.setProperty(PROP_PREFIX + "." + ServicePropertyNames.BATCH_THREADPOOL_SERVICE, ServiceImplClassNames.BATCH_THREADPOOL_GROWABLE);
+    	operator = BatchRuntime.getJobOperator();
     }
 
     @Test
     public void testWeldWorks() throws InterruptedException {
+
         final JobExecution job = awaitJob("weldArtifactFactoryTest");
         Assert.assertEquals(BatchStatus.COMPLETED, job.getBatchStatus());
 
