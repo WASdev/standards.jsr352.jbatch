@@ -116,7 +116,7 @@
         <version.org.testng.testng>6.8</version.org.testng.testng>
 
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
-        <version.org.apache.maven.plugins.maven-antrun-plugin>1.6</version.org.apache.maven.plugins.maven-antrun-plugin>
+        <version.org.apache.maven.plugins.maven-antrun-plugin>1.8</version.org.apache.maven.plugins.maven-antrun-plugin>
         <version.org.apache.maven.plugins.maven-compiler-plugin>2.0.2</version.org.apache.maven.plugins.maven-compiler-plugin>
         <version.org.apache.maven.plugins.maven-failsafe-plugin>2.18</version.org.apache.maven.plugins.maven-failsafe-plugin>
         <version.org.apache.maven.plugins.maven-gpg-plugin>1.4</version.org.apache.maven.plugins.maven-gpg-plugin>
@@ -262,6 +262,11 @@
                         <encoding>${project.build.sourceEncoding}</encoding>
                     </configuration>
                 </plugin> 
+                <plugin>
+                     <groupId>org.apache.maven.plugins</groupId>
+                     <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-antrun-plugin}</version>
+                </plugin>
                 <plugin>
                      <groupId>org.apache.maven.plugins</groupId>
                      <artifactId>maven-failsafe-plugin</artifactId>
