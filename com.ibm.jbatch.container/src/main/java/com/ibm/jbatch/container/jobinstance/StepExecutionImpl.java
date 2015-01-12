@@ -74,8 +74,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     public Date getEndTime() {
     	if (stepContext != null){
     		return this.stepContext.getEndTimeTS();
-    	}
-    	else {
+    	} else {
     		if (endTime != null) {
     			return new Date(endTime.getTime());
     		} else {
@@ -93,8 +92,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     public String getExitStatus() {
     	if (stepContext != null){
     		return this.stepContext.getExitStatus();
-    	}
-    	else {
+    	} else {
     		return exitStatus;
     	}
     }
@@ -103,8 +101,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
     public Date getStartTime() {
         if (stepContext != null){
     		return this.stepContext.getStartTimeTS();
-        }
-        else {
+        } else {
 			if (startTime != null) {
 				return new Date(startTime.getTime());
 			} else {
@@ -143,8 +140,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 		
 		if (stepContext != null) {
 			return stepContext.getMetrics();
-		}
-		else {
+		} else {
 			Metric[] metrics = new MetricImpl[8];
 			metrics[0] = new MetricImpl(MetricImpl.MetricType.READ_COUNT, readCount);
 			metrics[1] = new MetricImpl(MetricImpl.MetricType.WRITE_COUNT, writeCount);
@@ -164,8 +160,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 
 		if (stepContext != null) {
 			return this.stepContext.getBatchStatus();
-		}
-		else {
+		} else {
 			return batchStatus;
 		}
 	}
@@ -174,8 +169,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 	public Serializable getPersistentUserData() {
 		if (stepContext != null) {
 			return this.stepContext.getPersistentUserData();
-		}
-		else {
+		} else {
 			return this.persistentUserData;
 		}
 	}
@@ -259,8 +253,7 @@ public class StepExecutionImpl implements StepExecution, Serializable {
 	public String getStepName() {
 		if (stepContext != null) {
 			return this.stepContext.getStepName();
-		}
-		else {
+		} else {
 			return stepName;
 		}
 	}

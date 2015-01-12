@@ -87,8 +87,7 @@ public class RetryProcessor implements ItemProcessor {
 			throw new MyParentException("Test skip -- Fail on purpose in NumbersRecord.readItem()");	
 		}
 		
-		if (testState == STATE_RETRY)
-		{
+		if (testState == STATE_RETRY) {
 			if (((Properties)stepCtx.getTransientUserData()).getProperty("retry.process.exception.invoked") != "true") {
 				Reporter.log("onRetryProcessException not invoked<p>");
 				throw new Exception("onRetryProcessException not invoked");

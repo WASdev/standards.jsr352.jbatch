@@ -189,8 +189,7 @@ public abstract class AbstractNavigatorImpl<T> implements ModelNavigator<T> {
 		if (match) {
 			logger.finer("matchSpecifiedExitStatus, match=YES");
 			return true;
-		}
-		else {
+		} else {
 			logger.finer("matchSpecifiedExitStatus, match=NO");
 			return false;
 		}

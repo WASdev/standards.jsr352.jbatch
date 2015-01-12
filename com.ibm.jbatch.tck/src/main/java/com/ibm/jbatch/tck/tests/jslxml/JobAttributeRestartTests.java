@@ -106,8 +106,7 @@ public class JobAttributeRestartTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

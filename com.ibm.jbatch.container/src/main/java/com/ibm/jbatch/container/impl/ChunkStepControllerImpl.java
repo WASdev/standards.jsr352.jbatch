@@ -322,34 +322,28 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 						// retry with rollback
 						currentChunkStatus.markForRollbackWithRetry(e);
 					}
-				}
-				else if(skipReadException(e)) {
+				} else if(skipReadException(e)) {
 					currentItemStatus.setSkipped(true);
 					stepContext.getMetric(MetricImpl.MetricType.READ_SKIP_COUNT).incValue();
 
-				}
-				else {
+				} else {
 					throw new BatchContainerRuntimeException(e);
 				}
-			}
-			else {
+			} else {
 				// coming from a rollback retry
 				if(skipReadException(e)) {
 					currentItemStatus.setSkipped(true);
 					stepContext.getMetric(MetricImpl.MetricType.READ_SKIP_COUNT).incValue();
 
-				}
-				else if (retryReadException(e)) {
+				} else if (retryReadException(e)) {
 					if (!retryHandler.isRollbackException(e)) {
 						// retry without rollback
 						itemRead = readItem();
-					}
-					else {
+					} else {
 						// retry with rollback
 						currentChunkStatus.markForRollbackWithRetry(e);
 					}
-				}
-				else {
+				} else {
 					throw new BatchContainerRuntimeException(e);
 				}
 			}
@@ -405,16 +399,13 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 					} else {
 						currentChunkStatus.markForRollbackWithRetry(e);
 					}
-				}
-				else if (skipProcessException(e, itemRead)) {
+				} else if (skipProcessException(e, itemRead)) {
 					currentItemStatus.setSkipped(true);
 					stepContext.getMetric(MetricImpl.MetricType.PROCESS_SKIP_COUNT).incValue();
-				}
-				else {
+				} else {
 					throw new BatchContainerRuntimeException(e);
 				}
-			}
-			else {
+			} else {
 				if (skipProcessException(e, itemRead)) {
 					currentItemStatus.setSkipped(true);
 					stepContext.getMetric(MetricImpl.MetricType.PROCESS_SKIP_COUNT).incValue();
@@ -482,8 +473,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 						throw new BatchContainerRuntimeException(e);
 					}
 
-				}
-				else {
+				} else {
 					if (skipWriteException(e, theChunk)) {
 						stepContext.getMetric(MetricImpl.MetricType.WRITE_SKIP_COUNT).incValueBy(1);
 					} else if (retryWriteException(e, theChunk)) {

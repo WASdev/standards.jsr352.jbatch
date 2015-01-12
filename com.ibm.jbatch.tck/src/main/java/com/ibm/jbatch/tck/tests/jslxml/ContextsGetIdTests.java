@@ -129,8 +129,7 @@ public class ContextsGetIdTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

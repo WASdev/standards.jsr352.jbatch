@@ -104,8 +104,7 @@ public class SplitFlowTransitionLoopTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

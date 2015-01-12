@@ -235,8 +235,7 @@ public class FlowTransitioningTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

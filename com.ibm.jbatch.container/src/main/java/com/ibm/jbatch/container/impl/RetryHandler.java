@@ -73,8 +73,7 @@ public class RetryHandler {
 	private long _retryCount = 0;
 	private Exception _retryException = null;
 
-	public RetryHandler(Chunk chunk, long l, String stepId)
-	{
+	public RetryHandler(Chunk chunk, long l, String stepId) {
 		_jobId = l;
 		_stepId = stepId;
 
@@ -86,8 +85,7 @@ public class RetryHandler {
 	 * Add the user-defined RetryProcessListener.
 	 *
 	 */
-	public void addRetryProcessListener(List<RetryProcessListenerProxy> retryProcessListeners)
-	{
+	public void addRetryProcessListener(List<RetryProcessListenerProxy> retryProcessListeners) {
 		_retryProcessListeners =  retryProcessListeners;
 	}
 
@@ -95,8 +93,7 @@ public class RetryHandler {
 	 * Add the user-defined RetryReadListener.
 	 *
 	 */
-	public void addRetryReadListener(List<RetryReadListenerProxy> retryReadListeners)
-	{
+	public void addRetryReadListener(List<RetryReadListenerProxy> retryReadListeners) {
 		_retryReadListeners = retryReadListeners;
 	}
 
@@ -104,8 +101,7 @@ public class RetryHandler {
 	 * Add the user-defined RetryWriteListener.
 	 *
 	 */
-	public void addRetryWriteListener(List<RetryWriteListenerProxy> retryWriteListeners)
-	{
+	public void addRetryWriteListener(List<RetryWriteListenerProxy> retryWriteListeners) {
 		_retryWriteListeners = retryWriteListeners;
 	}
 
@@ -113,15 +109,13 @@ public class RetryHandler {
 	/**
 	 * Read the retry exception lists from the BDS props.
 	 */
-	private void initialize(Chunk chunk)
-	{
+	private void initialize(Chunk chunk) {
 		final String mName = "initialize";
 
 		if(logger.isLoggable(Level.FINER)) 
 			logger.entering(className, mName);
 
-		try
-		{
+		try {
 			if (chunk.getRetryLimit() != null){
 				_retryLimit = Integer.parseInt(chunk.getRetryLimit());
                 if (_retryLimit < 0) {
@@ -129,9 +123,7 @@ public class RetryHandler {
                 }
 
 			}
-		}
-		catch (NumberFormatException nfe)
-		{
+		} catch (NumberFormatException nfe) {
 			throw new RuntimeException("NumberFormatException reading " + RETRY_COUNT, nfe);
 		}
 
@@ -211,15 +203,13 @@ public class RetryHandler {
 	    }
 	  }
 	  
-	  public boolean isRollbackException(Exception e)
-	  {
+	  public boolean isRollbackException(Exception e) {
 		  return !isNoRollbackException(e);
 	  }
 	  /**
 	   * Handle exception from a read failure.
 	   */
-	  public void handleExceptionRead(Exception e)
-	  {
+	  public void handleExceptionRead(Exception e) {
 	    final String mName = "handleExceptionRead";
 	    
 	    logger.finer("RETRYHANDLE: in retryhandler handle exception on a read:" + e.toString());
@@ -227,8 +217,7 @@ public class RetryHandler {
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
 	    
-	    if (!isRetryLimitReached() && isRetryable(e))
-	    {
+	    if (!isRetryLimitReached() && isRetryable(e)) {
 	       retryType = RETRY_READ;
 	       _retryException = e;
 	      // Retry it.  Log it.  Call the RetryListener.
@@ -240,9 +229,7 @@ public class RetryHandler {
 	    		  retryReadListenerProxy.onRetryReadException(e);
 				}
 	      }
-	    }
-	    else
-	    {
+	    } else {
 	      // No retry.  Throw it back.
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No retry.  Rethrow", e);
@@ -256,15 +243,13 @@ public class RetryHandler {
 	  /** 
 	   * Handle exception from a process failure.
 	   */
-	  public void handleExceptionProcess(Exception e, Object w)
-	  {
+	  public void handleExceptionProcess(Exception e, Object w) {
 	    final String mName = "handleExceptionProcess";
 	    
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
 	    
-	    if (!isRetryLimitReached() && isRetryable(e))
-	    {
+	    if (!isRetryLimitReached() && isRetryable(e)) {
 	      retryType = RETRY_PROCESS;
 	      _retryException = e;
 	      // Retry it.  Log it.  Call the RetryListener.
@@ -276,9 +261,7 @@ public class RetryHandler {
 	    		  retryProcessListenerProxy.onRetryProcessException(w, e);
 				}
 	      }
-	    }
-	    else
-	    {
+	    } else {
 	      // No retry.  Throw it back.
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No retry.  Rethrow ", e);
@@ -289,15 +272,13 @@ public class RetryHandler {
 	  /** 
 	   * Handle exception from a write failure.
 	   */
-	  public void handleExceptionWrite(Exception e, List<Object> w)
-	  {
+	  public void handleExceptionWrite(Exception e, List<Object> w) {
 	    final String mName = "handleExceptionWrite";
 	    
 	    if(logger.isLoggable(Level.FINER)) 
 	      logger.logp(Level.FINE, className, mName, e.getClass().getName() + "; " + this.toString());
 
-	    if (!isRetryLimitReached() && isRetryable(e))
-	    {
+	    if (!isRetryLimitReached() && isRetryable(e)) {
 	      // Retry it.  Log it.  Call the RetryListener.
 	      retryType = RETRY_WRITE;
 	      _retryException = e;
@@ -309,9 +290,7 @@ public class RetryHandler {
 	    		  retryWriteListenerProxy.onRetryWriteException(w, e);
 				}
 	      }
-	    }
-	    else
-	    {
+	    } else {
 	      // No retry.  Throw it back.
 	      if(logger.isLoggable(Level.FINER)) 
 	        logger.logp(Level.FINE, className, mName, "No retry.  Rethrow ", e);
@@ -324,8 +303,7 @@ public class RetryHandler {
 	   * Check the retryable exception lists to determine whether
 	   * the given Exception is retryable.
 	   */
-	  private boolean isRetryable(Exception e)
-	  {
+	  private boolean isRetryable(Exception e) {
 	    final String mName = "isRetryable";
 
 	    String exClassName = e.getClass().getName();
@@ -338,8 +316,7 @@ public class RetryHandler {
 	    return retVal;
 	  }
 	
-	  private boolean isNoRollbackException(Exception e)
-	  {
+	  private boolean isNoRollbackException(Exception e) {
 		  final String mName = "isNoRollbackException";
 
 		  String exClassName = e.getClass().getName();
@@ -355,8 +332,7 @@ public class RetryHandler {
 	  /**
 	   * Check whether given exception is in the specified exception list 
 	   */
-	  private boolean containsException(Set<String> retryList, Exception e)
-	  {
+	  private boolean containsException(Set<String> retryList, Exception e) {
 	    final String mName = "containsException";
 	    boolean retVal = false;
 
@@ -383,8 +359,7 @@ public class RetryHandler {
 	   * Note: if retry handling isn't enabled (i.e. not configured in xJCL), then this method 
 	   *       will always return TRUE.
 	   */
-	  private boolean isRetryLimitReached()
-	  {
+	  private boolean isRetryLimitReached() {
         // Unlimited retries if it is never defined
         if (_retryLimit == Integer.MIN_VALUE) {
             return false;
@@ -394,26 +369,22 @@ public class RetryHandler {
 	  }
 
 	  
-	  private void logRetry(Exception e)
-	  {
+	  private void logRetry(Exception e) {
 	    String key = "record.retried.norollback.by.batch.container";
 	    Object[] details = { _jobId, _stepId, e.getClass().getName() + ": " + e.getMessage() };
 	    //String message = LoggerUtil.getFormattedMessage(key, details, true);
 	    //logger.info(message);	
 		}
 
-	  public Exception getException()
-	  {
+	  public Exception getException() {
 		  return _retryException;
 	  }
 	  
-	  public long getRetryCount()
-	  {
+	  public long getRetryCount() {
 	    return _retryCount;
 	  }
 
-	  public void setRetryCount(long retryCount)
-	  {
+	  public void setRetryCount(long retryCount) {
 	    final String mName = "setRetryCount";
 
 	    _retryCount = retryCount;
@@ -422,8 +393,7 @@ public class RetryHandler {
 	      logger.logp(Level.FINE, className, mName, "setRetryCount: " + _retryCount);
 	  }
 
-	  public String toString()
-	  {
+	  public String toString() {
 	    return "RetryHandler{" + super.toString() + "}count:limit=" + _retryCount + ":" + _retryLimit;
 	  }
 

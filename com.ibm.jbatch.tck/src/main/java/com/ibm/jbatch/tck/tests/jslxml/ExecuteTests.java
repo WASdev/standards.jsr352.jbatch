@@ -55,8 +55,7 @@ public class ExecuteTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 

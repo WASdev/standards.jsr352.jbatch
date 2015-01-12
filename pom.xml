@@ -111,12 +111,14 @@
 
         <version.java>1.6</version.java>
 
+        <version.com.ibm.jbatch.checkstyle>${project.version}</version.com.ibm.jbatch.checkstyle>
         <version.javax.enterprise.cdi-api>1.1-20121030</version.javax.enterprise.cdi-api>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.org.testng.testng>6.8</version.org.testng.testng>
 
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
         <version.org.apache.maven.plugins.maven-antrun-plugin>1.6</version.org.apache.maven.plugins.maven-antrun-plugin>
+        <version.org.apache.maven.plugins.maven-checkstyle-plugin>2.13</version.org.apache.maven.plugins.maven-checkstyle-plugin>
         <version.org.apache.maven.plugins.maven-compiler-plugin>2.0.2</version.org.apache.maven.plugins.maven-compiler-plugin>
         <version.org.apache.maven.plugins.maven-failsafe-plugin>2.18</version.org.apache.maven.plugins.maven-failsafe-plugin>
         <version.org.apache.maven.plugins.maven-gpg-plugin>1.4</version.org.apache.maven.plugins.maven-gpg-plugin>
@@ -138,6 +140,7 @@
         <module>com.ibm.jbatch.tck.spi</module>
         <module>com.ibm.jbatch.tck.exec</module>
         <module>com.ibm.jbatch.tck.dist</module>
+        <module>checkstyle</module>
     </modules>
 
     <dependencyManagement>
@@ -254,6 +257,34 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${version.org.apache.maven.plugins.maven-checkstyle-plugin}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.ibm.jbatch</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${version.com.ibm.jbatch.checkstyle}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <configLocation>checkstyle.xml</configLocation>
+                        <suppressionsLocation>suppressions.xml</suppressionsLocation>
+                        <consoleOutput>true</consoleOutput>
+                        <failsOnError>true</failsOnError>
+                        <useFile/>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>check-style</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>checkstyle</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${version.org.apache.maven.plugins.maven-compiler-plugin}</version>
                     <configuration>
@@ -313,6 +344,10 @@
             </plugins>
         </pluginManagement>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>

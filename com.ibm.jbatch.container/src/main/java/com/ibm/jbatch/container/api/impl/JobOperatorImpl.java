@@ -145,8 +145,7 @@ public class JobOperatorImpl implements JobOperator {
 
 				// Don't forget to update JOBSTATUS table
 				_jobStatusManagerService.updateJobBatchStatus(jobEx.getInstanceId(), BatchStatus.ABANDONED);
-			}
-			else {
+			} else {
 				logger.warning("Job Execution: " + executionId + " is still running");
 				throw new JobExecutionIsRunningException("Job Execution: " + executionId + " is still running");
 			}
@@ -215,8 +214,7 @@ public class JobOperatorImpl implements JobOperator {
 
 		if (jobInstanceCount > 0) {
 			return jobInstanceCount;
-		}
-		else { 
+		} else {
 			logger.fine("getJobInstanceCount: Job Name " + jobName + " not found");
 			throw new NoSuchJobException( "Job " + jobName + " not found");
 		}
@@ -340,8 +338,7 @@ public class JobOperatorImpl implements JobOperator {
 			// send the list of objs back to caller
 			logger.exiting(sourceClass, "getRunningExecutions", jobExecutions);
 			return jobExecutions;
-		}
-		else { 
+		} else {
 			logger.fine("getRunningExecutions: Job Name " + jobName + " not found");
 			throw new NoSuchJobException( "Job Name " + jobName + " not found");
 		}

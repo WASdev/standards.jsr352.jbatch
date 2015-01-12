@@ -148,8 +148,7 @@ public class JobLevelPropertiesTests {
 	    }
 	    
 	    /* cleanup */
-		public void  cleanup()
-		{		
+		public void  cleanup() {
 		
 		}
 

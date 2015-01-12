@@ -98,8 +98,7 @@ public class JobExecutableSequenceTests {
 	}
 
 	/* cleanup */
-	public void  cleanup()
-	{		
+	public void  cleanup() {
 
 	}
 
