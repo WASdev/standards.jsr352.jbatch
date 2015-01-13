@@ -31,47 +31,53 @@ import com.ibm.jbatch.jsl.model.Property;
 
 public class BatchProducerBean {
 
-    @Produces
-    @Dependent
-    @BatchProperty
-    public String produceProperty(InjectionPoint injectionPoint) {
-        if (ProxyFactory.getInjectionReferences() == null) {
-            return null;
-        }
+	@Produces
+	@Dependent
+	@BatchProperty
+	public String produceProperty(InjectionPoint injectionPoint) {
 
-        BatchProperty batchPropAnnotation = injectionPoint.getAnnotated().getAnnotation(BatchProperty.class);
+		//Seems like this is a CDI bug where null injection points are getting passed in. 
+		//We should be able to ignore these as a workaround.
+		if (injectionPoint != null) {
+			if (ProxyFactory.getInjectionReferences() == null) {
+				return null;
+			}
 
-        // If a name is not supplied the batch property name defaults to
-        // the field name
-        String batchPropName;
-        if (batchPropAnnotation.name().equals("")) {
-            batchPropName = injectionPoint.getMember().getName();
-        } else {
-            batchPropName = batchPropAnnotation.name();
-        }
+			BatchProperty batchPropAnnotation = injectionPoint.getAnnotated().getAnnotation(BatchProperty.class);
 
-        List<Property> propList = ProxyFactory.getInjectionReferences().getProps();
+			// If a name is not supplied the batch property name defaults to
+			// the field name
+			String batchPropName;
+			if (batchPropAnnotation.name().equals("")) {
+				batchPropName = injectionPoint.getMember().getName();
+			} else {
+				batchPropName = batchPropAnnotation.name();
+			}
 
-        return DependencyInjectionUtility.getPropertyValue(propList, batchPropName);
-    }
+			List<Property> propList = ProxyFactory.getInjectionReferences().getProps();
 
-    @Produces
-    @Dependent
-    public JobContext getJobContext() {
-        if (ProxyFactory.getInjectionReferences() != null) {
-            return ProxyFactory.getInjectionReferences().getJobContext();
-        } else {
-            return null;
-        }
-    }
+			return DependencyInjectionUtility.getPropertyValue(propList, batchPropName);
+		}
+		return null;
+	}
 
-    @Produces
-    @Dependent
-    public StepContext getStepContext() {
-        if (ProxyFactory.getInjectionReferences() != null) {
-            return ProxyFactory.getInjectionReferences().getStepContext();
-        } else {
-            return null;
-        }
-    }
+	@Produces
+	@Dependent
+	public JobContext getJobContext() {
+		if (ProxyFactory.getInjectionReferences() != null) {
+			return ProxyFactory.getInjectionReferences().getJobContext();
+		} else {
+			return null;
+		}
+	}
+
+	@Produces
+	@Dependent
+	public StepContext getStepContext() {
+		if (ProxyFactory.getInjectionReferences() != null) {
+			return ProxyFactory.getInjectionReferences().getStepContext();
+		} else {
+			return null;
+		}
+	}
 }
