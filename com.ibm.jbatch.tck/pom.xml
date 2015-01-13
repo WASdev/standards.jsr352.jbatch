@@ -91,6 +91,7 @@
                                 </target>
                             </configuration>
                         </execution>
+                        <!--
                         <execution>
                             <id>generate-batch.xml</id>
                             <goals>
@@ -114,6 +115,7 @@
                                 </target>
                             </configuration>
                         </execution>
+-->
                         <execution>
                             <id>generate-sigtest-java6</id>
                             <goals>
@@ -196,10 +198,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <!--
                     <execution>
                         <id>generate-batch.xml</id>
                         <phase>process-classes</phase>
                     </execution>
+-->
                     <execution>
                         <id>filter-build.xml</id>
                         <phase>generate-resources</phase>
