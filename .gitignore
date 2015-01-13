@@ -32,6 +32,6 @@ sigtest.properties
 test.properties
 
 # Generated Files
-#com.ibm.jbatch.tck/src/main/resources/META-INF/batch.xml
+com.ibm.jbatch.tck/src/main/resources/META-INF/batch.xml
 com.ibm.jbatch.tck/sigtest/jsr352*
 com.ibm.jbatch.tck/testng/filtered.build.xml
