@@ -38,6 +38,8 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
     // TODO - synchronize appropriately once we learn more about usage
     private boolean loaded = false;
+    private Weld weld;
+    private WeldContainer container;
 
     // Uses TCCL
     @Override
@@ -51,9 +53,9 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
         Object loadedArtifact = getArtifactById(batchId);
 
         if (loadedArtifact == null) {
-            
+
             logger.exiting(CLASSNAME, methodName, "Returning null artifact for id: " + batchId);
-            
+
             return loadedArtifact;
 
         }
@@ -67,37 +69,31 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
     private Object getArtifactById(String id) {
 
-
-        
         Object artifactInstance = null;
 
         try {
-        WeldContainer weld = new Weld().initialize();
-        BeanManager bm = weld.getBeanManager();
+            final BeanManager bm = container.getBeanManager();
 
-        Bean bean = bm.getBeans(id).iterator().next();
+            final Bean<?> bean = bm.resolve(bm.getBeans(id));
 
-        Class clazz = bean.getBeanClass();
-        
-        artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
+            final Class clazz = bean.getBeanClass();
+
+            artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
         } catch (Exception e) {
             // Don't throw an exception but simply return null;
             logger.fine("Tried but failed to load artifact with id: " + id + ", Exception = " + e);
         }
         return artifactInstance;
-        
     }
 
     @Override
     public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
-
+        weld = new Weld();
+        container = weld.initialize();
     }
 
     @Override
     public void shutdown() throws BatchContainerServiceException {
-        // TODO Auto-generated method stub
-
+        weld.shutdown();
     }
-
 }
