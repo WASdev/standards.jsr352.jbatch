@@ -3,7 +3,7 @@ standards.jsr352.jbatch
 
 *More to come*
 
-== Building
+## Building
 
 To generate the sigtest files maven requires the location of the JDK to
 be used. You can specify these by copying [default.sigtest.properties](default.sigtest.properties)
@@ -30,10 +30,10 @@ would be:
 mvn install -Psigtest7,sigtest8
 ```
 
-== Contributing
+## Contributing
 
 [CLA details](CONTRIBUTING.md)
 
-== Other IBM GitHub projects
+#### Other IBM GitHub projects
 
-Find more open source projects on the [IBM Github Page]<http://ibm.github.io/>
+Find more open source projects on the [IBM Github Page](http://ibm.github.io/)
