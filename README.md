@@ -33,3 +33,7 @@ mvn install -Psigtest7,sigtest8
 == Contributing
 
 [CLA details](CONTRIBUTING.md)
+
+== Other IBM GitHub projects
+
+Find more open source projects on the [IBM Github Page]<http://ibm.github.io/>
