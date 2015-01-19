@@ -16,6 +16,7 @@
 
     <properties>
         <version.net.java.sigtest.sigtestdev>3.0-b12-v20140219</version.net.java.sigtest.sigtestdev>
+        <fs>${file.separator}</fs>
     </properties>
 
     <dependencies>
@@ -92,6 +93,10 @@
                                 </target>
                             </configuration>
                         </execution>
+                        <!-- By failing when the newly-generated batch.xml changes, we force someone to review
+                             the changes.   We purposely don't want to make it too easy to introduce a change here, 
+                             since this will ultimately affect the pass/failing of implementations' runs against the TCK.
+                             This will add as a guard that the person who would make the update knows what they're doing. -->
                         <execution>
                             <id>generate-batch.xml</id>
                             <goals>
@@ -100,11 +105,14 @@
                             <phase>none</phase>
                             <configuration>
                                 <target>
-                                    <echo message="building ${project.basedir}/src/main/resources/META-INF/batch.xml"/>
+                                    <property name="original.batch.xml" value="${project.basedir}${fs}src${fs}main${fs}resources${fs}META-INF${fs}batch.xml"/>
+                                    <property name="generate.batch.xml.dir" value="${project.basedir}${fs}target${fs}generate-tck"/>
+                                    <mkdir dir="${generate.batch.xml.dir}"/>
+                                    <echo message="building ${generate.batch.xml.dir}/batch.xml"/>
                                     <java classname="com.ibm.jbatch.tck.utils.BatchXMLGenerator">
                                         <arg value="${project.build.outputDirectory}"/>
-                                        <arg value="com${file.separator}ibm${file.separator}jbatch${file.separator}tck${file.separator}artifacts"/>
-                                        <arg value="${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}META-INF"/>
+                                        <arg value="com${fs}ibm${fs}jbatch${fs}tck${fs}artifacts"/>
+                                        <arg value="${generate.batch.xml.dir}"/>
                                         <classpath refid="maven.compile.classpath"/>
                                         <classpath>
                                             <dirset dir="${project.build.outputDirectory}/com/ibm/jbatch/tck">
@@ -112,66 +120,62 @@
                                             </dirset>
                                         </classpath>
                                     </java>
+                                    <!-- See comment above <execution> -->
+                                    <fail message="Newly-generated ${generate.batch.xml.dir}${fs}batch.xml does not exactly match previous batch.xml at location: ${original.batch.xml}.  Review carefully and if this is correct, then overwrite the old ${original.batch.xml} file with the newly-generated copy of batch.xml">
+                                        <condition>
+                                            <not>
+                                                <filesmatch file1="${original.batch.xml}" file2="${generate.batch.xml.dir}${fs}batch.xml" textfile="true"/>
+                                            </not>
+                                        </condition>
+                                    </fail>
                                 </target>
                             </configuration>
                         </execution>
+                        <!-- Updating the signature files should not be done lightly.  This changes the specified, public API. 
+                             We purposely make this fail by default when a signature is changed, to ensure
+                             that the person who would make the update knows what they're doing. -->
                         <execution>
-                            <id>generate-sigtest-java6</id>
+                            <id>generate-sigtest</id>
                             <goals>
                                 <goal>run</goal>
                             </goals>
                             <phase>none</phase>
                             <configuration>
                                 <target>
+                                    <!-- Note this simply uses the JRE level of the JRE executing Maven and generates the correspondng .sig file.
+                                         So to generate the Java 6, 7, 8 .sig files you have to actually run Maven using Java 6, 7, 8, respectively, 
+                                         once for each.  You can't just generate them all at once.   This should be OK for now, though maybe it's fine
+                                         to generate them all at once by pointing to the appropriate rt.jar. -->
+                                    <condition property="jdk" value="6">
+                                        <contains string="${ant.java.version}" substring="1.6"/>
+                                    </condition>
+                                    <condition property="jdk" value="7">
+                                        <contains string="${ant.java.version}" substring="1.7"/>
+                                    </condition>
+                                    <condition property="jdk" value="8">
+                                        <contains string="${ant.java.version}" substring="1.8"/>
+                                    </condition>
+                                    <property name="old.sig.file" value="${project.basedir}${fs}sigtest${fs}jsr352-api-sigtest-java${jdk}.sig"/>
+                                    <property name="new.sig.file" value="${project.basedir}${fs}generate-sigtest${fs}jsr352-api-sigtest-java${jdk}.sig"/>
+                                    <mkdir dir="${project.basedir}${fs}generate-sigtest"/>
                                     <taskdef name="setup" classname="com.sun.tdk.signaturetest.ant.ASetup" classpathref="maven.plugin.classpath"/>
-                                    <setup failonerror="true" filename="${project.basedir}/sigtest/jsr352-api-sigtest-java6.sig"
+                                    <echo message="Generating Java ${jdk} SigTest files for batch"/>
+                                    <setup failonerror="true" filename="${new.sig.file}"
                                            package="javax.batch">
                                         <classpath refid="maven.compile.classpath"/>
                                         <classpath refid="maven.plugin.classpath"/>
                                         <classpath>
-                                            <pathelement location="${sigtest.java6.home}/jre/lib/rt.jar"/>
+                                            <pathelement location="${java.home}${fs}lib${fs}rt.jar"/>
                                         </classpath>
                                     </setup>
-                                </target>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>generate-sigtest-java7</id>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <phase>none</phase>
-                            <configuration>
-                                <target>
-                                    <taskdef name="setup" classname="com.sun.tdk.signaturetest.ant.ASetup" classpathref="maven.plugin.classpath"/>
-                                    <setup failonerror="true" filename="${project.basedir}/sigtest/jsr352-api-sigtest-java7.sig"
-                                           package="javax.batch">
-                                        <classpath refid="maven.compile.classpath"/>
-                                        <classpath refid="maven.plugin.classpath"/>
-                                        <classpath>
-                                            <pathelement location="${sigtest.java7.home}/jre/lib/rt.jar"/>
-                                        </classpath>
-                                    </setup>
-                                </target>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>generate-sigtest-java8</id>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <phase>none</phase>
-                            <configuration>
-                                <target>
-                                    <taskdef name="setup" classname="com.sun.tdk.signaturetest.ant.ASetup" classpathref="maven.plugin.classpath"/>
-                                    <setup failonerror="true" filename="${project.basedir}/sigtest/jsr352-api-sigtest-java8.sig"
-                                           package="javax.batch">
-                                        <classpath refid="maven.compile.classpath"/>
-                                        <classpath refid="maven.plugin.classpath"/>
-                                        <classpath>
-                                            <pathelement location="${sigtest.java8.home}/jre/lib/rt.jar"/>
-                                        </classpath>
-                                    </setup>
+                                    <!-- See comment above <execution> -->
+                                    <fail message="Fail on purpose to ensure that any changes to the public API signature are truly intended.  They should not be done just to get the Maven build to complete.  Newly-generated ${new.sig.file} does not exactly match previous sig test file at location: ${old.sig.file}.  Review carefully and if this is correct, then overwrite the old ${old.sig.file} file with the newly-generated copy of the sig test file">
+                                        <condition>
+                                            <not>
+                                                <filesmatch file1="${old.sig.file}" file2="${new.sig.file}" textfile="true"/>
+                                            </not>
+                                        </condition>
+                                    </fail>
                                 </target>
                             </configuration>
                         </execution>
@@ -191,16 +195,11 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>generate-batch.xml</id>
-                        <phase>process-classes</phase>
-                    </execution>
                     <execution>
                         <id>filter-build.xml</id>
                         <phase>generate-resources</phase>
@@ -231,24 +230,6 @@
                       <skipTests>true</skipTests>
                 </configuration>
               </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>read-project-properties</goal>
-                        </goals>
-                        <configuration>
-                            <files>
-                                <file>${project.basedir}/../sigtest.properties</file>
-                            </files>
-                            <quiet>true</quiet>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <profiles>
@@ -272,10 +253,10 @@
             </build>
         </profile>
         <profile>
-            <id>sigtest6</id>
+            <id>batchXML</id>
             <activation>
-                <property><name>sigtest6</name></property>
                 <activeByDefault>false</activeByDefault>
+                <property><name>batchXML</name></property>
             </activation>
             <build>
                 <plugins>
@@ -284,19 +265,19 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>generate-sigtest-java6</id>
-                                <phase>generate-resources</phase>
+                                <id>generate-batch.xml</id>
+                                <phase>process-classes</phase>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+        </profile>        
         <profile>
-            <id>sigtest7</id>
+            <id>sigtest</id>
             <activation>
-                <property><name>sigtest7</name></property>
                 <activeByDefault>false</activeByDefault>
+                <property><name>sigtest</name></property>
             </activation>
             <build>
                 <plugins>
@@ -305,28 +286,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>generate-sigtest-java7</id>
-                                <phase>generate-resources</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>sigtest8</id>
-            <activation>
-                <property><name>sigtest8</name></property>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>generate-sigtest-java8</id>
+                                <id>generate-sigtest</id>
                                 <phase>generate-resources</phase>
                             </execution>
                         </executions>
