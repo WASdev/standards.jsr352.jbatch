@@ -9,6 +9,7 @@
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.container</artifactId>
     <packaging>jar</packaging>
+    <version>${version.com.ibm.jbatch}</version>
     <name>com.ibm.jbatch.container</name>
     <dependencies>
         <dependency>

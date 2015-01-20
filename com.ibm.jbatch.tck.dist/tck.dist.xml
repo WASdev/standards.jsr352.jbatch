@@ -42,9 +42,9 @@
         <fileSet>
             <directory>../com.ibm.jbatch.tck/sigtest</directory>
             <outputDirectory>/artifacts</outputDirectory>
-            <excludes>
-                <exclude>.gitkeep</exclude>
-            </excludes>
+            <includes>
+                <include>*.sig</include>
+            </includes>
         </fileSet>
         <fileSet>
             <directory>../com.ibm.jbatch.tck/doc</directory>
@@ -81,6 +81,15 @@
             <source>../com.ibm.jbatch.tck/testng/filtered.build.xml</source>
             <outputDirectory>/</outputDirectory>
             <destName>build.xml</destName>
+        </file>
+        <file>
+            <source>../com.ibm.jbatch.tck/sigtest/sigtest.build.xml</source>
+            <outputDirectory>/</outputDirectory>
+            <destName>sigtest.build.xml</destName>
+        </file>
+        <file>
+            <source>../com.ibm.jbatch.tck/sigtest/jsr352-sigtest-tck.properties</source>
+            <outputDirectory>/</outputDirectory>
         </file>
         <file>
             <source>../com.ibm.jbatch.tck/testng/jsr352-tck.properties</source>

@@ -1,0 +1,39 @@
+<project name="jsr352_tck_sigtest" default="runSigTest" basedir="">
+
+    <taskdef name="sigtest"  classname="com.sun.tdk.signaturetest.ant.ATest"  classpath="${sigtest.location}"/>
+    
+    <description>
+        JSR 352 TCK SigTest
+    </description>
+    
+    <target name="init">
+         <loadproperties srcFile="jsr352-sigtest-tck.properties"/>
+    </target>
+
+    <target name="runSigTest" depends="init" description="Runs the SigTest portion of the JSR352 TCK ">
+         <condition property="javaLevel" value="6">
+             <contains string="${ant.java.version}" substring="1.6"/>
+         </condition>
+         <condition property="javaLevel" value="7">
+             <contains string="${ant.java.version}" substring="1.7"/>
+         </condition>
+         <condition property="javaLevel" value="8">
+             <contains string="${ant.java.version}" substring="1.8"/>
+         </condition>
+
+         <property name="sigFile" value="${basedir}/artifacts/jsr352-api-sigtest-java${javaLevel}.sig"/>
+         <echo message="Validating Java level = ${javaLevel} using signature file: ${sigFile}"/>  
+
+         <sigtest failonerror="true" filename="${sigFile}">
+            <package name="javax.batch"/>
+            <classpath>
+                <pathelement location="${java.home}/lib/rt.jar"/>
+                <pathelement location="${batch.api.classes}"/>
+                <pathelement location="${javax.inject.classes}"/>
+                <pathelement location="${javax.enterprise.util.classes}"/>
+            </classpath>
+        </sigtest>
+    </target>
+
+</project>
+

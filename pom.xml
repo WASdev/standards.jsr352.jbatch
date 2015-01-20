@@ -146,6 +146,7 @@
         <module>com.ibm.jbatch.tck.spi</module>
         <module>com.ibm.jbatch.tck.exec</module>
         <module>com.ibm.jbatch.tck.dist</module>
+        <module>com.ibm.jbatch.tck.dist.exec</module>
     </modules>
 
     <dependencyManagement>

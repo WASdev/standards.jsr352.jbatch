@@ -9,6 +9,7 @@
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.spi</artifactId>
     <packaging>jar</packaging>
+    <version>${version.com.ibm.jbatch}</version>
     <dependencies>
         <dependency>
             <groupId>javax.batch</groupId>

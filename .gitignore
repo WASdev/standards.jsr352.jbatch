@@ -28,7 +28,7 @@ RUNTIMEDB
 # JDK locations for sigtest generation
 sigtest.properties
 
-# TCK Properties
+# Test Properties
 test.properties
 
 # Generated Files

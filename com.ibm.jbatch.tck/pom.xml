@@ -11,7 +11,7 @@
     <artifactId>com.ibm.jbatch.tck</artifactId>
     <packaging>jar</packaging>
     <!-- TCK artifacts will be separately versioned -->
-    <version>1.0.1-SNAPSHOT</version>
+    <version>${version.com.ibm.jbatch.tck}</version>
     <name>com.ibm.jbatch.tck</name>
 
     <dependencies>

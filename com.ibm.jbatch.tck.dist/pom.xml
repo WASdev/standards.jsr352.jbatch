@@ -13,7 +13,7 @@
     <artifactId>com.ibm.jbatch.tck.dist</artifactId>
     <packaging>pom</packaging>
     <!-- TCK artifacts will be separately versioned -->
-    <version>1.0.1-SNAPSHOT</version>
+    <version>${version.com.ibm.jbatch.tck}</version>
 
     <dependencies>
         <dependency>
