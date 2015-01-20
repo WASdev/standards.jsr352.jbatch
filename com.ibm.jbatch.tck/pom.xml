@@ -14,11 +14,6 @@
     <version>1.0.1-SNAPSHOT</version>
     <name>com.ibm.jbatch.tck</name>
 
-    <properties>
-        <version.net.java.sigtest.sigtestdev>3.0-b12-v20140219</version.net.java.sigtest.sigtestdev>
-        <fs>${file.separator}</fs>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -144,8 +139,7 @@
                                 <target>
                                     <!-- Note this simply uses the JRE level of the JRE executing Maven and generates the correspondng .sig file.
                                          So to generate the Java 6, 7, 8 .sig files you have to actually run Maven using Java 6, 7, 8, respectively, 
-                                         once for each.  You can't just generate them all at once.   This should be OK for now, though maybe it's fine
-                                         to generate them all at once by pointing to the appropriate rt.jar. -->
+                                         once for each.  You can't just generate them all at once. -->
                                     <condition property="jdk" value="6">
                                         <contains string="${ant.java.version}" substring="1.6"/>
                                     </condition>
@@ -185,11 +179,6 @@
                             <groupId>javax.enterprise</groupId>
                             <artifactId>cdi-api</artifactId>
                             <version>${version.javax.enterprise.cdi-api}</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>net.java.sigtest</groupId>
-                            <artifactId>sigtestdev</artifactId>
-                            <version>${version.net.java.sigtest.sigtestdev}</version>
                         </dependency>
                     </dependencies>
                 </plugin>

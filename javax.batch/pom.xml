@@ -11,7 +11,7 @@
     <artifactId>javax.batch-api</artifactId>
     <packaging>jar</packaging>
     <!-- API artifacts will be separately versioned -->
-    <version>1.0-SNAPSHOT</version>
+    <version>${version.javax.batch-api}</version>
     <name>javax.batch-api</name>
 
     <!-- should we update to reflect maintenance release ? How so -->

@@ -15,10 +15,6 @@
     <!-- TCK artifacts will be separately versioned -->
     <version>1.0.1-SNAPSHOT</version>
 
-    <properties>
-        <version.org.apache.maven.plugins.maven-failsafe-plugin>2.17</version.org.apache.maven.plugins.maven-failsafe-plugin>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -81,29 +77,71 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>ensure-test-properties</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <copy file="${project.basedir}/../default.test.properties"
-                                      tofile="${project.basedir}/../test.properties"
-                                      overwrite="false">
-                                </copy>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.ibm.jbatch.tck</groupId>
+                                    <artifactId>com.ibm.jbatch.tck.dist</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>tck.dist</classifier>
+                                    <overWrite>true</overWrite>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/executeTCK</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copyRI</id>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>javax.batch</groupId>
+                                    <artifactId>javax.batch-api</artifactId>
+                                    <version>${version.javax.batch-api}</version>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
+                                    <destFileName>javax.batch-api.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.ibm.jbatch</groupId>
+                                    <artifactId>com.ibm.jbatch.container</artifactId>
+                                    <version>${version.com.ibm.jbatch}</version>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
+                                    <destFileName>com.ibm.jbatch.container.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.ibm.jbatch</groupId>
+                                    <artifactId>com.ibm.jbatch.spi</artifactId>
+                                    <version>${version.com.ibm.jbatch}</version>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
+                                    <destFileName>com.ibm.jbatch.spi.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.derby</groupId>
+                                    <artifactId>derby</artifactId>
+                                    <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
+                                    <destFileName>derby.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>                    
+                    <!-- This unpacks the output of com.ibm.jbatch.tck module -->
+                    <!--
                     <execution>
                         <id>unpack</id>
                         <goals>
@@ -121,12 +159,54 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+-->
+                </executions>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>read-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <files>
+                                <file>${project.basedir}/tck.execution.for.ri.properties</file>
+                            </files>
+                            <quiet>true</quiet>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>tckRuntimeTests</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>integration-test</phase>
+                        <configuration>
+                            <target>
+                                <ant dir="target${fs}executeTCK${fs}com.ibm.jbatch.tck-${project.version}" target="run"/>
+                                <!--
+                                <ant dir="executeTCK" file="build.xml" target="runSigTest"/>
+-->
+                            </target>
+                        </configuration>
+                     </execution>
+                </executions>
+            </plugin>
+            <!-- This tests the output of com.ibm.jbatch.tck module -->
+            <!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${version.org.apache.maven.plugins.maven-failsafe-plugin}</version>
                 <executions>
                     <execution>
                         <id>integration-test</id>
@@ -149,6 +229,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 

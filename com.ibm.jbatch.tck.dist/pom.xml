@@ -80,7 +80,7 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>dist.xml</descriptor>
+                                <descriptor>tck.dist.xml</descriptor>
                             </descriptors>
                             <finalName>com.ibm.jbatch.tck-${project.version}</finalName>
                             <appendAssemblyId>true</appendAssemblyId>

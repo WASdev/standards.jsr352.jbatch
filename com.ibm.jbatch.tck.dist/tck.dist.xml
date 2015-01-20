@@ -2,7 +2,7 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-    <id>dist</id>
+    <id>tck.dist</id>
     <formats>
         <format>zip</format>
         <format>tar.gz</format>
@@ -14,12 +14,12 @@
     <dependencySets>
         <dependencySet>
             <includes>
-                <include>com.ibm.jbatch:com.ibm.jbatch.tck.spi</include>
-                <include>com.ibm.jbatch:com.ibm.jbatch.tck.spi:jar:sources</include>
-                <include>com.ibm.jbatch:com.ibm.jbatch.tck.spi:jar:javadoc</include>
-                <include>com.ibm.jbatch:com.ibm.jbatch.tck</include>
-                <include>com.ibm.jbatch:com.ibm.jbatch.tck:jar:sources</include>
-                <include>com.ibm.jbatch:com.ibm.jbatch.tck:jar:javadoc</include>
+                <include>com.ibm.jbatch.tck:com.ibm.jbatch.tck.spi</include>
+                <include>com.ibm.jbatch.tck:com.ibm.jbatch.tck.spi:jar:sources</include>
+                <include>com.ibm.jbatch.tck:com.ibm.jbatch.tck.spi:jar:javadoc</include>
+                <include>com.ibm.jbatch.tck:com.ibm.jbatch.tck</include>
+                <include>com.ibm.jbatch.tck:com.ibm.jbatch.tck:jar:sources</include>
+                <include>com.ibm.jbatch.tck:com.ibm.jbatch.tck:jar:javadoc</include>
             </includes>
             <outputDirectory>artifacts</outputDirectory>
         </dependencySet>
@@ -27,7 +27,11 @@
             <includes>
                 <include>javax.inject:javax.inject</include>
                 <include>junit:junit</include>
-                <include>org.testng:testng</include>
+                <!-- While it would be nice to get this from Maven, this doesn't seem
+                     to contain all the classes necessary to execute from Ant, so we have 
+                     that included as a separate binary.
+                  <include>org.testng:testng</include>
+                 -->
                 <include>xmlunit:xmlunit</include>
             </includes>
             <outputDirectory>lib</outputDirectory>
@@ -50,9 +54,12 @@
 
     <files>
         <file>
-            <source>../README.md</source>
+            <source>otherFiles/readme.txt</source>
             <outputDirectory>/</outputDirectory>
-            <destName>README.txt</destName>
+        </file>
+        <file>
+            <source>otherFiles/testng-6.8.jar</source>
+            <outputDirectory>/lib</outputDirectory>
         </file>
         <file>
             <source>../LICENSE.txt</source>
