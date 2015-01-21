@@ -1,6 +1,6 @@
 <project name="jsr352_tck_sigtest" default="runSigTest" basedir="">
 
-    <taskdef name="sigtest"  classname="com.sun.tdk.signaturetest.ant.ATest"  classpath="${sigtest.location}"/>
+    <taskdef name="sigtest"  classname="com.sun.tdk.signaturetest.ant.ATest"  classpath="${sigtestdev.classes}"/>
     
     <description>
         JSR 352 TCK SigTest
