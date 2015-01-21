@@ -5,25 +5,36 @@ standards.jsr352.jbatch
 
 ## TCK modules explained
 
-The big idea to understand here is that we're still viewing the TCK ZIP built in
-the **com.ibm.jbatch.tck.dist** module as the official TCK, executed via Ant.
+There are five TCK-related modules of interest:
+
+### com.ibm.jbatch.tck
+
+Collects (in a Maven JAR package) the test and artifact classes, as well as JSL(s), batch.xml, SigTest signature files, etc.  
+
+Also has special profiles to update generated batch.xml file and generated SigTest files (which arguably could be factored
+to fit in better than it does today).
+
+### com.ibm.jbatch.tck.spi
+
+The porting SPI, (if you wanted to use something besides the default polling to wait for a job to end)
+
+### com.ibm.jbatch.tck.dist
+
+Collects (into the "official" zip/archive) the TCK artifacts and dependencies along with the Ant buildfiles driving the TestNG and SigTest portions of the TCK.
+This is basically the same form factor as the existing SE TCK zip (expanded to include the SigTest Ant buildfile too).
+
+### com.ibm.jbatch.tck.exec
+
+"Unofficial" execution of the TestNG (only, not SigTest) portion of the TCK against the RI (configured for SE mode).
+In addition to providing testing of the various RI and TCK modules, this also serves as a sample for how other modules might consume the TCK
+to test their own implementations against the TestNG portion of the TCK
 
 ### com.ibm.jbatch.tck.dist.exec
 
-* run TestNG & SigTest against the RI using the "official" distribution (only runs SigTest
-against the current JVM level
+"Official" execution of the TestNG portion of the TCK (TestNG + SigTest) against the RI (configured for SE mode).
+Again, in addition to providing testing of the RI and the TCK distribution, this also serves as a sample for how other modules might consume the
+official TCK zip distribution and use the Ant scripts to test their own implementations against the TestNG portion of the TCK.
 
-### com.ibm.jbatch.tck
-* compile test case and batch artifact classes into single JAR
-* special profile to update generated batch.xml file
-* special profile to update generated SigTest files (possibly better fit for tck.dist)
-* massages build.xml a bit (possibly better fit for tck.dist)
-
-### com.ibm.jbatch.tck.dist
-* collects TCK jar and other dependencies into "official" TCK zip
-
-### com.ibm.jbatch.tck.exec
-* runs TestNG tests in Maven build using the failsafe plugin.
 
 ## TCK properties files explained
 
