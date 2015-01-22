@@ -6,14 +6,14 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>${version.com.ibm.jbatch.parent}</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.ibm.jbatch.tck</groupId>
     <artifactId>com.ibm.jbatch.tck.dist.exec</artifactId>
     <packaging>pom</packaging>
     <!-- TCK artifacts will be separately versioned -->
-    <version>${version.com.ibm.jbatch.tck}</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <build>
         <plugins>
