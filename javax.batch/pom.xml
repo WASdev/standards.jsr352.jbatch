@@ -4,14 +4,14 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1-b07</version>
     </parent>
 
     <groupId>javax.batch</groupId>
     <artifactId>javax.batch-api</artifactId>
     <packaging>jar</packaging>
     <!-- API artifacts will be separately versioned -->
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1-noRelease</version>
     <name>javax.batch-api</name>
 
     <!-- should we update to reflect maintenance release ? How so -->

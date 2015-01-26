@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>jbatch-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1-b07</version>
     <packaging>pom</packaging>
     <name>jbatch-parent</name>
     <description>
@@ -114,8 +114,8 @@
 
         <!-- Particular to the project internal dependencies -->
         <version.javax.batch-api>1.0</version.javax.batch-api>
-        <version.com.ibm.jbatch>1.0.1-SNAPSHOT</version.com.ibm.jbatch>
-        <version.com.ibm.jbatch.tck>1.0.1-SNAPSHOT</version.com.ibm.jbatch.tck>
+        <version.com.ibm.jbatch>1.0.1-b07</version.com.ibm.jbatch>
+        <version.com.ibm.jbatch.tck>1.0.1-noRelease</version.com.ibm.jbatch.tck>
 
         <!-- Dependencies -->
         <version.javax.enterprise.cdi-api>1.1-20121030</version.javax.enterprise.cdi-api>

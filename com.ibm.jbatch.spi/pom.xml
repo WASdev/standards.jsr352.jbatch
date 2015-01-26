@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1-b07</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.spi</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1-b07</version>
     <dependencies>
         <dependency>
             <groupId>javax.batch</groupId>
