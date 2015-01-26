@@ -972,7 +972,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select A.* from stepexecutioninstancedata as A inner join executioninstancedata as B on A.jobexecid = B.jobexecid where B.jobinstanceid = ? order by A.stepexecid desc"); 
+			statement = conn.prepareStatement("select A.* from stepexecutioninstancedata A inner join executioninstancedata B on A.jobexecid = B.jobexecid where B.jobinstanceid = ? order by A.stepexecid desc"); 
 			statement.setLong(1, instanceId);
 			rs = statement.executeQuery();
 			while (rs.next()) {
@@ -1343,7 +1343,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select A.jobexecid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.jobinstanceid, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B on A.jobinstanceid = B.jobinstanceid where jobexecid = ?"); 
+			statement = conn.prepareStatement("select A.jobexecid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.jobinstanceid, A.batchstatus, A.exitstatus, B.name from executioninstancedata A inner join jobinstancedata B on A.jobinstanceid = B.jobinstanceid where jobexecid = ?"); 
 			statement.setLong(1, jobExecutionId);
 			rs = statement.executeQuery();
 
@@ -1377,7 +1377,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select A.jobexecid, A.jobinstanceid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.batchstatus, A.exitstatus, B.name from executioninstancedata as A inner join jobinstancedata as B ON A.jobinstanceid = B.jobinstanceid where A.jobinstanceid = ?"); 
+			statement = conn.prepareStatement("select A.jobexecid, A.jobinstanceid, A.createtime, A.starttime, A.endtime, A.updatetime, A.parameters, A.batchstatus, A.exitstatus, B.name from executioninstancedata A inner join jobinstancedata B ON A.jobinstanceid = B.jobinstanceid where A.jobinstanceid = ?"); 
 			statement.setLong(1, jobInstanceId);
 			rs = statement.executeQuery();
 			while (rs.next()) {
@@ -1529,8 +1529,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		try {
 			conn = getConnection();
-			statement = conn.prepareStatement("select A.obj from jobstatus as A inner join " + 
-					"executioninstancedata as B on A.id = B.jobinstanceid where B.jobexecid = ?");
+			statement = conn.prepareStatement("select A.obj from jobstatus A inner join " + 
+					"executioninstancedata B on A.id = B.jobinstanceid where B.jobexecid = ?");
 			statement.setLong(1, executionId);
 			rs = statement.executeQuery();
 			byte[] buf = null;
