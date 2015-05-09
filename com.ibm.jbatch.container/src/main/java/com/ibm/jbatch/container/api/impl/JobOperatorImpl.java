@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -136,7 +138,10 @@ public class JobOperatorImpl implements JobOperator {
 			IJobExecution jobEx = persistenceService.jobOperatorGetJobExecution(executionId);
 
 			// if it is not in STARTED or STARTING state, mark it as ABANDONED
-			if (!(jobEx.getBatchStatus().equals(BatchStatus.STARTED) || jobEx.getBatchStatus().equals(BatchStatus.STARTING))){
+			List<BatchStatus> runningStatusesList = Arrays.asList(new BatchStatus[] {BatchStatus.STARTED, BatchStatus.STARTING});
+			Set<BatchStatus> runningStatusesSet = Collections.unmodifiableSet(new HashSet<BatchStatus>(runningStatusesList));
+
+			if (!runningStatusesSet.contains(jobEx.getBatchStatus())) {
 				// update table to reflect ABANDONED state
 				long time = System.currentTimeMillis();
 				Timestamp timestamp = new Timestamp(time);
