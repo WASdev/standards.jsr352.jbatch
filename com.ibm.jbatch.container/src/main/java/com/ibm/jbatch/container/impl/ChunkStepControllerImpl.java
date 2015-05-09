@@ -145,7 +145,8 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 		private boolean filtered = false;
 	}
 
-	private static enum ChunkStatusType { NORMAL, RETRY_AFTER_ROLLBACK};
+	private enum ChunkStatusType { NORMAL, RETRY_AFTER_ROLLBACK };
+	private enum ChunkEndingState { READ_NULL, STOP };
 
 	/**
 	 * Utility Class to hold status for the chunk as a whole.  
@@ -169,12 +170,19 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 			this.type = type;
 		}
 
-		public boolean isFinished() {
-			return finished;
+		public boolean isStopping() {
+			return this.stopping;
 		}
 
-		public void setFinished(boolean finished) {
-			this.finished = finished;
+		public void markStopping() {
+			this.stopping = true;
+		}
+
+		public boolean hasReadNull() {
+			return readNull;
+		}
+		public void markReadNull() {
+			this.readNull = true;
 		}
 
 		public boolean isRetryingAfterRollback() {
@@ -198,6 +206,10 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 			return itemsTouchedInCurrentChunk;
 		}
 
+		public void decrementItemsTouchedInCurrentChunk() {
+			this.itemsTouchedInCurrentChunk--;
+		}
+
 		public void incrementItemsTouchedInCurrentChunk() {
 			this.itemsTouchedInCurrentChunk++;
 		}
@@ -211,7 +223,10 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 			this.itemsToProcessOneByOneAfterRollback = itemsToProcessOneByOneAfterRollback;
 		}
 
-		private boolean finished = false;
+		private boolean readNull = false;
+
+		private boolean stopping = false;
+
 		private Exception retryableException = null;
 
 		private boolean markedForRollbackWithRetry = false;
@@ -236,14 +251,14 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 		while (true) {
 			currentItemStatus = new SingleItemStatus();
-			currentChunkStatus.incrementItemsTouchedInCurrentChunk();
+
 			itemRead = readItem();
 
 			if (currentChunkStatus.wasMarkedForRollbackWithRetry()) {
 				break;
 			}
 
-			if (!currentItemStatus.isSkipped() && !currentChunkStatus.isFinished()) {
+			if (!currentItemStatus.isSkipped() && !currentChunkStatus.hasReadNull()) {
 				itemProcessed = processItem(itemRead);
 
 				if (currentChunkStatus.wasMarkedForRollbackWithRetry()) {
@@ -264,7 +279,8 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 			// This will force the current item to finish processing on a stop request
 			if (stepContext.getBatchStatus().equals(BatchStatus.STOPPING)) {
-				currentChunkStatus.setFinished(true);
+				currentChunkStatus.markStopping();
+				break;
 			}
 
 			// The spec, in Sec. 11.10, Chunk with Custom Checkpoint Processing, clearly
@@ -275,11 +291,11 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 			}
 
 			// last record in readerProxy reached
-			if (currentChunkStatus.isFinished()) {
+			if (currentChunkStatus.hasReadNull()) {
 				break;
 			}
-
 		}
+
 		logger.exiting(sourceClass, "readAndProcess", chunkToWrite);
 		return chunkToWrite;
 	}
@@ -293,7 +309,10 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 		logger.entering(sourceClass, "readItem");
 		Object itemRead = null;
 
-		try {
+		try {			
+
+			currentChunkStatus.incrementItemsTouchedInCurrentChunk();
+
 			// call read listeners before and after the actual read
 			for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
 				readListenerProxy.beforeRead();
@@ -307,7 +326,10 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 			// itemRead == null means we reached the end of
 			// the readerProxy "resultset"
-			currentChunkStatus.setFinished(itemRead == null);
+			if (itemRead == null) { 
+				currentChunkStatus.markReadNull();
+				currentChunkStatus.decrementItemsTouchedInCurrentChunk();
+			}
 		} catch (Exception e) {
 			stepContext.setException(e);
 			for (ItemReadListenerProxy readListenerProxy : itemReadListeners) {
@@ -631,8 +653,8 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 
 				updateNormalMetrics(chunkToWrite.size());
 
-				// exit loop when last record is written
-				if (currentChunkStatus.isFinished()) {
+				// exit loop when last record is written or if we're stopping
+				if (currentChunkStatus.hasReadNull() || currentChunkStatus.isStopping()) {
 					transactionManager.begin();
 
 					writerProxy.close();
@@ -671,9 +693,7 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 	private void updateNormalMetrics(int writeCount) {
 
 		int readCount = currentChunkStatus.getItemsTouchedInCurrentChunk();
-		if (currentChunkStatus.isFinished()) { 
-			readCount--;
-		}
+
 		int filterCount = readCount - writeCount;
 
 		if (readCount < 0 || filterCount < 0 || writeCount < 0) {
