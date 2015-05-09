@@ -16,14 +16,19 @@
 */
 package com.ibm.jbatch.spi;
 
+import javax.sql.DataSource;
+
 public class DatabaseConfigurationBean {
 	
 	protected String jndiName = "";
+
 	protected String jdbcDriver = "";
 	protected String dbUser = "";
 	protected String dbPassword = "";
 	protected String jdbcUrl = "";
 	protected String schema = "";
+
+	protected DataSource dataSource = null;
 	
 	public String getSchema() {
 		return this.schema;
@@ -70,6 +75,20 @@ public class DatabaseConfigurationBean {
 
 	public void setDbPassword(String dbPassword) {
 		this.dbPassword = dbPassword;
+	}
+
+	/**
+	 * @return the dataSource
+	 */
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+
+	/**
+	 * @param dataSource the dataSource to set
+	 */
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 	
 }

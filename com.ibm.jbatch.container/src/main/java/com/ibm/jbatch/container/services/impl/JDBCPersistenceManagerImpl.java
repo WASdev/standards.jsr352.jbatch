@@ -93,6 +93,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 */
 	@Override
 	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+
 		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
 
 		this.batchConfig = batchConfig;
@@ -100,22 +101,32 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		if (!batchConfig.isJ2seMode()) {
-			jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
 
-			logger.config("JNDI name = " + jndiName);
+			dataSource = batchConfig.getDatabaseConfigurationBean().getDataSource();
 
-			if (jndiName == null || jndiName.equals("")) {
-				throw new BatchContainerServiceException("JNDI name is not defined.");
-			}
+			if (dataSource != null) {
 
-			try {
-				Context ctx = new InitialContext();
-				dataSource = (DataSource) ctx.lookup(jndiName);
+				logger.config("DataSource obtained from DB config bean = " + dataSource);
 
-			} catch (NamingException e) {
-				logger.severe("Lookup failed for JNDI name: " + jndiName + 
-						".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
-				throw new BatchContainerServiceException(e);
+			} else {
+
+				jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+
+				logger.config("JNDI name = " + jndiName);
+
+				if (jndiName == null || jndiName.equals("")) {
+					throw new BatchContainerServiceException("JNDI name is not defined, which was the last way to initialize a DataSource.");
+				}
+
+				try {
+					Context ctx = new InitialContext();
+					dataSource = (DataSource) ctx.lookup(jndiName);
+
+				} catch (NamingException e) {
+					logger.severe("Lookup failed for JNDI name: " + jndiName + 
+							".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
+					throw new BatchContainerServiceException(e);
+				}
 			}
 
 		} else {
@@ -621,7 +632,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 	@Override
 	public int jobOperatorGetJobInstanceCount(String jobName, String appTag) {
-		
+
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
@@ -644,7 +655,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		return count;
 	}
-	
+
 	@Override
 	public int jobOperatorGetJobInstanceCount(String jobName) {
 
@@ -705,7 +716,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		}
 		else return data;
 	}
-	
+
 	@Override
 	public List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count) {
 
@@ -910,7 +921,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			statement = conn.prepareStatement("select parameters from executioninstancedata where jobexecid = ?"); 
 			statement.setLong(1, executionId);
 			rs = statement.executeQuery();
-			
+
 			if (rs.next()) {
 				// get the object based data
 				byte[] buf = rs.getBytes("parameters");
@@ -1108,9 +1119,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				stepEx.setStartTime(startTS);
 				stepEx.setEndTime(endTS);	
 				stepEx.setPersistentUserData(persistentData);
-				
+
 				logger.fine("BatchStatus: " + batchstatus + " | StepName: " + stepname + " | JobExecID: " + jobexecid + " | StepExecID: " + stepexecid);
-				
+
 				data.add(stepEx);
 			}
 		} catch (SQLException e) {
@@ -1126,92 +1137,92 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		return data;
 	}
 
-	
-    @Override
-    public StepExecution getStepExecutionByStepExecutionId(long stepExecId) {
-        Connection conn = null;
-        PreparedStatement statement = null;
-        ResultSet rs = null;
 
-        long jobexecid = 0;
-        long stepexecid = 0;
-        String stepname = null;
-        String batchstatus = null;
-        String exitstatus = null;
-        Exception ex = null;
-        long readCount = 0;
-        long writeCount = 0;
-        long commitCount = 0;
-        long rollbackCount = 0;
-        long readSkipCount = 0;
-        long processSkipCount = 0;
-        long filterCount = 0;
-        long writeSkipCount = 0;
-        Timestamp startTS = null;
-        Timestamp endTS = null;
-        StepExecutionImpl stepEx = null;
-        ObjectInputStream objectIn = null;
+	@Override
+	public StepExecution getStepExecutionByStepExecutionId(long stepExecId) {
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
 
-        try {
-            conn = getConnection();
-            statement = conn.prepareStatement("select * from stepexecutioninstancedata where stepexecid = ?");
-            statement.setLong(1, stepExecId);
-            rs = statement.executeQuery();
-            while (rs.next()) {
-                jobexecid = rs.getLong("jobexecid");
-                stepexecid = rs.getLong("stepexecid");
-                stepname = rs.getString("stepname");
-                batchstatus = rs.getString("batchstatus");
-                exitstatus = rs.getString("exitstatus");
-                readCount = rs.getLong("readcount");
-                writeCount = rs.getLong("writecount");
-                commitCount = rs.getLong("commitcount");
-                rollbackCount = rs.getLong("rollbackcount");
-                readSkipCount = rs.getLong("readskipcount");
-                processSkipCount = rs.getLong("processskipcount");
-                filterCount = rs.getLong("filtercount");
-                writeSkipCount = rs.getLong("writeSkipCount");
-                startTS = rs.getTimestamp("startTime");
-                endTS = rs.getTimestamp("endTime");
-                // get the object based data
-                Serializable persistentData = null;
-                byte[] pDataBytes = rs.getBytes("persistentData");
-                if (pDataBytes != null) {
-                    objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
-                    persistentData = (Serializable) objectIn.readObject();
-                }
+		long jobexecid = 0;
+		long stepexecid = 0;
+		String stepname = null;
+		String batchstatus = null;
+		String exitstatus = null;
+		Exception ex = null;
+		long readCount = 0;
+		long writeCount = 0;
+		long commitCount = 0;
+		long rollbackCount = 0;
+		long readSkipCount = 0;
+		long processSkipCount = 0;
+		long filterCount = 0;
+		long writeSkipCount = 0;
+		Timestamp startTS = null;
+		Timestamp endTS = null;
+		StepExecutionImpl stepEx = null;
+		ObjectInputStream objectIn = null;
 
-                stepEx = new StepExecutionImpl(jobexecid, stepexecid);
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement("select * from stepexecutioninstancedata where stepexecid = ?");
+			statement.setLong(1, stepExecId);
+			rs = statement.executeQuery();
+			while (rs.next()) {
+				jobexecid = rs.getLong("jobexecid");
+				stepexecid = rs.getLong("stepexecid");
+				stepname = rs.getString("stepname");
+				batchstatus = rs.getString("batchstatus");
+				exitstatus = rs.getString("exitstatus");
+				readCount = rs.getLong("readcount");
+				writeCount = rs.getLong("writecount");
+				commitCount = rs.getLong("commitcount");
+				rollbackCount = rs.getLong("rollbackcount");
+				readSkipCount = rs.getLong("readskipcount");
+				processSkipCount = rs.getLong("processskipcount");
+				filterCount = rs.getLong("filtercount");
+				writeSkipCount = rs.getLong("writeSkipCount");
+				startTS = rs.getTimestamp("startTime");
+				endTS = rs.getTimestamp("endTime");
+				// get the object based data
+				Serializable persistentData = null;
+				byte[] pDataBytes = rs.getBytes("persistentData");
+				if (pDataBytes != null) {
+					objectIn = new TCCLObjectInputStream(new ByteArrayInputStream(pDataBytes));
+					persistentData = (Serializable) objectIn.readObject();
+				}
 
-                stepEx.setBatchStatus(BatchStatus.valueOf(batchstatus));
-                stepEx.setExitStatus(exitstatus);
-                stepEx.setStepName(stepname);
-                stepEx.setReadCount(readCount);
-                stepEx.setWriteCount(writeCount);
-                stepEx.setCommitCount(commitCount);
-                stepEx.setRollbackCount(rollbackCount);
-                stepEx.setReadSkipCount(readSkipCount);
-                stepEx.setProcessSkipCount(processSkipCount);
-                stepEx.setFilterCount(filterCount);
-                stepEx.setWriteSkipCount(writeSkipCount);
-                stepEx.setStartTime(startTS);
-                stepEx.setEndTime(endTS);
-                stepEx.setPersistentUserData(persistentData);
+				stepEx = new StepExecutionImpl(jobexecid, stepexecid);
 
-                logger.fine("stepExecution BatchStatus: " + batchstatus + " StepName: " + stepname);
-            }
-        } catch (SQLException e) {
-            throw new PersistenceException(e);
-        } catch (IOException e) {
-            throw new PersistenceException(e);
-        } catch (ClassNotFoundException e) {
-            throw new PersistenceException(e);
-        } finally {
-            cleanupConnection(conn, rs, statement);
-        }
+				stepEx.setBatchStatus(BatchStatus.valueOf(batchstatus));
+				stepEx.setExitStatus(exitstatus);
+				stepEx.setStepName(stepname);
+				stepEx.setReadCount(readCount);
+				stepEx.setWriteCount(writeCount);
+				stepEx.setCommitCount(commitCount);
+				stepEx.setRollbackCount(rollbackCount);
+				stepEx.setReadSkipCount(readSkipCount);
+				stepEx.setProcessSkipCount(processSkipCount);
+				stepEx.setFilterCount(filterCount);
+				stepEx.setWriteSkipCount(writeSkipCount);
+				stepEx.setStartTime(startTS);
+				stepEx.setEndTime(endTS);
+				stepEx.setPersistentUserData(persistentData);
 
-        return stepEx;
-    }
+				logger.fine("stepExecution BatchStatus: " + batchstatus + " StepName: " + stepname);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} catch (IOException e) {
+			throw new PersistenceException(e);
+		} catch (ClassNotFoundException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+
+		return stepEx;
+	}
 
 	@Override
 	public void updateBatchStatusOnly(long key, BatchStatus batchStatus, Timestamp updatets) {
@@ -1406,22 +1417,22 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		if (rs == null) {
 			return null;
 		}
-			
-	    JobOperatorJobExecution retMe = 
-	    		new JobOperatorJobExecution(rs.getLong("jobexecid"), rs.getLong("jobinstanceid"));
 
-	    retMe.setCreateTime(rs.getTimestamp("createtime"));
-	    retMe.setStartTime(rs.getTimestamp("starttime"));
-	    retMe.setEndTime(rs.getTimestamp("endtime"));
-	    retMe.setLastUpdateTime(rs.getTimestamp("updatetime"));
+		JobOperatorJobExecution retMe = 
+				new JobOperatorJobExecution(rs.getLong("jobexecid"), rs.getLong("jobinstanceid"));
 
-	    retMe.setJobParameters((Properties)deserializeObject(rs.getBytes("parameters")));
+		retMe.setCreateTime(rs.getTimestamp("createtime"));
+		retMe.setStartTime(rs.getTimestamp("starttime"));
+		retMe.setEndTime(rs.getTimestamp("endtime"));
+		retMe.setLastUpdateTime(rs.getTimestamp("updatetime"));
 
-	    retMe.setBatchStatus(rs.getString("batchstatus"));
-	    retMe.setExitStatus(rs.getString("exitstatus"));
-	    retMe.setJobName(rs.getString("name"));
-	    
-	    return retMe;
+		retMe.setJobParameters((Properties)deserializeObject(rs.getBytes("parameters")));
+
+		retMe.setBatchStatus(rs.getString("batchstatus"));
+		retMe.setExitStatus(rs.getString("exitstatus"));
+		retMe.setJobName(rs.getString("name"));
+
+		return retMe;
 	}
 
 	@Override
@@ -1835,16 +1846,16 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		return stepExecution;
 	}
 
-	
-		
+
+
 	/* (non-Javadoc)
 	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#updateStepExecution(com.ibm.jbatch.container.context.impl.StepContextImpl)
 	 */
 	@Override
 	public void updateStepExecution(StepContextImpl stepContext) {
-		
+
 		Metric[] metrics = stepContext.getMetrics();
-		
+
 		long readCount = 0;
 		long writeCount = 0;
 		long commitCount = 0;
@@ -1853,7 +1864,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		long processSkipCount = 0;
 		long filterCount = 0;
 		long writeSkipCount = 0;
-		
+
 		for (int i = 0; i < metrics.length; i++) {
 			if (metrics[i].getType().equals(MetricImpl.MetricType.READ_COUNT)) {
 				readCount = metrics[i].getValue();
@@ -1873,12 +1884,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 				writeSkipCount = metrics[i].getValue();	
 			}
 		}
-		
+
 		updateStepExecutionWithMetrics(stepContext,  readCount, 
 				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount,
 				writeSkipCount);
 	}
-	
+
 	/**
 	 * Obviously would be nice if the code writing this special format were in the same place as this
 	 * code reading it.
@@ -1897,15 +1908,15 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * @param stepName Step name of the top-level stepName
 	 */
 	private String getPartitionLevelJobInstanceWildCard(long rootJobExecutionId, String stepName) {
-		
+
 		long jobInstanceId = getJobInstanceIdByExecutionId(rootJobExecutionId);
-		
+
 		StringBuilder sb = new StringBuilder(":");
 		sb.append(Long.toString(jobInstanceId));
 		sb.append(":");
 		sb.append(stepName);
 		sb.append(":%");
-		
+
 		return sb.toString();
 	}
 
@@ -1915,7 +1926,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
-		
+
 		long readCount =0;
 		long writeCount = 0;
 		long commitCount = 0;
@@ -1924,7 +1935,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		long processSkipCount = 0;
 		long filterCount = 0;
 		long writeSkipCount = 0;
-		
+
 		try {
 			conn = getConnection();
 			statement = conn.prepareStatement("select SUM(STEPEX.readcount) readcount, SUM(STEPEX.writecount) writecount, SUM(STEPEX.commitcount) commitcount,  SUM(STEPEX.rollbackcount) rollbackcount," +
@@ -1976,8 +1987,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 		if (logger.isLoggable(Level.FINER)) {
 			logger.log(Level.FINER, "About to update StepExecution with: ", new Object[] {stepExecutionId, batchStatus, exitStatus==null ? "<null>" : exitStatus, stepName, readCount, 
-				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime==null ? "<null>" : startTime,
-						endTime==null ? "<null>" : endTime, persistentData==null ? "<null>" : persistentData});
+					writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount, writeSkipCount, startTime==null ? "<null>" : startTime,
+							endTime==null ? "<null>" : endTime, persistentData==null ? "<null>" : persistentData});
 		}
 
 		Connection conn = null;
