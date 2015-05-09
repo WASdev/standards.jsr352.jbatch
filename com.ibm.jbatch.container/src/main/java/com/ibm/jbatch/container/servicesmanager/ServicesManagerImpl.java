@@ -409,30 +409,23 @@ public class ServicesManagerImpl implements BatchContainerConstants, ServicesMan
 			return service;
 		}
 		/**
-		 * Try to load the IGridContainerService given by the className. If it fails
-		 * to load, default to the defaultClass. If the default fails to load, then
-		 * blow out of here with a RuntimeException.
+		 * Try to load the service impl given by the className.
 		 */
 		private IBatchServiceBase _loadServiceHelper(Name serviceType) {
 			IBatchServiceBase service = null;
-			Throwable e = null;
 
 			String className = serviceImplClassNames.get(serviceType);
 			try {
-				if (className != null)
+				if (className != null) {
 					service = _loadService(className);
-			} catch (PersistenceException pe) {
-				// Don't rewrap to make it a bit clearer
-				logger.log(Level.SEVERE, "Caught persistence exception which probably means there is an issue initalizing and/or connecting to the RI database");
-				throw pe;
-			} catch (Throwable e1) {
-				e = e1;
-				logger.log(Level.SEVERE, "Could not instantiate service: " + className + " due to exception:" + e);
-				throw new RuntimeException("Could not instantiate service " + className + " due to exception: " + e);
+				}
+			} catch (Throwable t) {
+				logger.log(Level.SEVERE, "Could not instantiate service: " + className + " due to exception:" + t);
+				throw new RuntimeException("Could not instantiate service " + className, t);
 			}
 
 			if (service == null) {
-				throw new RuntimeException("Instantiate of service=: " + className + " returned null. Aborting...");
+				throw new RuntimeException("Instantiate of service=: " + className + " for serviceType: " + serviceType + " returned null. Aborting...");
 			}
 
 			return service;
