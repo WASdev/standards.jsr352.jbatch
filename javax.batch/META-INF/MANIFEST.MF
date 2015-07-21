@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: javax.batch-api
 Bundle-SymbolicName: javax.batch-api
-Bundle-Version: 1.0
+Bundle-Version: 1.0.1
 Specification-Version: 1.0
 Implementation-Version: 1.0
 Extension-Name: javax.batch

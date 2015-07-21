@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.ibm.jbatch.container
-Bundle-SymbolicName: com.ibm.jbatch.container 
-Bundle-Version: 1.0
+Bundle-SymbolicName: com.ibm.jbatch.container
+Bundle-Version: 1.0.1
 Export-Package: com.ibm.jbatch.jsl.model,
  com.ibm.jbatch.spi.services
 Import-Package: com.ibm.jbatch.spi,

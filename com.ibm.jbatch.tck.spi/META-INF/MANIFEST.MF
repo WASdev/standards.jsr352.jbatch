@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.ibm.jbatch.tck.spi
 Bundle-SymbolicName: com.ibm.jbatch.tck.spi
-Bundle-Version: 1.0
+Bundle-Version: 1.0.1
 Import-Package: javax.batch.operations,
  javax.batch.runtime
 Export-Package: com.ibm.jbatch.tck.spi
