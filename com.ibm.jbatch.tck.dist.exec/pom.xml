@@ -6,14 +6,14 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
 
     <groupId>com.ibm.jbatch.tck</groupId>
     <artifactId>com.ibm.jbatch.tck.dist.exec</artifactId>
     <packaging>pom</packaging>
     <!-- TCK artifacts will be separately versioned -->
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1-noRelease</version>
     <name>JSR 352 TCK Execution (using RI against TCK Distribution ZIP)</name>
 
     <build>
