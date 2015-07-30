@@ -10,7 +10,7 @@
     <artifactId>com.ibm.jbatch.container</artifactId>
     <packaging>jar</packaging>
     <version>1.0.1-SNAPSHOT</version>
-    <name>com.ibm.jbatch.container</name>
+    <name>JSR 352 Reference Implementation Container</name>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

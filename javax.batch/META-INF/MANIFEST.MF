@@ -8,6 +8,7 @@ Implementation-Version: 1.0.1
 Specification-Title: JSR-352 Batch Applications for the Java Platform
 Specification-Vendor: IBM
 Specification-Version: 1.0
+Extension-Name: javax.batch
 Import-Package: javax.enterprise.util;resolution:=optional,
  javax.inject;resolution:=optional
 Export-Package: javax.batch.api,

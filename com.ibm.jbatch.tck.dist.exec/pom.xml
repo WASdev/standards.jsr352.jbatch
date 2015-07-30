@@ -14,6 +14,7 @@
     <packaging>pom</packaging>
     <!-- TCK artifacts will be separately versioned -->
     <version>1.0.1-SNAPSHOT</version>
+    <name>JSR 352 TCK Execution (using RI against TCK Distribution ZIP)</name>
 
     <build>
         <plugins>
@@ -32,7 +33,7 @@
                                 <artifactItem>
                                     <groupId>com.ibm.jbatch.tck</groupId>
                                     <artifactId>com.ibm.jbatch.tck.dist</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${batch.tck.version}</version>
                                     <classifier>tck.dist</classifier>
                                     <overWrite>true</overWrite>
                                     <type>zip</type>
@@ -52,7 +53,7 @@
                                 <artifactItem>
                                     <groupId>javax.batch</groupId>
                                     <artifactId>javax.batch-api</artifactId>
-                                    <version>${version.javax.batch-api}</version>
+                                    <version>${batch.api.version}</version>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
                                     <destFileName>javax.batch-api.jar</destFileName>
@@ -60,7 +61,7 @@
                                 <artifactItem>
                                     <groupId>com.ibm.jbatch</groupId>
                                     <artifactId>com.ibm.jbatch.container</artifactId>
-                                    <version>${version.com.ibm.jbatch}</version>
+                                    <version>${batch.impl.version}</version>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
                                     <destFileName>com.ibm.jbatch.container.jar</destFileName>
@@ -68,7 +69,7 @@
                                 <artifactItem>
                                     <groupId>com.ibm.jbatch</groupId>
                                     <artifactId>com.ibm.jbatch.spi</artifactId>
-                                    <version>${version.com.ibm.jbatch}</version>
+                                    <version>${batch.impl.version}</version>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
                                     <destFileName>com.ibm.jbatch.spi.jar</destFileName>
