@@ -1,8 +1,13 @@
 Manifest-Version: 1.0
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.html
 Bundle-ManifestVersion: 2
 Bundle-Name: com.ibm.jbatch.container
 Bundle-SymbolicName: com.ibm.jbatch.container
 Bundle-Version: 1.0.1
+Implementation-Version: 1.0.1
+Specification-Title: JSR-352 Batch Applications for the Java Platform
+Specification-Vendor: IBM
+Specification-Version: 1.0
 Export-Package: com.ibm.jbatch.jsl.model,
  com.ibm.jbatch.spi.services
 Import-Package: com.ibm.jbatch.spi,

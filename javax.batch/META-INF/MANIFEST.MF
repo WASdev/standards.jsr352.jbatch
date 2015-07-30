@@ -1,11 +1,13 @@
 Manifest-Version: 1.0
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.html
 Bundle-ManifestVersion: 2
 Bundle-Name: javax.batch-api
 Bundle-SymbolicName: javax.batch-api
 Bundle-Version: 1.0.1
+Implementation-Version: 1.0.1
+Specification-Title: JSR-352 Batch Applications for the Java Platform
+Specification-Vendor: IBM
 Specification-Version: 1.0
-Implementation-Version: 1.0
-Extension-Name: javax.batch
 Import-Package: javax.enterprise.util;resolution:=optional,
  javax.inject;resolution:=optional
 Export-Package: javax.batch.api,
