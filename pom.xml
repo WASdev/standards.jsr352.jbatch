@@ -200,6 +200,11 @@
                 <classifier>javadoc</classifier>
             </dependency>
             <dependency>
+                <groupId>com.ibm.jbatch.tck</groupId>
+                <artifactId>com.ibm.jbatch.tck.dist</artifactId>
+                <version>${batch.tck.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>
                 <version>${batch.impl.version}</version>

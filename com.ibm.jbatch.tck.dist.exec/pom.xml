@@ -33,7 +33,6 @@
                                 <artifactItem>
                                     <groupId>com.ibm.jbatch.tck</groupId>
                                     <artifactId>com.ibm.jbatch.tck.dist</artifactId>
-                                    <version>${batch.tck.version}</version>
                                     <classifier>tck.dist</classifier>
                                     <overWrite>true</overWrite>
                                     <type>zip</type>
@@ -53,7 +52,6 @@
                                 <artifactItem>
                                     <groupId>javax.batch</groupId>
                                     <artifactId>javax.batch-api</artifactId>
-                                    <version>${batch.api.version}</version>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
                                     <destFileName>javax.batch-api.jar</destFileName>
@@ -61,7 +59,6 @@
                                 <artifactItem>
                                     <groupId>com.ibm.jbatch</groupId>
                                     <artifactId>com.ibm.jbatch.container</artifactId>
-                                    <version>${batch.impl.version}</version>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
                                     <destFileName>com.ibm.jbatch.container.jar</destFileName>
@@ -69,7 +66,6 @@
                                 <artifactItem>
                                     <groupId>com.ibm.jbatch</groupId>
                                     <artifactId>com.ibm.jbatch.spi</artifactId>
-                                    <version>${batch.impl.version}</version>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.directory}/executeTCK/runAgainstRI</outputDirectory>
                                     <destFileName>com.ibm.jbatch.spi.jar</destFileName>
@@ -134,8 +130,8 @@
                         <phase>integration-test</phase>
                         <configuration>
                             <target>
-                                <ant dir="target${fs}executeTCK${fs}com.ibm.jbatch.tck-${project.version}" target="run"/>
-                                <ant dir="target${fs}executeTCK${fs}com.ibm.jbatch.tck-${project.version}" antfile="sigtest.build.xml" target="runSigTest"/>
+                                <ant dir="target${fs}executeTCK${fs}com.ibm.jbatch.tck-${batch.tck.version}" target="run"/>
+                                <ant dir="target${fs}executeTCK${fs}com.ibm.jbatch.tck-${batch.tck.version}" antfile="sigtest.build.xml" target="runSigTest"/>
                             </target>
                         </configuration>
                      </execution>

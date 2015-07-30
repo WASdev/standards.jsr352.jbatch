@@ -113,7 +113,6 @@
                                 <artifactItem>
                                     <groupId>com.ibm.jbatch.tck</groupId>
                                     <artifactId>com.ibm.jbatch.tck</artifactId>
-                                    <version>${batch.tck.version}</version>
                                     <outputDirectory>${project.build.directory}/test-classes</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
