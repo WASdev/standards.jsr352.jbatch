@@ -342,7 +342,7 @@ public class JobOperatorTests {
 					Reporter.log("Caught JobExecutionIsRunningException as expected<p>");
 					seen = true;
 				}
-				assertWithMessage("Caught JobExecutionIsRunningException for abandon attempt during restart" , seen);
+				assertWithMessage("Did not see expected JobExecutionIsRunningException for abandon attempt during restart" , seen);
 				
 			}
 

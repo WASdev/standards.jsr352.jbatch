@@ -71,7 +71,7 @@ public class ContextAndListenerTests {
 
 		try {
 
-			Reporter.log("Locate job XML file: oneArtifactIsJobAndStepListener.xml<p>");
+			Reporter.log("Locate job XML file: JobContextTestBatchlet.xml<p>");
 
 			Reporter.log("Create job parameters for execution #1:<p>");
 			Properties jobParams = new Properties();
