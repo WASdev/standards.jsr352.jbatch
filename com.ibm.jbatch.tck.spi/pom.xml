@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>1.0.1-b09</version>
+        <version>1.0.1</version>
     </parent>
 
     <groupId>com.ibm.jbatch.tck</groupId>
