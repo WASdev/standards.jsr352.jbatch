@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>jbatch-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>jbatch-parent</name>
     <description>
@@ -107,10 +107,10 @@
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>1.0.1-SNAPSHOT</batch.api.version>
-        <batch.impl.version>1.0.1-SNAPSHOT</batch.impl.version>
-        <batch.tck.version>1.0.1-SNAPSHOT</batch.tck.version>
-        <batch.spec.version>1.0</batch.spec.version>
+        <batch.api.version>1.1-SNAPSHOT</batch.api.version>
+        <batch.impl.version>1.1-SNAPSHOT</batch.impl.version>
+        <batch.tck.version>1.1-SNAPSHOT</batch.tck.version>
+        <batch.spec.version>1.1</batch.spec.version>
         <non.final>false</non.final>
 
         <!-- Convenience -->
