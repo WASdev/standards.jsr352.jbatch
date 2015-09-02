@@ -1,9 +1,0 @@
-<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-
-<suite name="JSR352 TCK" verbose="0"  >
-   <test name="JSR352 TCK">
-      <packages>
-         <package name="com.ibm.jbatch.tck.tests.*" />
-      </packages>
-   </test>
-</suite>
