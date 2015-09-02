@@ -109,7 +109,6 @@
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
         <batch.api.version>1.1-SNAPSHOT</batch.api.version>
         <batch.impl.version>1.1-SNAPSHOT</batch.impl.version>
-        <batch.tck.version>1.1-SNAPSHOT</batch.tck.version>
         <batch.spec.version>1.1</batch.spec.version>
         <non.final>false</non.final>
 
@@ -146,11 +145,6 @@
         <module>javax.batch</module>
         <module>com.ibm.jbatch.container</module>
         <module>com.ibm.jbatch.spi</module>
-        <module>com.ibm.jbatch.tck</module>
-        <module>com.ibm.jbatch.tck.spi</module>
-        <module>com.ibm.jbatch.tck.exec</module>
-        <module>com.ibm.jbatch.tck.dist</module>
-        <module>com.ibm.jbatch.tck.dist.exec</module>
     </modules>
 
     <dependencyManagement>
@@ -164,45 +158,6 @@
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.spi</artifactId>
                 <version>${batch.impl.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch.tck</groupId>
-                <artifactId>com.ibm.jbatch.tck</artifactId>
-                <version>${batch.tck.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch.tck</groupId>
-                <artifactId>com.ibm.jbatch.tck</artifactId>
-                <version>${batch.tck.version}</version>
-                <classifier>sources</classifier>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch.tck</groupId>
-                <artifactId>com.ibm.jbatch.tck</artifactId>
-                <version>${batch.tck.version}</version>
-                <classifier>javadoc</classifier>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch.tck</groupId>
-                <artifactId>com.ibm.jbatch.tck.spi</artifactId>
-                <version>${batch.tck.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch.tck</groupId>
-                <artifactId>com.ibm.jbatch.tck.spi</artifactId>
-                <version>${batch.tck.version}</version>
-                <classifier>sources</classifier>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch.tck</groupId>
-                <artifactId>com.ibm.jbatch.tck.spi</artifactId>
-                <version>${batch.tck.version}</version>
-                <classifier>javadoc</classifier>
-            </dependency>
-            <dependency>
-                <groupId>com.ibm.jbatch.tck</groupId>
-                <artifactId>com.ibm.jbatch.tck.dist</artifactId>
-                <version>${batch.tck.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
@@ -391,18 +346,12 @@
                         <exclude>**/*.html</exclude>
                         <exclude>**/*.css</exclude>
                         <exclude>**/*.ddl</exclude>
-                        <exclude>**/jsr352-tck.properties</exclude>
-                        <exclude>**/jsr352-tck-impl-*.xml</exclude>
-                        <exclude>**/testng-class.xml</exclude>
-                        <exclude>**/testng-method.xml</exclude>
                         <exclude>**/beans.xml</exclude>
                     </excludes>
                     <includes>
                         <include>javax.batch/**</include>
                         <include>com.ibm.jbatch.container/**</include>
                         <include>com.ibm.jbatch.spi/**</include>
-                        <include>com.ibm.jbatch.tck.spi/**</include>
-                        <include>com.ibm.jbatch.tck/**</include>
                     </includes>
                 </configuration>
                 <executions>
