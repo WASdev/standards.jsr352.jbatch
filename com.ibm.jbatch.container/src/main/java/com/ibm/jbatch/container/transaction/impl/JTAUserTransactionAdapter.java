@@ -25,6 +25,7 @@ import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
@@ -106,14 +107,17 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 		logger.exiting(CLASSNAME, "commit");
 	}
 
-	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#rollback()
+	/* 
+	 * Let the client be a bit lazy and not have to check the status
+	 * before issuing rollback.  If there's no active tran then just no-op.
 	 */
 	@Override
 	public void rollback() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "rollback");
 		try {
-			userTran.rollback();
+			if (userTran.getStatus() != Status.STATUS_NO_TRANSACTION) {
+				userTran.rollback();
+			}
 			logger.log(Level.FINE, "javax.transaction.Status: {0}", userTran.getStatus());
 		} catch (IllegalStateException e) {
 			throw new TransactionManagementException(e);

@@ -669,7 +669,6 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
 			// level does not need to be considered as either.
 			try {
 				logger.log(Level.SEVERE, "Failure in Read-Process-Write Loop", t);
-				transactionManager.setRollbackOnly();
 
 				callReaderAndWriterCloseOnThrowable(t);
 
