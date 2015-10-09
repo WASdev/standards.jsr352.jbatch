@@ -1,4 +1,15 @@
-### Contributor License Agreement
+## Contributor License Agreement
+
+### One CLA applies to all three repositories: SPEC, RI, TCK
+
+Note that for your convenience we provide one CLA document below which applies to all three separate repositories.
+
+* [SPEC](https://github.com/WASdev/standards.jsr352.batch-spec)
+* [RI](https://github.com/WASdev/standards.jsr352.jbatch)
+* [TCK](https://github.com/WASdev/standards.jsr352.tck)
+
+
+### Why is there a CLA?
 
 In order for us to accept pull requests, the contributor must first complete
 a Contributor License Agreement (CLA). This clarifies the intellectual 
