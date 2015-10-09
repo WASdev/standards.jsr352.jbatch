@@ -7,7 +7,7 @@ This is now the home only of the Reference Implementation of the Java Batch stan
 
 ## Contributing
 
-[CLA details](CONTRIBUTING.md)
+[CLA details](https://github.com/WASdev/standards.jsr352.batch-spec/wiki/Contributor-License-Agreement)
 
 #### Other IBM GitHub projects
 
