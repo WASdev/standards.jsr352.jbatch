@@ -298,6 +298,9 @@ public class BatchKernelImpl implements IBatchKernelService {
 		return batchWorkUnits;
 	}
 
+	/*
+	 * There are some assumptions that all partition subjobs have associated DB entries 	
+	 */
 	@Override
 	public List<BatchPartitionWorkUnit> buildOnRestartParallelPartitions(PartitionsBuilderConfig config) throws JobRestartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 
@@ -314,7 +317,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 			Properties partitionProps = (partitionProperties == null) ? null : partitionProperties[instance];    
 
 			try {
-				long execId = getMostRecentExecutionId(parallelJob);
+				long execId = getMostRecentSubJobExecutionId(parallelJob);
 
 				RuntimeJobExecution jobExecution = null;
 				try {		
@@ -376,15 +379,13 @@ public class BatchKernelImpl implements IBatchKernelService {
 		return batchWork;
 	}
 
-	private long getMostRecentExecutionId(JSLJob jobModel) {
+	private long getMostRecentSubJobExecutionId(JSLJob jobModel) {
 
-		//There can only be one instance associated with a subjob's id since it is generated from an unique
-		//job instance id. So there should be no way to directly start a subjob with particular
-		List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobModel.getId(), 0, 2);
+		// Pick off the first.  There are some subtle cases we're ignoring probably.
+		List<Long> instanceIds = persistenceService.jobOperatorGetJobInstanceIds(jobModel.getId(), 0, 1);
 
-		// Maybe we should blow up on '0' too?
-		if (instanceIds.size() > 1) {
-			String errorMsg = "Found " + instanceIds.size() + " entries for instance id = " + jobModel.getId() + ", which should not have happened.  Blowing up."; 
+		if (instanceIds.size() == 0) {
+			String errorMsg = "Did not find an entry for job name = " + jobModel.getId(); 
 			logger.severe(errorMsg);
 			throw new IllegalStateException(errorMsg);
 		}
@@ -413,7 +414,7 @@ public class BatchKernelImpl implements IBatchKernelService {
 			logger.entering(sourceClass, method, jobModel);
 		}
 
-		long execId = getMostRecentExecutionId(jobModel);
+		long execId = getMostRecentSubJobExecutionId(jobModel);
 
 		RuntimeFlowInSplitExecution jobExecution = null;
 		try {		

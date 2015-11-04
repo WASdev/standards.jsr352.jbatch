@@ -49,7 +49,7 @@ package com.ibm.jbatch.container.services.impl;
 			+ "parameters BLOB,"
 			+ "batchstatus VARCHAR(512),"
 			+ "exitstatus VARCHAR(512)," 
-			+ "CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES JOBINSTANCEDATA (jobinstanceid))";
+			+ "CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES JOBINSTANCEDATA (jobinstanceid) ON DELETE CASCADE)";
 	 final String CREATE_TAB_STEPEXECUTIONINSTANCEDATA = "CREATE TABLE STEPEXECUTIONINSTANCEDATA("
 			+ "stepexecid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT STEPEXECUTION_PK PRIMARY KEY,"
 			+ "jobexecid BIGINT,"
@@ -67,7 +67,7 @@ package com.ibm.jbatch.container.services.impl;
 			+ "startTime TIMESTAMP," 
 			+ "endTime TIMESTAMP,"
 			+ "persistentData BLOB," 
-			+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES EXECUTIONINSTANCEDATA (jobexecid))";
+			+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES EXECUTIONINSTANCEDATA (jobexecid) ON DELETE CASCADE)";
 	
 	 final String INSERT_JOBSTATUS = "insert into jobstatus values(?, ?)";
 	

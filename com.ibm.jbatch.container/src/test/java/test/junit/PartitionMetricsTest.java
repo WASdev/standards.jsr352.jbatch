@@ -38,22 +38,20 @@ import javax.batch.runtime.context.StepContext;
 import javax.inject.Inject;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PartitionMetricsTest {
 	static JobOperator jobOp = null;	
-	
+
 	private static int sleepTime = 3000;
-	
+
 	@BeforeClass
 	public static void init() {
 		jobOp = BatchRuntime.getJobOperator();
 	}
-	
+
 	@Test
-	@Ignore("https://java.net/bugzilla/show_bug.cgi?id=6494")
-	public void testMetricsRerunStep() throws Exception {
+	public void testRestartAfterRestartAfterComplete() throws Exception {
 		Properties origParams = new Properties();
 		origParams.setProperty("step1Size", "10");
 		origParams.setProperty("step2Size", "5");
@@ -62,10 +60,44 @@ public class PartitionMetricsTest {
 		long execId = jobOp.start("partitionMetrics", origParams);
 		Thread.sleep(sleepTime);
 		assertEquals("Didn't fail as expected", BatchStatus.FAILED, jobOp.getJobExecution(execId).getBatchStatus());
-		
+
 		//Now run again, since we failed on step 2 and allow-restart-if-complete = true, we'll get a different execution for
 		// step 1.
-		
+
+		Properties restartParams = new Properties();
+		restartParams.setProperty("step1Size", "25");
+		restartParams.setProperty("step2Size", "6");
+		restartParams.setProperty("stepListener.forceFailure", "false");
+		restartParams.setProperty("chunkListener.forceFailure", "true");
+
+		long restartExecId = jobOp.restart(execId, restartParams);
+		Thread.sleep(sleepTime);
+		assertEquals("Didn't fail as expected", BatchStatus.FAILED, jobOp.getJobExecution(restartExecId).getBatchStatus());
+
+
+		restartParams.setProperty("chunkListener.forceFailure", "false");
+
+		long restartExecId2 = jobOp.restart(restartExecId, restartParams);
+		Thread.sleep(sleepTime);
+		assertEquals("Didn't complete", BatchStatus.COMPLETED, jobOp.getJobExecution(restartExecId2).getBatchStatus());
+
+	}
+
+
+	@Test
+	public void testMetricsRestartAfterComplete() throws Exception {
+		Properties origParams = new Properties();
+		origParams.setProperty("step1Size", "10");
+		origParams.setProperty("step2Size", "5");
+		origParams.setProperty("stepListener.forceFailure", "true");
+
+		long execId = jobOp.start("partitionMetrics", origParams);
+		Thread.sleep(sleepTime);
+		assertEquals("Didn't fail as expected", BatchStatus.FAILED, jobOp.getJobExecution(execId).getBatchStatus());
+
+		//Now run again, since we failed on step 2 and allow-restart-if-complete = true, we'll get a different execution for
+		// step 1.
+
 		Properties restartParams = new Properties();
 		restartParams.setProperty("step1Size", "25");
 		restartParams.setProperty("step2Size", "6");
@@ -74,15 +106,15 @@ public class PartitionMetricsTest {
 		long restartExecId = jobOp.restart(execId, restartParams);
 		Thread.sleep(sleepTime);
 		assertEquals("Didn't complete successfully", BatchStatus.COMPLETED, jobOp.getJobExecution(restartExecId).getBatchStatus());
-		
+
 		StepExecution step1Exec1 = null;  StepExecution step1Exec2 = null; 
-		
+
 		for (StepExecution se : jobOp.getStepExecutions(execId)) {
 			if (se.getStepName().equals("step1")) {
 				step1Exec1 = se;
 			}
 		}
-		
+
 		for (StepExecution se : jobOp.getStepExecutions(restartExecId)) {
 			if (se.getStepName().equals("step1")) {
 				step1Exec2 = se;
@@ -96,7 +128,7 @@ public class PartitionMetricsTest {
 		assertEquals("filter count", 12, getMetricVal(metrics, Metric.MetricType.FILTER_COUNT));
 		assertEquals("read count", 30, getMetricVal(metrics, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 18, getMetricVal(metrics, Metric.MetricType.WRITE_COUNT));
-		
+
 		Metric[] metrics2 = step1Exec2.getMetrics();
 
 		// 3 partitions of 25 elements - for each partition, 15 will be written and 10 will be filtered, this will be 5 chunks (item-count=5) + 1 zero-item chunk
@@ -105,21 +137,57 @@ public class PartitionMetricsTest {
 		assertEquals("read count", 75, getMetricVal(metrics2, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 45, getMetricVal(metrics2, Metric.MetricType.WRITE_COUNT));			
 	}
+	
+	
+
+	@Test	
+	public void testPartitionedRollbackMetric() throws Exception {
+
+		Properties origParams = new Properties();
+		// These two don't matter
+		origParams.setProperty("step1Size", "15"); origParams.setProperty("step2Size", "20");
+
+		origParams.setProperty("chunkListener.forceFailure", "true");
+		long execId = jobOp.start("partitionMetrics", origParams);
+		Thread.sleep(sleepTime);
+		assertEquals("Didn't fail as expected successfully", BatchStatus.FAILED, jobOp.getJobExecution(execId).getBatchStatus());
+
+		StepExecution step1Exec = null;  StepExecution step2Exec = null; 
+		for (StepExecution se : jobOp.getStepExecutions(execId)) {
+			if (se.getStepName().equals("step1")) {
+				step1Exec = se;
+			} else if (se.getStepName().equals("step2")) {
+				step2Exec = se;
+			}
+		}
+
+		Metric[] metrics = step1Exec.getMetrics();
+
+		// 3 partitions - this confirms that the read, filter, write counts get rolled back
+		assertEquals("commit count", 0, getMetricVal(metrics, Metric.MetricType.COMMIT_COUNT));
+		assertEquals("filter count", 0, getMetricVal(metrics, Metric.MetricType.FILTER_COUNT));
+		assertEquals("read count", 0, getMetricVal(metrics, Metric.MetricType.READ_COUNT));
+		assertEquals("write count", 0, getMetricVal(metrics, Metric.MetricType.WRITE_COUNT));
+		assertEquals("rollback count", 3, getMetricVal(metrics, Metric.MetricType.ROLLBACK_COUNT));
+
+	}
+
 
 	// 2 steps, complete.  Didn't go ahead and
 	// give partitions unique counts but that would be an
 	// even more thorough test.
 	@Test
 	public void testPartitionMetrics() throws Exception {
-		testPartitionedMetrics("partitionMetrics");
-	}
-	
-	@Test
-	public void testNestedSplitFlowPartitionMetrics() throws Exception {
-		testPartitionedMetrics("partitionSplitFlowMetrics");
+		validatePartitionedMetrics("partitionMetrics");
 	}
 
-	private void testPartitionedMetrics(String jslName) throws Exception {
+	@Test
+	public void testNestedSplitFlowPartitionMetrics() throws Exception {
+		validatePartitionedMetrics("partitionSplitFlowMetrics");
+	}
+
+	
+	private void validatePartitionedMetrics(String jslName) throws Exception {
 		Properties origParams = new Properties();
 		origParams.setProperty("step1Size", "15");
 		origParams.setProperty("step2Size", "20");
@@ -143,7 +211,7 @@ public class PartitionMetricsTest {
 		assertEquals("filter count", 18, getMetricVal(metrics, Metric.MetricType.FILTER_COUNT));
 		assertEquals("read count", 45, getMetricVal(metrics, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 27, getMetricVal(metrics, Metric.MetricType.WRITE_COUNT));
-		
+
 		Metric[] metrics2 = step2Exec.getMetrics();
 
 		// 3 partitions of 20 elements - for each partition, 12 will be written and 8 will be filtered, this will be 4 chunks (item-count=5) + 1 zero-item chunk
@@ -151,38 +219,6 @@ public class PartitionMetricsTest {
 		assertEquals("filter count", 24, getMetricVal(metrics2, Metric.MetricType.FILTER_COUNT));
 		assertEquals("read count", 60, getMetricVal(metrics2, Metric.MetricType.READ_COUNT));
 		assertEquals("write count", 36, getMetricVal(metrics2, Metric.MetricType.WRITE_COUNT));				
-	}
-	
-	@Test
-	public void testPartitionedRollbackMetric() throws Exception {
-
-		Properties origParams = new Properties();
-		// These two don't matter
-		origParams.setProperty("step1Size", "15"); origParams.setProperty("step2Size", "20");
-
-		origParams.setProperty("chunkListener.forceFailure", "true");
-		long execId = jobOp.start("partitionMetrics", origParams);
-		Thread.sleep(sleepTime);
-		assertEquals("Didn't fail as expected successfully", BatchStatus.FAILED, jobOp.getJobExecution(execId).getBatchStatus());
-
-		StepExecution step1Exec = null;  StepExecution step2Exec = null; 
-		for (StepExecution se : jobOp.getStepExecutions(execId)) {
-			if (se.getStepName().equals("step1")) {
-				step1Exec = se;
-			} else if (se.getStepName().equals("step2")) {
-				step2Exec = se;
-			}
-		}
-		
-		Metric[] metrics = step1Exec.getMetrics();
-
-		// 3 partitions - this confirms that the read, filter, write counts get rolled back
-		assertEquals("commit count", 0, getMetricVal(metrics, Metric.MetricType.COMMIT_COUNT));
-		assertEquals("filter count", 0, getMetricVal(metrics, Metric.MetricType.FILTER_COUNT));
-		assertEquals("read count", 0, getMetricVal(metrics, Metric.MetricType.READ_COUNT));
-		assertEquals("write count", 0, getMetricVal(metrics, Metric.MetricType.WRITE_COUNT));
-		assertEquals("rollback count", 3, getMetricVal(metrics, Metric.MetricType.ROLLBACK_COUNT));
-		
 	}
 
 	private long getMetricVal(Metric[] metrics, MetricType type) {
@@ -194,12 +230,12 @@ public class PartitionMetricsTest {
 		}
 		return retVal;
 	}
-	
+
 	public static class Reader extends AbstractItemReader {
-		
+
 		@BatchProperty
 		String numToRead;
-		
+
 		int i = 0;
 
 		@Override
@@ -211,7 +247,7 @@ public class PartitionMetricsTest {
 			}
 		}
 	}
-	
+
 	public static class Processor implements ItemProcessor {
 
 		@Override
@@ -236,12 +272,12 @@ public class PartitionMetricsTest {
 			System.out.println(chunkStr.substring(0,chunkStr.length()-1) + "\n");
 		}
 	}
-	
+
 	public static class ChunkListener extends AbstractChunkListener {
 
 		@BatchProperty
 		String forceFailure;
-		
+
 		@Inject StepContext stepCtx;
 
 		@Override
@@ -256,7 +292,7 @@ public class PartitionMetricsTest {
 
 		@BatchProperty
 		String forceFailure;
-		
+
 		@Inject StepContext stepCtx;
 
 		@Override
