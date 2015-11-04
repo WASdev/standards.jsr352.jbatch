@@ -77,6 +77,9 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 	private volatile List<BatchPartitionWorkUnit> parallelBatchWorkUnits;
 
 	private PartitionReducerProxy partitionReducerProxy = null;
+	
+	private enum ExecutionType {START, RESTART_NORMAL, RESTART_OVERRIDE, RESTART_AFTER_COMPLETION};
+	private ExecutionType executionType = null; 
 
 	// On invocation this will be re-primed to reflect already-completed partitions from a previous execution.
 	int numPreviouslyCompleted = 0;
@@ -179,7 +182,7 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 			}
 
 			plan.setPartitionProperties(mapperPlan.getPartitionProperties());
-
+			
 			if (logger.isLoggable(Level.FINE)) {
 				logger.fine("Partition plan defined by partition mapper: " + plan);
 			}
@@ -260,14 +263,48 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		return plan;
 	}
 
+	private void calculateExecutionType() {
+		// We want to ignore override on the initial execution
+		if (isRestartExecution()) {
+			if (restartAfterCompletion) {
+				executionType = ExecutionType.RESTART_AFTER_COMPLETION;
+			} else 	if (plan.getPartitionsOverride()) {
+				executionType = ExecutionType.RESTART_OVERRIDE;
+			} else {
+				executionType = ExecutionType.RESTART_NORMAL;
+			}
+		} else {
+			executionType = ExecutionType.START;
+		}
+	}
 
+	private void validateNumberOfPartitions() {
+				
+		int currentPlanSize = plan.getPartitions();
+		
+		if (executionType == ExecutionType.RESTART_NORMAL) {
+			int previousPlanSize = stepStatus.getNumPartitions();
+			if (previousPlanSize > 0 && previousPlanSize != currentPlanSize) {
+				String msg = "On a normal restart, the plan on restart specified: " + currentPlanSize + " # of partitions, but the previous " +
+						"executions' plan specified a different number: " + previousPlanSize + " # of partitions.  Failing job.";
+				logger.severe(msg);
+				throw new IllegalStateException(msg);				
+			}
+		}
+		
+		//persist the partition plan so on restart we have the same plan to reuse	
+		stepStatus.setNumPartitions(currentPlanSize);
+	}
+
+	
 	@Override
 	protected void invokeCoreStep() throws JobRestartException, JobStartException, JobExecutionAlreadyCompleteException, JobExecutionNotMostRecentException {
 
 		this.plan = this.generatePartitionPlan();
 
-		//persist the partition plan so on restart we have the same plan to reuse
-		stepStatus.setNumPartitions(plan.getPartitions());
+		calculateExecutionType();
+		
+		validateNumberOfPartitions();		
 
 		/* When true is specified, the partition count from the current run
 		 * is used and all results from past partitions are discarded. Any
@@ -276,11 +313,11 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 		 * rollbackPartitionedStep method is invoked during restart before any
 		 * partitions begin processing to provide a cleanup hook.
 		 */
-		if (plan.getPartitionsOverride()) {
+		if (executionType == ExecutionType.RESTART_OVERRIDE) {
 			if (this.partitionReducerProxy != null) {
 				this.partitionReducerProxy.rollbackPartitionedStep();
-			}
-		}
+			}			
+		} 
 
 		logger.fine("Number of partitions in step: " + partitions + " in step " + step.getId() + "; Subjob properties defined by partition mapper: " + partitionProperties);
 
@@ -319,9 +356,14 @@ public class PartitionedStepControllerImpl extends BaseStepControllerImpl {
 
 			PartitionsBuilderConfig config = new PartitionsBuilderConfig(subJobs, partitionProperties, analyzerStatusQueue, finishedWorkQueue, jobExecutionImpl.getExecutionId());
 			// Then build all the subjobs but do not start them yet
-			if (stepStatus.getStartCount() > 1 && !plan.getPartitionsOverride()) {
+			if (executionType == ExecutionType.RESTART_NORMAL) {				
 				parallelBatchWorkUnits = batchKernel.buildOnRestartParallelPartitions(config);
-			} else {
+			} else { 	
+				// This case includes RESTART_OVERRIDE and RESTART_AFTER_COMPLETION.
+				//
+				// So we're just going to create new "subjob" job instances in the DB in these cases, 
+				// and we'll have to make sure we're dealing with the correct ones, say in a subsequent "normal" restart
+				// (of the current execution which is itself a restart)
 				parallelBatchWorkUnits = batchKernel.buildNewParallelPartitions(config);
 			}
 

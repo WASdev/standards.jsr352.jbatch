@@ -68,11 +68,15 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 
 	protected StepContextImpl stepContext;
 	protected Step step;
+	protected String stepName;
 	protected StepStatus stepStatus;
 
 	protected BlockingQueue<PartitionDataWrapper> analyzerStatusQueue = null;
 
 	protected long rootJobExecutionId;
+	
+	// Restart of partitioned steps needs to be handled specially 
+	protected boolean restartAfterCompletion = false;
 
 	protected static IBatchKernelService batchKernel = ServicesManagerImpl.getInstance().getBatchKernelService();
 
@@ -91,6 +95,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 			throw new IllegalArgumentException("Step parameter to ctor cannot be null.");
 		}
 		this.step = step;
+		this.stepName = step.getId();
 	}
 	
 	protected BaseStepControllerImpl(RuntimeJobExecution jobExecution, Step step, StepContextImpl stepContext,  long rootJobExecutionId, BlockingQueue<PartitionDataWrapper> analyzerStatusQueue) {
@@ -321,6 +326,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 	}
 
 	private boolean shouldStepBeExecutedOnRestart() {
+		
 		BatchStatus stepBatchStatus = stepStatus.getBatchStatus();
 		if (stepBatchStatus.equals(BatchStatus.COMPLETED)) {
 			// A bit of parsing involved since the model gives us a String not a
@@ -330,6 +336,7 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 				return false;
 			} else {
 				logger.fine("Step: " + step.getId() + " already has batch status of COMPLETED, and allow-start-if-complete is set to 'true'");
+				restartAfterCompletion = true;
 			}
 		}
 
@@ -362,7 +369,10 @@ public abstract class BaseStepControllerImpl implements IExecutionElementControl
 		return true;
 	}
 
-
+	protected boolean isRestartExecution() {
+		return stepStatus.getStartCount() > 1;
+	}
+	
 	protected void statusStarting() {
 		stepStatus.setBatchStatus(BatchStatus.STARTING);
 		_jobStatusService.updateJobCurrentStep(jobInstance.getInstanceId(), step.getId());

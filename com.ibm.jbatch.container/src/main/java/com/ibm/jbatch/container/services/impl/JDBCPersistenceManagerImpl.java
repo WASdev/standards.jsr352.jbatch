@@ -43,6 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.batch.operations.NoSuchJobExecutionException;
+import javax.batch.operations.NoSuchJobInstanceException;
 import javax.batch.runtime.BatchStatus;
 import javax.batch.runtime.JobInstance;
 import javax.batch.runtime.Metric;
@@ -718,6 +719,9 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	}
 
 	@Override
+	/**
+	 * Returns instance ids sorted from high to low instance id 
+	 */
 	public List<Long> jobOperatorGetJobInstanceIds(String jobName, int start, int count) {
 
 		Connection conn = null;
@@ -1907,12 +1911,10 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	 * @param rootJobExecutionId JobExecution id of the top-level job
 	 * @param stepName Step name of the top-level stepName
 	 */
-	private String getPartitionLevelJobInstanceWildCard(long rootJobExecutionId, String stepName) {
-
-		long jobInstanceId = getJobInstanceIdByExecutionId(rootJobExecutionId);
+	private String getPartitionLevelJobInstanceWildCard(long rootJobInstanceId, String stepName) {
 
 		StringBuilder sb = new StringBuilder(":");
-		sb.append(Long.toString(jobInstanceId));
+		sb.append(Long.toString(rootJobInstanceId));
 		sb.append(":");
 		sb.append(stepName);
 		sb.append(":%");
@@ -1920,9 +1922,55 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		return sb.toString();
 	}
 
+	/*
+	 * Because of how we implement partition restart after override as well as partitions after a restart
+	 * after completion (we simply create a new "subjob" job instance id entry), we have to have a way
+	 * to only look at the most recent one.  
+	 * 
+	 * There may be gaps in doing it this way, e.g. what if the previous execution blew up before persisting
+	 * a complete set (one for each partition)?   Will leave that for another time if necessary.
+	 */
+	private long getMostRecentZerothPartitionSubJobInstanceId(long rootJobInstanceId, String stepName) {
+		 
+		StringBuilder sb = new StringBuilder(":");
+		sb.append(Long.toString(rootJobInstanceId));
+		sb.append(":");
+		sb.append(stepName);
+		sb.append(":0");
+
+		String zerothPartitionSubJobName = sb.toString();
+		
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		long instanceId = 0;
+		
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement("select max(jobinstanceid) as mostrecentid from jobinstancedata where name = ?");
+			statement.setObject(1, zerothPartitionSubJobName);
+			rs = statement.executeQuery();
+			if (rs.next()) {
+				instanceId = rs.getLong("mostrecentid");
+			} else {
+				String msg = "Did not find sub job instance named = " + zerothPartitionSubJobName;
+				logger.fine(msg);
+				throw new NoSuchJobInstanceException(msg);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+
+		return instanceId;
+	}	
+	
 	@Override
 	public void updateWithFinalPartitionAggregateStepExecution(long rootJobExecutionId, StepContextImpl stepContext) {
 
+		String stepName = stepContext.getStepName();
+		
 		Connection conn = null;
 		PreparedStatement statement = null;
 		ResultSet rs = null;
@@ -1943,9 +1991,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 					" from stepexecutioninstancedata STEPEX inner join executioninstancedata JOBEX" + 
 					" on STEPEX.jobexecid = JOBEX.jobexecid" +
 					" where JOBEX.jobinstanceid IN" +
-					" (select jobinstanceid from JOBINSTANCEDATA where name like ?)");
+					" (select jobinstanceid from JOBINSTANCEDATA where name like ? and jobinstanceid >= ?)");
 
-			statement.setString(1, getPartitionLevelJobInstanceWildCard(rootJobExecutionId, stepContext.getStepName()));
+			long rootJobInstanceId = getJobInstanceIdByExecutionId(rootJobExecutionId);
+
+			statement.setString(1, getPartitionLevelJobInstanceWildCard(rootJobInstanceId, stepName ));
+			statement.setLong(2, getMostRecentZerothPartitionSubJobInstanceId(rootJobInstanceId, stepName));
 			rs = statement.executeQuery();
 			if(rs.next()) {
 				readCount = rs.getLong("readcount");
@@ -1966,7 +2017,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		updateStepExecutionWithMetrics(stepContext,  readCount, 
 				writeCount, commitCount, rollbackCount, readSkipCount, processSkipCount, filterCount,
 				writeSkipCount);
-	}
+	}	
 
 	private void updateStepExecutionWithMetrics(StepContextImpl stepContext, long readCount, 
 			long writeCount, long commitCount, long rollbackCount, long readSkipCount, long processSkipCount, long filterCount,
@@ -2264,6 +2315,8 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		// TODO Auto-generated method stub
 
 	}
+
+
 
 
 }
