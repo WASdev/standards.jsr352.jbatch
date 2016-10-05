@@ -464,6 +464,37 @@ public class JobOperatorImpl implements JobOperator {
 		}
 	}
 
+	public boolean deleteJobInstance(long jobInstanceId)
+			throws NoSuchJobInstanceException, JobSecurityException, JobExecutionIsRunningException {
+		logger.entering(sourceClass, "deleteJobInstance id = " + jobInstanceId);
+
+		if (isAuthorized(jobInstanceId)) {
+			JobInstance jobInstance = persistenceService.jobOperatorGetJobInstance(jobInstanceId);
+			if (jobInstance == null) {
+				String msg = "Job instance id: " + jobInstanceId + " does not exist";
+				logger.warning(msg);
+				throw new NoSuchJobInstanceException(msg);
+			}
+			List<JobExecution> jobExecutions = getJobExecutions(jobInstance);
+			for (JobExecution jobExecution : jobExecutions) {
+				if (isJobExecutionRunning(jobExecution)) {
+					String msg = "Can not delete job instance because there is a job execution still running. Execution id = "
+							+ jobExecution.getExecutionId();
+					logger.warning(msg);
+					throw new JobExecutionIsRunningException(msg);
+				}
+			}
+			return persistenceService.deleteJobInstance(jobInstance);
+		} else {
+			throw new JobSecurityException("The current user is not authorized to perform this operation");
+		}
+	}
+
+	private boolean isJobExecutionRunning(JobExecution jobExecution) {
+		BatchStatus batchStatus = jobExecution.getBatchStatus();
+		return batchStatus == BatchStatus.STARTED || batchStatus == BatchStatus.STARTING;
+	}
+
 	private boolean isAuthorized(long instanceId) {
 		logger.entering(sourceClass, "isAuthorized", instanceId);
 		boolean retVal = false;

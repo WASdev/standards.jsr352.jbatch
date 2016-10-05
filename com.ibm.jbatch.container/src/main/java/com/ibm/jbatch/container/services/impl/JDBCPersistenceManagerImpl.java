@@ -2316,7 +2316,107 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 	}
 
+	@Override
+	public boolean deleteJobInstance(JobInstance jobInstance) {
+		Connection conn = null;
+		PreparedStatement deleteStepExecutionInstances = null;
+		PreparedStatement deleteExecutionInstances = null;
+		PreparedStatement deleteCheckpoints = null;
+		PreparedStatement deleteJobInstances = null;
 
+		String deleteStepExecutionInstanceDataQuery = "DELETE FROM stepexecutioninstancedata WHERE"
+				+ " stepexecid IN ( SELECT B.stepexecid FROM executioninstancedata A "
+				+ "INNER JOIN stepexecutioninstancedata B ON "
+				+ "A.jobexecid = B.jobexecid WHERE A.jobinstanceid = ? )";
 
+		String deleteExecutionInstanceDataQuery = "DELETE FROM executioninstancedata WHERE jobinstanceid = ?";
 
+		String deleteCheckpointDataQuery = "DELETE FROM checkpointdata WHERE id like ?";
+
+		String deleteJobInstanceDataQuery = "DELETE FROM jobinstancedata WHERE jobinstanceid = ?";
+
+		try {
+			conn = getConnection();
+			conn.setAutoCommit(false);
+
+			long jobInstanceId = jobInstance.getInstanceId();
+
+			deleteStepExecutionInstances = conn.prepareStatement(deleteStepExecutionInstanceDataQuery);
+			deleteStepExecutionInstances.setLong(1, jobInstanceId);
+
+			deleteExecutionInstances = conn.prepareStatement(deleteExecutionInstanceDataQuery);
+			deleteExecutionInstances.setLong(1, jobInstanceId);
+
+			deleteCheckpoints = conn.prepareStatement(deleteCheckpointDataQuery);
+			deleteCheckpoints.setString(1, jobInstanceId + ",%");
+
+			deleteJobInstances = conn.prepareStatement(deleteJobInstanceDataQuery);
+			deleteJobInstances.setLong(1, jobInstanceId);
+
+			deleteStepExecutionInstances.executeUpdate();
+			deleteExecutionInstances.executeUpdate();
+			deleteCheckpoints.executeUpdate();
+			deleteJobInstances.executeUpdate();
+
+			conn.commit();
+		} catch (SQLException ex) {
+			try {
+				if (conn != null) {
+					conn.rollback();
+				}
+			} catch (SQLException e) {
+				throw new PersistenceException(e);
+			}
+			throw new PersistenceException(ex);
+		} finally {
+			try {
+				if (deleteJobInstances != null) {
+					deleteJobInstances.close();
+				}
+				if (deleteCheckpoints != null) {
+					deleteCheckpoints.close();
+				}
+				if (deleteExecutionInstances != null) {
+					deleteExecutionInstances.close();
+				}
+				if (deleteStepExecutionInstances != null) {
+					deleteStepExecutionInstances.close();
+				}
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				throw new PersistenceException(e);
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public JobInstance jobOperatorGetJobInstance(long jobInstanceId) {
+		logger.entering(CLASSNAME, "getJobInstance", jobInstanceId);
+
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		JobStatus retVal = null;
+
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement("select A.obj from jobstatus A where A.id = ?");
+			statement.setLong(1, jobInstanceId);
+			rs = statement.executeQuery();
+			byte[] buf = null;
+			if (rs.next()) {
+				buf = rs.getBytes("obj");
+			}
+			retVal = (JobStatus) deserializeObject(buf);
+		} catch (Exception e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		logger.exiting(CLASSNAME, "getJobInstance");
+		return retVal == null ? null : retVal.getJobInstance();
+	}
 }

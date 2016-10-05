@@ -16,6 +16,10 @@
 */
 package com.ibm.jbatch.spi;
 
+import javax.batch.operations.JobExecutionIsRunningException;
+import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.NoSuchJobInstanceException;
+
 /**
  *
  * Implemented by the jbatch 352 RI to allow the host environment to
@@ -39,4 +43,23 @@ public interface BatchJobUtil {
      * @param tag A "tag" (or "app name", generically speaking).
      */ 
     public void purgeOwnedRepositoryData(String tag);
+    
+	/**
+	 * Deletes specified JobInstance from JobRepository. Also deletes job
+	 * executions, checkpoints, etc., associated with the specified JobInstance.
+	 * The job executions related to the given JobInstance must be stopped
+	 * before deleting it.
+	 *
+	 * @return true if successful.
+	 * @param jobInstanceId
+	 *            Specifies job instance.
+	 * @throws NoSuchJobInstanceException
+	 *             Thrown when the specified job instance is not found.
+	 * @throws JobSecurityException
+	 *             Thrown when this operation is not authorized.
+	 * @throws JobExecutionIsRunningException
+	 *             Thrown when any associated job execution is still running.
+	 */
+	public boolean deleteJobInstance(long jobInstanceId)
+			throws NoSuchJobInstanceException, JobSecurityException, JobExecutionIsRunningException;
 }
