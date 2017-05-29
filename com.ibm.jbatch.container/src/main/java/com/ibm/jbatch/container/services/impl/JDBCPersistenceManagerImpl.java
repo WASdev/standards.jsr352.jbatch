@@ -2321,41 +2321,66 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		Connection conn = null;
 		PreparedStatement deleteStepExecutionInstances = null;
 		PreparedStatement deleteExecutionInstances = null;
+		PreparedStatement selectJobInstanceIds = null;
 		PreparedStatement deleteCheckpoints = null;
 		PreparedStatement deleteJobInstances = null;
+		ResultSet jobInstancesRs = null;
 
-		String deleteStepExecutionInstanceDataQuery = "DELETE FROM stepexecutioninstancedata WHERE"
-				+ " stepexecid IN ( SELECT B.stepexecid FROM executioninstancedata A "
-				+ "INNER JOIN stepexecutioninstancedata B ON "
-				+ "A.jobexecid = B.jobexecid WHERE A.jobinstanceid = ? )";
+		String deleteStepExecutionInstanceDataQuery = 
+			"DELETE FROM stepexecutioninstancedata WHERE jobexecid IN ("
+			+ "SELECT jobexecid FROM executioninstancedata WHERE jobinstanceid IN ("
+			+ "SELECT jobinstanceid FROM jobinstancedata WHERE name like ? OR jobinstanceid = ?))";
 
-		String deleteExecutionInstanceDataQuery = "DELETE FROM executioninstancedata WHERE jobinstanceid = ?";
+		String deleteExecutionInstanceDataQuery =
+			"DELETE FROM executioninstancedata WHERE jobinstanceid IN (" 
+			+ "SELECT jobinstanceid FROM jobinstancedata WHERE name like ? OR jobinstanceid = ?)";
+		
+		String selectJobInstanceIdsQuery = 
+			"SELECT jobinstanceid FROM jobinstancedata WHERE name LIKE ? OR jobinstanceid = ?";
 
 		String deleteCheckpointDataQuery = "DELETE FROM checkpointdata WHERE id like ?";
 
-		String deleteJobInstanceDataQuery = "DELETE FROM jobinstancedata WHERE jobinstanceid = ?";
-
+		String deleteJobInstanceDataQuery =
+			"DELETE FROM jobinstancedata WHERE name like ? OR jobinstanceid = ?";
+		
+		long jobInstanceId = jobInstance.getInstanceId();
+		String subJobName = ":" + jobInstanceId + ":%";
 		try {
 			conn = getConnection();
 			conn.setAutoCommit(false);
+			
+			deleteStepExecutionInstances = conn
+					.prepareStatement(deleteStepExecutionInstanceDataQuery);
+			deleteStepExecutionInstances.setString(1, subJobName);
+			deleteStepExecutionInstances.setLong(2, jobInstanceId);
 
-			long jobInstanceId = jobInstance.getInstanceId();
+			deleteExecutionInstances = conn
+					.prepareStatement(deleteExecutionInstanceDataQuery);
+			deleteExecutionInstances.setString(1, subJobName);
+			deleteExecutionInstances.setLong(2, jobInstanceId);
 
-			deleteStepExecutionInstances = conn.prepareStatement(deleteStepExecutionInstanceDataQuery);
-			deleteStepExecutionInstances.setLong(1, jobInstanceId);
+			deleteJobInstances = conn
+					.prepareStatement(deleteJobInstanceDataQuery);
+			deleteJobInstances.setString(1, subJobName);
+			deleteJobInstances.setLong(2, jobInstanceId);
 
-			deleteExecutionInstances = conn.prepareStatement(deleteExecutionInstanceDataQuery);
-			deleteExecutionInstances.setLong(1, jobInstanceId);
+			// We want to make a wildcard string dynamically to delete rows
+			// with a subquery. However SQL Server 2008 doesn't seem to
+			// have the 'CONCAT' function, so deletes each row one by one
+			// for now.
+			selectJobInstanceIds = conn.prepareStatement(selectJobInstanceIdsQuery);
+			selectJobInstanceIds.setString(1, subJobName);
+			selectJobInstanceIds.setLong(2, jobInstanceId);
+ 			deleteCheckpoints = conn.prepareStatement(deleteCheckpointDataQuery);
 
-			deleteCheckpoints = conn.prepareStatement(deleteCheckpointDataQuery);
-			deleteCheckpoints.setString(1, jobInstanceId + ",%");
-
-			deleteJobInstances = conn.prepareStatement(deleteJobInstanceDataQuery);
-			deleteJobInstances.setLong(1, jobInstanceId);
-
+			jobInstancesRs = selectJobInstanceIds.executeQuery();
+			while (jobInstancesRs.next()) {
+				long relatedId = jobInstancesRs.getLong(1);
+				deleteCheckpoints.setString(1, relatedId + ",%");
+				deleteCheckpoints.executeUpdate();
+			}
 			deleteStepExecutionInstances.executeUpdate();
 			deleteExecutionInstances.executeUpdate();
-			deleteCheckpoints.executeUpdate();
 			deleteJobInstances.executeUpdate();
 
 			conn.commit();
@@ -2365,6 +2390,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 					conn.rollback();
 				}
 			} catch (SQLException e) {
+				logger.severe("SQLException thrown:" + ex.getMessage());
 				throw new PersistenceException(e);
 			}
 			throw new PersistenceException(ex);
@@ -2372,6 +2398,12 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 			try {
 				if (deleteJobInstances != null) {
 					deleteJobInstances.close();
+				}
+				if (jobInstancesRs != null) {
+					jobInstancesRs.close();
+				}
+				if (selectJobInstanceIds != null) {
+					selectJobInstanceIds.close();
 				}
 				if (deleteCheckpoints != null) {
 					deleteCheckpoints.close();
