@@ -392,10 +392,15 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 	private void setSchemaOnConnection(Connection connection) throws SQLException {
 		logger.finest("Entering " + CLASSNAME +".setSchemaOnConnection()");
 
-		if (!"Oracle".equals(connection.getMetaData().getDatabaseProductName())) {
+		String dbProductName = connection.getMetaData().getDatabaseProductName();
+		if (!"Oracle".equals(dbProductName)) {
 			PreparedStatement ps = null;
-			ps = connection.prepareStatement("SET SCHEMA ?");
-			ps.setString(1, schema);
+			if ("MySQL".equals(dbProductName)) {
+				ps = connection.prepareStatement("USE " + schema);
+			} else {
+				ps = connection.prepareStatement("SET SCHEMA ?");
+				ps.setString(1, schema);
+			}
 			ps.executeUpdate(); 
 			ps.close();
 		}
