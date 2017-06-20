@@ -107,7 +107,7 @@
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>1.0.2</batch.api.version>
+        <batch.api.version>1.0.1</batch.api.version>
         <batch.impl.version>1.0.2</batch.impl.version>
         <batch.spec.version>1.0</batch.spec.version>
         <non.final>false</non.final>
