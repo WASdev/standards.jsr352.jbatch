@@ -393,7 +393,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		logger.finest("Entering " + CLASSNAME +".setSchemaOnConnection()");
 
 		String dbProductName = connection.getMetaData().getDatabaseProductName();
-		if (!"Oracle".equals(dbProductName)) {
+		if (!"Oracle".equals(dbProductName) && !"Microsoft SQL Server".equals(dbProductName)) {
 			PreparedStatement ps = null;
 			if ("MySQL".equals(dbProductName)) {
 				ps = connection.prepareStatement("USE " + schema);
