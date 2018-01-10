@@ -18,7 +18,7 @@
         Batch workloads have common requirements, especially operational control, which allow for initiation
         of, and interaction with, batch instances; such interactions include stop and restart.
     </description>
-    <url>http://java.net/projects/jbatch</url>
+    <url>https://github.com/WASdev/standards.jsr352.jbatch</url>
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -31,26 +31,21 @@
         <connection>scm:git://github.com/WASdev/standards.jsr352.jbatch</connection>
         <developerConnection>scm:git://github.com/WASdev/standards.jsr352.jbatch</developerConnection>
     </scm>
-    <parent>
-        <groupId>net.java</groupId>
-        <artifactId>jvnet-parent</artifactId>
-        <version>1</version>
-    </parent>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
     <developers>
         <developer>
             <id>scottkurz</id>
             <name>Scott Kurz</name>
             <email>skurz@us.ibm.com</email>
-        </developer>
-        <developer>
-            <id></id>
-            <name>Kaushik Mukherjee</name>
-            <email>kmukherj@us.ibm.com</email>
-        </developer>
-        <developer>
-            <id>htavarez</id>
-            <name>Hendrix Tavarez</name>
-            <email>htavarez@us.ibm.com</email>
         </developer>
         <developer>
             <id>dmbelina</id>
