@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>jbatch-parent</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>pom</packaging>
     <name>jbatch-parent</name>
     <description>
@@ -62,7 +62,7 @@
     <!-- Activate PGP signing only when performing a release -->
     <profiles>
         <profile>
-            <id>release-sign-artifacts</id>
+            <id>perform-release</id>
             <activation>
                 <property>
                     <name>performRelease</name>
@@ -93,7 +93,16 @@
                             </execution>
                         </executions>
                     </plugin>
-
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${version.org.sonatype.plugins.nexus-staging-maven-plugin}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -115,11 +124,12 @@
         <version.java>1.6</version.java>
 
         <!-- Dependencies -->
-        <version.javax.enterprise.cdi-api>1.1-20121030</version.javax.enterprise.cdi-api>
+        <version.javax.enterprise.cdi-api>1.1</version.javax.enterprise.cdi-api>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.org.testng.testng>6.8</version.org.testng.testng>
 
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
+        <version.org.sonatype.plugins.nexus-staging-maven-plugin>1.6.6</version.org.sonatype.plugins.nexus-staging-maven-plugin>
         <version.org.apache.maven.plugins.maven-antrun-plugin>1.8</version.org.apache.maven.plugins.maven-antrun-plugin>
         <version.org.apache.maven.plugins.maven-compiler-plugin>2.0.2</version.org.apache.maven.plugins.maven-compiler-plugin>
         <version.org.apache.maven.plugins.maven-failsafe-plugin>2.18</version.org.apache.maven.plugins.maven-failsafe-plugin>
@@ -137,7 +147,7 @@
     </properties>
 
     <modules>
-        <module>javax.batch</module>
+        <module>jakarta.batch</module>
         <module>com.ibm.jbatch.container</module>
         <module>com.ibm.jbatch.spi</module>
     </modules>
@@ -145,8 +155,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>javax.batch</groupId>
-                <artifactId>javax.batch-api</artifactId>
+                <groupId>jakarta.batch</groupId>
+                <artifactId>jakarta.batch-api</artifactId>
                 <version>${batch.api.version}</version>
             </dependency>
             <dependency>
@@ -344,7 +354,7 @@
                         <exclude>**/beans.xml</exclude>
                     </excludes>
                     <includes>
-                        <include>javax.batch/**</include>
+                        <include>jakarta.batch/**</include>
                         <include>com.ibm.jbatch.container/**</include>
                         <include>com.ibm.jbatch.spi/**</include>
                     </includes>

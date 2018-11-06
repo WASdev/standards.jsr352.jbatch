@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4</version>
     </parent>
 
-    <groupId>javax.batch</groupId>
-    <artifactId>javax.batch-api</artifactId>
+    <groupId>jakarta.batch</groupId>
+    <artifactId>jakarta.batch-api</artifactId>
     <packaging>jar</packaging>
     <!-- API artifacts will be separately versioned -->
     <version>1.0.1</version>
