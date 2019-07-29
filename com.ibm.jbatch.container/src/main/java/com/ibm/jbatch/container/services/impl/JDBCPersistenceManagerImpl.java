@@ -2321,7 +2321,139 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 
 	}
 
+	@Override
+	public boolean deleteJobInstance(JobInstance jobInstance) {
+		Connection conn = null;
+		PreparedStatement deleteStepExecutionInstances = null;
+		PreparedStatement deleteExecutionInstances = null;
+		PreparedStatement selectJobInstanceIds = null;
+		PreparedStatement deleteCheckpoints = null;
+		PreparedStatement deleteJobInstances = null;
+		ResultSet jobInstancesRs = null;
 
+		String deleteStepExecutionInstanceDataQuery = 
+			"DELETE FROM stepexecutioninstancedata WHERE jobexecid IN ("
+			+ "SELECT jobexecid FROM executioninstancedata WHERE jobinstanceid IN ("
+			+ "SELECT jobinstanceid FROM jobinstancedata WHERE name like ? OR jobinstanceid = ?))";
 
+		String deleteExecutionInstanceDataQuery =
+			"DELETE FROM executioninstancedata WHERE jobinstanceid IN (" 
+			+ "SELECT jobinstanceid FROM jobinstancedata WHERE name like ? OR jobinstanceid = ?)";
+		
+		String selectJobInstanceIdsQuery = 
+			"SELECT jobinstanceid FROM jobinstancedata WHERE name LIKE ? OR jobinstanceid = ?";
 
+		String deleteCheckpointDataQuery = "DELETE FROM checkpointdata WHERE id like ?";
+
+		String deleteJobInstanceDataQuery =
+			"DELETE FROM jobinstancedata WHERE name like ? OR jobinstanceid = ?";
+		
+		long jobInstanceId = jobInstance.getInstanceId();
+		String subJobName = ":" + jobInstanceId + ":%";
+		try {
+			conn = getConnection();
+			conn.setAutoCommit(false);
+			
+			deleteStepExecutionInstances = conn
+					.prepareStatement(deleteStepExecutionInstanceDataQuery);
+			deleteStepExecutionInstances.setString(1, subJobName);
+			deleteStepExecutionInstances.setLong(2, jobInstanceId);
+
+			deleteExecutionInstances = conn
+					.prepareStatement(deleteExecutionInstanceDataQuery);
+			deleteExecutionInstances.setString(1, subJobName);
+			deleteExecutionInstances.setLong(2, jobInstanceId);
+
+			deleteJobInstances = conn
+					.prepareStatement(deleteJobInstanceDataQuery);
+			deleteJobInstances.setString(1, subJobName);
+			deleteJobInstances.setLong(2, jobInstanceId);
+
+			// We want to make a wildcard string dynamically to delete rows
+			// with a subquery. However SQL Server 2008 doesn't seem to
+			// have the 'CONCAT' function, so deletes each row one by one
+			// for now.
+			selectJobInstanceIds = conn.prepareStatement(selectJobInstanceIdsQuery);
+			selectJobInstanceIds.setString(1, subJobName);
+			selectJobInstanceIds.setLong(2, jobInstanceId);
+ 			deleteCheckpoints = conn.prepareStatement(deleteCheckpointDataQuery);
+
+			jobInstancesRs = selectJobInstanceIds.executeQuery();
+			while (jobInstancesRs.next()) {
+				long relatedId = jobInstancesRs.getLong(1);
+				deleteCheckpoints.setString(1, relatedId + ",%");
+				deleteCheckpoints.executeUpdate();
+			}
+			deleteStepExecutionInstances.executeUpdate();
+			deleteExecutionInstances.executeUpdate();
+			deleteJobInstances.executeUpdate();
+
+			conn.commit();
+		} catch (SQLException ex) {
+			try {
+				if (conn != null) {
+					conn.rollback();
+				}
+			} catch (SQLException e) {
+				logger.severe("SQLException thrown:" + ex.getMessage());
+				throw new PersistenceException(e);
+			}
+			throw new PersistenceException(ex);
+		} finally {
+			try {
+				if (deleteJobInstances != null) {
+					deleteJobInstances.close();
+				}
+				if (jobInstancesRs != null) {
+					jobInstancesRs.close();
+				}
+				if (selectJobInstanceIds != null) {
+					selectJobInstanceIds.close();
+				}
+				if (deleteCheckpoints != null) {
+					deleteCheckpoints.close();
+				}
+				if (deleteExecutionInstances != null) {
+					deleteExecutionInstances.close();
+				}
+				if (deleteStepExecutionInstances != null) {
+					deleteStepExecutionInstances.close();
+				}
+				if (conn != null) {
+					conn.close();
+				}
+			} catch (SQLException e) {
+				throw new PersistenceException(e);
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public JobInstance jobOperatorGetJobInstance(long jobInstanceId) {
+		logger.entering(CLASSNAME, "getJobInstance", jobInstanceId);
+
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		JobStatus retVal = null;
+
+		try {
+			conn = getConnection();
+			statement = conn.prepareStatement("select A.obj from jobstatus A where A.id = ?");
+			statement.setLong(1, jobInstanceId);
+			rs = statement.executeQuery();
+			byte[] buf = null;
+			if (rs.next()) {
+				buf = rs.getBytes("obj");
+			}
+			retVal = (JobStatus) deserializeObject(buf);
+		} catch (Exception e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		logger.exiting(CLASSNAME, "getJobInstance");
+		return retVal == null ? null : retVal.getJobInstance();
+	}
 }

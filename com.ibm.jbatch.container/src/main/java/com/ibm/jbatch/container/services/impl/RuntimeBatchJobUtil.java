@@ -16,6 +16,9 @@
  */
 package com.ibm.jbatch.container.services.impl;
 
+import javax.batch.operations.JobExecutionIsRunningException;
+import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.NoSuchJobInstanceException;
 import javax.batch.runtime.BatchRuntime;
 
 import com.ibm.jbatch.container.api.impl.JobOperatorImpl;
@@ -30,4 +33,11 @@ public class RuntimeBatchJobUtil implements BatchJobUtil {
 		jobOperator.purge(tag);
 	}
 
+	@Override
+	public boolean deleteJobInstance(long jobInstanceId)
+			throws NoSuchJobInstanceException, JobSecurityException,
+			JobExecutionIsRunningException {
+		JobOperatorImpl jobOperator = (JobOperatorImpl) BatchRuntime.getJobOperator();
+		return jobOperator.deleteJobInstance(jobInstanceId);
+	}
 }

@@ -89,6 +89,10 @@ public interface IPersistenceManagerService extends IBatchServiceBase {
 
 	public long getJobInstanceIdByExecutionId(long executionId) throws NoSuchJobExecutionException;
 
+	public boolean deleteJobInstance(JobInstance jobInstance);
+
+	public JobInstance jobOperatorGetJobInstance(long jobInstanceId);
+
 	// JOBINSTANCEDATA
 	/**
 	 * Creates a JobIntance
