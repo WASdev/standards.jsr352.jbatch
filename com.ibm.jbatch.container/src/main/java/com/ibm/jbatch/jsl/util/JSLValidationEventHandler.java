@@ -18,8 +18,8 @@ package com.ibm.jbatch.jsl.util;
 
 import java.util.logging.Logger;
 
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
+import jakarta.xml.bind.ValidationEvent;
+import jakarta.xml.bind.ValidationEventHandler;
 
 public class JSLValidationEventHandler implements ValidationEventHandler {
     

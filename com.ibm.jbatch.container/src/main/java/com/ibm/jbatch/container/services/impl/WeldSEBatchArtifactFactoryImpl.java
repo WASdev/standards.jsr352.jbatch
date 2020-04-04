@@ -23,8 +23,7 @@ import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Named;
 
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
+import jakarta.enterprise.inject.se.*;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
@@ -38,8 +37,7 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
     // TODO - synchronize appropriately once we learn more about usage
     private boolean loaded = false;
-    private Weld weld;
-    private WeldContainer container;
+    private SeContainer container;
 
     // Uses TCCL
     @Override
@@ -88,12 +86,11 @@ public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
     @Override
     public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
-        weld = new Weld();
-        container = weld.initialize();
+        container = SeContainerInitializer.newInstance().initialize();
     }
 
     @Override
     public void shutdown() throws BatchContainerServiceException {
-        weld.shutdown();
+        container.close();
     }
 }
