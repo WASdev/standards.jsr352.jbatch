@@ -120,11 +120,12 @@
 
         <!-- Building the project -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.java>1.6</version.java>
+        <version.java>1.8</version.java>
 
         <!-- Dependencies -->
-        <version.javax.enterprise.cdi-api>1.1</version.javax.enterprise.cdi-api>
-        <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
+        <version.jakarta.enterprise.jakarta.enterprise.cdi-api>3.0.0-M1</version.jakarta.enterprise.jakarta.enterprise.cdi-api>
+        <version.jakarta.inject.jakarta.inject-api>2.0.0.RC1</version.jakarta.inject.jakarta.inject-api>
+        <version.jakarta.transaction.jakarta.transaction-api>2.0.0-RC1</version.jakarta.transaction.jakarta.transaction-api>
         <version.org.testng.testng>6.8</version.org.testng.testng>
 
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
@@ -168,24 +169,19 @@
                 <version>${batch.impl.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.enterprise</groupId>
-                <artifactId>cdi-api</artifactId>
-                <version>${version.javax.enterprise.cdi-api}</version>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-api</artifactId>
+                <version>${version.jakarta.enterprise.jakarta.enterprise.cdi-api}</version>
             </dependency>
             <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>${version.javax.inject.javax.inject}</version>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${version.jakarta.inject.jakarta.inject-api}</version>
             </dependency>
             <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject-tck</artifactId>
-                <version>${version.javax.inject.javax.inject}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.transaction</groupId>
-                <artifactId>jta</artifactId>
-                <version>1.1</version>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>${version.jakarta.transaction.jakarta.transaction-api}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -300,6 +296,27 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[11.0,12.0)</version>
+                                    <message>You need JDK11</message>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
@@ -316,9 +333,11 @@
                 <configuration>
                     <bottom>
                     <![CDATA[
-                    <p align="left">&#169; Copyright IBM Corp. 2014<br>Licensed under the Apache License, Version 2.0
+                    <p align="left">&#169; Copyright IBM Corp. 2014, 2020<br>Licensed under the Apache License, Version 2.0
                     ]]>
                     </bottom>
+                    <!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->
+                    <source>8</source>
                 </configuration>
                 <executions>
                     <execution>
