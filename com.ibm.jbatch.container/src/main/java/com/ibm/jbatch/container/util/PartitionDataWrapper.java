@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.util;
 
 import java.io.Serializable;
 
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.BatchStatus;
 
 public class PartitionDataWrapper {
     

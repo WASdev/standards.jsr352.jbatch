@@ -23,12 +23,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.operations.JobExecutionAlreadyCompleteException;
-import javax.batch.operations.JobExecutionNotMostRecentException;
-import javax.batch.operations.JobExecutionNotRunningException;
-import javax.batch.operations.JobRestartException;
-import javax.batch.operations.JobStartException;
-import javax.batch.operations.NoSuchJobExecutionException;
+import jakarta.batch.operations.JobExecutionAlreadyCompleteException;
+import jakarta.batch.operations.JobExecutionNotMostRecentException;
+import jakarta.batch.operations.JobExecutionNotRunningException;
+import jakarta.batch.operations.JobRestartException;
+import jakarta.batch.operations.JobStartException;
+import jakarta.batch.operations.NoSuchJobExecutionException;
 
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;

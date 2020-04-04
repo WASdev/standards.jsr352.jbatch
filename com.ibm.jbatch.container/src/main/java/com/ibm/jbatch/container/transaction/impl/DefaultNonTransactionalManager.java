@@ -32,43 +32,43 @@ public class DefaultNonTransactionalManager implements TransactionManagerAdapter
 	/**
 	 * transaction status
 	 */
-	private int status = 6; // javax.transaction.Status.STATUS_NO_TRANSACTION
+	private int status = 6; // jakarta.transaction.Status.STATUS_NO_TRANSACTION
 	
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#begin()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#begin()
 	 */
 	@Override
 	public void begin() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "begin");
-		status = 0; // javax.transaction.Status.STATUS_ACTIVE
-		logger.log(Level.FINE, "javax.transaction.Status.ACTIVE: {0}", status);
+		status = 0; // jakarta.transaction.Status.STATUS_ACTIVE
+		logger.log(Level.FINE, "jakarta.transaction.Status.ACTIVE: {0}", status);
 		logger.exiting(CLASSNAME, "begin");
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#commit()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#commit()
 	 */
 	@Override
 	public void commit() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "commit");
-		status = 3; // javax.transaction.Status.STATUS_COMMITTED
-		logger.log(Level.FINE, "javax.transaction.Status.STATUS_COMMITTED: {0}", status);
+		status = 3; // jakarta.transaction.Status.STATUS_COMMITTED
+		logger.log(Level.FINE, "jakarta.transaction.Status.STATUS_COMMITTED: {0}", status);
 		logger.exiting(CLASSNAME, "commit");
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#rollback()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#rollback()
 	 */
 	@Override
 	public void rollback() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "rollback");
-		status = 4; // javax.transaction.Status.STATUS_ROLLEDBACK
-		logger.log(Level.FINE, "javax.transaction.Status.STATUS_ROLLEDBACK: {0}", status);
+		status = 4; // jakarta.transaction.Status.STATUS_ROLLEDBACK
+		logger.log(Level.FINE, "jakarta.transaction.Status.STATUS_ROLLEDBACK: {0}", status);
 		logger.exiting(CLASSNAME, "rollback");
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#getStatus()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#getStatus()
 	 */
 	@Override
 	public int getStatus() throws TransactionManagementException {
@@ -78,18 +78,18 @@ public class DefaultNonTransactionalManager implements TransactionManagerAdapter
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#setRollbackOnly()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#setRollbackOnly()
 	 */
 	@Override
 	public void setRollbackOnly() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "setRollbackOnly");
-		status = 9;  // javax.transaction.Status.STATUS_ROLLING_BACK
-		logger.log(Level.FINE, "javax.transaction.Status.STATUS_ROLLING_BACK: {0}", status);
+		status = 9;  // jakarta.transaction.Status.STATUS_ROLLING_BACK
+		logger.log(Level.FINE, "jakarta.transaction.Status.STATUS_ROLLING_BACK: {0}", status);
 		logger.exiting(CLASSNAME, "setRollbackOnly");
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#setTransactionTimeout(int)
+	 * @see jakarta.batch.spi.TransactionManagerSPI#setTransactionTimeout(int)
 	 */
 	@Override
 	public void setTransactionTimeout(int seconds) throws TransactionManagementException {

@@ -16,10 +16,10 @@
  */
 package test.artifacts;
 
-import javax.batch.api.BatchProperty;
-import javax.batch.api.partition.PartitionCollector;
-import javax.batch.runtime.context.StepContext;
-import javax.inject.Inject;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.partition.PartitionCollector;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.inject.Inject;
 
 public class PartitionPropertyCollector implements PartitionCollector{
 

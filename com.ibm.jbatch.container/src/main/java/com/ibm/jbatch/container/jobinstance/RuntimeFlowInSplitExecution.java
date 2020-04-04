@@ -16,7 +16,7 @@
  */
 package com.ibm.jbatch.container.jobinstance;
 
-import javax.batch.runtime.JobInstance;
+import jakarta.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.status.ExecutionStatus;
 

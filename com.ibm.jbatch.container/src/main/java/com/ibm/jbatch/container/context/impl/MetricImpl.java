@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.context.impl;
 
-import javax.batch.runtime.Metric;
+import jakarta.batch.runtime.Metric;
 
 public class MetricImpl implements Metric {
 	

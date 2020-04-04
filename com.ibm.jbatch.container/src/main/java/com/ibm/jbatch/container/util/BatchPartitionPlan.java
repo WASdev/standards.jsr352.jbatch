@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.util;
 
 import java.util.Properties;
 
-import javax.batch.api.partition.PartitionPlan;
+import jakarta.batch.api.partition.PartitionPlan;
 
 public class BatchPartitionPlan implements PartitionPlan  {
 

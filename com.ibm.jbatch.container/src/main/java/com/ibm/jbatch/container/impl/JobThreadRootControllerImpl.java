@@ -25,7 +25,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.IController;
 import com.ibm.jbatch.container.IThreadRootController;

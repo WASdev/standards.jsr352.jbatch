@@ -21,7 +21,7 @@ import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.IThreadRootController;
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;

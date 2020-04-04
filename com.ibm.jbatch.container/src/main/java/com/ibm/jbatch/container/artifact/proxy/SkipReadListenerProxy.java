@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.chunk.listener.SkipReadListener;
+import jakarta.batch.api.chunk.listener.SkipReadListener;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 

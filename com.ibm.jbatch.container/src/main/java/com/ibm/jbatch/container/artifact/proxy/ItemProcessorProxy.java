@@ -16,7 +16,7 @@
  */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.chunk.ItemProcessor;
+import jakarta.batch.api.chunk.ItemProcessor;
 
 public class ItemProcessorProxy  extends AbstractProxy<ItemProcessor> implements ItemProcessor {
 
@@ -27,7 +27,7 @@ public class ItemProcessorProxy  extends AbstractProxy<ItemProcessor> implements
 	/*
 	 * In order to provide skip/retry logic, these exceptions
 	 * are thrown as-is rather than beeing wrapped.
-	 * @see javax.batch.api.ItemReader#readItem()
+	 * @see jakarta.batch.api.ItemReader#readItem()
 	 */
 	@Override
 	public Object processItem(Object item) throws Exception {

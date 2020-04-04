@@ -18,12 +18,12 @@ package test.artifacts;
 
 import java.util.Properties;
 
-import javax.batch.api.BatchProperty;
-import javax.batch.api.partition.PartitionMapper;
-import javax.batch.api.partition.PartitionPlan;
-import javax.batch.api.partition.PartitionPlanImpl;
-import javax.batch.runtime.context.StepContext;
-import javax.inject.Inject;
+import jakarta.batch.api.BatchProperty;
+import jakarta.batch.api.partition.PartitionMapper;
+import jakarta.batch.api.partition.PartitionPlan;
+import jakarta.batch.api.partition.PartitionPlanImpl;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.inject.Inject;
 
 
 public class MyPropertyMapper implements PartitionMapper{

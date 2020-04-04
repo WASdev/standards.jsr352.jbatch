@@ -19,7 +19,7 @@ package com.ibm.jbatch.container.services;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import javax.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobExecution;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 

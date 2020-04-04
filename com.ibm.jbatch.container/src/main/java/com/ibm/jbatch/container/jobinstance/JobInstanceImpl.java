@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.jobinstance;
 
 import java.io.Serializable;
 
-import javax.batch.runtime.JobInstance;
+import jakarta.batch.runtime.JobInstance;
 
 public class JobInstanceImpl implements JobInstance, Serializable {
 

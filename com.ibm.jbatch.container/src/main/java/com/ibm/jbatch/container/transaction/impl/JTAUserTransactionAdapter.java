@@ -21,13 +21,13 @@ import java.util.logging.Logger;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
 
 import com.ibm.jbatch.container.exception.TransactionManagementException;
 import com.ibm.jbatch.spi.services.TransactionManagerAdapter;
@@ -66,14 +66,14 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 	
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#begin()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#begin()
 	 */
 	@Override
 	public void begin() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "begin");
 		try {
 			userTran.begin();
-			logger.log(Level.FINE, "javax.transaction.Status: {0}", userTran.getStatus());
+			logger.log(Level.FINE, "jakarta.transaction.Status: {0}", userTran.getStatus());
 		} catch (NotSupportedException e) {
 			throw new TransactionManagementException(e);
 		} catch (SystemException e) {
@@ -83,14 +83,14 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#commit()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#commit()
 	 */
 	@Override
 	public void commit() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "commit");
 		try {
 			userTran.commit();
-			logger.log(Level.FINE, "javax.transaction.Status: {0}", userTran.getStatus());
+			logger.log(Level.FINE, "jakarta.transaction.Status: {0}", userTran.getStatus());
 		} catch (SecurityException e) {
 			throw new TransactionManagementException(e);
 		} catch (IllegalStateException e) {
@@ -118,7 +118,7 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 			if (userTran.getStatus() != Status.STATUS_NO_TRANSACTION) {
 				userTran.rollback();
 			}
-			logger.log(Level.FINE, "javax.transaction.Status: {0}", userTran.getStatus());
+			logger.log(Level.FINE, "jakarta.transaction.Status: {0}", userTran.getStatus());
 		} catch (IllegalStateException e) {
 			throw new TransactionManagementException(e);
 		} catch (SecurityException e) {
@@ -130,7 +130,7 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#getStatus()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#getStatus()
 	 */
 	@Override
 	public int getStatus() throws TransactionManagementException {
@@ -139,7 +139,7 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 		
 		try {
 			status = userTran.getStatus();
-			logger.log(Level.FINE, "javax.transaction.Status: {0}", status);
+			logger.log(Level.FINE, "jakarta.transaction.Status: {0}", status);
 		} catch (SystemException e) {
 			throw new TransactionManagementException(e);
 		}
@@ -148,14 +148,14 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#setRollbackOnly()
+	 * @see jakarta.batch.spi.TransactionManagerSPI#setRollbackOnly()
 	 */
 	@Override
 	public void setRollbackOnly() throws TransactionManagementException {
 		logger.entering(CLASSNAME, "setRollbackOnly");
 		try {
 			userTran.setRollbackOnly();
-			logger.log(Level.FINE, "javax.transaction.Status: {0}", userTran.getStatus());
+			logger.log(Level.FINE, "jakarta.transaction.Status: {0}", userTran.getStatus());
 		} catch (IllegalStateException e) {
 			throw new TransactionManagementException(e);
 		} catch (SystemException e) {
@@ -165,7 +165,7 @@ public class JTAUserTransactionAdapter implements TransactionManagerAdapter {
 	}
 
 	/* (non-Javadoc)
-	 * @see javax.batch.spi.TransactionManagerSPI#setTransactionTimeout(int)
+	 * @see jakarta.batch.spi.TransactionManagerSPI#setTransactionTimeout(int)
 	 */
 	@Override
 	public void setTransactionTimeout(int seconds) throws TransactionManagementException {

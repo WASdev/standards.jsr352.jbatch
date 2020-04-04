@@ -16,7 +16,7 @@
  */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.listener.StepListener;
+import jakarta.batch.api.listener.StepListener;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 

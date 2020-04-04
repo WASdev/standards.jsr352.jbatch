@@ -16,8 +16,8 @@
 */
 package com.ibm.jbatch.container.callback;
 
-import javax.batch.operations.JobSecurityException;
-import javax.batch.operations.NoSuchJobExecutionException;
+import jakarta.batch.operations.JobSecurityException;
+import jakarta.batch.operations.NoSuchJobExecutionException;
 
 import com.ibm.jbatch.spi.services.IBatchServiceBase;
 

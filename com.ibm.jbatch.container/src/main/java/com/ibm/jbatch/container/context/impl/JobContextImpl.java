@@ -19,8 +19,8 @@ package com.ibm.jbatch.container.context.impl;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.context.JobContext;
 
 import com.ibm.jbatch.container.annotation.TCKExperimentProperty;
 import com.ibm.jbatch.container.navigator.ModelNavigator;

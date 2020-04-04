@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.artifact.proxy;
 
 import java.io.Serializable;
 
-import javax.batch.api.partition.PartitionCollector;
+import jakarta.batch.api.partition.PartitionCollector;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 

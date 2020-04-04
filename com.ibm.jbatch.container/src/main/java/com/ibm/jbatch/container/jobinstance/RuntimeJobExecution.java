@@ -20,8 +20,8 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobInstance;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.artifact.proxy.ListenerFactory;
 import com.ibm.jbatch.container.context.impl.JobContextImpl;

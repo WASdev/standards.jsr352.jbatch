@@ -19,7 +19,7 @@ package com.ibm.jbatch.container.artifact.proxy;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.batch.api.chunk.ItemWriter;
+import jakarta.batch.api.chunk.ItemWriter;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
@@ -64,7 +64,7 @@ public class ItemWriterProxy extends AbstractProxy<ItemWriter> implements ItemWr
     /*
      * In order to provide skip/retry logic, these exceptions
      * are thrown as-is rather than beeing wrapped.
-     * @see javax.batch.api.ItemReader#readItem()
+     * @see jakarta.batch.api.ItemReader#readItem()
      */
     @Override
     public void writeItems(List items) throws Exception{

@@ -18,14 +18,14 @@ package test.junit;
 
 import java.util.List;
 
-import javax.batch.api.AbstractBatchlet;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.StepExecution;
-import javax.batch.runtime.context.StepContext;
-import javax.inject.Inject;
+import jakarta.batch.api.AbstractBatchlet;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.StepExecution;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 

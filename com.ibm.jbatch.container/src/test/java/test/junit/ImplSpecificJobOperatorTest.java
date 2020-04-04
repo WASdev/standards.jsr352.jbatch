@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobRestartException;
-import javax.batch.operations.NoSuchJobExecutionException;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.operations.JobRestartException;
+import jakarta.batch.operations.NoSuchJobExecutionException;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobInstance;
+import jakarta.batch.runtime.StepExecution;
 
 import org.junit.BeforeClass;
 import org.junit.Ignore;

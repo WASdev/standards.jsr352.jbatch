@@ -27,8 +27,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.api.chunk.CheckpointAlgorithm;
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.api.chunk.CheckpointAlgorithm;
+import jakarta.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.artifact.proxy.CheckpointAlgorithmProxy;
 import com.ibm.jbatch.container.artifact.proxy.ChunkListenerProxy;
@@ -1088,9 +1088,9 @@ public class ChunkStepControllerImpl extends SingleThreadedStepControllerImpl {
         int timeout = DEFAULT_TRAN_TIMEOUT_SECONDS; // default as per spec.
         if (p != null && !p.isEmpty()) {
 
-            String propertyTimeOut = p.getProperty("javax.transaction.global.timeout");
+            String propertyTimeOut = p.getProperty("jakarta.transaction.global.timeout");
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "javax.transaction.global.timeout = {0}", propertyTimeOut==null ? "<null>" : propertyTimeOut);
+                logger.log(Level.FINE, "jakarta.transaction.global.timeout = {0}", propertyTimeOut==null ? "<null>" : propertyTimeOut);
             }
             if (propertyTimeOut != null && !propertyTimeOut.isEmpty()) {
                 timeout = Integer.parseInt(propertyTimeOut, 10);

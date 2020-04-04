@@ -1,9 +1,9 @@
 package test.artifacts;
 
-import javax.batch.api.Batchlet;
-import javax.enterprise.inject.New;
-import javax.enterprise.inject.Produces;
-import javax.inject.Named;
+import jakarta.batch.api.Batchlet;
+import jakarta.enterprise.inject.New;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Named;
 
 /**
  * @author <a href="mailto:brent.n.douglas@gmail.com">Brent Douglas</a>

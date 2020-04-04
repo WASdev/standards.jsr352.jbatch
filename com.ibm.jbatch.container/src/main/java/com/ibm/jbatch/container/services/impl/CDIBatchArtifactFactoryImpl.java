@@ -18,8 +18,8 @@ package com.ibm.jbatch.container.services.impl;
 
 import java.util.logging.Logger;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 import javax.naming.InitialContext;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;

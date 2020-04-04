@@ -16,7 +16,7 @@
  */
 package com.ibm.jbatch.container.services.impl;
 
-import javax.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.BatchRuntime;
 
 import com.ibm.jbatch.container.api.impl.JobOperatorImpl;
 import com.ibm.jbatch.spi.BatchJobUtil;

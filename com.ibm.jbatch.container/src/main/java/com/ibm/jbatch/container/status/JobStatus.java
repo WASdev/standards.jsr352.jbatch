@@ -17,8 +17,8 @@
 package com.ibm.jbatch.container.status;
 import java.io.Serializable;
 
-import javax.batch.runtime.BatchStatus;
-import javax.batch.runtime.JobInstance;
+import jakarta.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.JobInstance;
 
 import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 

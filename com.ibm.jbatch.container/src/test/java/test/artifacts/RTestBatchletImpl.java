@@ -18,9 +18,9 @@ package test.artifacts;
 
 import java.util.logging.Logger;
 
-import javax.batch.api.AbstractBatchlet;
-import javax.batch.api.BatchProperty;
-import javax.inject.Inject;
+import jakarta.batch.api.AbstractBatchlet;
+import jakarta.batch.api.BatchProperty;
+import jakarta.inject.Inject;
 
 public class RTestBatchletImpl extends AbstractBatchlet {
 	private final static Logger logger = Logger.getLogger(RTestBatchletImpl.class.getName());

@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.spi.services;
 
-import javax.batch.runtime.context.StepContext;
+import jakarta.batch.runtime.context.StepContext;
 
 public interface ITransactionManagementService extends IBatchServiceBase {
 

@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.artifact.proxy;
 
 import java.io.Serializable;
 
-import javax.batch.api.chunk.ItemReader;
+import jakarta.batch.api.chunk.ItemReader;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 
@@ -61,7 +61,7 @@ public class ItemReaderProxy extends AbstractProxy<ItemReader> implements ItemRe
     /*
      * In order to provide skip/retry logic, these exceptions
      * are thrown as-is rather than beeing wrapped.
-     * @see javax.batch.api.ItemReader#readItem()
+     * @see jakarta.batch.api.ItemReader#readItem()
      */
     @Override
     public Object readItem() throws Exception {

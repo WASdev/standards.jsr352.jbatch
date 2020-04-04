@@ -18,8 +18,8 @@ package com.ibm.jbatch.container.artifact.proxy;
 
 import java.util.List;
 
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
+import jakarta.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.context.StepContext;
 
 import com.ibm.jbatch.jsl.model.Property;
 

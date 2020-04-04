@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.impl;
 
-import javax.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.context.JobContext;
 
 import com.ibm.jbatch.container.context.impl.JobContextImpl;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;

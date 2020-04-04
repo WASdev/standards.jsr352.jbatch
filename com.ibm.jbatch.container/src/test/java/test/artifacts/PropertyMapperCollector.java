@@ -18,9 +18,9 @@ package test.artifacts;
 
 import java.io.Serializable;
 
-import javax.batch.api.partition.PartitionCollector;
-import javax.batch.runtime.context.StepContext;
-import javax.inject.Inject;
+import jakarta.batch.api.partition.PartitionCollector;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.inject.Inject;
 
 public class PropertyMapperCollector implements PartitionCollector {
 

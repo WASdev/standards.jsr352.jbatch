@@ -24,14 +24,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.api.partition.PartitionPlan;
-import javax.batch.api.partition.PartitionReducer.PartitionStatus;
-import javax.batch.operations.JobExecutionAlreadyCompleteException;
-import javax.batch.operations.JobExecutionNotMostRecentException;
-import javax.batch.operations.JobExecutionNotRunningException;
-import javax.batch.operations.JobRestartException;
-import javax.batch.operations.JobStartException;
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.api.partition.PartitionPlan;
+import jakarta.batch.api.partition.PartitionReducer.PartitionStatus;
+import jakarta.batch.operations.JobExecutionAlreadyCompleteException;
+import jakarta.batch.operations.JobExecutionNotMostRecentException;
+import jakarta.batch.operations.JobExecutionNotRunningException;
+import jakarta.batch.operations.JobRestartException;
+import jakarta.batch.operations.JobStartException;
+import jakarta.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.artifact.proxy.InjectionReferences;
 import com.ibm.jbatch.container.artifact.proxy.PartitionAnalyzerProxy;

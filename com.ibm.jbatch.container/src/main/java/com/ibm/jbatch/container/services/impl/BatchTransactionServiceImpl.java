@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.context.StepContext;
+import jakarta.batch.runtime.context.StepContext;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.exception.TransactionManagementException;
@@ -76,7 +76,7 @@ public class BatchTransactionServiceImpl implements ITransactionManagementServic
      * (non-Javadoc)
      * 
      * @see com.ibm.jbatch.container.services.ITransactionManagementService#
-     * getTransactionManager(javax.batch.runtime.context.StepContext)
+     * getTransactionManager(jakarta.batch.runtime.context.StepContext)
      */
     @Override
     public TransactionManagerAdapter getTransactionManager(StepContext stepContext) throws TransactionManagementException {

@@ -19,7 +19,7 @@ package com.ibm.jbatch.container.services.impl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.BatchStatus;
+import jakarta.batch.runtime.BatchStatus;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.container.exception.PersistenceException;

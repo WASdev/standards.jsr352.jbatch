@@ -19,7 +19,7 @@ package com.ibm.jbatch.container.impl;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.batch.runtime.StepExecution;
+import jakarta.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.IExecutionElementController;
 import com.ibm.jbatch.container.artifact.proxy.DeciderProxy;

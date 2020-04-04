@@ -19,17 +19,17 @@ package test.junit;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.batch.api.AbstractBatchlet;
-import javax.batch.api.partition.AbstractPartitionAnalyzer;
-import javax.batch.api.partition.PartitionCollector;
-import javax.batch.operations.JobOperator;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
-import javax.batch.runtime.StepExecution;
-import javax.batch.runtime.context.JobContext;
-import javax.batch.runtime.context.StepContext;
-import javax.inject.Inject;
+import jakarta.batch.api.AbstractBatchlet;
+import jakarta.batch.api.partition.AbstractPartitionAnalyzer;
+import jakarta.batch.api.partition.PartitionCollector;
+import jakarta.batch.operations.JobOperator;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.runtime.JobExecution;
+import jakarta.batch.runtime.JobInstance;
+import jakarta.batch.runtime.StepExecution;
+import jakarta.batch.runtime.context.JobContext;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
 

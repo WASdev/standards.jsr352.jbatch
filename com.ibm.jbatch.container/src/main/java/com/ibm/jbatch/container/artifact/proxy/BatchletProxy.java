@@ -16,7 +16,7 @@
 */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.Batchlet;
+import jakarta.batch.api.Batchlet;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 

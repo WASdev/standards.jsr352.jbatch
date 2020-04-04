@@ -16,8 +16,8 @@
  */
 package com.ibm.jbatch.container.artifact.proxy;
 
-import javax.batch.api.Decider;
-import javax.batch.runtime.StepExecution;
+import jakarta.batch.api.Decider;
+import jakarta.batch.runtime.StepExecution;
 
 import com.ibm.jbatch.container.exception.BatchContainerRuntimeException;
 

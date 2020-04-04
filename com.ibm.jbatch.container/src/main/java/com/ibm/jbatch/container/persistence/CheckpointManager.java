@@ -21,7 +21,7 @@ import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.batch.api.chunk.CheckpointAlgorithm;
+import jakarta.batch.api.chunk.CheckpointAlgorithm;
 
 import com.ibm.jbatch.container.artifact.proxy.ItemReaderProxy;
 import com.ibm.jbatch.container.artifact.proxy.ItemWriterProxy;

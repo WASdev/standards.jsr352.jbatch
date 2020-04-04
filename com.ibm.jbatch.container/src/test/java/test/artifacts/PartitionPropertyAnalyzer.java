@@ -18,9 +18,9 @@ package test.artifacts;
 
 import java.io.Serializable;
 
-import javax.batch.api.partition.AbstractPartitionAnalyzer;
-import javax.batch.runtime.context.StepContext;
-import javax.inject.Inject;
+import jakarta.batch.api.partition.AbstractPartitionAnalyzer;
+import jakarta.batch.runtime.context.StepContext;
+import jakarta.inject.Inject;
 
 public class PartitionPropertyAnalyzer extends AbstractPartitionAnalyzer{
 
