@@ -29,7 +29,10 @@ import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
+import org.junit.Ignore;
+
 @Named("MyWeldBean")
+@Ignore("Need a jakarta.* impl of Weld")
 public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
     private final static Logger logger = Logger.getLogger(WeldSEBatchArtifactFactoryImpl.class.getName());

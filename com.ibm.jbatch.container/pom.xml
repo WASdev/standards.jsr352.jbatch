@@ -90,6 +90,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Building JAXB model manually for now -->
             <!--
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -118,6 +119,8 @@
                     </archive>
                 </configuration>
             </plugin>
+            <!-- Building JAXB model manually for now -->
+            <!--
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -136,6 +139,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             <!-- The main reason for using both the failsafe and surefire plugins 
                 is to allow some tests to be run all under a single JVM lifecycle, and some 
                 to be run with each test getting its own JVM instance. It's not because one 

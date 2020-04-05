@@ -26,7 +26,8 @@ import org.xml.sax.SAXException;
 
 public class ValidatorHelper {
 
-    public final static String SCHEMA_LOCATION = "xsd/jobXML_1_0.xsd";
+    // Unofficially packaged in this RI
+    public final static String SCHEMA_LOCATION = "xsd/jobXML_2_0.xsd";
     
     private static Schema schema = null;
     
