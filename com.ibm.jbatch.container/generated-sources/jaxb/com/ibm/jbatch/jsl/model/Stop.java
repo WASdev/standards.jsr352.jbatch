@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlType;
  * &lt;complexType name="Stop">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attGroup ref="{http://xmlns.jcp.org/xml/ns/javaee}TerminatingAttributes"/>
+ *       &lt;attGroup ref="{https://jakarta.ee/xml/ns/jakartaee}TerminatingAttributes"/>
  *       &lt;attribute name="restart" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>

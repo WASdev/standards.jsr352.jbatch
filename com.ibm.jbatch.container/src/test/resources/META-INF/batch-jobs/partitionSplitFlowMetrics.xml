@@ -12,7 +12,7 @@
 
 <!-- Same essential structure nested in split flows for thorough testing -->
 
-<job id="partitionSplitFlowMetrics" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<job id="partitionSplitFlowMetrics" xmlns="https://jakarta.ee/xml/ns/jakartaee"
 	version="1.0">
 	<split id="split1">
 		<flow id="split1flow1">

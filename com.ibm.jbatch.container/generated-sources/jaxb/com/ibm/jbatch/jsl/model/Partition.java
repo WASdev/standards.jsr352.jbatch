@@ -24,12 +24,12 @@ import jakarta.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;choice minOccurs="0">
- *           &lt;element name="mapper" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionMapper"/>
- *           &lt;element name="plan" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionPlan"/>
+ *           &lt;element name="mapper" type="{https://jakarta.ee/xml/ns/jakartaee}PartitionMapper"/>
+ *           &lt;element name="plan" type="{https://jakarta.ee/xml/ns/jakartaee}PartitionPlan"/>
  *         &lt;/choice>
- *         &lt;element name="collector" type="{http://xmlns.jcp.org/xml/ns/javaee}Collector" minOccurs="0"/>
- *         &lt;element name="analyzer" type="{http://xmlns.jcp.org/xml/ns/javaee}Analyzer" minOccurs="0"/>
- *         &lt;element name="reducer" type="{http://xmlns.jcp.org/xml/ns/javaee}PartitionReducer" minOccurs="0"/>
+ *         &lt;element name="collector" type="{https://jakarta.ee/xml/ns/jakartaee}Collector" minOccurs="0"/>
+ *         &lt;element name="analyzer" type="{https://jakarta.ee/xml/ns/jakartaee}Analyzer" minOccurs="0"/>
+ *         &lt;element name="reducer" type="{https://jakarta.ee/xml/ns/jakartaee}PartitionReducer" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>

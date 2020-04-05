@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlType;
  * &lt;complexType name="End">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attGroup ref="{http://xmlns.jcp.org/xml/ns/javaee}TerminatingAttributes"/>
+ *       &lt;attGroup ref="{https://jakarta.ee/xml/ns/jakartaee}TerminatingAttributes"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>

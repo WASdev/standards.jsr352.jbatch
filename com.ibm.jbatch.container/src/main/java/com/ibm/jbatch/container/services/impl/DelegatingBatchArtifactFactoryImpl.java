@@ -47,7 +47,7 @@ public class DelegatingBatchArtifactFactoryImpl implements IBatchArtifactFactory
 
 	// TODO - surface constants
 	private final static String BATCH_XML = "META-INF/batch.xml";
-	private final static QName BATCH_ROOT_ELEM = new QName("http://xmlns.jcp.org/xml/ns/javaee", "batch-artifacts");
+	private final static QName BATCH_ROOT_ELEM = new QName("https://jakarta.ee/xml/ns/jakartaee", "batch-artifacts");
 
 	// Uses TCCL
 	@Override

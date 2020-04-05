@@ -61,7 +61,7 @@ public class JobModelSerializerImpl implements ModelSerializer<JSLJob> {
     		 * from scott: 
     		 */
     		m.marshal( new JAXBElement(
-    				new QName("http://xmlns.jcp.org/xml/ns/javaee","job"), JSLJob.class, job ), baos);
+    				new QName("https://jakarta.ee/xml/ns/jakartaee","job"), JSLJob.class, job ), baos);
     		resultXML = baos.toString();
     	}
     	catch(Exception e){

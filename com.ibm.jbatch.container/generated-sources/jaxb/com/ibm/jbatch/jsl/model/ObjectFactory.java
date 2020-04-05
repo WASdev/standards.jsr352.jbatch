@@ -31,7 +31,7 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _Job_QNAME = new QName("http://xmlns.jcp.org/xml/ns/javaee", "job");
+    private final static QName _Job_QNAME = new QName("https://jakarta.ee/xml/ns/jakartaee", "job");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: com.ibm.jbatch.jsl.model
@@ -268,7 +268,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link JSLJob }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://xmlns.jcp.org/xml/ns/javaee", name = "job")
+    @XmlElementDecl(namespace = "https://jakarta.ee/xml/ns/jakartaee", name = "job")
     public JAXBElement<JSLJob> createJob(JSLJob value) {
         return new JAXBElement<JSLJob>(_Job_QNAME, JSLJob.class, null, value);
     }

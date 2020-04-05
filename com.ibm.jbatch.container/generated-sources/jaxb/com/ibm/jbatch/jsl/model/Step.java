@@ -33,14 +33,14 @@ import com.ibm.jbatch.container.jsl.TransitionElement;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" minOccurs="0"/>
- *         &lt;element name="listeners" type="{http://xmlns.jcp.org/xml/ns/javaee}Listeners" minOccurs="0"/>
+ *         &lt;element name="properties" type="{https://jakarta.ee/xml/ns/jakartaee}Properties" minOccurs="0"/>
+ *         &lt;element name="listeners" type="{https://jakarta.ee/xml/ns/jakartaee}Listeners" minOccurs="0"/>
  *         &lt;choice minOccurs="0">
- *           &lt;element name="batchlet" type="{http://xmlns.jcp.org/xml/ns/javaee}Batchlet"/>
- *           &lt;element name="chunk" type="{http://xmlns.jcp.org/xml/ns/javaee}Chunk"/>
+ *           &lt;element name="batchlet" type="{https://jakarta.ee/xml/ns/jakartaee}Batchlet"/>
+ *           &lt;element name="chunk" type="{https://jakarta.ee/xml/ns/jakartaee}Chunk"/>
  *         &lt;/choice>
- *         &lt;element name="partition" type="{http://xmlns.jcp.org/xml/ns/javaee}Partition" minOccurs="0"/>
- *         &lt;group ref="{http://xmlns.jcp.org/xml/ns/javaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="partition" type="{https://jakarta.ee/xml/ns/jakartaee}Partition" minOccurs="0"/>
+ *         &lt;group ref="{https://jakarta.ee/xml/ns/jakartaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
  *       &lt;attribute name="start-limit" type="{http://www.w3.org/2001/XMLSchema}string" />

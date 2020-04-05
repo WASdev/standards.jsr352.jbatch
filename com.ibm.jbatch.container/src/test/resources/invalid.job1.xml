@@ -15,7 +15,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<jsl:job id="job1" xmlns:jsl="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+<jsl:job id="job1" xmlns:jsl="https://jakarta.ee/xml/ns/jakartaee" version="1.0">
     <!-- With elemFormDefault = "unqualified", <step> & <batchlet> 
         should not be NS-qualified by the default ns above -->
 	<step id="step1">

@@ -26,7 +26,7 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="properties" type="{https://jakarta.ee/xml/ns/jakartaee}Properties" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="partitions" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="threads" type="{http://www.w3.org/2001/XMLSchema}string" />

@@ -35,12 +35,12 @@ import com.ibm.jbatch.container.jsl.TransitionElement;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element name="decision" type="{http://xmlns.jcp.org/xml/ns/javaee}Decision"/>
- *           &lt;element name="flow" type="{http://xmlns.jcp.org/xml/ns/javaee}Flow"/>
- *           &lt;element name="split" type="{http://xmlns.jcp.org/xml/ns/javaee}Split"/>
- *           &lt;element name="step" type="{http://xmlns.jcp.org/xml/ns/javaee}Step"/>
+ *           &lt;element name="decision" type="{https://jakarta.ee/xml/ns/jakartaee}Decision"/>
+ *           &lt;element name="flow" type="{https://jakarta.ee/xml/ns/jakartaee}Flow"/>
+ *           &lt;element name="split" type="{https://jakarta.ee/xml/ns/jakartaee}Split"/>
+ *           &lt;element name="step" type="{https://jakarta.ee/xml/ns/jakartaee}Step"/>
  *         &lt;/choice>
- *         &lt;group ref="{http://xmlns.jcp.org/xml/ns/javaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;group ref="{https://jakarta.ee/xml/ns/jakartaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
  *       &lt;attribute name="next" type="{http://www.w3.org/2001/XMLSchema}string" />

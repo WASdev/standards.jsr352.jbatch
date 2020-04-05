@@ -33,11 +33,11 @@ import com.ibm.jbatch.container.jsl.TransitionElement;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" minOccurs="0"/>
- *         &lt;group ref="{http://xmlns.jcp.org/xml/ns/javaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="properties" type="{https://jakarta.ee/xml/ns/jakartaee}Properties" minOccurs="0"/>
+ *         &lt;group ref="{https://jakarta.ee/xml/ns/jakartaee}TransitionElements" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
- *       &lt;attribute name="ref" use="required" type="{http://xmlns.jcp.org/xml/ns/javaee}artifactRef" />
+ *       &lt;attribute name="ref" use="required" type="{https://jakarta.ee/xml/ns/jakartaee}artifactRef" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>

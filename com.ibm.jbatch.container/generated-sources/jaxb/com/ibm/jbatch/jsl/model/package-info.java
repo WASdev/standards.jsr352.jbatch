@@ -5,5 +5,5 @@
 // Generated on: 2020.04.05 at 01:05:36 PM EDT 
 //
 
-@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://xmlns.jcp.org/xml/ns/javaee", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "https://jakarta.ee/xml/ns/jakartaee", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package com.ibm.jbatch.jsl.model;

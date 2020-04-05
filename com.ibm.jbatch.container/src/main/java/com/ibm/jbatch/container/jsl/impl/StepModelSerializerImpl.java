@@ -50,7 +50,7 @@ public class StepModelSerializerImpl implements ModelSerializer<Step> {
     		 * from scott: 
     		 */
     		m.marshal( new JAXBElement(
-    				new QName("http://xmlns.jcp.org/xml/ns/javaee","step"), Step.class, step ), baos);
+    				new QName("https://jakarta.ee/xml/ns/jakartaee","step"), Step.class, step ), baos);
     		resultXML = baos.toString();
     	}
     	catch(Exception e){

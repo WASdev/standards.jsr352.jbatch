@@ -31,7 +31,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="flow" type="{http://xmlns.jcp.org/xml/ns/javaee}Flow" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="flow" type="{https://jakarta.ee/xml/ns/jakartaee}Flow" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
  *       &lt;attribute name="next" type="{http://www.w3.org/2001/XMLSchema}string" />

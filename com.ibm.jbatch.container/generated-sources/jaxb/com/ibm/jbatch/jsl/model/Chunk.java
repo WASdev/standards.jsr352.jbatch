@@ -25,13 +25,13 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="reader" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemReader"/>
- *         &lt;element name="processor" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemProcessor" minOccurs="0"/>
- *         &lt;element name="writer" type="{http://xmlns.jcp.org/xml/ns/javaee}ItemWriter"/>
- *         &lt;element name="checkpoint-algorithm" type="{http://xmlns.jcp.org/xml/ns/javaee}CheckpointAlgorithm" minOccurs="0"/>
- *         &lt;element name="skippable-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/>
- *         &lt;element name="retryable-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/>
- *         &lt;element name="no-rollback-exception-classes" type="{http://xmlns.jcp.org/xml/ns/javaee}ExceptionClassFilter" minOccurs="0"/>
+ *         &lt;element name="reader" type="{https://jakarta.ee/xml/ns/jakartaee}ItemReader"/>
+ *         &lt;element name="processor" type="{https://jakarta.ee/xml/ns/jakartaee}ItemProcessor" minOccurs="0"/>
+ *         &lt;element name="writer" type="{https://jakarta.ee/xml/ns/jakartaee}ItemWriter"/>
+ *         &lt;element name="checkpoint-algorithm" type="{https://jakarta.ee/xml/ns/jakartaee}CheckpointAlgorithm" minOccurs="0"/>
+ *         &lt;element name="skippable-exception-classes" type="{https://jakarta.ee/xml/ns/jakartaee}ExceptionClassFilter" minOccurs="0"/>
+ *         &lt;element name="retryable-exception-classes" type="{https://jakarta.ee/xml/ns/jakartaee}ExceptionClassFilter" minOccurs="0"/>
+ *         &lt;element name="no-rollback-exception-classes" type="{https://jakarta.ee/xml/ns/jakartaee}ExceptionClassFilter" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="checkpoint-policy" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="item-count" type="{http://www.w3.org/2001/XMLSchema}string" />

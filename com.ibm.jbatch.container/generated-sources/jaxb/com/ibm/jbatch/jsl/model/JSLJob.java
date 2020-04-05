@@ -38,13 +38,13 @@ import com.ibm.jbatch.container.jsl.ExecutionElement;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="properties" type="{http://xmlns.jcp.org/xml/ns/javaee}Properties" minOccurs="0"/>
- *         &lt;element name="listeners" type="{http://xmlns.jcp.org/xml/ns/javaee}Listeners" minOccurs="0"/>
+ *         &lt;element name="properties" type="{https://jakarta.ee/xml/ns/jakartaee}Properties" minOccurs="0"/>
+ *         &lt;element name="listeners" type="{https://jakarta.ee/xml/ns/jakartaee}Listeners" minOccurs="0"/>
  *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element name="decision" type="{http://xmlns.jcp.org/xml/ns/javaee}Decision"/>
- *           &lt;element name="flow" type="{http://xmlns.jcp.org/xml/ns/javaee}Flow"/>
- *           &lt;element name="split" type="{http://xmlns.jcp.org/xml/ns/javaee}Split"/>
- *           &lt;element name="step" type="{http://xmlns.jcp.org/xml/ns/javaee}Step"/>
+ *           &lt;element name="decision" type="{https://jakarta.ee/xml/ns/jakartaee}Decision"/>
+ *           &lt;element name="flow" type="{https://jakarta.ee/xml/ns/jakartaee}Flow"/>
+ *           &lt;element name="split" type="{https://jakarta.ee/xml/ns/jakartaee}Split"/>
+ *           &lt;element name="step" type="{https://jakarta.ee/xml/ns/jakartaee}Step"/>
  *         &lt;/choice>
  *       &lt;/sequence>
  *       &lt;attribute name="version" use="required" type="{http://www.w3.org/2001/XMLSchema}string" fixed="1.0" />

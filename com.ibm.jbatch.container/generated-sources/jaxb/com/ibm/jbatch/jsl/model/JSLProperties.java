@@ -27,7 +27,7 @@ import jakarta.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="property" type="{http://xmlns.jcp.org/xml/ns/javaee}Property" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="property" type="{https://jakarta.ee/xml/ns/jakartaee}Property" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="partition" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>

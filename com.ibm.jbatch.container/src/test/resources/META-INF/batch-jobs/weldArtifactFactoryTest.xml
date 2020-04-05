@@ -18,9 +18,9 @@
 <!--
   @author <a href="mailto:brent.n.douglas@gmail.com">Brent Douglas</a>
 -->
-<job xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<job xmlns="https://jakarta.ee/xml/ns/jakartaee"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/jobXML_1_0.xsd"
+     xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/jobXML_1_0.xsd"
      id="weldArtifactFactoryTest" version="1.0">
 	<step id="step1">
 		<batchlet ref="weldArtifactFactoryBatchlet"/>
