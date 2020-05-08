@@ -9,8 +9,8 @@
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.spi</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.0-M1</version>
-    <name>JSR 352 Reference Implementation SPI For Host Environments</name>
+    <version>2.0.0-M2</version>
+    <name>Jakarta Batch jbatch SPI For Host Environments</name>
     <dependencies>
         <dependency>
             <groupId>jakarta.batch</groupId>

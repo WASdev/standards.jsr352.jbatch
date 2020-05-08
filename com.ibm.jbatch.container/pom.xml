@@ -9,8 +9,8 @@
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.container</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.0-M1</version>
-    <name>JSR 352 Reference Implementation Container</name>
+    <version>2.0.0-M2</version>
+    <name>Jakarta Batch jbatch Implementation</name>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

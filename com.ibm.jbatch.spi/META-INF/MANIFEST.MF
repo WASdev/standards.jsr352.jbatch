@@ -3,9 +3,9 @@ Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.html
 Bundle-ManifestVersion: 2
 Bundle-Name: com.ibm.jbatch.spi
 Bundle-SymbolicName: com.ibm.jbatch.spi
-Bundle-Version: 1.0.1
-Implementation-Version: 1.0.1
-Specification-Title: JSR-352 Batch Applications for the Java Platform
-Specification-Vendor: IBM
-Specification-Version: 1.0
+Bundle-Version: 2.0.0.M2
+Implementation-Version: 2.0.0.M2
+Specification-Title: Jakarta Batch
+Specification-Vendor: Eclipse Foundation
+Specification-Version: 2.0
 Export-Package: com.ibm.jbatch.spi
