@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>jbatch-parent</artifactId>
-    <version>2.0.0-M1</version>
+    <version>2.0.0-M2</version>
     <packaging>pom</packaging>
     <name>jbatch-parent</name>
     <description>
@@ -115,8 +115,8 @@
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>2.0.0-M1</batch.api.version>
-        <batch.impl.version>2.0.0-M1</batch.impl.version>
+        <batch.api.version>2.0.0-M2</batch.api.version>
+        <batch.impl.version>2.0.0-M2</batch.impl.version>
         <non.final>false</non.final>
 
         <!-- Convenience -->
