@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>2.0.0-M2</version>
+        <version>2.0.0-M3</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.spi</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.0-M2</version>
+    <version>2.0.0-M3</version>
     <name>Jakarta Batch jbatch SPI For Host Environments</name>
     <dependencies>
         <dependency>
