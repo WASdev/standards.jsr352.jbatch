@@ -13,7 +13,7 @@
 <!-- Same essential structure nested in split flows for thorough testing -->
 
 <job id="partitionSplitFlowMetrics" xmlns="https://jakarta.ee/xml/ns/jakartaee"
-	version="1.0">
+	version="2.0">
 	<split id="split1">
 		<flow id="split1flow1">
 			<step id="step1" next="split2" allow-start-if-complete="true">

@@ -9,7 +9,7 @@
 	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
 	the specific language governing permissions and limitations under the License. -->
 <job id="splitFlowCtxPropagation" xmlns="https://jakarta.ee/xml/ns/jakartaee"
-	version="1.0">
+	version="2.0">
 	<properties>
 		<property name="topLevelJobProperty" value="topLevelJobProperty.value" />
 	</properties>
