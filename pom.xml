@@ -115,7 +115,7 @@
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>2.0.0-M2</batch.api.version>
+        <batch.api.version>2.0.0-M4</batch.api.version>
         <batch.impl.version>2.0.0-M3</batch.impl.version>
         <non.final>false</non.final>
 

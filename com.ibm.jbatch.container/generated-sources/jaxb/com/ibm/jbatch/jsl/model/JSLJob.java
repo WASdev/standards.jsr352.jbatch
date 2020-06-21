@@ -47,7 +47,7 @@ import com.ibm.jbatch.container.jsl.ExecutionElement;
  *           &lt;element name="step" type="{https://jakarta.ee/xml/ns/jakartaee}Step"/>
  *         &lt;/choice>
  *       &lt;/sequence>
- *       &lt;attribute name="version" use="required" type="{http://www.w3.org/2001/XMLSchema}string" fixed="2.0" />
+ *       &lt;attribute name="version" use="required" type="{https://jakarta.ee/xml/ns/jakartaee}batchVersionType" fixed="2.0" />
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
  *       &lt;attribute name="restartable" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
