@@ -14,7 +14,7 @@ The branch structure/history now:
 
 ## Jakarta Batch compatible implementation
 
-Implements [Jakarta Batch 1.0](https://github.com/eclipse-ee4j/batch-api).
+Implements [Jakarta Batch 2.0](https://github.com/eclipse-ee4j/batch-api).
 
 ## Contributing
 

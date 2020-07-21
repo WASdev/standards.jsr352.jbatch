@@ -21,7 +21,7 @@
 <job xmlns="https://jakarta.ee/xml/ns/jakartaee"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/jobXML_2_0.xsd"
-     id="weldArtifactFactoryTest" version="1.0">
+     id="weldArtifactFactoryTest" version="2.0">
 	<step id="step1">
 		<batchlet ref="weldArtifactFactoryBatchlet"/>
 	</step>

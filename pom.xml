@@ -1,12 +1,8 @@
-
-
-
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>jbatch-parent</artifactId>
-    <version>2.0.0-M3</version>
+    <version>2.0.0-M4</version>
     <packaging>pom</packaging>
     <name>jbatch-parent</name>
     <description>
@@ -115,7 +111,7 @@
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>2.0.0-M2</batch.api.version>
+        <batch.api.version>2.0.0-M4</batch.api.version>
         <batch.impl.version>2.0.0-M3</batch.impl.version>
         <non.final>false</non.final>
 
@@ -168,12 +164,12 @@
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.spi</artifactId>
-                <version>${batch.impl.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch.container</artifactId>
-                <version>${batch.impl.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.annotation</groupId>

@@ -4,12 +4,12 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>2.0.0-M3</version>
+        <version>2.0.0-M4</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.container</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.0-M3</version>
+    <version>2.0.0-M4</version>
     <name>Jakarta Batch jbatch Implementation</name>
     <dependencies>
         <dependency>
@@ -174,6 +174,8 @@
                         <com.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE>true</com.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE>
                         <com.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE>com.ibm.jbatch.container.services.impl.GrowableThreadPoolServiceImpl</com.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE>
                         <com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl</com.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE>
+                        <java.util.logging.config.file>${build.testOutputDirectory}/logging.properties</java.util.logging.config.file>
+
                     </systemPropertyVariables>
                 </configuration>
             </plugin>

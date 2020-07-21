@@ -9,7 +9,7 @@
 	OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
 	the specific language governing permissions and limitations under the License. -->
 <job id="partitionMetrics" xmlns="https://jakarta.ee/xml/ns/jakartaee"
-	version="1.0">
+	version="2.0">
 	<step id="step1" next="step2" allow-start-if-complete="true">
 		<listeners>
 			<listener ref="test.junit.PartitionMetricsTest$ChunkListener">
