@@ -144,6 +144,7 @@
         <version.org.apache.maven.plugins.maven-surefire-plugin>2.18</version.org.apache.maven.plugins.maven-surefire-plugin>
         <version.org.codehaus.mojo.jaxb2-maven-plugin>1.6</version.org.codehaus.mojo.jaxb2-maven-plugin>
         <version.org.codehaus.mojo.properties-maven-plugin>1.0-alpha-2</version.org.codehaus.mojo.properties-maven-plugin>
+        <version.org.glassfish.jaxb.jaxb-runtime>3.0.0-M4</version.org.glassfish.jaxb.jaxb-runtime>
 
         <version.net.java.sigtest.sigtestdev>3.0-b12-v20140219</version.net.java.sigtest.sigtestdev>
     </properties>
@@ -199,17 +200,6 @@
                  <groupId>jakarta.xml.bind</groupId>
                  <artifactId>jakarta.xml.bind-api</artifactId>
                  <version>${version.jakarta.xml.bind.jakarta.xml.bind-api}</version>
-                 <exclusions>
-                     <exclusion>
-                         <groupId>jakarta.activation</groupId>
-                         <artifactId>jakarta.activation-api</artifactId>
-                     </exclusion>
-                 </exclusions>
-            </dependency>
-            <dependency>
-                 <groupId>com.sun.xml.bind</groupId>
-                 <artifactId>jaxb-impl</artifactId>
-                 <version>3.0.0-M1</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -230,6 +220,17 @@
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derbynet</artifactId>
                 <version>10.10.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${version.org.glassfish.jaxb.jaxb-runtime}</version>
+                <exclusions>
+                     <exclusion>
+                         <groupId>com.sun.activation</groupId>
+                         <artifactId>jakarta.activation</artifactId>
+                     </exclusion>
+                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
