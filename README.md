@@ -1,7 +1,18 @@
-jbatch - Former JSR 352 reference implementation
+jbatch - implementation of Jakarta Batch 
 =======================
+## History 
+
+(Former JSR 352 reference implementation)
+
+### Move to schema 2.0 level
+
+As of the 2.0.0-M5 release, this implementation only supports job XML definitions conforming to the Jakarta EE 9 schema at:
+[https://jakarta.ee/xml/ns/jakartaee/jobXML_2_0.xsd](https://jakarta.ee/xml/ns/jakartaee/jobXML_2_0.xsd).
+
+Note the attribute: `<job ... version="2.0">`
 
 ## Branch history (why did I get a merge conflict when merging 'master'?)
+
 
 This isn't a good practice, so we give at least this explanation.  We changed what master means without a clean merge to preserve history.  Sorry for any incovenience this caused, we decided this wasn't an active-enough project to worry about the downside here.
 
