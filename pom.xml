@@ -123,10 +123,9 @@
 
         <!-- Dependencies -->
         <version.jakarta.activation.jakarta.activation-api>2.0.0-RC3</version.jakarta.activation.jakarta.activation-api>
-        <version.jakarta.annotation.jakarta.annotation-api>2.0.0-RC1</version.jakarta.annotation.jakarta.annotation-api>
         <version.jakarta.enterprise.jakarta.enterprise.cdi-api>3.0.0-M4</version.jakarta.enterprise.jakarta.enterprise.cdi-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0-RC4</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.transaction.jakarta.transaction-api>2.0.0-RC1</version.jakarta.transaction.jakarta.transaction-api>
+        <version.jakarta.transaction.jakarta.transaction-api>2.0.0-RC2</version.jakarta.transaction.jakarta.transaction-api>
         <version.jakarta.xml.bind.jakarta.xml.bind-api>3.0.0-RC3</version.jakarta.xml.bind.jakarta.xml.bind-api>
         <version.org.testng.testng>6.8</version.org.testng.testng>
 
@@ -172,11 +171,6 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.annotation</groupId>
-                <artifactId>jakarta.annotation-api</artifactId>
-                <version>${version.jakarta.annotation.jakarta.annotation-api}</version>
-            </dependency>
-           <dependency>
                 <groupId>jakarta.enterprise</groupId>
                 <artifactId>jakarta.enterprise.cdi-api</artifactId>
                 <version>${version.jakarta.enterprise.jakarta.enterprise.cdi-api}</version>
