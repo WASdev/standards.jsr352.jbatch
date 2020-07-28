@@ -186,11 +186,6 @@
                 <version>${version.jakarta.transaction.jakarta.transaction-api}</version>
             </dependency>
             <dependency>
-                 <groupId>jakarta.activation</groupId>
-                 <artifactId>jakarta.activation-api</artifactId>
-                 <version>${version.jakarta.activation.jakarta.activation-api}</version>
-             </dependency>
-            <dependency>
                  <groupId>jakarta.xml.bind</groupId>
                  <artifactId>jakarta.xml.bind-api</artifactId>
                  <version>${version.jakarta.xml.bind.jakarta.xml.bind-api}</version>
@@ -219,12 +214,6 @@
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
                 <version>${version.org.glassfish.jaxb.jaxb-runtime}</version>
-                <exclusions>
-                     <exclusion>
-                         <groupId>com.sun.activation</groupId>
-                         <artifactId>jakarta.activation</artifactId>
-                     </exclusion>
-                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
