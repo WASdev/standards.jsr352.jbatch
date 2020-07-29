@@ -106,12 +106,37 @@
                 </plugins>
             </build>
         </profile>
+
+        <!--
+            This profile enables consuming artifacts from the ossrh staging
+            repository group.
+        -->
+        <profile>
+            <id>staging</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>sonatype-nexus-staging</id>
+                    <name>Sonatype Nexus Staging</name>
+                    <url>https://jakarta.oss.sonatype.org/content/repositories/staging/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+
     </profiles>
 
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>2.0.0-M6</batch.api.version>
+        <batch.api.version>2.0.0</batch.api.version>
         <non.final>false</non.final>
 
         <!-- Convenience -->
@@ -122,11 +147,10 @@
         <version.java>1.8</version.java>
 
         <!-- Dependencies -->
-        <version.jakarta.activation.jakarta.activation-api>2.0.0-RC3</version.jakarta.activation.jakarta.activation-api>
-        <version.jakarta.enterprise.jakarta.enterprise.cdi-api>3.0.0-M4</version.jakarta.enterprise.jakarta.enterprise.cdi-api>
-        <version.jakarta.inject.jakarta.inject-api>2.0.0-RC4</version.jakarta.inject.jakarta.inject-api>
+        <version.jakarta.enterprise.jakarta.enterprise.cdi-api>3.0.0</version.jakarta.enterprise.jakarta.enterprise.cdi-api>
+        <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.transaction.jakarta.transaction-api>2.0.0-RC2</version.jakarta.transaction.jakarta.transaction-api>
-        <version.jakarta.xml.bind.jakarta.xml.bind-api>3.0.0-RC3</version.jakarta.xml.bind.jakarta.xml.bind-api>
+        <version.jakarta.xml.bind.jakarta.xml.bind-api>3.0.0</version.jakarta.xml.bind.jakarta.xml.bind-api>
         <version.org.testng.testng>6.8</version.org.testng.testng>
 
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
