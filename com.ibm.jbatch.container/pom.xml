@@ -3,12 +3,12 @@
     <parent>
         <groupId>com.ibm.jbatch</groupId>
         <artifactId>jbatch-parent</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.0-M7</version>
     </parent>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>com.ibm.jbatch.container</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.0</version>
+    <version>2.0.0-M7</version>
     <name>Jakarta Batch jbatch Implementation</name>
     <dependencies>
         <dependency>
@@ -55,6 +55,11 @@
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.framework</artifactId>
+            <version>1.9.0</version>
         </dependency>
     </dependencies>
     <build>
