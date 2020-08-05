@@ -23,19 +23,14 @@ import javax.xml.XMLConstants;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkUtil;
 import org.xml.sax.SAXException;
 
-import com.ibm.jbatch.container.context.impl.JobContextImpl;
-
-public class ValidatorHelper implements Constants {
+public class ValidatorHelper {
 
     public final static String SCHEMA_LOCATION = "/xsd/jobXML_2_0.xsd";
     public final static String API_BUNDLE_SYMBOLIC_NAME = "jakarta.batch-api";
     private final static Class<ValidatorHelper> thisClass = ValidatorHelper.class;
-	private final static Logger logger = Logger.getLogger(thisClass.getName());
+    private final static Logger logger = Logger.getLogger(thisClass.getName());
 
 
     
@@ -52,36 +47,38 @@ public class ValidatorHelper implements Constants {
             try {
                 URL url = thisClass.getResource(SCHEMA_LOCATION);
                 logger.fine("After search via flat classpath for Job XML XSD file: " + SCHEMA_LOCATION + " url = " + url);
+                /*
                 if (url == null) {
-                	// Try OSGI API
-                	logger.fine("Job XML XSD file: " + SCHEMA_LOCATION + " not found via classpath, trying OSGI");
-                	Bundle apiBundle = null;
-                	for (Bundle b : FrameworkUtil.getBundle(thisClass).getBundleContext().getBundles()) {
-                		if (b.getHeaders().get(BUNDLE_SYMBOLICNAME).equals(API_BUNDLE_SYMBOLIC_NAME)) {
-                			if (matchesBatchAPIBundleVersion(b.getHeaders().get(BUNDLE_VERSION))) {
-                				apiBundle = b;
-                				logger.fine("Job XML XSD file: " + SCHEMA_LOCATION + " found in OSGi Bundle: " + apiBundle);
-                				break;
-                			} else {
-                				// Right symbolic name, wrong version
-                				logger.fine("Bundle: " + b + " found, but version doesn't match expected");
-                			}
-                		}
-                	}
-                	// Looped through all and didn't find any
-                	if (apiBundle == null) {
-                		String msg = "Jakarta Batch API bundle not found via OSGI bundle network.";
-                		logger.severe(msg);
-                		throw new IllegalStateException(msg);
-                	}
-                	url = apiBundle.getResource(SCHEMA_LOCATION);
-                	if (url == null) {
-                		String msg = "Job XML XSD file: " + SCHEMA_LOCATION + " not found in API bundle: "+ apiBundle;
-                		logger.severe(msg);
-                		throw new IllegalStateException(msg);
-                	}
-                	logger.fine("Search via OSGI bundle network for Job XML XSD file: " + SCHEMA_LOCATION + ", found url = " + url);
+                    // Try OSGI API
+                    logger.fine("Job XML XSD file: " + SCHEMA_LOCATION + " not found via classpath, trying OSGI");
+                    Bundle apiBundle = null;
+                    for (Bundle b : FrameworkUtil.getBundle(thisClass).getBundleContext().getBundles()) {
+                        if (b.getHeaders().get(BUNDLE_SYMBOLICNAME).equals(API_BUNDLE_SYMBOLIC_NAME)) {
+                            if (b.getHeaders().get(BUNDLE_VERSION).startsWith("2.")) { 
+                                apiBundle = b;
+                                logger.fine("Job XML XSD file: " + SCHEMA_LOCATION + " found in OSGi Bundle: " + apiBundle);
+                                break;
+                            } else {
+                                // Right symbolic name, wrong version
+                                logger.fine("Bundle: " + b + " found, but version doesn't match expected");
+                            }
+                        }
+                    }
+                    // Looped through all and didn't find any
+                    if (apiBundle == null) {
+                        String msg = "Jakarta Batch API bundle not found via OSGI bundle network.";
+                        logger.severe(msg);
+                        throw new IllegalStateException(msg);
+                    }
+                    url = apiBundle.getResource(SCHEMA_LOCATION);
+                    if (url == null) {
+                        String msg = "Job XML XSD file: " + SCHEMA_LOCATION + " not found in API bundle: "+ apiBundle;
+                        logger.severe(msg);
+                        throw new IllegalStateException(msg);
+                    }
+                    logger.fine("Search via OSGI bundle network for Job XML XSD file: " + SCHEMA_LOCATION + ", found url = " + url);
                 }
+                */
                 schema = sf.newSchema(url);
             } catch (SAXException e) {
                 throw new RuntimeException(e);
@@ -90,7 +87,5 @@ public class ValidatorHelper implements Constants {
         return schema;        
     }     
 
-    private static boolean matchesBatchAPIBundleVersion(String bundleVersion) { 
-    	return bundleVersion.startsWith("2.");
-    }
+
 }

@@ -18,7 +18,7 @@
 /**
  * Loads an instance of a batch artifact referenced in a JSL job definition XML
  * document.   By "batch artifact", we mean an object implementing some aspect of the
- * batch programming model defined in JSR352, e.g. a batchlet, a job or step listener, etc.
+ * batch programming model defined in Jakarta Batch, e.g. a batchlet, a job or step listener, etc.
  * 
  * <p> The artifacts will be reference in JSL, e.g.:
  * 

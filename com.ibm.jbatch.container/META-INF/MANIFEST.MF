@@ -40,6 +40,5 @@ Import-Package: com.ibm.jbatch.spi,
  javax.xml.transform,
  javax.xml.transform.stream,
  javax.xml.validation,
- org.osgi.framework,
  org.xml.sax,
  org.glassfish.weld

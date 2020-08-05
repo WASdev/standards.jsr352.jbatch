@@ -18,7 +18,7 @@ package com.ibm.jbatch.spi;
 
 /**
  *
- * Implemented by the jbatch 352 RI to allow the host environment to
+ * Implemented by the jbatch implementation to allow the host environment to
  * instruct the RI to purge job repository entries associated with 
  * a given "owner".
  * 

@@ -18,7 +18,7 @@ package com.ibm.jbatch.spi;
 
 /**
  * 
- * Implemented by the host environment to allow the 'jbatch' 352 RI to get 
+ * Implemented by the host environment to allow the 'jbatch' implementation to get 
  * the "current" tag (here a generalized term for something like the current
  * "application), and whether the tag is "admin"-authorized or not.
  *

@@ -155,7 +155,7 @@ public final class BatchSPIManager {
     private DatabaseConfigurationBean dataBaseConfigurationBean = null;
 
     /**
-     * This is not the method that the 352 RI will call to get the 
+     * This is not the method that the jbatch implementation will call to get the 
      * final configuration, and lock off further updates.  This is just
      * a normal getter which is more use while the configuration is still
      * being set, before it is hardened.
