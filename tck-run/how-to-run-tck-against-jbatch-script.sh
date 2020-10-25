@@ -120,13 +120,12 @@ TCK_ARTIFACT_ID=jakarta.batch.official.tck-2.0.0
 
 #TCK_DOWNLOAD_URL=https://repo1.maven.org/maven2/jakarta/batch/jakarta.batch.official.tck/2.0.0/$TCK_ARTIFACT_ID.zip
 #TCK_DOWNLOAD_URL=https://oss.sonatype.org/content/repositories/staging/jakarta/batch/jakarta.batch.official.tck/2.0.0/$TCK_ARTIFACT_ID.zip
-
-TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartabatch/tck/eftl/$TCK_ARTIFACT_ID.zip
+#TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartabatch/tck/eftl/$TCK_ARTIFACT_ID.zip
 
 #
-# OFFICIAL (will look like this)
+# OFFICIAL PROJECT LOCATION
 #
-#TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartaee/batch/2.0/jakarta.batch.official.tck-2.0.0.zip
+TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartaee/batch/2.0/jakarta.batch.official.tck-2.0.0.zip
 
 ################
 # DON'T CHANGE
