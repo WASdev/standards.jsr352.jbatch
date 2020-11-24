@@ -149,7 +149,7 @@
         <!-- Dependencies -->
         <version.jakarta.enterprise.jakarta.enterprise.cdi-api>3.0.0</version.jakarta.enterprise.jakarta.enterprise.cdi-api>
         <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
-        <version.jakarta.transaction.jakarta.transaction-api>2.0.0-RC2</version.jakarta.transaction.jakarta.transaction-api>
+        <version.jakarta.transaction.jakarta.transaction-api>2.0.0</version.jakarta.transaction.jakarta.transaction-api>
         <version.jakarta.xml.bind.jakarta.xml.bind-api>3.0.0</version.jakarta.xml.bind.jakarta.xml.bind-api>
         <version.org.testng.testng>6.8</version.org.testng.testng>
 
@@ -217,7 +217,7 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.10</version>
+                <version>4.13.1</version>
             </dependency>
             <dependency>
                 <groupId>net.java.sigtest</groupId>
