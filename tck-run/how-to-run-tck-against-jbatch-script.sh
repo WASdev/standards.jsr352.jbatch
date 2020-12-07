@@ -4,7 +4,7 @@ set -x
 
 
 #------------------------------------------------------------------------------
-# Running Jakarta Batch TCK Version 2.0.0 against com.ibm.jbatch 2.0.0-M7
+# Running Jakarta Batch TCK Version 2.0.0 against com.ibm.jbatch 2.0.0
 #
 # This is a documented script that can be used to execute the Jakarta Batch TCK
 # against the com.ibm.jbatch implementation.
@@ -64,29 +64,35 @@ rm -rf setup; mkdir setup; cd setup
 
 mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=org.apache.derby:derby:10.10.1.1 -DrepoUrl=https://repo1.maven.org/maven2/
 mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=net.java.sigtest:sigtestdev:3.0-b12-v20140219 -DrepoUrl=https://repo1.maven.org/maven2/
-mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=com.ibm.jbatch:com.ibm.jbatch.container:2.0.0-M7 -DrepoUrl=https://repo1.maven.org/maven2/
-mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=org.glassfish.jaxb:jaxb-runtime:3.0.0-M4 -DrepoUrl=https://repo1.maven.org/maven2/
+mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=org.glassfish.jaxb:jaxb-runtime:3.0.0 -DrepoUrl=https://repo1.maven.org/maven2/
 mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=jakarta.inject:jakarta.inject-api:2.0.0 -DrepoUrl=https://repo1.maven.org/maven2/
+
+mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=com.sun.activation:jakarta.activation:2.0.0 -DrepoUrl=https://repo1.maven.org/maven2/
+mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=jakarta.batch:jakarta.batch-api:2.0.0 -DrepoUrl=https://repo1.maven.org/maven2/
+mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=jakarta.enterprise:jakarta.enterprise.cdi-api:3.0.0 -DrepoUrl=https://repo1.maven.org/maven2/
+mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=jakarta.xml.bind:jakarta.xml.bind-api:3.0.0 -DrepoUrl=https://repo1.maven.org/maven2/
+mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=com.ibm.jbatch:com.ibm.jbatch.container:2.0.0 -DrepoUrl=https://repo1.maven.org/maven2/
 
 MVN_CENTRAL_JARS="\
  /home/java_user/.m2/repository/org/apache/derby/derby/10.10.1.1/derby-10.10.1.1.jar \
- /home/java_user/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.container/2.0.0-M7/com.ibm.jbatch.container-2.0.0-M7.jar \
- /home/java_user/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.spi/2.0.0-M7/com.ibm.jbatch.spi-2.0.0-M7.jar \
  /home/java_user/.m2/repository/net/java/sigtest/sigtestdev/3.0-b12-v20140219/sigtestdev-3.0-b12-v20140219.jar \
- /home/java_user/.m2/repository/org/glassfish/jaxb/jaxb-runtime/3.0.0-M4/jaxb-runtime-3.0.0-M4.jar \
- /home/java_user/.m2/repository/org/glassfish/jaxb/jaxb-core/3.0.0-M4/jaxb-core-3.0.0-M4.jar \
- /home/java_user/.m2/repository/com/sun/istack/istack-commons-runtime/4.0.0-M3/istack-commons-runtime-4.0.0-M3.jar \
+ /home/java_user/.m2/repository/org/glassfish/jaxb/jaxb-runtime/3.0.0/jaxb-runtime-3.0.0.jar \
+ /home/java_user/.m2/repository/org/glassfish/jaxb/jaxb-core/3.0.0/jaxb-core-3.0.0.jar \
+ /home/java_user/.m2/repository/com/sun/istack/istack-commons-runtime/4.0.0/istack-commons-runtime-4.0.0.jar \
  /home/java_user/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.0/jakarta.inject-api-2.0.0.jar \
+ /home/java_user/.m2/repository/com/sun/activation/jakarta.activation/2.0.0/jakarta.activation-2.0.0.jar \
+ /home/java_user/.m2/repository/jakarta/batch/jakarta.batch-api/2.0.0/jakarta.batch-api-2.0.0.jar \
+ /home/java_user/.m2/repository/jakarta/enterprise/jakarta.enterprise.cdi-api/3.0.0/jakarta.enterprise.cdi-api-3.0.0.jar \
+ /home/java_user/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/3.0.0/jakarta.xml.bind-api-3.0.0.jar \
+ /home/java_user/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.container/2.0.0/com.ibm.jbatch.container-2.0.0.jar \
+ /home/java_user/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.spi/2.0.0/com.ibm.jbatch.spi-2.0.0.jar \
 "
 
 STAGED_JARS="\
- jakarta/batch/jakarta.batch-api/2.0.0/jakarta.batch-api-2.0.0.jar \
- com/sun/activation/jakarta.activation/2.0.0/jakarta.activation-2.0.0.jar \
- jakarta/enterprise/jakarta.enterprise.cdi-api/3.0.0/jakarta.enterprise.cdi-api-3.0.0.jar \
- jakarta/xml/bind/jakarta.xml.bind-api/3.0.0/jakarta.xml.bind-api-3.0.0.jar \
 "
 
-for f in $STAGED_JARS; do wget https://jakarta.oss.sonatype.org/content/groups/staging/$f; done
+#for f in $STAGED_JARS; do wget https://jakarta.oss.sonatype.org/content/groups/staging/$f; done
+for f in $STAGED_JARS; do wget https://oss.sonatype.org/content/groups/staging/$f; done
 for f in $MVN_CENTRAL_JARS; do cp $f .; done
 
 REQUIRED_JARS_DIR=$PWD
@@ -172,7 +178,7 @@ echo Begin TestNG tests
 echo ------------------
 echo
 
-ant -v -f build.xml -Dbatch.impl.testng.path=../jakarta.batch-api-2.0.0.jar:../com.ibm.jbatch.container-2.0.0-M7.jar:../com.ibm.jbatch.spi-2.0.0-M7.jar:../derby-10.10.1.1.jar:../jakarta.activation-2.0.0.jar:../jakarta.inject-api-2.0.0.jar:../jakarta.enterprise.cdi-api-3.0.0.jar:../jakarta.xml.bind-api-3.0.0.jar:../jaxb-runtime-3.0.0-M4.jar:../jaxb-core-3.0.0-M4.jar:../istack-commons-runtime-4.0.0-M3.jar  -Djvm.options="-Dcom.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE=com.ibm.jbatch.container.services.impl.GrowableThreadPoolServiceImpl -Dcom.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE=true -Dcom.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE=com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl"
+ant -v -f build.xml -Dbatch.impl.testng.path=../jakarta.batch-api-2.0.0.jar:../com.ibm.jbatch.container-2.0.0.jar:../com.ibm.jbatch.spi-2.0.0.jar:../derby-10.10.1.1.jar:../jakarta.activation-2.0.0.jar:../jakarta.inject-api-2.0.0.jar:../jakarta.enterprise.cdi-api-3.0.0.jar:../jakarta.xml.bind-api-3.0.0.jar:../jaxb-runtime-3.0.0.jar:../jaxb-core-3.0.0.jar:../istack-commons-runtime-4.0.0.jar  -Djvm.options="-Dcom.ibm.jbatch.spi.ServiceRegistry.BATCH_THREADPOOL_SERVICE=com.ibm.jbatch.container.services.impl.GrowableThreadPoolServiceImpl -Dcom.ibm.jbatch.spi.ServiceRegistry.J2SE_MODE=true -Dcom.ibm.jbatch.spi.ServiceRegistry.CONTAINER_ARTIFACT_FACTORY_SERVICE=com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl"
 
 
 echo
@@ -199,8 +205,8 @@ BATCH_API_JAR=$TCK_HOME_DIR/tckdir/prereqs/jakarta.batch-api-2.0.0.jar
 # they're really doing what we expect.
 IMPL_PATH_INCOMPLETE=$BATCH_API_JAR\
 :$TCK_HOME_DIR/tckdir/prereqs/jakarta.inject-api-2.0.0.jar\
-:$TCK_HOME_DIR/tckdir/prereqs/com.ibm.jbatch.container-2.0.0-M7.jar\
-:$TCK_HOME_DIR/tckdir/prereqs/com.ibm.jbatch.spi-2.0.0-M7.jar
+:$TCK_HOME_DIR/tckdir/prereqs/com.ibm.jbatch.container-2.0.0.jar\
+:$TCK_HOME_DIR/tckdir/prereqs/com.ibm.jbatch.spi-2.0.0.jar
 
 IMPL_PATH=$IMPL_PATH_INCOMPLETE:$TCK_HOME_DIR/tckdir/prereqs/jakarta.enterprise.cdi-api-3.0.0.jar
 

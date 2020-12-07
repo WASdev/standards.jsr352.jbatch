@@ -41,7 +41,8 @@ RUN mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get -Dartifact=or
 
 ENV SIGTEST_LEVEL=${SIGTEST_LEVEL}
 
-COPY ./how-to-run-tck-against-jbatch-script.sh /home/java_user
+COPY --chown=java_user:java_group ./how-to-run-tck-against-jbatch-script.sh /home/java_user
+RUN chmod 777 /home/java_user/how-to-run-tck-against-jbatch-script.sh
 WORKDIR /home/java_user
 CMD /bin/bash
 
