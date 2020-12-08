@@ -3,8 +3,8 @@ Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.html
 Bundle-ManifestVersion: 2
 Bundle-Name: com.ibm.jbatch.spi
 Bundle-SymbolicName: com.ibm.jbatch.spi
-Bundle-Version: 2.0.0.M7
-Implementation-Version: 2.0.0.M7
+Bundle-Version: 2.0.0
+Implementation-Version: 2.0.0
 Specification-Title: Jakarta Batch
 Specification-Vendor: Eclipse Foundation
 Specification-Version: 2.0
