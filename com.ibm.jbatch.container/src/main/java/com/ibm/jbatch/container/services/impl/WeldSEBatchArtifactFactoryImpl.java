@@ -30,67 +30,26 @@ import com.ibm.jbatch.spi.services.IBatchArtifactFactory;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
 @Named("MyWeldBean")
-public class WeldSEBatchArtifactFactoryImpl implements IBatchArtifactFactory {
+public class WeldSEBatchArtifactFactoryImpl extends CDIBatchArtifactFactoryImpl {
 
     private final static Logger logger = Logger.getLogger(WeldSEBatchArtifactFactoryImpl.class.getName());
-    private final static String CLASSNAME = WeldSEBatchArtifactFactoryImpl.class.getName();
 
-    // TODO - synchronize appropriately once we learn more about usage
-    private boolean loaded = false;
     private SeContainer container;
 
-    // Uses TCCL
     @Override
-    public Object load(String batchId) {
-        String methodName = "load";
-
-        if (logger.isLoggable(Level.FINER)) {
-            logger.entering(CLASSNAME, methodName, "Loading batch artifact id = " + batchId);
-        }
-
-        Object loadedArtifact = getArtifactById(batchId);
-
-        if (loadedArtifact == null) {
-
-            logger.exiting(CLASSNAME, methodName, "Returning null artifact for id: " + batchId);
-
-            return loadedArtifact;
-
-        }
-
-        if (logger.isLoggable(Level.FINER)) {
-            logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", loaded artifact instance: " + loadedArtifact
-                    + " of type: " + loadedArtifact.getClass().getCanonicalName());
-        }
-        return loadedArtifact;
-    }
-
-    private Object getArtifactById(String id) {
-
-        Object artifactInstance = null;
-
-        try {
-            final BeanManager bm = container.getBeanManager();
-
-            final Bean<?> bean = bm.resolve(bm.getBeans(id));
-
-            final Class clazz = bean.getBeanClass();
-
-            artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
-        } catch (Exception e) {
-            // Don't throw an exception but simply return null;
-            logger.fine("Tried but failed to load artifact with id: " + id + ", Exception = " + e);
-        }
-        return artifactInstance;
+    protected BeanManager obtainBeanManager() {
+    	return container.getBeanManager();
     }
 
     @Override
     public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+		logger.fine("Initializing WeldSEBatchArtifactFactoryImpl");
         container = SeContainerInitializer.newInstance().initialize();
     }
 
     @Override
     public void shutdown() throws BatchContainerServiceException {
+		logger.fine("Shutdown WeldSEBatchArtifactFactoryImpl");
         container.close();
     }
 }

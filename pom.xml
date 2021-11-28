@@ -136,7 +136,7 @@
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>2.1.0-SNAPSHOT</batch.api.version>
+        <batch.api.version>2.0.0</batch.api.version>
         <non.final>false</non.final>
 
         <!-- Convenience -->
