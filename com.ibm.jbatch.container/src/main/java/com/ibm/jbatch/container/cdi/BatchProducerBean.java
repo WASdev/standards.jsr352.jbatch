@@ -34,7 +34,60 @@ public class BatchProducerBean {
 	@Produces
 	@Dependent
 	@BatchProperty
-	public String produceProperty(InjectionPoint injectionPoint) {
+	public Boolean produceBooleanProperty(InjectionPoint injectionPoint) {
+		String propValStr = getStringProperty(injectionPoint);
+		return Boolean.valueOf(propValStr);
+	}
+
+	@Produces
+	@Dependent
+	@BatchProperty
+	public Double produceDoubleProperty(InjectionPoint injectionPoint) {
+		String propValStr = getStringProperty(injectionPoint);
+		return Double.valueOf(propValStr);
+	}
+	
+	@Produces
+	@Dependent
+	@BatchProperty
+	public Float produceFloatProperty(InjectionPoint injectionPoint) {
+		String propValStr = getStringProperty(injectionPoint);
+		return Float.valueOf(propValStr);
+	}
+	
+	@Produces
+	@Dependent
+	@BatchProperty
+	public Integer produceIntProperty(InjectionPoint injectionPoint) {
+		String propValStr = getStringProperty(injectionPoint);
+		return Integer.valueOf(propValStr);
+	}
+	
+	@Produces
+	@Dependent
+	@BatchProperty
+	public Long produceLongProperty(InjectionPoint injectionPoint) {
+		String propValStr = getStringProperty(injectionPoint);
+		return Long.valueOf(propValStr);
+	}
+
+	@Produces
+	@Dependent
+	@BatchProperty
+	public Short produceShortProperty(InjectionPoint injectionPoint) {
+		String propValStr = getStringProperty(injectionPoint);
+		return Short.valueOf(propValStr);
+	}
+
+	@Produces
+	@Dependent
+	@BatchProperty
+	public String produceStringProperty(InjectionPoint injectionPoint) {
+		String propValStr = getStringProperty(injectionPoint);
+		return propValStr;
+	}
+
+	private String getStringProperty(InjectionPoint injectionPoint) {
 
 		//Seems like this is a CDI bug where null injection points are getting passed in. 
 		//We should be able to ignore these as a workaround.
