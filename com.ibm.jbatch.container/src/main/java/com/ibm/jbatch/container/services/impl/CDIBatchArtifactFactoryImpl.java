@@ -37,56 +37,56 @@ import jakarta.enterprise.inject.spi.BeanManager;
 
 public class CDIBatchArtifactFactoryImpl implements IBatchArtifactFactory {
 
-	private final static Logger logger = Logger.getLogger(CDIBatchArtifactFactoryImpl.class.getName());
-	private final static String CLASSNAME = CDIBatchArtifactFactoryImpl.class.getName();
+    private final static Logger logger = Logger.getLogger(CDIBatchArtifactFactoryImpl.class.getName());
+    private final static String CLASSNAME = CDIBatchArtifactFactoryImpl.class.getName();
 
-	@Override
-	public Object load(String batchId) {
-		String methodName = "load";
+    @Override
+    public Object load(String batchId) {
+        String methodName = "load";
 
-		if (logger.isLoggable(Level.FINER)) {
-			logger.entering(CLASSNAME, methodName, "Loading batch artifact id = " + batchId);
-		}
+        if (logger.isLoggable(Level.FINER)) {
+            logger.entering(CLASSNAME, methodName, "Loading batch artifact id = " + batchId);
+        }
 
-		Object loadedArtifact = getArtifactById(batchId);
+        Object loadedArtifact = getArtifactById(batchId);
 
-		if (loadedArtifact != null) {
-			if (logger.isLoggable(Level.FINER)) {
-				logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", loaded artifact instance: " + loadedArtifact
-					+ " of type: " + loadedArtifact.getClass().getCanonicalName());
-			}
-		} else {
-			if (logger.isLoggable(Level.FINER)) {
-				logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", FAILED to load artifact instance");
-			}
-		}
-		return loadedArtifact;
-	}
+        if (loadedArtifact != null) {
+            if (logger.isLoggable(Level.FINER)) {
+                logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", loaded artifact instance: " + loadedArtifact
+                    + " of type: " + loadedArtifact.getClass().getCanonicalName());
+            }
+        } else {
+            if (logger.isLoggable(Level.FINER)) {
+                logger.exiting(CLASSNAME, methodName, "For batch artifact id = " + batchId + ", FAILED to load artifact instance");
+            }
+        }
+        return loadedArtifact;
+    }
 
-	protected BeanManager obtainBeanManager() throws NamingException {
-	    InitialContext initialContext = new InitialContext();
-	    return (BeanManager) initialContext.lookup("java:comp/BeanManager");
-	}
-			
-	private Object getArtifactById(String id) {
+    protected BeanManager obtainBeanManager() throws NamingException {
+        InitialContext initialContext = new InitialContext();
+        return (BeanManager) initialContext.lookup("java:comp/BeanManager");
+    }
+            
+    private Object getArtifactById(String id) {
 
-		Object artifactInstance = null;
+        Object artifactInstance = null;
 
-		try {
+        try {
             final BeanManager bm = obtainBeanManager();
 
             final Bean<?> bean = (bm != null) ? getBeanById(bm, id) : null;
-			
-			final Class<?> clazz = bean.getBeanClass();
-			artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
-		} catch (Exception e) {
-			// Don't throw an exception but simply return null;
-			logger.fine("Tried but failed to load artifact with id: " + id + ", Exception = " + e);
-		}
+            
+            final Class<?> clazz = bean.getBeanClass();
+            artifactInstance = bm.getReference(bean, clazz, bm.createCreationalContext(bean));
+        } catch (Exception e) {
+            // Don't throw an exception but simply return null;
+            logger.fine("Tried but failed to load artifact with id: " + id + ", Exception = " + e);
+        }
 
-		return artifactInstance;
-	}
-	
+        return artifactInstance;
+    }
+    
     /**
      * @param id Either the EL name of the bean, its id in batch.xml, or its fully qualified class name.
      *
@@ -194,7 +194,7 @@ public class CDIBatchArtifactFactoryImpl implements IBatchArtifactFactory {
             }
         }
         try {
-            retVal = beanManager.resolve(beans);
+            retVal = beanManager.resolve(matches);
         } catch (AmbiguousResolutionException e) {
             throw new AmbiguousResolutionException("Found beans = " + matches + ", and could not resolve unambiguously");
         }
@@ -215,15 +215,15 @@ public class CDIBatchArtifactFactoryImpl implements IBatchArtifactFactory {
         });
     }
 
-	@Override
-	public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
-		logger.fine("Initializing CDIBatchArtifactFactoryImpl");
-	}
+    @Override
+    public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
+        logger.fine("Initializing CDIBatchArtifactFactoryImpl");
+    }
 
-	@Override
-	public void shutdown() throws BatchContainerServiceException {
-		logger.fine("Shutdown CDIBatchArtifactFactoryImpl");
-	}
+    @Override
+    public void shutdown() throws BatchContainerServiceException {
+        logger.fine("Shutdown CDIBatchArtifactFactoryImpl");
+    }
 
 
 }
