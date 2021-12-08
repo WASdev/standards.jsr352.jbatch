@@ -16,13 +16,17 @@
  */
 package com.ibm.jbatch.container.cdi;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.batch.api.BatchProperty;
 import jakarta.batch.runtime.context.JobContext;
 import jakarta.batch.runtime.context.StepContext;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.Annotated;
+import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.InjectionPoint;
 
 import com.ibm.jbatch.container.artifact.proxy.ProxyFactory;
@@ -96,21 +100,38 @@ public class BatchProducerBean {
 				return null;
 			}
 
-			BatchProperty batchPropAnnotation = injectionPoint.getAnnotated().getAnnotation(BatchProperty.class);
+			BatchProperty batchPropAnnotation = null;
+			String batchPropName = null;
+			Annotated annotated = injectionPoint.getAnnotated();
+			if (annotated != null) {
+				batchPropAnnotation = annotated.getAnnotation(BatchProperty.class);
 
-			// If a name is not supplied the batch property name defaults to
-			// the field name
-			String batchPropName;
-			if (batchPropAnnotation.name().equals("")) {
-				batchPropName = injectionPoint.getMember().getName();
+				// If a name is not supplied the batch property name defaults to
+				// the field name
+				if (batchPropAnnotation.name().equals("")) {
+					batchPropName = injectionPoint.getMember().getName();
+				} else {
+					batchPropName = batchPropAnnotation.name();
+				}
 			} else {
-				batchPropName = batchPropAnnotation.name();
+
+				// No attempt to match by field name in this path.
+				Set<Annotation> qualifiers =  injectionPoint.getQualifiers();
+				for (Annotation a : qualifiers.toArray(new Annotation[0])) {
+					if (a instanceof BatchProperty) {
+						BatchProperty batchPropertyAnno = (BatchProperty)a;
+						batchPropName = ((BatchProperty) a).name();
+						break;
+					}
+				}
 			}
-
-			List<Property> propList = ProxyFactory.getInjectionReferences().getProps();
-
-			return DependencyInjectionUtility.getPropertyValue(propList, batchPropName);
+			
+			if (batchPropName != null) {
+				List<Property> propList = ProxyFactory.getInjectionReferences().getProps();
+				return DependencyInjectionUtility.getPropertyValue(propList, batchPropName);
+			}
 		}
+
 		return null;
 	}
 
