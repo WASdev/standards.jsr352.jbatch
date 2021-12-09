@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.batch.api.BatchProperty;
+import jakarta.batch.runtime.BatchRuntime;
+import jakarta.batch.operations.JobOperator;
 import jakarta.batch.runtime.context.JobContext;
 import jakarta.batch.runtime.context.StepContext;
 import jakarta.enterprise.context.Dependent;
@@ -35,6 +37,12 @@ import com.ibm.jbatch.jsl.model.Property;
 
 public class BatchProducerBean {
 
+	@Produces
+	@Dependent
+	public JobOperator produceJobOperator() {
+		return BatchRuntime.getJobOperator();
+	}
+	
 	@Produces
 	@Dependent
 	@BatchProperty
