@@ -34,7 +34,7 @@ public class BatchCDIInjectionExtension implements Extension {
         logger.log(Level.FINE, "BatchCDIInjectionExtension.beforeBeanDiscovery() bm=" + bm);
 
         AnnotatedType<BatchProducerBean> at = bm.createAnnotatedType(BatchProducerBean.class);
-        bbd.addAnnotatedType(at);
+        bbd.addAnnotatedType(at, "JBatch " + BatchProducerBean.class.getName());
         
         logger.log(Level.FINE, "BatchCDIInjectionExtension.beforeBeanDiscovery() added annotated type: " + BatchProducerBean.class.getName());
     }
