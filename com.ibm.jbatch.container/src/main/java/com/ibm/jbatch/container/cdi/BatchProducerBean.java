@@ -39,12 +39,6 @@ public class BatchProducerBean {
 
 	@Produces
 	@Dependent
-	public JobOperator produceJobOperator() {
-		return BatchRuntime.getJobOperator();
-	}
-	
-	@Produces
-	@Dependent
 	@BatchProperty
 	public Boolean produceBooleanProperty(InjectionPoint injectionPoint) {
 		String propValStr = getStringProperty(injectionPoint);

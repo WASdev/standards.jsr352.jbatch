@@ -19,11 +19,14 @@ package com.ibm.jbatch.container.cdi;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jakarta.batch.operations.JobOperator;
 import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
 import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.ProcessBean;
 
 public class BatchCDIInjectionExtension implements Extension {
 
@@ -37,5 +40,29 @@ public class BatchCDIInjectionExtension implements Extension {
         bbd.addAnnotatedType(at, "JBatch " + BatchProducerBean.class.getName());
         
         logger.log(Level.FINE, "BatchCDIInjectionExtension.beforeBeanDiscovery() added annotated type: " + BatchProducerBean.class.getName());
+    }
+    
+    private static Boolean foundJobOp = false;
+
+    public <A> void processBean(final @Observes ProcessBean<A> processBeanEvent) {
+        if (!foundJobOp) {
+        	if (processBeanEvent.getBean().getTypes().contains(JobOperator.class)) {
+        		if (processBeanEvent.getBean().getBeanClass().equals(JobOpProducerBean.class)) {
+        			logger.log(Level.FINE, "BatchCDIInjectionExtension.processBean() detecting our own JobOpProducerBean");
+        		} else {
+        			logger.log(Level.FINE, "BatchCDIInjectionExtension.processBean() Found JobOperator of class: " + processBeanEvent.getBean().getBeanClass());
+        			foundJobOp = true;
+        		}
+        	}
+        }
+    }
+
+    public void afterBeanDiscovery(final @Observes AfterBeanDiscovery abd, BeanManager bm) {
+        if (foundJobOp) {
+          logger.log(Level.FINE, "Deferring to other detected JobOperator Bean");
+          return;
+        }
+        logger.log(Level.FINE, "Didn't find JobOperator Bean, registering JBatch one");
+        abd.addBean(new JobOpProducerBean());
     }
 }
