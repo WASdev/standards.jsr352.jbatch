@@ -63,6 +63,6 @@ public class BatchCDIInjectionExtension implements Extension {
           return;
         }
         logger.log(Level.FINE, "Didn't find JobOperator Bean, registering JBatch one");
-        abd.addBean(new JobOpProducerBean());
+        abd.addBean(new JobOpProducerBean(bm));
     }
 }

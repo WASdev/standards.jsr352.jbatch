@@ -1,25 +1,19 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership. The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
+/**
+ * Copyright 2022 International Business Machines Corp.
+ *
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership. Licensed under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
-// Taken and reworked from source at: 
-//   https://github.com/apache/bval/blob/master/bval-jsr/src/main/java/org/apache/bval/cdi/BValInterceptorBean.java
-//
 package com.ibm.jbatch.container.cdi;
 
 import java.lang.annotation.Annotation;
@@ -36,98 +30,86 @@ import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.TypeLiteral;
 
-public class JobOpProducerBean implements Bean {
-	
-	    private final Set<Type> types;
-	    private final Set<Annotation> qualifiers;
+public class JobOpProducerBean implements Bean<JobOperator> {
+    
+    private final Set<Type> types;
+    private final Set<Annotation> qualifiers;
+    private final String name;
+    private final String id;
 
-	    public JobOpProducerBean() {
+    public JobOpProducerBean(BeanManager beanManager) {
 
-	        final Set<Type> t = new HashSet<>();
-	        t.add(JobOperator.class);
-	        t.add(Object.class);
-	        types = Collections.unmodifiableSet(t);
+        final Set<Type> t = new HashSet<>();
+        t.add(new TypeLiteral<JobOperator>() {}.getType());
+        t.add(new TypeLiteral<Object>() {}.getType());
+        types = Collections.unmodifiableSet(t);
 
-	        final Set<Annotation> q = new HashSet<>();
-	        q.add(new DefaultLiteral());
-	        q.add(new AnyLiteral());
-	        qualifiers = Collections.unmodifiableSet(q);
-	    }
-	
-		@Produces
-		@Dependent
-		public JobOperator produceJobOperator() {
-			return BatchRuntime.getJobOperator();
-		}
-		
-	    @Override
-	    public Set<Type> getTypes() {
-	        return types;
-	    }
+        final Set<Annotation> q = new HashSet<Annotation>();
+        q.add(new AnnotationLiteral<Any>() {});
+        q.add(new AnnotationLiteral<Default>() {});
+        qualifiers = Collections.unmodifiableSet(q);
+        
+        name = this.getClass().getName() + "@" + this.hashCode() + "[jakarta.batch.operations.JobOperator]";
+        id = beanManager.hashCode() + "#" + this.name;
+    }
 
-	    @Override
-	    public Set<Annotation> getQualifiers() {
-	        return qualifiers;
-	    }
+    @Override
+    public JobOperator create(CreationalContext creationalContext) {
+        return BatchRuntime.getJobOperator();
+    }
 
-	    @Override
-	    public Class<? extends Annotation> getScope() {
-	        return Dependent.class;
-	    }
+    @Override
+    public void destroy(JobOperator instance, CreationalContext<JobOperator> creationalContext) {
+    }
+    
+    @Override
+    public Class<?> getBeanClass() {
+        return JobOpProducerBean.class;
+    }
+    
+    @Override
+    public Set<InjectionPoint> getInjectionPoints() {
+        return Collections.emptySet();
+    }
+    
+    @Override
+    public String getName() {
+        return name;
+    }
+    
+    @Override
+    public Set<Annotation> getQualifiers() {
+        return qualifiers;
+    }
+    
+    @Override
+    public Class<? extends Annotation> getScope() {
+        return Dependent.class;
+    }
 
-	    @Override
-	    public String getName() {
-	        return null;
-	    }
+    @Override
+    public Set<Class<? extends Annotation>> getStereotypes() {
+        return Collections.emptySet();
+    }
+    
+    @Override
+    public Set<Type> getTypes() {
+        return types;
+    }
 
-	    @Override
-	    public boolean isNullable() {
-	        return false;
-	    }
+    @Override
+    public boolean isAlternative() {
+        return false;
+    }
 
-	    @Override
-	    public Set<InjectionPoint> getInjectionPoints() {
-	        return Collections.emptySet();
-	    }
-
-	    @Override
-	    public Class<?> getBeanClass() {
-	        return JobOpProducerBean.class;
-	    }
-
-	    @Override
-	    public Set<Class<? extends Annotation>> getStereotypes() {
-	        return Collections.emptySet();
-	    }
-
-	    @Override
-	    public boolean isAlternative() {
-	        return false;
-	    }
-
-	    public String getId() {
-	        return String.format("JBatch JobOpProducer: %d", hashCode());
-	    }
-
-	    public class AnyLiteral extends AnnotationLiteral<Any> implements Any {
-	    	AnyLiteral() {super(); }
-	    }
-
-	    public class DefaultLiteral extends AnnotationLiteral<Default> implements Default {
-	    	DefaultLiteral() {super(); }
-	    }
-
-		@Override
-		public Object create(CreationalContext creationalContext) {
-			return BatchRuntime.getJobOperator();
-		}
-
-		@Override
-		public void destroy(Object instance, CreationalContext creationalContext) {
-			// No-op
-		}
-
+    @Override
+    public boolean isNullable() {
+        return false;
+    }
 }
+
