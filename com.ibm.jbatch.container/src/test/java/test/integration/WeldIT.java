@@ -42,9 +42,7 @@ public class WeldIT {
 
         final JobExecution job = awaitJob("weldArtifactFactoryTest");
         Assert.assertEquals(BatchStatus.COMPLETED, job.getBatchStatus());
-
-        final StepExecution step = operator.getStepExecutions(job.getExecutionId()).get(0);
-        Assert.assertEquals(BatchStatus.COMPLETED, step.getBatchStatus());
+        Assert.assertEquals("2", job.getExitStatus());
     }
 
     private JobExecution awaitJob(final String job) {
