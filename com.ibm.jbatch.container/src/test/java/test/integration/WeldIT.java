@@ -1,6 +1,6 @@
 package test.integration;
 
-import com.ibm.jbatch.container.api.impl.JobOperatorImpl;
+import com.ibm.jbatch.container.api.impl.JobOperatorImplDelegate;
 import com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl;
 import com.ibm.jbatch.container.services.impl.WeldSEBatchArtifactFactoryImpl;
 import com.ibm.jbatch.spi.ServiceRegistry.ServiceImplClassNames;
