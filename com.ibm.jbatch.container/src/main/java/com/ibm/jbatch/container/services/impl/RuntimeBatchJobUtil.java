@@ -18,7 +18,7 @@ package com.ibm.jbatch.container.services.impl;
 
 import jakarta.batch.runtime.BatchRuntime;
 
-import com.ibm.jbatch.container.api.impl.JobOperatorImpl;
+import com.ibm.jbatch.container.api.impl.JobOperatorImplDelegate;
 import com.ibm.jbatch.spi.BatchJobUtil;
 
 public class RuntimeBatchJobUtil implements BatchJobUtil {
@@ -26,7 +26,7 @@ public class RuntimeBatchJobUtil implements BatchJobUtil {
 	@Override
 	public void purgeOwnedRepositoryData(String tag) {
 		
-		JobOperatorImpl jobOperator = (JobOperatorImpl) BatchRuntime.getJobOperator();
+		JobOperatorImplDelegate jobOperator = (JobOperatorImplDelegate) BatchRuntime.getJobOperator();
 		jobOperator.purge(tag);
 	}
 

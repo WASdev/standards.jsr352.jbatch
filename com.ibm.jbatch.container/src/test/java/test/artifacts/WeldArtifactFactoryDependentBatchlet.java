@@ -18,14 +18,14 @@ package test.artifacts;
 
 import jakarta.batch.api.Batchlet;
 import jakarta.batch.runtime.context.JobContext;
-import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import test.beans.MyBean;
 
-@ApplicationScoped
-@Named("weldArtifactFactoryBatchlet")
-public class WeldArtifactFactoryBatchlet implements Batchlet {
+@Dependent
+@Named("weldArtifactFactoryBatchletDependent")
+public class WeldArtifactFactoryDependentBatchlet implements Batchlet {
 
 	@Inject MyBean bean;
 	@Inject JobContext jobCtx;

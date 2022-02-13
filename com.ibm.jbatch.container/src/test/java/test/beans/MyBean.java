@@ -14,32 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package test.artifacts;
+package test.beans;
 
-import jakarta.batch.api.Batchlet;
-import jakarta.batch.runtime.context.JobContext;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-import test.beans.MyBean;
+import jakarta.enterprise.context.Dependent;
 
-@ApplicationScoped
-@Named("weldArtifactFactoryBatchlet")
-public class WeldArtifactFactoryBatchlet implements Batchlet {
+@Dependent
+public class MyBean {
 
-	@Inject MyBean bean;
-	@Inject JobContext jobCtx;
-
-	@Override
-	public String process() throws Exception {
-		jobCtx.setExitStatus(Integer.toString(bean.increment()));
-		return null;
-	}
-
-	@Override
-	public void stop() throws Exception {
-		// TODO Auto-generated method stub
-
+	private int cnt = 0;
+	
+	public int increment() {
+		return ++cnt;
 	}
 
 }

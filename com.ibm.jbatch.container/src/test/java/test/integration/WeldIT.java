@@ -1,6 +1,6 @@
 package test.integration;
 
-import com.ibm.jbatch.container.api.impl.JobOperatorImpl;
+import com.ibm.jbatch.container.api.impl.JobOperatorImplDelegate;
 import com.ibm.jbatch.container.services.impl.DelegatingBatchArtifactFactoryImpl;
 import com.ibm.jbatch.container.services.impl.WeldSEBatchArtifactFactoryImpl;
 import com.ibm.jbatch.spi.ServiceRegistry.ServiceImplClassNames;
@@ -42,9 +42,7 @@ public class WeldIT {
 
         final JobExecution job = awaitJob("weldArtifactFactoryTest");
         Assert.assertEquals(BatchStatus.COMPLETED, job.getBatchStatus());
-
-        final StepExecution step = operator.getStepExecutions(job.getExecutionId()).get(0);
-        Assert.assertEquals(BatchStatus.COMPLETED, step.getBatchStatus());
+        Assert.assertEquals("2", job.getExitStatus());
     }
 
     private JobExecution awaitJob(final String job) {

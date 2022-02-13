@@ -243,7 +243,7 @@ public class JDBCPersistenceManagerImpl implements IPersistenceManagerService, J
 		ResultSet rs = dbmd.getTables(null, schema, tableName, null);
 		PreparedStatement ps = null;
 		if(!rs.next()) {
-			logger.log(Level.INFO, tableName + " table does not exists. Trying to create it.");
+			logger.log(Level.INFO, tableName + " table does not exist. Trying to create it.");
 			ps = conn.prepareStatement(createTableStatement);
 			ps.executeUpdate();
 		}

@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ibm.jbatch</groupId>
     <artifactId>jbatch-parent</artifactId>
-    <version>2.1.0-M2-SNAPSHOT</version>
+    <version>2.1.0-M2</version>
     <packaging>pom</packaging>
     <name>jbatch-parent</name>
     <description>
@@ -136,7 +136,7 @@
     <properties>
 
         <!-- EDIT ME WHEN BUILDING A NEW VERSION -->
-        <batch.api.version>2.1.0-M1</batch.api.version>
+        <batch.api.version>2.1.0-M2</batch.api.version>
         <non.final>false</non.final>
 
         <!-- Convenience -->
@@ -147,16 +147,20 @@
         <version.java>1.8</version.java>
 
         <!-- Dependencies -->
-        <version.jakarta.enterprise.jakarta.enterprise.cdi-api>3.0.0</version.jakarta.enterprise.jakarta.enterprise.cdi-api>
-        <version.jakarta.inject.jakarta.inject-api>2.0.0</version.jakarta.inject.jakarta.inject-api>
+        <version.jakarta.enterprise.jakarta.enterprise.cdi-api>4.0.0-RC5</version.jakarta.enterprise.jakarta.enterprise.cdi-api>
+        <version.jakarta.inject.jakarta.inject-api>2.0.1</version.jakarta.inject.jakarta.inject-api>
         <version.jakarta.transaction.jakarta.transaction-api>2.0.0</version.jakarta.transaction.jakarta.transaction-api>
         <version.jakarta.xml.bind.jakarta.xml.bind-api>3.0.0</version.jakarta.xml.bind.jakarta.xml.bind-api>
+        <version.junit.junit>4.13.2</version.junit.junit>
+        <version.org.apache.derby.derby>10.14.2.0</version.org.apache.derby.derby>
+        <version.org.apache.maven.plugins.maven-enforcer-plugin>3.0.0</version.org.apache.maven.plugins.maven-enforcer-plugin>
         <version.org.testng.testng>6.8</version.org.testng.testng>
-
+        <version.org.jboss.weld.se.weld-se-core>5.0.0.Beta1</version.org.jboss.weld.se.weld-se-core>
         <version.com.mycila.maven-license-plugin.maven-license-plugin>1.10.b1</version.com.mycila.maven-license-plugin.maven-license-plugin>
         <version.org.sonatype.plugins.nexus-staging-maven-plugin>1.6.6</version.org.sonatype.plugins.nexus-staging-maven-plugin>
         <version.org.apache.maven.plugins.maven-antrun-plugin>1.8</version.org.apache.maven.plugins.maven-antrun-plugin>
         <version.org.apache.maven.plugins.maven-compiler-plugin>2.0.2</version.org.apache.maven.plugins.maven-compiler-plugin>
+        <version.org.apache.maven.plugins.maven-dependency-plugin>3.2.0</version.org.apache.maven.plugins.maven-dependency-plugin>
         <version.org.apache.maven.plugins.maven-failsafe-plugin>2.18</version.org.apache.maven.plugins.maven-failsafe-plugin>
         <version.org.apache.maven.plugins.maven-gpg-plugin>1.4</version.org.apache.maven.plugins.maven-gpg-plugin>
         <version.org.apache.maven.plugins.maven-jar-plugin>2.4</version.org.apache.maven.plugins.maven-jar-plugin>
@@ -216,17 +220,17 @@
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.13.2</version>
+                <version>${version.junit.junit}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>
-                <version>10.10.1.1</version>
+                <version>${version.org.apache.derby.derby}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derbynet</artifactId>
-                <version>10.10.1.1</version>
+                <version>${version.org.apache.derby.derby}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
@@ -236,7 +240,7 @@
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-core</artifactId>
-                <version>4.0.0.Alpha1</version>
+                <version>${version.org.jboss.weld.se.weld-se-core}</version>
             </dependency>
             <dependency>
                 <groupId>org.testng</groupId>
@@ -327,7 +331,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
+                <version>${version.org.apache.maven.plugins.maven-enforcer-plugin}</version>
                 <executions>
                     <execution>
                         <id>enforce-versions</id>
@@ -363,7 +367,7 @@
                 <configuration>
                     <bottom>
                     <![CDATA[
-                    <p align="left">&#169; Copyright IBM Corp. 2014, 2021<br>Licensed under the Apache License, Version 2.0
+                    <p align="left">&#169; Copyright IBM Corp. 2014, 2022<br>Licensed under the Apache License, Version 2.0
                     ]]>
                     </bottom>
                     <!-- https://bugs.openjdk.java.net/browse/JDK-8212233 -->

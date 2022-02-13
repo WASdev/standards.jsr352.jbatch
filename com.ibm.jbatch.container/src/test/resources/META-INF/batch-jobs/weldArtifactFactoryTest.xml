@@ -22,7 +22,13 @@
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/jobXML_2_0.xsd"
      id="weldArtifactFactoryTest" version="2.0">
-	<step id="step1">
+	<step id="step1" next="step2">
+		<batchlet ref="weldArtifactFactoryBatchlet"/>
+	</step>
+	<step id="step2" next="step3">
+		<batchlet ref="weldArtifactFactoryBatchletDependent"/>
+	</step>
+	<step id="step3">
 		<batchlet ref="weldArtifactFactoryBatchlet"/>
 	</step>
 </job>
