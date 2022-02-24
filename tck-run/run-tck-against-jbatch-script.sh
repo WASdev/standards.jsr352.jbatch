@@ -127,7 +127,7 @@ echo
 mvn clean verify -Pstill-staging
 
 echo --------------------
-echo Begin SigTest tests 
+echo End signature tests
 echo --------------------
 
 
