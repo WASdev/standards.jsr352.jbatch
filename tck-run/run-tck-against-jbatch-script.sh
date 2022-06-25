@@ -2,7 +2,7 @@
 set -x
 
 #------------------------------------------------------------------------------
-# Running Jakarta Batch TCK Version 2.1.0 against com.ibm.jbatch 2.1.0-M2
+# Running Jakarta Batch TCK Version 2.1.1 against com.ibm.jbatch 2.1.1
 #
 # This is a documented script that can be used to execute the Jakarta Batch TCK
 # against the com.ibm.jbatch implementation.
@@ -55,18 +55,18 @@ $JAVA_HOME/bin/java -version
 #  when testing a staged copy of TCK)
 #############################################
 
-TCK_ARTIFACT_ID=jakarta.batch.official.tck-2.1.0
+TCK_ARTIFACT_ID=jakarta.batch.official.tck-2.1.1
 
 #
 # STAGED
 #
 
-TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartabatch/tck/eftl/$TCK_ARTIFACT_ID.zip
+#TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartabatch/tck/eftl/$TCK_ARTIFACT_ID.zip
 
 #
 # OFFICIAL PROJECT LOCATION
 #
-#TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartaee/batch/2.1/jakarta.batch.official.tck-2.1.0.zip
+TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartaee/batch/2.1/$TCK_ARTIFACT_ID.zip
 
 ################
 # DON'T CHANGE
@@ -134,6 +134,6 @@ echo --------------------
 echo --------------------
 echo Capture SHAs
 echo --------------------
-openssl dgst -sha256 ~/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.container/2.1.0-M2/com.ibm.jbatch.container-2.1.0-M2.jar
-openssl dgst -sha256 ~/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.spi/2.1.0-M2/com.ibm.jbatch.spi-2.1.0-M2.jar
+openssl dgst -sha256 ~/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.container/2.1.1/com.ibm.jbatch.container-2.1.1.jar
+openssl dgst -sha256 ~/.m2/repository/com/ibm/jbatch/com.ibm.jbatch.spi/2.1.1/com.ibm.jbatch.spi-2.1.1.jar
 openssl dgst -sha256 ~/.m2/repository/jakarta/batch/jakarta.batch-api/2.1.0/jakarta.batch-api-2.1.0.jar
