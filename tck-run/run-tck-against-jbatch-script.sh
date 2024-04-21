@@ -67,7 +67,6 @@ TCK_ARTIFACT_ID=jakarta.batch.official.tck-2.1.5
 # OFFICIAL PROJECT LOCATION
 #
 TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartaee/batch/2.1/$TCK_ARTIFACT_ID.zip
-TCK_DOWNLOAD_URL=https://download.eclipse.org/jakartabatch/tck/eftl/$TCK_ARTIFACT_ID.zip
 
 ################
 # DON'T CHANGE
